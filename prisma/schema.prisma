@@ -15,9 +15,9 @@ datasource db {
 // generate schema
 
 enum ProductCategory {
-  MOBILE
-  LAPTOP
-  WATCH
+  HONEY
+  SAFFRON
+  DATES
   OTHERS
 }
 
@@ -45,4 +45,21 @@ model CartItem{
   productId String
   quantity Int
   product Product @relation(fields: [productId],references: [id])
+}
+
+model User {
+  id                             String   @id @default(cuid())
+  email                          String   @unique
+  password                       String
+  emailVerified                  Boolean  @default(false)
+  emailVerificationToken         String?  @unique
+  emailVerificationTokenExpires  DateTime?
+  twoFactorEnabled               Boolean  @default(false)
+  twoFactorSecret                String?
+  refreshToken                   String?  @unique
+  passwordResetToken             String?  @unique
+  passwordResetTokenExpires      DateTime?
+  role                           String   @default("user") // "admin" or "user"
+  createdAt                      DateTime @default(now())
+  updatedAt                      DateTime @updatedAt
 }

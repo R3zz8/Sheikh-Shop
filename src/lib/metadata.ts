@@ -22,7 +22,7 @@ export default function customMetadataGenerator({
     openGraph: {
       title,
       type: 'website',
-      url: `http://localhost:3000/${title}`,
+      url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/${title}`,
       images,
     } as OpenGraph,
   };

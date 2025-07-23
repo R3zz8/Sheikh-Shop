@@ -1,4 +1,3 @@
-'use server';
 
 import { prisma } from '@/lib/prisma';
 import { Product, ProductCategory } from '@prisma/client';
@@ -11,8 +10,8 @@ export const getProducts = async () => {
 };
 
 export const getProductsAPI = async () => {
-  // const result = await fetch('/api/product');
-  const result = await fetch('http://localhost:3000/api/product', {
+  // Use relative URL to avoid port issues
+  const result = await fetch('/api/product', {
     next: { revalidate: 30 },
   });
   const response = await result.json();

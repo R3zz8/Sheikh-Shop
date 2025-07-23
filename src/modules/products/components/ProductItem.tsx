@@ -30,7 +30,7 @@ const ProductItem = (props: { product: any }) => {
           <p className="mt-4 text-lg font-semibold">
             ${product?.price?.toFixed(2)}
           </p>
-          <div className="flex gap-2">
+          <div className="flex gap-4">
             <Heart />
             <Link href={`/products/catalog?id=${product.id}`}>
               <GalleryThumbnails />
