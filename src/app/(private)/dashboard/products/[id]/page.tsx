@@ -1,17 +1,12 @@
-import Spinner from '@/components/Spinner';
-import ProductDetailView from '@/modules/products/views/ProductDetailView';
-import React, { Suspense } from 'react';
+import ProductDetailClient from './_components/ProductDetailClient';
+import { getProductById } from '@/modules/products/services';
+import React from 'react';
 
-const page = async ({ params }: { params: Promise<{ id: string }> }) => {
+const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
   const data = await params;
   const { id } = data;
-  return (
-    <div>
-      <Suspense fallback={<Spinner />}>
-        <ProductDetailView id={id} />
-      </Suspense>
-    </div>
-  );
+  const product = await getProductById(id);
+  return <ProductDetailClient product={product} />;
 };
 
-export default page;
+export default Page;

@@ -1,28 +1,31 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState, useTransition } from 'react';
+import { loginAction } from './actions';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState<string | null>(null);
-    const [loading, setLoading] = useState(false);
+    const [isPending, startTransition] = useTransition();
+    const router = useRouter();
 
-    async function handleSubmit(e: FormEvent) {
+    async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        setLoading(true);
         setMessage(null);
-        try {
-            const { loginUser } = await import('@/lib/actions/auth/login');
-            const result = await loginUser(email, password);
-            setMessage(result.message);
-            // Placeholder: log the session object
-            console.log('Session:', result);
-        } catch (err: any) {
-            setMessage(err.message || 'Login failed');
-        } finally {
-            setLoading(false);
-        }
+        startTransition(async () => {
+            try {
+                const result = await loginAction(email, password);
+                if (result.success) {
+                    router.push('/');
+                } else {
+                    setMessage('Login failed');
+                }
+            } catch (err: any) {
+                setMessage(err.message || 'Login failed');
+            }
+        });
     }
 
     return (
@@ -51,14 +54,13 @@ export default function LoginPage() {
                 <button
                     type="submit"
                     className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
-                    disabled={loading}
+                    disabled={isPending}
                 >
-                    {loading ? 'Logging in...' : 'Login'}
+                    {isPending ? 'Logging in...' : 'Login'}
                 </button>
                 {message && (
                     <div
-                        className={`text-center mt-2 ${message.includes('success') ? 'text-green-600' : 'text-red-600'
-                            }`}
+                        className={`text-center mt-2 ${message.includes('success') ? 'text-green-600' : 'text-red-600'}`}
                     >
                         {message}
                     </div>

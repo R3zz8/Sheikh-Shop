@@ -11,7 +11,6 @@ import { ShoppingCart } from 'lucide-react';
 
 export default function CartDropdown() {
   const { cart, isLoading, removeCartItemMutation } = useCart();
-  console.log(cart);
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

@@ -1,8 +1,8 @@
 'use server';
-import { removeSessionCookie } from '@/lib/auth/jwt';
-import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
 
 export async function logoutUser() {
-    await removeSessionCookie();
-    redirect('/login');
+    const cookieStore = cookies();
+    cookieStore.delete('session-token');
+    cookieStore.delete('refresh-token');
 } 

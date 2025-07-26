@@ -1,42 +1,26 @@
 import jwt from 'jsonwebtoken';
-import { cookies } from 'next/headers';
+import type { StringValue } from 'ms';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key';
-console.log('[DEBUG] JWT_SECRET in server code:', JWT_SECRET);
-
-export function signJwtToken(payload: { id: string; email: string }) {
-    return jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
+if (!process.env.JWT_SECRET || JWT_SECRET === 'dev-secret-key') {
+    console.warn('[JWT] WARNING: Using default or missing JWT_SECRET!');
 }
 
-export async function setSessionCookie(token: string) {
-    const cookieStore = await cookies();
-    cookieStore.set('session-token', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
-        maxAge: 60 * 60 * 24 * 7, // 7 days
-    });
+export function signJwtToken(payload: { id: string; email: string; role: string }, expiresIn: StringValue | number = '7d') {
+    return jwt.sign(payload, JWT_SECRET, { expiresIn });
 }
 
-export async function removeSessionCookie() {
-    const cookieStore = await cookies();
-    cookieStore.set('session-token', '', {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
-        maxAge: 0,
-    });
-}
-
-export async function getUserFromToken(): Promise<{ id: string; email: string } | null> {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('session-token')?.value;
-    if (!token) return null;
+export function verifyJwtToken(token: string): { id: string; email: string; role: string } | null {
     try {
-        return jwt.verify(token, JWT_SECRET) as { id: string; email: string };
-    } catch {
+        return jwt.verify(token, JWT_SECRET) as { id: string; email: string; role: string };
+    } catch (err) {
+        console.warn('[JWT] Invalid token:', err);
         return null;
     }
+}
+
+export function generateSystemUserToken(user: { id: string, email: string, role: string }) {
+    // 1 year expiry
+    const expiresIn = 365 * 24 * 60 * 60; // seconds
+    return signJwtToken({ id: user.id, email: user.email, role: user.role }, expiresIn);
 } 

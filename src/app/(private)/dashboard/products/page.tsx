@@ -1,15 +1,13 @@
-import ProductDashboardView from '@/modules/products/views/ProductDashboardView';
+import ProductsPageClient from './_components/ProductsPageClient';
 import React from 'react';
 
 // export const dynamic = 'force-dynamic';
 // export const revalidate = 30;
 
-function DashboardProductPage() {
+export default function DashboardProductPage() {
   return (
     <div>
-      <ProductDashboardView />
+      <ProductsPageClient />
     </div>
   );
 }
-
-export default DashboardProductPage;

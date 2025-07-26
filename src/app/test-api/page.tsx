@@ -10,16 +10,13 @@ export default function TestAPIPage() {
     useEffect(() => {
         const testAPI = async () => {
             try {
-                console.log('Testing API...');
                 const response = await fetch('/api/product');
-                console.log('API Response status:', response.status);
 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
                 const result = await response.json();
-                console.log('API Response data:', result);
                 setData(result);
             } catch (err) {
                 console.error('API Error:', err);

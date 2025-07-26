@@ -1,10 +1,12 @@
 import React from 'react';
 import ProductForm from '../components/ProductFormWithAction';
-import { getProductById } from '../services';
+import type { Product } from '@prisma/client';
 
-async function ProductDetailView(props: { id: string }) {
-  const { id } = props;
-  const product = await getProductById(id);
+function ProductDetailView(props: { product: Product | null }) {
+  const { product } = props;
+  if (!product) {
+    return <div>Product not found.</div>;
+  }
   return (
     <div>
       <ProductForm product={product} />

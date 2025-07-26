@@ -2,8 +2,12 @@
 
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcrypt';
+import { rateLimit } from '@/lib/middleware/rateLimit';
 
-export async function registerUser(email: string, password: string) {
+export async function registerUser(email: string, password: string, csrfToken: string, ip?: string) {
+    if (!rateLimit(`register:${ip || email}`, 5, 60_000)) {
+        throw new Error('Too many registration attempts. Please try again later.');
+    }
     // Basic validation
     if (!email || !password) {
         throw new Error('Email and password are required');

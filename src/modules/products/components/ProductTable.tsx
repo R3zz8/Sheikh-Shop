@@ -15,11 +15,13 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { deleteProduct } from '../services';
 import { ProductsWithImages } from '@/types';
+import { useHasRole } from '@/hooks/useRBAC';
 
 const ProductTable = (props: {
   products: ProductsWithImages[];
 }) => {
   const { products } = props;
+  const canEdit = useHasRole(['admin', 'superadmin']);
 
   const onDeleteProduct = (id: string) => {
     //delete
@@ -30,12 +32,14 @@ const ProductTable = (props: {
     <div className="border border-gray-200 rounded-lg shadow-md mt-4 ">
       <div className="flex justify-between items-center p-4 bg-gray-100">
         <h1 className="text-xl font-semibold">Products</h1>
-        <Button asChild>
-          <Link href="/dashboard/products/new">
-            Add New Product
-            <PlusCircle />
-          </Link>
-        </Button>
+        {canEdit && (
+          <Button asChild>
+            <Link href="/dashboard/products/new">
+              Add New Product
+              <PlusCircle />
+            </Link>
+          </Button>
+        )}
       </div>
       <Table>
         <TableHeader>
@@ -67,19 +71,23 @@ const ProductTable = (props: {
                 </TableCell>
                 <TableCell className="text-center">
                   <div className="flex justify-center gap-2 items-center">
-                    <Button variant="ghost" asChild>
-                      <Link href={`/dashboard/products/${product.id}`}>
-                        <Edit />
-                      </Link>
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      onClick={() => {
-                        onDeleteProduct(product.id);
-                      }}
-                    >
-                      <Trash2 />
-                    </Button>
+                    {canEdit && (
+                      <Button variant="ghost" asChild>
+                        <Link href={`/dashboard/products/${product.id}`}>
+                          <Edit />
+                        </Link>
+                      </Button>
+                    )}
+                    {canEdit && (
+                      <Button
+                        variant="ghost"
+                        onClick={() => {
+                          onDeleteProduct(product.id);
+                        }}
+                      >
+                        <Trash2 />
+                      </Button>
+                    )}
                   </div>
                 </TableCell>
               </TableRow>

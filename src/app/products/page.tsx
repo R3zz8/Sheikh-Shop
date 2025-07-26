@@ -1,14 +1,13 @@
-import { prisma, PrismaType } from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 import ProductListView from '@/modules/products/views/ProductListView';
 import React from 'react';
+import { ProductsWithImages } from '@/types';
 
-async function Products() {
-  const data: PrismaType.Product[] = await prisma.product.findMany(); //query // mutation
+export default async function Products() {
+  const data: ProductsWithImages[] = await prisma.product.findMany({ include: { images: true } });
   return (
     <div>
-      <ProductListView />
+      <ProductListView products={data} />
     </div>
   );
 }
-
-export default Products;

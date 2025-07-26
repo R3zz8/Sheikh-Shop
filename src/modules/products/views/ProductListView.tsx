@@ -5,17 +5,18 @@ import ProductList from '../components/ProductList';
 import { getProductsAPI } from '../services';
 import { ProductsWithImages } from '@/types';
 
-function ProductListView() {
-  const [products, setProducts] = useState<ProductsWithImages[]>([]);
+interface ProductListViewProps {
+  products?: ProductsWithImages[];
+}
 
-  const getProductData = async () => {
-    const response = await getProductsAPI();
-    setProducts(response.data); // API returns { data: [...] }
-  };
+function ProductListView({ products: initialProducts }: ProductListViewProps) {
+  const [products, setProducts] = useState<ProductsWithImages[]>(initialProducts || []);
 
   useEffect(() => {
-    getProductData();
-  }, []);
+    if (!initialProducts) {
+      getProductsAPI().then(response => setProducts(response.data));
+    }
+  }, [initialProducts]);
 
   return (
     <div>
