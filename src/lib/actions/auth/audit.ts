@@ -22,4 +22,14 @@ export async function logFailedAttempt(userId: string | null, action: string, ip
             metadata: {},
         },
     });
+}
+
+export async function logAudit(userId: string, action: string, metadata?: any) {
+    await prisma.auditLog.create({
+        data: {
+            userId,
+            action,
+            metadata: metadata || {},
+        },
+    });
 } 

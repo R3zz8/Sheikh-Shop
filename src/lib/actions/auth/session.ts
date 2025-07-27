@@ -23,7 +23,7 @@ export async function getUserSessions(userId: string) {
 }
 
 export async function getCurrentUserId() {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const token = cookieStore.get('session-token')?.value;
     if (!token) throw new Error('Not authenticated');
     const user = verifyJwtToken(token);

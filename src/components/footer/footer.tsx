@@ -1,67 +1,264 @@
-import { Mail, MapPin, Phone, Youtube, Twitter, Instagram, MessageCircle } from 'lucide-react';
+import {
+    Mail,
+    MapPin,
+    Phone,
+    Youtube,
+    Twitter,
+    Instagram,
+    MessageCircle,
+    Sparkles,
+    Crown,
+    Shield,
+    Heart,
+    Star,
+    ShoppingBag,
+    HelpCircle,
+    FileText,
+    Users,
+    ArrowRight,
+    Globe
+} from 'lucide-react';
 import { Button } from '../ui/button';
+import { cn } from '@/lib/utils';
 
 export default function Footer() {
     return (
-        <footer className="w-full bg-gray-900 text-white">
-            {/* Call to Action - Green Box */}
-            <div className="w-full flex justify-center bg-green-700 py-6 px-4">
-                <div className="max-w-5xl w-full flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0">
-                    <div className="text-xl font-semibold">Need free consultation?</div>
-                    <div className="text-sm opacity-90">For free consultation, contact us</div>
-                    <Button className="bg-white text-green-700 hover:bg-green-100 font-bold px-6 py-2 rounded shadow" variant="outline">
-                        Get Consultation
-                    </Button>
+        <footer className="relative w-full">
+            {/* Consultation CTA Section */}
+            <div className="relative bg-gradient-to-r from-amber-900/80 via-orange-900/80 to-yellow-900/80 backdrop-blur-xl border-t border-amber-200/20">
+                <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-orange-500/3 to-yellow-500/5" />
+                <div className="relative z-10 w-full flex justify-center py-8 px-4">
+                    <div className="max-w-5xl w-full flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8">
+                        <div className="text-center md:text-left">
+                            <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
+                                <Sparkles className="w-5 h-5 text-amber-300" />
+                                <h3 className="text-xl font-semibold text-white">Need Premium Consultation?</h3>
+                            </div>
+                            <p className="text-amber-100 text-sm opacity-90">Experience personalized guidance from our luxury product experts</p>
+                        </div>
+                        <Button
+                            className={cn(
+                                "bg-gradient-to-r from-amber-600 via-yellow-600 to-orange-600",
+                                "hover:from-amber-700 hover:via-yellow-700 hover:to-orange-700",
+                                "text-white font-semibold px-8 py-3 rounded-xl border border-amber-500/30",
+                                "shadow-lg hover:shadow-xl hover:shadow-amber-900/30 transition-all duration-300",
+                                "transform hover:-translate-y-0.5 backdrop-blur-sm",
+                                "focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2"
+                            )}
+                        >
+                            <Crown className="w-4 h-4 mr-2" />
+                            Get Consultation
+                        </Button>
+                    </div>
                 </div>
             </div>
-            {/* Main Footer - Blue/Gray Box */}
-            <div className="w-full bg-gray-800 border-t border-gray-700">
-                <div className="max-w-7xl mx-auto py-12 px-4 md:px-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10">
-                    {/* About Us */}
-                    <div>
-                        <h3 className="text-lg font-bold mb-4">About Us</h3>
-                        <p className="text-gray-300 text-sm leading-relaxed">
-                            To change this text, click the edit button. Lorem Ipsum is simply dummy text of the printing and typesetting industry.
-                        </p>
-                    </div>
-                    {/* Important Pages */}
-                    <div>
-                        <h3 className="text-lg font-bold mb-4">Important Pages</h3>
-                        <ul className="space-y-2 text-gray-300 text-sm">
-                            <li><a href="#" className="hover:text-white transition">Terms & Conditions</a></li>
-                            <li><a href="#" className="hover:text-white transition">About Us</a></li>
-                            <li><a href="#" className="hover:text-white transition">Contact Us</a></li>
-                            <li><a href="#" className="hover:text-white transition">FAQ</a></li>
-                        </ul>
-                    </div>
-                    {/* Shop */}
-                    <div>
-                        <h3 className="text-lg font-bold mb-4">Shop</h3>
-                        <ul className="space-y-2 text-gray-300 text-sm">
-                            <li><a href="#" className="hover:text-white transition">Drinks</a></li>
-                            <li><a href="#" className="hover:text-white transition">Supplements</a></li>
-                            <li><a href="#" className="hover:text-white transition">Spices</a></li>
-                        </ul>
-                    </div>
-                    {/* Contact Us */}
-                    <div>
-                        <h3 className="text-lg font-bold mb-4">Contact Us</h3>
-                        <ul className="space-y-2 text-gray-300 text-sm mb-4">
-                            <li className="flex items-center gap-2"><Phone size={16} /> 0912345678</li>
-                            <li className="flex items-center gap-2"><Mail size={16} /> info@example.com</li>
-                            <li className="flex items-center gap-2"><MapPin size={16} /> Tehran, Example Street...</li>
-                        </ul>
-                        <div className="flex gap-4">
-                            <a href="#" aria-label="WhatsApp" className="hover:text-green-400 transition"><MessageCircle size={22} /></a>
-                            <a href="#" aria-label="YouTube" className="hover:text-red-500 transition"><Youtube size={22} /></a>
-                            <a href="#" aria-label="Twitter" className="hover:text-blue-400 transition"><Twitter size={22} /></a>
-                            <a href="#" aria-label="Instagram" className="hover:text-pink-400 transition"><Instagram size={22} /></a>
+
+            {/* Main Footer */}
+            <div className="relative bg-gradient-to-br from-amber-950/95 via-stone-900/95 to-amber-950/95 backdrop-blur-2xl border-t border-amber-200/10">
+                {/* Subtle background effects */}
+                <div className="absolute inset-0 bg-gradient-radial from-amber-500/3 via-orange-500/2 to-yellow-500/3 pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-b from-amber-500/2 via-transparent to-orange-500/2 pointer-events-none" />
+
+                <div className="relative z-10 max-w-7xl mx-auto py-16 px-6 md:px-8">
+                    {/* Main Footer Content */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-16 mb-12">
+
+                        {/* Brand Section */}
+                        <div className="lg:col-span-1">
+                            <div className="flex items-center gap-2 mb-6">
+                                <Crown className="w-8 h-8 text-amber-300" />
+                                <h3 className="text-2xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
+                                    Sheikh Shop
+                                </h3>
+                            </div>
+                            <p className="text-gray-300 text-sm leading-relaxed mb-6">
+                                Curating the world's finest premium products with exceptional quality and craftsmanship.
+                                Experience luxury redefined.
+                            </p>
+                            <div className="flex items-center gap-2 text-amber-300 text-sm">
+                                <Star className="w-4 h-4" />
+                                <span>Premium Quality Guaranteed</span>
+                            </div>
+                        </div>
+
+                        {/* Shop Section */}
+                        <div>
+                            <div className="flex items-center gap-2 mb-6">
+                                <ShoppingBag className="w-5 h-5 text-amber-300" />
+                                <h4 className="text-lg font-semibold text-white">Shop</h4>
+                            </div>
+                            <ul className="space-y-3">
+                                {[
+                                    { name: 'Premium Drinks', href: '#' },
+                                    { name: 'Luxury Supplements', href: '#' },
+                                    { name: 'Artisan Spices', href: '#' },
+                                    { name: 'Exclusive Collections', href: '#' },
+                                    { name: 'Limited Editions', href: '#' }
+                                ].map((item) => (
+                                    <li key={item.name}>
+                                        <a
+                                            href={item.href}
+                                            className={cn(
+                                                "text-gray-300 hover:text-amber-200 transition-all duration-300 text-sm",
+                                                "flex items-center gap-2 group"
+                                            )}
+                                        >
+                                            <ArrowRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-all duration-300" />
+                                            {item.name}
+                                        </a>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+
+                        {/* Help & Support */}
+                        <div>
+                            <div className="flex items-center gap-2 mb-6">
+                                <HelpCircle className="w-5 h-5 text-amber-300" />
+                                <h4 className="text-lg font-semibold text-white">Help & Support</h4>
+                            </div>
+                            <ul className="space-y-3">
+                                {[
+                                    { name: 'Customer Service', href: '#' },
+                                    { name: 'Shipping Information', href: '#' },
+                                    { name: 'Returns & Exchanges', href: '#' },
+                                    { name: 'Size Guide', href: '#' },
+                                    { name: 'FAQ', href: '#' }
+                                ].map((item) => (
+                                    <li key={item.name}>
+                                        <a
+                                            href={item.href}
+                                            className={cn(
+                                                "text-gray-300 hover:text-amber-200 transition-all duration-300 text-sm",
+                                                "flex items-center gap-2 group"
+                                            )}
+                                        >
+                                            <ArrowRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-all duration-300" />
+                                            {item.name}
+                                        </a>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+
+                        {/* Contact & Legal */}
+                        <div>
+                            <div className="flex items-center gap-2 mb-6">
+                                <Users className="w-5 h-5 text-amber-300" />
+                                <h4 className="text-lg font-semibold text-white">Company</h4>
+                            </div>
+                            <ul className="space-y-3 mb-8">
+                                {[
+                                    { name: 'About Us', href: '#' },
+                                    { name: 'Our Story', href: '#' },
+                                    { name: 'Sustainability', href: '#' },
+                                    { name: 'Careers', href: '#' },
+                                    { name: 'Press', href: '#' }
+                                ].map((item) => (
+                                    <li key={item.name}>
+                                        <a
+                                            href={item.href}
+                                            className={cn(
+                                                "text-gray-300 hover:text-amber-200 transition-all duration-300 text-sm",
+                                                "flex items-center gap-2 group"
+                                            )}
+                                        >
+                                            <ArrowRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-all duration-300" />
+                                            {item.name}
+                                        </a>
+                                    </li>
+                                ))}
+                            </ul>
+
+                            {/* Contact Info */}
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-3 text-gray-300 text-sm">
+                                    <Phone className="w-4 h-4 text-amber-300" />
+                                    <span>+1 (555) 123-4567</span>
+                                </div>
+                                <div className="flex items-center gap-3 text-gray-300 text-sm">
+                                    <Mail className="w-4 h-4 text-amber-300" />
+                                    <span>hello@sheikhshop.com</span>
+                                </div>
+                                <div className="flex items-center gap-3 text-gray-300 text-sm">
+                                    <MapPin className="w-4 h-4 text-amber-300" />
+                                    <span>Luxury District, Premium City</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div className="max-w-7xl mx-auto px-4 md:px-8">
-                    <div className="border-t border-gray-700 pt-6 pb-2 text-center text-gray-400 text-xs">
-                        &copy; {new Date().getFullYear()} All rights reserved for Example Shop.
+
+                    {/* Social Media & Newsletter */}
+                    <div className="border-t border-amber-200/10 pt-8 mb-8">
+                        <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
+                            {/* Social Media */}
+                            <div className="flex items-center gap-6">
+                                <span className="text-gray-300 text-sm font-medium">Follow our journey:</span>
+                                <div className="flex items-center gap-4">
+                                    {[
+                                        { icon: Instagram, href: '#', label: 'Instagram', hoverColor: 'hover:text-pink-400' },
+                                        { icon: Twitter, href: '#', label: 'Twitter', hoverColor: 'hover:text-blue-400' },
+                                        { icon: Youtube, href: '#', label: 'YouTube', hoverColor: 'hover:text-red-400' },
+                                        { icon: MessageCircle, href: '#', label: 'WhatsApp', hoverColor: 'hover:text-green-400' }
+                                    ].map((social) => (
+                                        <a
+                                            key={social.label}
+                                            href={social.href}
+                                            aria-label={social.label}
+                                            className={cn(
+                                                "w-10 h-10 rounded-full bg-white/8 backdrop-blur-sm border border-white/20",
+                                                "flex items-center justify-center text-gray-300 transition-all duration-300",
+                                                "hover:bg-white/12 hover:border-white/30 hover:scale-110",
+                                                social.hoverColor
+                                            )}
+                                        >
+                                            <social.icon className="w-5 h-5" />
+                                        </a>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Newsletter */}
+                            <div className="flex items-center gap-4">
+                                <div className="hidden md:flex items-center gap-2 text-gray-300 text-sm">
+                                    <Mail className="w-4 h-4 text-amber-300" />
+                                    <span>Stay updated with luxury insights</span>
+                                </div>
+                                <Button
+                                    variant="outline"
+                                    className={cn(
+                                        "bg-white/8 backdrop-blur-sm border border-white/20",
+                                        "text-white hover:bg-white/12 hover:text-white hover:border-white/30",
+                                        "px-6 py-2 rounded-xl transition-all duration-300",
+                                        "focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2"
+                                    )}
+                                >
+                                    Subscribe
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Bottom Bar */}
+                    <div className="border-t border-amber-200/10 pt-8">
+                        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                            <div className="flex items-center gap-6 text-gray-400 text-sm">
+                                <span>&copy; {new Date().getFullYear()} Sheikh Shop. All rights reserved.</span>
+                                <div className="flex items-center gap-4">
+                                    <a href="#" className="hover:text-amber-200 transition-colors duration-300">Privacy Policy</a>
+                                    <a href="#" className="hover:text-amber-200 transition-colors duration-300">Terms of Service</a>
+                                    <a href="#" className="hover:text-amber-200 transition-colors duration-300">Cookie Policy</a>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 text-gray-400 text-sm">
+                                <Shield className="w-4 h-4 text-amber-300" />
+                                <span>Secure & Trusted</span>
+                                <span className="text-amber-300">•</span>
+                                <Heart className="w-4 h-4 text-amber-300" />
+                                <span>Crafted with Excellence</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

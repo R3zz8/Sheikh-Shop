@@ -2,11 +2,12 @@
 
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcrypt';
-import { signJwtToken, setSessionCookie } from '@/lib/auth/jwt';
+import { signJwtToken } from '@/lib/auth/jwt';
 import { rateLimit } from '@/lib/middleware/rateLimit';
 import { logLogin, logFailedAttempt } from '@/lib/actions/auth/audit';
-import { setAuthCookies } from '@/lib/auth/jwt';
 import { verifyCsrfToken } from '@/lib/auth/csrf';
+import { createSession } from './session';
+import { cookies } from 'next/headers';
 import crypto from 'crypto';
 
 const failedLoginAttempts: Record<string, { count: number; last: number; lockedUntil?: number }> = {};
@@ -49,13 +50,23 @@ export async function loginUser(email: string, password: string, csrfToken: stri
     }
     // Reset failed attempts on success
     delete failedLoginAttempts[email];
+
     // Sign JWT and set cookie
     const token = signJwtToken({ id: user.id, email: user.email, role: user.role });
-    await setSessionCookie(token);
-    // Generate refresh token and expiry
+    const cookieStore = await cookies();
+    cookieStore.set('session-token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 7 * 24 * 60 * 60, // 7 days
+    });
+
+    // Generate refresh token and create session
     const refreshToken = crypto.randomBytes(32).toString('hex');
     const refreshExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
-    await setAuthCookies(user.id, token, refreshToken, refreshExpires, userAgent, ip);
+    await createSession(user.id, refreshToken, refreshExpires, userAgent, ip);
+
     await logLogin(user.id, ip, userAgent);
     return { success: true };
 } 

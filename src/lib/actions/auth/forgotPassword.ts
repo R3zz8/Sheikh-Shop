@@ -10,5 +10,5 @@ export async function forgotPassword(email: string, csrfToken: string, ip?: stri
         throw new Error('Too many reset attempts. Please try again later.');
     }
     // ... existing logic ...
-    await logAudit(user?.id ?? null, 'forgot_password', ip, userAgent);
+    await logFailedAttempt(null, 'forgot_password', ip, userAgent);
 } 

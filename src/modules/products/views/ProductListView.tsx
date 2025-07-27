@@ -18,11 +18,7 @@ function ProductListView({ products: initialProducts }: ProductListViewProps) {
     }
   }, [initialProducts]);
 
-  return (
-    <div>
-      <ProductList products={products} />
-    </div>
-  );
+  return <ProductList products={products} />;
 }
 
 export default ProductListView;

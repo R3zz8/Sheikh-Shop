@@ -10,7 +10,7 @@ export async function middleware(request: NextRequest) {
     const path = url.pathname;
     const token = request.cookies.get('session-token')?.value;
     console.log('[MIDDLEWARE] session-token:', token);
-    let user = null;
+    let user: any = null;
     if (token) {
         try {
             const { payload } = await jwtVerify(
@@ -28,7 +28,7 @@ export async function middleware(request: NextRequest) {
         console.warn('[MIDDLEWARE] No valid user from JWT. Redirecting to /login.');
         return NextResponse.redirect(new URL('/login', request.url));
     }
-    if (!['admin', 'superadmin'].includes(user.role)) {
+    if (!['admin', 'superadmin'].includes(user.role as string)) {
         console.warn('[MIDDLEWARE] User role not authorized:', user.role);
         return NextResponse.redirect(new URL('/login', request.url));
     }
