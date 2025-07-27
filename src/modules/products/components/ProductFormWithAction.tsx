@@ -52,7 +52,7 @@ const ProductForm = (props: { product: Product | null }) => {
     if (!submitted) return;
     if (error) toast.error('Failed');
     else if (data) toast.success('success');
-  }, [state]);
+  }, [submitted, error, data]);
 
   return (
     <Card className="w-[500px] mx-auto mt-10">

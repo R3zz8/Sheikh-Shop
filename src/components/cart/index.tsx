@@ -110,7 +110,7 @@ export default function CartDropdown() {
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm text-gray-300">Total:</span>
               <span className="text-lg font-semibold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
-                ${cart.reduce((total, item) => total + ((item.product.price || 0) * item.quantity), 0).toFixed(2)}
+                ${cart.reduce((total: number, item: CartWithProduct) => total + ((item.product.price || 0) * item.quantity), 0).toFixed(2)}
               </span>
             </div>
             <Button className={cn(

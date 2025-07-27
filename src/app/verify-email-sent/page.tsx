@@ -18,7 +18,7 @@ export default function VerifyEmailSentPage() {
             // For now, just show a success message
             // In a real implementation, you would call an API endpoint
             toast.success('Verification email resent! Please check your inbox.');
-        } catch (err: any) {
+        } catch {
             toast.error('Failed to resend email. Please try again later.');
         } finally {
             setLoading(false);

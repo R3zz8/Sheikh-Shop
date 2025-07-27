@@ -12,8 +12,7 @@ export const uploadImage = async (formData: FormData) => {
 
     const data = await res.json();
     return data;
-  } catch (error) {
-    console.error('Upload error:', error);
+  } catch {
     return { error: 'Network error during upload' };
   }
 };
@@ -29,8 +28,7 @@ export const fetchImages = async (productId: string) => {
 
     const data = await res.json();
     return data;
-  } catch (error) {
-    console.error('Fetch images error:', error);
+  } catch {
     return { error: 'Network error while fetching images' };
   }
 };
@@ -40,16 +38,15 @@ export const deleteImage = async (imageId: string) => {
     const res = await fetch(`/api/image?imageId=${imageId}`, {
       method: 'DELETE',
     });
-    
+
     if (!res.ok) {
       const errorData = await res.json();
       return { error: errorData.error || 'Failed to delete image' };
     }
-    
+
     const data = await res.json();
     return data;
-  } catch (error) {
-    console.error('Delete image error:', error);
+  } catch {
     return { error: 'Network error while deleting image' };
   }
 };

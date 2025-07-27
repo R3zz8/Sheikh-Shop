@@ -91,9 +91,9 @@ const Banner = () => {
       "transition-opacity duration-1000",
       isLoaded ? "opacity-100" : "opacity-0"
     )}>
-      {/* Soft blue gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-100" />
-      <div className="absolute inset-0 bg-gradient-radial from-blue-200/20 via-transparent to-transparent pointer-events-none" />
+      {/* Warm gradient background matching site theme */}
+      <div className="absolute inset-0 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50" />
+      <div className="absolute inset-0 bg-gradient-radial from-amber-200/20 via-transparent to-transparent pointer-events-none" />
 
       {/* Subtle pattern overlay */}
       <div className="absolute inset-0 opacity-5">
@@ -106,11 +106,11 @@ const Banner = () => {
         {/* Header Section */}
         <div className="text-center mb-12">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <Sparkles className="w-6 h-6 text-blue-600" />
+            <Sparkles className="w-6 h-6 text-amber-600" />
             <h1 className="text-3xl md:text-4xl font-bold text-gray-800">
               Premium Collection
             </h1>
-            <Sparkles className="w-6 h-6 text-blue-600" />
+            <Sparkles className="w-6 h-6 text-amber-600" />
           </div>
           <p className="text-gray-600 text-lg max-w-2xl mx-auto">
             Discover our curated selection of luxury items, crafted with excellence and designed for those who appreciate the finest quality.
@@ -122,14 +122,16 @@ const Banner = () => {
           {/* Navigation Arrows */}
           <button
             onClick={prevSlide}
-            className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center text-gray-700 hover:bg-white hover:text-blue-600 transition-all duration-300 shadow-lg hover:shadow-xl"
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center text-gray-700 hover:bg-white hover:text-amber-600 transition-all duration-300 shadow-lg hover:shadow-xl"
+            aria-label="Previous slide"
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
 
           <button
             onClick={nextSlide}
-            className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center text-gray-700 hover:bg-white hover:text-blue-600 transition-all duration-300 shadow-lg hover:shadow-xl"
+            className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center text-gray-700 hover:bg-white hover:text-amber-600 transition-all duration-300 shadow-lg hover:shadow-xl"
+            aria-label="Next slide"
           >
             <ChevronRight className="w-6 h-6" />
           </button>
@@ -142,7 +144,7 @@ const Banner = () => {
                 transform: `translateX(-${currentIndex * (100 / 3)}%)`,
               }}
             >
-              {carouselData.map((item, index) => (
+              {carouselData.map((item) => (
                 <div
                   key={item.id}
                   className="w-1/3 md:w-1/3 lg:w-1/3 px-4 flex-shrink-0"
@@ -168,7 +170,7 @@ const Banner = () => {
 
                         {/* Premium badge */}
                         <div className="absolute top-4 right-4">
-                          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg">
+                          <div className="bg-gradient-to-r from-amber-600 to-orange-600 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg">
                             Premium
                           </div>
                         </div>
@@ -206,7 +208,7 @@ const Banner = () => {
                         </div>
 
                         {/* Action Button */}
-                        <button className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-6 rounded-xl font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
+                        <button className="w-full bg-gradient-to-r from-amber-600 to-orange-600 text-white py-3 px-6 rounded-xl font-semibold hover:from-amber-700 hover:to-orange-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
                           Explore Now
                         </button>
                       </div>
@@ -226,9 +228,10 @@ const Banner = () => {
                 className={cn(
                   "w-3 h-3 rounded-full transition-all duration-300",
                   index === currentIndex
-                    ? "bg-blue-600 scale-125"
+                    ? "bg-amber-600 scale-125"
                     : "bg-gray-300 hover:bg-gray-400"
                 )}
+                aria-label={`Go to slide ${index + 1}`}
               />
             ))}
           </div>
@@ -245,4 +248,4 @@ const Banner = () => {
   );
 };
 
-export default Banner; 
+export default Banner;

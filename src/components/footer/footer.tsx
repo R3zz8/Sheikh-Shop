@@ -13,10 +13,8 @@ import {
     Star,
     ShoppingBag,
     HelpCircle,
-    FileText,
     Users,
-    ArrowRight,
-    Globe
+    ArrowRight
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { cn } from '@/lib/utils';
@@ -72,7 +70,7 @@ export default function Footer() {
                                 </h3>
                             </div>
                             <p className="text-gray-300 text-sm leading-relaxed mb-6">
-                                Curating the world's finest premium products with exceptional quality and craftsmanship.
+                                Curating the world&apos;s finest premium products with exceptional quality and craftsmanship.
                                 Experience luxury redefined.
                             </p>
                             <div className="flex items-center gap-2 text-amber-300 text-sm">

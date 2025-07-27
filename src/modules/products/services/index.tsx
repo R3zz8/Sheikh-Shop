@@ -1,6 +1,6 @@
 
 import { prisma } from '@/lib/prisma';
-import { Product, ProductCategory } from '@prisma/client';
+import { Product } from '@prisma/client';
 import { redirect } from 'next/navigation';
 
 export const getProducts = async () => {
@@ -18,7 +18,6 @@ export const getProductsAPI = async () => {
 };
 
 export const getProductById = async (id: string) => {
-  console.log('product', id);
   // throw new Error('some errors from server please try again');
   // await new Promise((resolve) => setTimeout(resolve, 4000));
   const result = await prisma.product.findFirst({

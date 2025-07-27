@@ -19,7 +19,6 @@ export default function TestAPIPage() {
                 const result = await response.json();
                 setData(result);
             } catch (err) {
-                console.error('API Error:', err);
                 setError(err instanceof Error ? err.message : 'Unknown error');
             } finally {
                 setLoading(false);

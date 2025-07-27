@@ -69,7 +69,7 @@ export const upsertProduct = async (
 
     // return result;
     return { error: null, data: result };
-  } catch (e) {
+  } catch {
     return { data: prevData.data, error: { general: 'upsert failed' } };
   }
 };

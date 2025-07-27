@@ -5,7 +5,6 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
@@ -100,12 +99,6 @@ const ProductTable = (props: {
             </TableRow>
           )}
         </TableBody>
-        <TableFooter>
-          <TableRow>
-            <TableCell colSpan={5}>Total</TableCell>
-            <TableCell className="text-right">{products?.length || 0}</TableCell>
-          </TableRow>
-        </TableFooter>
       </Table>
     </div>
   );

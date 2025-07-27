@@ -1,0 +1,27 @@
+'use client';
+
+import dynamic from 'next/dynamic';
+
+const PalmTreeContainer = dynamic(() => import('./PalmTree'), {
+    loading: () => (
+        <div className="w-full h-[500px] bg-gradient-to-br from-amber-50 to-orange-100 rounded-2xl flex items-center justify-center">
+            <div className="text-center">
+                <div className="w-16 h-16 border-4 border-amber-300 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                <p className="text-amber-700 font-medium">Loading 3D Palm Tree...</p>
+            </div>
+        </div>
+    ),
+    ssr: false
+});
+
+interface PalmTreeWrapperProps {
+    height?: string;
+    enableControls?: boolean;
+    autoRotate?: boolean;
+    intensity?: number;
+    className?: string;
+}
+
+export default function PalmTreeWrapper(props: PalmTreeWrapperProps) {
+    return <PalmTreeContainer {...props} />;
+} 

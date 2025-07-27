@@ -104,7 +104,7 @@ export default function ProductDetail(product: ProductsWithImages) {
                 <CardTitle className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent tracking-tight text-center lg:text-left">
                   {product?.name}
                 </CardTitle>
-              </CardHeader>
+        </CardHeader>
 
               <CardContent className="p-6 sm:p-8">
                 <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
@@ -112,26 +112,26 @@ export default function ProductDetail(product: ProductsWithImages) {
                   <div className="space-y-6">
                     <div className="relative bg-white/6 backdrop-blur-sm border border-white/15 rounded-2xl p-4 sm:p-6 overflow-hidden">
                       <div className="absolute inset-0 bg-gradient-to-br from-amber-50/5 via-yellow-50/3 to-orange-50/5" />
-                      {product?.images.length > 0 ? (
-                        <Image
-                          src={product?.images[0].image}
-                          alt={product?.name}
+              {product?.images.length > 0 ? (
+                <Image
+                  src={product?.images[0].image}
+                  alt={product?.name}
                           width={600}
                           height={600}
                           quality={90}
                           className="relative z-10 rounded-xl w-full h-auto object-contain"
                           sizes="(max-width: 768px) 100vw, 50vw"
                           priority
-                        />
-                      ) : (
+                />
+              ) : (
                         <div className="w-full h-64 sm:h-96 bg-white/6 flex items-center justify-center rounded-xl border border-white/15">
                           <div className="text-center">
                             <Sparkles className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                             <p className="text-gray-400 text-lg">No Image Available</p>
                           </div>
-                        </div>
-                      )}
-                    </div>
+                </div>
+              )}
+            </div>
                   </div>
 
                   {/* Product Details */}
@@ -183,14 +183,14 @@ export default function ProductDetail(product: ProductsWithImages) {
                       <div className="text-center lg:text-left">
                         <h3 className="text-xl font-semibold text-white mb-3">Description</h3>
                         <p className="text-gray-200 leading-relaxed text-base sm:text-lg">
-                          {product?.description || 'No description available.'}
-                        </p>
+                {product?.description || 'No description available.'}
+              </p>
                       </div>
                     </div>
 
                     {/* Action Buttons */}
                     <div className="space-y-4 pt-4">
-                      <Button
+              <Button
                         className={cn(
                           "w-full bg-gradient-to-r from-amber-600 via-yellow-600 to-orange-600",
                           "hover:from-amber-700 hover:via-yellow-700 hover:to-orange-700",
@@ -200,12 +200,12 @@ export default function ProductDetail(product: ProductsWithImages) {
                           "focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2",
                           "touch-feedback"
                         )}
-                        onClick={() => addToCartMutation.mutate(product.id)}
+                onClick={() => addToCartMutation.mutate(product.id)}
                         disabled={addToCartMutation.isPending}
-                      >
+              >
                         <ShoppingCart className="w-5 h-5 mr-2" />
                         {addToCartMutation.isPending ? 'Adding...' : 'Add to Cart'}
-                      </Button>
+              </Button>
 
                       <Button
                         variant="outline"
@@ -222,12 +222,12 @@ export default function ProductDetail(product: ProductsWithImages) {
                           <ArrowLeft className="w-5 h-5" />
                           Back to Products
                         </Link>
-                      </Button>
+              </Button>
                     </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
           </div>
         </div>
       </div>

@@ -1,7 +1,7 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { useRequireRole } from '@/hooks/useRBAC';
-import { Card, CardHeader, CardTitle, CardContent, Table, TableHead, TableRow, TableHeader, TableBody, TableCell, Button, Input, Select, SelectItem } from '@/components/ui';
+import { Card, CardHeader, CardTitle, CardContent, Table, TableHead, TableRow, TableHeader, TableBody, TableCell, Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
 import { toast } from 'sonner';
 
 const PAGE_SIZE = 20;
@@ -73,8 +73,13 @@ export default function UserRolesPage() {
                         className="w-64"
                     />
                     <Select value={roleFilter} onValueChange={v => { setPage(1); setRoleFilter(v); }}>
-                        <SelectItem value="">All Roles</SelectItem>
-                        {ROLES.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                        <SelectTrigger className="w-48">
+                            <SelectValue placeholder="Filter by role" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="">All Roles</SelectItem>
+                            {ROLES.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                        </SelectContent>
                     </Select>
                 </div>
                 <Table>
@@ -101,7 +106,12 @@ export default function UserRolesPage() {
                                             onValueChange={role => handleChangeRole(user.id, user.email, role)}
                                             disabled={user.id === currentUserId || changing === user.id}
                                         >
-                                            {ROLES.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                                            <SelectTrigger className="w-32">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {ROLES.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                                            </SelectContent>
                                         </Select>
                                         {user.id === currentUserId && <span className="ml-2 text-xs text-gray-400">(You)</span>}
                                     </TableCell>

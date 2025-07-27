@@ -1,7 +1,8 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button, Input, Label } from '@/components/ui';
+import Image from 'next/image';
 
 interface UserInfo {
     id: string;
@@ -276,7 +277,7 @@ export default function UserProfilePage() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <p className="text-sm text-yellow-700 mb-4">Scan this QR code with your authenticator app:</p>
-                                    <img src={twoFA.qr} alt="2FA QR Code" className="w-48 h-48 mx-auto" />
+                                    <Image src={twoFA.qr} alt="2FA QR Code" width={192} height={192} className="w-48 h-48 mx-auto" />
                                 </div>
                                 <div>
                                     <p className="text-sm text-yellow-700 mb-2">Or enter this secret manually:</p>

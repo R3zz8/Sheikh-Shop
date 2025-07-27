@@ -19,7 +19,6 @@ const UploadImage: FC<{ productId: string }> = ({ productId }) => {
   const handleChangeFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
-      console.log('File selected:', selectedFile.name, 'Size:', selectedFile.size);
       setFile(selectedFile);
     } else {
       setFile(null);
@@ -35,33 +34,10 @@ const UploadImage: FC<{ productId: string }> = ({ productId }) => {
   const handleDelete = async (imageId: string) => {
     try {
       setLoading(true);
-      console.log('Deleting image:', imageId);
-      const result = await deleteImage(imageId);
-      console.log('Delete result:', result);
+      await deleteImage(imageId);
       updateImageList(imageId);
-    } catch (error) {
-      console.error('Error deleting image:', error);
+    } catch {
       alert('Failed to delete image');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getImages = async () => {
-    try {
-      console.log('Fetching images for productId:', productId);
-      const data = await fetchImages(productId);
-      console.log('Fetched images data:', data);
-
-      if (data?.images) {
-        setImages(data.images);
-      } else {
-        console.log('No images found or invalid response');
-        setImages([]);
-      }
-    } catch (error) {
-      console.error('Error fetching images:', error);
-      setImages([]);
     } finally {
       setLoading(false);
     }
@@ -75,25 +51,19 @@ const UploadImage: FC<{ productId: string }> = ({ productId }) => {
 
     try {
       setUploading(true);
-      console.log('Starting upload for productId:', productId);
-      console.log('File to upload:', file.name, 'Size:', file.size);
 
       const formData = new FormData();
       formData.append('file', file);
       formData.append('productId', productId);
 
-      console.log('FormData created, calling uploadImage...');
       const response = await uploadImage(formData);
-      console.log('Upload response:', response);
 
       if (response?.error) {
-        console.error('Upload error:', response.error);
         alert(`Upload failed: ${response.error}`);
         return;
       }
 
       if (response?.data) {
-        console.log('Upload successful, updating images list');
         setImages(response.data);
         setFile(null);
         // Clear the file input
@@ -103,11 +73,9 @@ const UploadImage: FC<{ productId: string }> = ({ productId }) => {
         }
         alert('Image uploaded successfully!');
       } else {
-        console.error('Invalid upload response:', response);
         alert('Upload failed: Invalid response from server');
       }
-    } catch (error) {
-      console.error('Upload error:', error);
+    } catch {
       alert('Upload failed: Please check your connection and try again');
     } finally {
       setUploading(false);
@@ -116,7 +84,21 @@ const UploadImage: FC<{ productId: string }> = ({ productId }) => {
 
   useEffect(() => {
     if (productId) {
-      console.log('UploadImage mounted with productId:', productId);
+      const getImages = async () => {
+        try {
+          const data = await fetchImages(productId);
+
+          if (data?.images) {
+            setImages(data.images);
+          } else {
+            setImages([]);
+          }
+        } catch {
+          setImages([]);
+        } finally {
+          setLoading(false);
+        }
+      };
       getImages();
     }
   }, [productId]);

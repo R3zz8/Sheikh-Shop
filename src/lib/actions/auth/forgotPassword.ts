@@ -1,5 +1,5 @@
 import { rateLimit } from '@/lib/middleware/rateLimit';
-import { logAudit, logFailedAttempt } from '@/lib/actions/auth/audit';
+import { logFailedAttempt } from '@/lib/actions/auth/audit';
 import { verifyCsrfToken } from '@/lib/auth/csrf';
 
 export async function forgotPassword(email: string, csrfToken: string, ip?: string, userAgent?: string) {

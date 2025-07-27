@@ -1,50 +1,121 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Inter, Poppins, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
-import { Toaster } from '@/components/ui/sonner';
-import ReactQueryProvider from '@/providers/ReactQuery';
-import Footer from '@/components/footer/footer';
 import ClientHeader from '@/components/ClientHeader';
+import Footer from '@/components/footer/footer';
+import { Toaster } from '@/components/ui';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import ReactQueryProvider from '@/providers/ReactQuery';
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
+const inter = Inter({
   subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
 });
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
+const poppins = Poppins({
   subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700', '800', '900'],
+  variable: '--font-poppins',
+  display: 'swap',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-jetbrains-mono',
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
-  title: 'Sheikh Shop',
-  description: 'digital shop to buy digital stuff',
+  title: {
+    default: 'Sheikh Shop - Premium Luxury Products',
+    template: '%s | Sheikh Shop'
+  },
+  description: 'Discover our curated collection of premium luxury products. Experience exceptional quality and craftsmanship with Sheikh Shop.',
+  keywords: ['luxury', 'premium', 'products', 'sheikh shop', 'quality', 'craftsmanship'],
+  authors: [{ name: 'Sheikh Shop Team' }],
+  creator: 'Sheikh Shop',
+  publisher: 'Sheikh Shop',
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  metadataBase: new URL('https://sheikhshop.com'),
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: 'https://sheikhshop.com',
+    title: 'Sheikh Shop - Premium Luxury Products',
+    description: 'Discover our curated collection of premium luxury products. Experience exceptional quality and craftsmanship.',
+    siteName: 'Sheikh Shop',
+    images: [
+      {
+        url: '/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Sheikh Shop - Premium Luxury Products',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Sheikh Shop - Premium Luxury Products',
+    description: 'Discover our curated collection of premium luxury products.',
+    images: ['/og-image.jpg'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  verification: {
+    google: 'your-google-verification-code',
+  },
 };
 
 export default function RootLayout({
-  children, //slot for children
-}: Readonly<{
+  children,
+  ads,
+}: {
   children: React.ReactNode;
-}>) {
+  ads: React.ReactNode;
+}) {
   return (
-    <ReactQueryProvider>
-      <html lang="en">
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        >
-          <main className="flex flex-col justify-between min-h-screen">
-            <ClientHeader />
-            <div className="px-4 md:px-20 mt-28">
-              {children}
-              <Toaster />
+    <html lang="en" className={`${inter.variable} ${poppins.variable} ${jetbrainsMono.variable}`}>
+      <head>
+        <link rel="icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+        <link rel="manifest" href="/site.webmanifest" />
+        <meta name="theme-color" content="#451a03" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+      </head>
+      <body className={`${inter.className} antialiased`}>
+        <ErrorBoundary>
+          <ReactQueryProvider>
+            <div className="flex flex-col min-h-screen">
+              <ClientHeader />
+              <main className="flex-1 pt-20">
+                {children}
+                {ads}
+              </main>
+              <Footer />
             </div>
-            <div className="my-10 mx-auto flex justify-center">
-              {/* {ads} */}
-            </div>
-          </main>
-          <Footer />
-        </body>
-      </html>
-    </ReactQueryProvider>
+            <Toaster />
+          </ReactQueryProvider>
+        </ErrorBoundary>
+      </body>
+    </html>
   );
 }

@@ -11,18 +11,14 @@ function ProductDashboardView() {
 
   const fetchProducts = async () => {
     try {
-      console.log('Fetching products for dashboard...');
       const response = await getProductsAPI();
-      console.log('Dashboard products response:', response);
 
       if (response?.data) {
         setProducts(response.data);
       } else {
-        console.error('Invalid products response:', response);
         setProducts([]);
       }
-    } catch (error) {
-      console.error('Error fetching products:', error);
+    } catch {
       setProducts([]);
     } finally {
       setLoading(false);

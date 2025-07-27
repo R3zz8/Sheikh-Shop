@@ -1,16 +1,13 @@
 'use client';
-import * as React from 'react';
-
+import React from 'react';
+import { useInView } from 'react-intersection-observer';
 import { Card, CardContent } from '@/components/ui/card';
 import Image from 'next/image';
+import { ZoomIn, Sparkles, Download } from 'lucide-react';
 import { DATA } from '@/modules/products/mock/products';
-import { useSearchParams } from 'next/navigation';
-import { Sparkles, ZoomIn, Download } from 'lucide-react';
-import { useInView } from '@/hooks/useInView';
 import { cn } from '@/lib/utils';
 
 function CatalogList() {
-  const params = useSearchParams();
   const images = DATA[0].images;
 
   return (
