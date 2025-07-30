@@ -1,6 +1,7 @@
 'use client';
 
-import { Product, ProductCategory } from '@prisma/client';
+import type { Product } from '@prisma/client';
+import { ProductCategory } from '@prisma/client';
 import {
   Input,
   Button,
@@ -121,4 +122,4 @@ const ProductForm = (props: { product: Product | null }) => {
   );
 };
 
-export default ProductForm; 
+export default ProductForm;

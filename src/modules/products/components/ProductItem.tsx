@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui';
 import { Star, ShoppingCart, Zap } from 'lucide-react';
-import { ProductsWithImages } from '@/types';
+import type { ProductsWithImages } from '@/types';
 import { useCart } from '@/hooks/useCart';
 import { cn, formatPrice } from '@/lib/utils';
 
@@ -15,9 +15,10 @@ export default function ProductItem({ product, index = 0 }: { product: ProductsW
   // Determine premium badge based on price
   const isPremium = (product?.price || 0) > 50;
 
-  // Generate random rating for demo
-  const rating = Math.floor(Math.random() * 2) + 4;
-  const reviewCount = Math.floor(Math.random() * 200) + 50;
+  // Generate deterministic rating and review count based on product ID hash
+  const idHash = product.id.split('').reduce((acc:number, char:string) => acc + char.charCodeAt(0), 0);
+  const rating = 4 + (idHash % 2); // Either 4 or 5
+  const reviewCount = 50 + (idHash % 200); // Between 50 and 249
 
   const handleAddToCart = () => {
     addToCartMutation.mutate(product.id);
@@ -51,10 +52,10 @@ export default function ProductItem({ product, index = 0 }: { product: ProductsW
           width={200}
           height={200}
           className={cn(
-            "object-contain max-h-full max-w-full transition-all duration-300",
-            isImageLoaded ? "opacity-100 scale-100" : "opacity-0 scale-95"
+            'object-contain max-h-full max-w-full transition-all duration-300',
+            isImageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95',
           )}
-          loading={index < 4 ? "eager" : "lazy"}
+          loading={index < 4 ? 'eager' : 'lazy'}
           priority={index < 4}
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
           onLoad={() => setIsImageLoaded(true)}
@@ -80,10 +81,10 @@ export default function ProductItem({ product, index = 0 }: { product: ProductsW
             <Star
               key={star}
               className={cn(
-                "w-4 h-4",
+                'w-4 h-4',
                 star <= rating
-                  ? "fill-amber-300 text-amber-300"
-                  : "text-amber-200/40"
+                  ? 'fill-amber-300 text-amber-300'
+                  : 'text-amber-200/40',
               )}
             />
           ))}

@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import ProductList from '../components/ProductList';
 import { getProductsAPI } from '../services';
-import { ProductsWithImages } from '@/types';
+import type { ProductsWithImages } from '@/types';
 
 interface ProductListViewProps {
   products?: ProductsWithImages[];

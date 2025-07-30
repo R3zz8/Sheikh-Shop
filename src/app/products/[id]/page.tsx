@@ -1,7 +1,7 @@
 import customMetadataGenerator from '@/lib/metadata';
 import ProductDetail from '@/modules/products/components/ProductDetail';
 import { getProductById } from '@/modules/products/services';
-import { ProductsWithImages } from '@/types';
+import type { ProductsWithImages } from '@/types';
 import React from 'react';
 
 export async function generateMetadata({
@@ -34,7 +34,7 @@ async function page({ params }: { params: Promise<{ id: string }> }) {
     '@context': 'http://schema.org',
     '@type': 'Product',
     name: product.name,
-    image: product?.images.length && product.images[0].image,
+    image: product?.images.length ? product.images[0]?.image : undefined,
     description: product.description,
   };
 

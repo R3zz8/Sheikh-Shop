@@ -1,5 +1,5 @@
 import { getProducts } from '@/modules/products/services';
-import { MetadataRoute } from 'next';
+import type { MetadataRoute } from 'next';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const products = await getProducts();

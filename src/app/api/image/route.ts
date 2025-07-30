@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
     if (!validationResult.success) {
       return NextResponse.json(
         { error: 'Invalid input data', details: validationResult.error.errors },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -58,20 +58,20 @@ export async function POST(req: NextRequest) {
     if (!fileValidation.valid) {
       return NextResponse.json(
         { error: fileValidation.error },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // Security: Verify product exists
     const product = await prisma.product.findUnique({
       where: { id: productId },
-      select: { id: true }
+      select: { id: true },
     });
 
     if (!product) {
       return NextResponse.json(
         { error: 'Product not found' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -118,7 +118,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(
       { error: 'Failed to upload file' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -131,7 +131,7 @@ export async function GET(req: NextRequest) {
     if (!productId) {
       return NextResponse.json(
         { error: 'Product ID is required' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -139,13 +139,13 @@ export async function GET(req: NextRequest) {
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(productId)) {
       return NextResponse.json(
         { error: 'Invalid product ID format' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const images = await prisma.image.findMany({
       where: { productId },
-      select: { id: true, image: true, productId: true }
+      select: { id: true, image: true, productId: true },
     });
 
     return NextResponse.json({ images });
@@ -157,7 +157,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(
       { error: 'Failed to fetch images' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -170,7 +170,7 @@ export async function DELETE(req: NextRequest) {
     if (!imageId) {
       return NextResponse.json(
         { error: 'Image ID is required' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -178,19 +178,19 @@ export async function DELETE(req: NextRequest) {
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(imageId)) {
       return NextResponse.json(
         { error: 'Invalid image ID format' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const image = await prisma.image.findUnique({
       where: { id: imageId },
-      include: { Product: true },
+      include: { product: true },
     });
 
     if (!image) {
       return NextResponse.json(
         { error: 'Image not found' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -215,7 +215,7 @@ export async function DELETE(req: NextRequest) {
         message: 'Image deleted successfully',
         data: image.productId,
       },
-      { status: 200 }
+      { status: 200 },
     );
 
   } catch (error) {
@@ -225,7 +225,7 @@ export async function DELETE(req: NextRequest) {
 
     return NextResponse.json(
       { error: 'Failed to delete image' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

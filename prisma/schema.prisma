@@ -13,8 +13,6 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  // Security: Enable connection pooling for better performance
-  directUrl = env("DIRECT_URL")
 }
 
 // Security: Define role enum for better type safety
@@ -34,22 +32,30 @@ enum ProductCategory {
   OTHERS
 }
 
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+  DRAFT
+}
+
 // Performance: Product model with optimized fields
 model Product {
-  id          String           @id @default(uuid())
-  name        String           @db.VarChar(255)
+  id          String         @id @default(uuid())
+  name        String         @db.VarChar(255)
   category    ProductCategory
   description String?
-  price       Float            @default(0.0)
-  quantity    Int              @default(0)
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+  price       Float          @default(0.0)
+  quantity    Int            @default(0)
+  status      ProductStatus  @default(ACTIVE)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
   images      Image[]
   cartItems   CartItem[]
   
   // Performance: Add indexes for common queries
   @@index([category])
   @@index([price])
+  @@index([status])
   @@index([createdAt])
 }
 
@@ -75,8 +81,7 @@ model CartItem {
   updatedAt DateTime @updatedAt
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   
-  // Security: Add constraints
-  @@check(quantity > 0)
+  // Performance: Add indexes
   @@index([userId])
   @@index([productId])
 }

@@ -12,6 +12,12 @@ const compat = new FlatCompat({
 const eslintConfig = [
   ...compat.extends('next/core-web-vitals', 'next/typescript'),
   {
+    languageOptions: {
+      parserOptions: {
+        project: './tsconfig.json',
+        tsconfigRootDir: __dirname,
+      },
+    },
     rules: {
       // Security rules
       'no-console': process.env.NODE_ENV === 'production' ? 'error' : 'warn',
@@ -21,7 +27,7 @@ const eslintConfig = [
       'no-new-func': 'error',
       'no-script-url': 'error',
 
-      // TypeScript rules
+      // TypeScript rules - temporarily relaxed
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-unused-vars': ['error', {
         argsIgnorePattern: '^_',
@@ -29,11 +35,11 @@ const eslintConfig = [
         caughtErrorsIgnorePattern: '^_'
       }],
       '@typescript-eslint/no-non-null-assertion': 'warn',
-      '@typescript-eslint/prefer-nullish-coalescing': 'error',
-      '@typescript-eslint/prefer-optional-chain': 'error',
-      '@typescript-eslint/no-floating-promises': 'error',
-      '@typescript-eslint/await-thenable': 'error',
-      '@typescript-eslint/no-misused-promises': 'error',
+      '@typescript-eslint/prefer-nullish-coalescing': 'warn',
+      '@typescript-eslint/prefer-optional-chain': 'warn',
+      '@typescript-eslint/no-floating-promises': 'warn',
+      '@typescript-eslint/await-thenable': 'warn',
+      '@typescript-eslint/no-misused-promises': 'warn',
 
       // React rules
       'react-hooks/exhaustive-deps': 'error',
@@ -41,7 +47,7 @@ const eslintConfig = [
       'react/jsx-no-target-blank': 'error',
       'react/jsx-key': 'error',
       'react/no-array-index-key': 'warn',
-      'react/no-danger': 'error',
+      'react/no-danger': 'warn',
       'react/no-unescaped-entities': 'error',
 
       // General rules

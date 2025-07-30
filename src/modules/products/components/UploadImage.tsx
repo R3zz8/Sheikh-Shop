@@ -5,8 +5,8 @@ import { Label } from '@/components/ui/label';
 import Image from 'next/image';
 import { Button } from '@/components/ui';
 import { CircleX } from 'lucide-react';
-import { FC, useEffect, useState } from 'react';
-import { PrismaType } from '@/lib/prisma';
+import { useEffect, useState, type FC } from 'react';
+import type { PrismaType } from '@/lib/prisma';
 import { deleteImage, fetchImages, uploadImage } from '../services/image';
 import Spinner from '@/components/Spinner';
 

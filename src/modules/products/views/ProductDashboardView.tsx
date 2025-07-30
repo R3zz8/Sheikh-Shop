@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import ProductTable from '../components/ProductTable';
 import { getProductsAPI } from '../services';
-import { ProductsWithImages } from '@/types';
+import type { ProductsWithImages } from '@/types';
 
 function ProductDashboardView() {
   const [products, setProducts] = useState<ProductsWithImages[]>([]);

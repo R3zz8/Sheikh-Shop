@@ -10,17 +10,17 @@ interface PalmTreeSceneProps {
 }
 
 export default function PalmTreeScene({
-    enableControls = false,
-    autoRotate = true,
-    intensity = 1
+  enableControls = false,
+  autoRotate = true,
+  intensity = 1,
 }: PalmTreeSceneProps) {
-    return (
-        <PalmTree
-            position={[0, 0, 0]}
-            scale={1}
-            autoRotate={autoRotate}
-            enableControls={enableControls}
-            intensity={intensity}
-        />
-    );
-} 
+  return (
+    <PalmTree
+      position={[0, 0, 0]}
+      scale={1}
+      autoRotate={autoRotate}
+      enableControls={enableControls}
+      intensity={intensity}
+    />
+  );
+}

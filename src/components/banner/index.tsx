@@ -8,52 +8,52 @@ import { cn } from '@/lib/utils';
 const carouselData = [
   {
     id: 1,
-    image: "/a.jpg",
-    title: "Premium Collection",
-    category: "Luxury Items",
+    image: '/a.jpg',
+    title: 'Premium Collection',
+    category: 'Luxury Items',
     rating: 4.8,
-    reviews: 124
+    reviews: 124,
   },
   {
     id: 2,
-    image: "/b.jpg",
-    title: "Exclusive Series",
-    category: "Limited Edition",
+    image: '/b.jpg',
+    title: 'Exclusive Series',
+    category: 'Limited Edition',
     rating: 4.9,
-    reviews: 89
+    reviews: 89,
   },
   {
     id: 3,
-    image: "/c.jpg",
-    title: "Signature Line",
-    category: "Best Seller",
+    image: '/c.jpg',
+    title: 'Signature Line',
+    category: 'Best Seller',
     rating: 4.7,
-    reviews: 156
+    reviews: 156,
   },
   {
     id: 4,
-    image: "/d.jpg",
-    title: "Elite Collection",
-    category: "Premium Quality",
+    image: '/d.jpg',
+    title: 'Elite Collection',
+    category: 'Premium Quality',
     rating: 4.8,
-    reviews: 203
+    reviews: 203,
   },
   {
     id: 5,
-    image: "/e.jpg",
-    title: "Heritage Series",
-    category: "Classic Design",
+    image: '/e.jpg',
+    title: 'Heritage Series',
+    category: 'Classic Design',
     rating: 4.9,
-    reviews: 167
+    reviews: 167,
   },
   {
     id: 6,
-    image: "/f.jpg",
-    title: "Modern Elegance",
-    category: "Contemporary",
+    image: '/f.jpg',
+    title: 'Modern Elegance',
+    category: 'Contemporary',
     rating: 4.6,
-    reviews: 98
-  }
+    reviews: 98,
+  },
 ];
 
 const Banner = () => {
@@ -87,9 +87,9 @@ const Banner = () => {
 
   return (
     <div className={cn(
-      "relative w-full min-h-[600px] overflow-hidden",
-      "transition-opacity duration-1000",
-      isLoaded ? "opacity-100" : "opacity-0"
+      'relative w-full min-h-[600px] overflow-hidden',
+      'transition-opacity duration-1000',
+      isLoaded ? 'opacity-100' : 'opacity-0',
     )}>
       {/* Warm gradient background matching site theme */}
       <div className="absolute inset-0 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50" />
@@ -98,7 +98,7 @@ const Banner = () => {
       {/* Subtle pattern overlay */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute inset-0" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23000000\' fill-opacity=\'0.1\'%3E%3Ccircle cx=\'30\' cy=\'30\' r=\'2\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
         }} />
       </div>
 
@@ -152,9 +152,9 @@ const Banner = () => {
                   <div className="group relative">
                     {/* Card Container */}
                     <div className={cn(
-                      "relative bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500",
-                      "transform hover:scale-105 hover:-translate-y-2",
-                      "border border-gray-100"
+                      'relative bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500',
+                      'transform hover:scale-105 hover:-translate-y-2',
+                      'border border-gray-100',
                     )}>
                       {/* Image Container */}
                       <div className="relative aspect-[4/3] overflow-hidden">
@@ -194,10 +194,10 @@ const Banner = () => {
                               <Star
                                 key={i}
                                 className={cn(
-                                  "w-4 h-4",
+                                  'w-4 h-4',
                                   i < Math.floor(item.rating)
-                                    ? "fill-yellow-400 text-yellow-400"
-                                    : "text-gray-300"
+                                    ? 'fill-yellow-400 text-yellow-400'
+                                    : 'text-gray-300',
                                 )}
                               />
                             ))}
@@ -226,10 +226,10 @@ const Banner = () => {
                 key={index}
                 onClick={() => goToSlide(index)}
                 className={cn(
-                  "w-3 h-3 rounded-full transition-all duration-300",
+                  'w-3 h-3 rounded-full transition-all duration-300',
                   index === currentIndex
-                    ? "bg-amber-600 scale-125"
-                    : "bg-gray-300 hover:bg-gray-400"
+                    ? 'bg-amber-600 scale-125'
+                    : 'bg-gray-300 hover:bg-gray-400',
                 )}
                 aria-label={`Go to slide ${index + 1}`}
               />

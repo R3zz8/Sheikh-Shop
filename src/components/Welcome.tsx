@@ -27,27 +27,27 @@ function Welcome() {
         {[
           {
             icon: Crown,
-            title: "Premium Quality",
-            description: "Curated selection of the finest products with exceptional craftsmanship"
+            title: 'Premium Quality',
+            description: 'Curated selection of the finest products with exceptional craftsmanship',
           },
           {
             icon: Sparkles,
-            title: "Exclusive Collection",
-            description: "Unique items that reflect sophistication and luxury lifestyle"
+            title: 'Exclusive Collection',
+            description: 'Unique items that reflect sophistication and luxury lifestyle',
           },
           {
             icon: Crown,
-            title: "Trusted Service",
-            description: "Dedicated support ensuring your shopping experience is seamless"
-          }
+            title: 'Trusted Service',
+            description: 'Dedicated support ensuring your shopping experience is seamless',
+          },
         ].map((feature, index) => (
           <div
             key={index}
             className={cn(
-              "relative group p-6 rounded-2xl",
-              "bg-white/8 backdrop-blur-xl border border-white/15",
-              "shadow-xl hover:shadow-2xl hover:shadow-amber-900/20 transition-all duration-500",
-              "hover:scale-105 hover:bg-white/12 overflow-hidden"
+              'relative group p-6 rounded-2xl',
+              'bg-white/8 backdrop-blur-xl border border-white/15',
+              'shadow-xl hover:shadow-2xl hover:shadow-amber-900/20 transition-all duration-500',
+              'hover:scale-105 hover:bg-white/12 overflow-hidden',
             )}
           >
             {/* Subtle border glow */}
@@ -56,9 +56,9 @@ function Welcome() {
             <div className="relative z-10 text-center space-y-4">
               <div className="flex justify-center">
                 <div className={cn(
-                  "w-16 h-16 rounded-full flex items-center justify-center",
-                  "bg-gradient-to-r from-amber-600/20 via-yellow-600/20 to-orange-600/20",
-                  "border border-amber-500/30"
+                  'w-16 h-16 rounded-full flex items-center justify-center',
+                  'bg-gradient-to-r from-amber-600/20 via-yellow-600/20 to-orange-600/20',
+                  'border border-amber-500/30',
                 )}>
                   <feature.icon className="w-8 h-8 text-amber-300" />
                 </div>
@@ -75,11 +75,11 @@ function Welcome() {
         <Button
           asChild
           className={cn(
-            "bg-gradient-to-r from-amber-600 via-yellow-600 to-orange-600",
-            "hover:from-amber-700 hover:via-yellow-700 hover:to-orange-700",
-            "text-white font-semibold px-8 py-3 rounded-xl border border-amber-500/30",
-            "shadow-lg hover:shadow-xl hover:shadow-amber-900/30 transition-all duration-300",
-            "transform hover:-translate-y-0.5 backdrop-blur-sm"
+            'bg-gradient-to-r from-amber-600 via-yellow-600 to-orange-600',
+            'hover:from-amber-700 hover:via-yellow-700 hover:to-orange-700',
+            'text-white font-semibold px-8 py-3 rounded-xl border border-amber-500/30',
+            'shadow-lg hover:shadow-xl hover:shadow-amber-900/30 transition-all duration-300',
+            'transform hover:-translate-y-0.5 backdrop-blur-sm',
           )}
         >
           <Link href="/products">Explore Products</Link>
@@ -88,9 +88,9 @@ function Welcome() {
           asChild
           variant="outline"
           className={cn(
-            "bg-white/8 backdrop-blur-sm border border-white/20",
-            "text-white hover:bg-white/12 hover:text-white hover:border-white/30 font-semibold",
-            "px-8 py-3 rounded-xl transition-all duration-300"
+            'bg-white/8 backdrop-blur-sm border border-white/20',
+            'text-white hover:bg-white/12 hover:text-white hover:border-white/30 font-semibold',
+            'px-8 py-3 rounded-xl transition-all duration-300',
           )}
         >
           <Link href="/user">My Account</Link>

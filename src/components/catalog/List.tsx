@@ -8,7 +8,7 @@ import { DATA } from '@/modules/products/mock/products';
 import { cn } from '@/lib/utils';
 
 function CatalogList() {
-  const images = DATA[0].images;
+  const images = DATA[0]?.images || [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-950 via-stone-900 to-amber-950 relative">
@@ -58,16 +58,16 @@ function CatalogItem({ image, index }: { image: any; index: number }) {
   const [ref, inView] = useInView({
     threshold: 0.1,
     triggerOnce: true,
-    rootMargin: '50px'
+    rootMargin: '50px',
   });
 
   return (
     <div
       ref={ref}
       className={cn(
-        "group relative gpu-accelerated",
-        inView ? "animate-slide-in-up" : "opacity-0 translate-y-8",
-        `stagger-${(index % 4) + 1}`
+        'group relative gpu-accelerated',
+        inView ? 'animate-slide-in-up' : 'opacity-0 translate-y-8',
+        `stagger-${(index % 4) + 1}`,
       )}
     >
       {/* Animated neon border */}

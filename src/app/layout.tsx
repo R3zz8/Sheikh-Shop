@@ -29,7 +29,7 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: {
     default: 'Sheikh Shop - Premium Luxury Products',
-    template: '%s | Sheikh Shop'
+    template: '%s | Sheikh Shop',
   },
   description: 'Discover our curated collection of premium luxury products. Experience exceptional quality and craftsmanship with Sheikh Shop.',
   keywords: ['luxury', 'premium', 'products', 'sheikh shop', 'quality', 'craftsmanship'],

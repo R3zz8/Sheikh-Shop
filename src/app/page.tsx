@@ -1,30 +1,7 @@
-import dynamic from 'next/dynamic';
+'use client';
+
 import Link from 'next/link';
 import { Button } from '@/components/ui';
-
-// Dynamic imports for better performance
-const Banner = dynamic(() => import('@/components/banner'), {
-  loading: () => <div className="min-h-[600px] bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 animate-pulse" />,
-  ssr: true
-});
-
-const Welcome = dynamic(() => import('@/components/Welcome'), {
-  loading: () => <div className="min-h-[400px] bg-white/8 backdrop-blur-sm rounded-2xl animate-pulse" />,
-  ssr: true
-});
-
-// Use client component wrapper for 3D component
-const PalmTreeWrapper = dynamic(() => import('@/components/3d/PalmTreeWrapper'), {
-  loading: () => (
-    <div className="w-full h-[500px] bg-gradient-to-br from-amber-50 to-orange-100 rounded-2xl flex items-center justify-center">
-      <div className="text-center">
-        <div className="w-16 h-16 border-4 border-amber-300 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-        <p className="text-amber-700 font-medium">Loading 3D Palm Tree...</p>
-      </div>
-    </div>
-  ),
-  ssr: true
-});
 
 export default function Home() {
   return (
@@ -34,49 +11,24 @@ export default function Home() {
       <div className="absolute inset-0 bg-gradient-to-b from-amber-500/2 via-transparent to-orange-500/2 pointer-events-none" />
 
       <div className="relative z-10">
-        {/* Hero Carousel Section */}
-        <Banner />
-
-        {/* 3D Palm Tree Section */}
+        {/* Hero Section */}
         <section className="container-fluid section-padding">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="h2 text-gradient mb-4">
-                Premium Date Collection
-              </h2>
-              <p className="text-gray-300 text-lg max-w-2xl mx-auto">
-                Experience the finest quality dates, grown with care and tradition
-              </p>
-            </div>
-
-            {/* 3D Palm Tree Component */}
-            <div className="relative">
-              <PalmTreeWrapper
-                height="500px"
-                enableControls={true}
-                autoRotate={true}
-                intensity={1.2}
-                className="rounded-2xl overflow-hidden shadow-2xl"
-              />
-            </div>
-          </div>
-        </section>
-
-        {/* Welcome Section */}
-        <section className="container-fluid section-padding">
-          <div className="max-w-4xl mx-auto text-center">
-            <Welcome />
-
-            {/* Call to Action Buttons */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-12">
-              <Link href="/register">
+          <div className="max-w-6xl mx-auto text-center">
+            <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent mb-6">
+              Welcome to Sheikh Shop
+            </h1>
+            <p className="text-gray-300 text-lg md:text-xl max-w-2xl mx-auto mb-8">
+              Experience luxury redefined with our curated collection of premium products.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link href="/products">
                 <Button className="btn-primary text-lg">
-                  Get Started
+                  Explore Products
                 </Button>
               </Link>
-              <Link href="/login">
+              <Link href="/register">
                 <Button className="btn-secondary text-lg">
-                  Sign In
+                  Get Started
                 </Button>
               </Link>
             </div>

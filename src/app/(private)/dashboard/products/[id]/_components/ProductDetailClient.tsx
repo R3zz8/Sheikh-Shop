@@ -10,20 +10,20 @@ interface ProductDetailClientProps {
 }
 
 export default function ProductDetailClient({ product }: ProductDetailClientProps) {
-    const hasAccess = useRequireRole(['admin', 'superadmin']);
+  const hasAccess = useRequireRole(['ADMIN', 'SUPERADMIN']);
 
-    if (!hasAccess) {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="text-center">
-                    <h1 className="text-2xl font-bold text-red-600 mb-4">Access Denied</h1>
-                    <p className="text-gray-600">
+  if (!hasAccess) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Access Denied</h1>
+          <p className="text-gray-600">
                         You don&apos;t have permission to access this page. Please contact an administrator.
-                    </p>
-                </div>
-            </div>
-        );
-    }
+          </p>
+        </div>
+      </div>
+    );
+  }
 
-    return <ProductDetailView product={product} />;
-} 
+  return <ProductDetailView product={product} />;
+}

@@ -1,6 +1,6 @@
 
 import { prisma } from '@/lib/prisma';
-import { Product } from '@prisma/client';
+import type { Product } from '@prisma/client';
 import { redirect } from 'next/navigation';
 
 export const getProducts = async () => {

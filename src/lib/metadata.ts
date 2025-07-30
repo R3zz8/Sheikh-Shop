@@ -1,6 +1,6 @@
-import { Image } from '@prisma/client';
-import { Metadata } from 'next';
-import { OpenGraph } from 'next/dist/lib/metadata/types/opengraph-types';
+import type { Image } from '@prisma/client';
+import type { Metadata } from 'next';
+import type { OpenGraph } from 'next/dist/lib/metadata/types/opengraph-types';
 
 type ProductMetadata = {
   title?: string;

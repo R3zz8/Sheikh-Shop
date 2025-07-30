@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ProductsWithImages } from '@/types';
+import type { ProductsWithImages } from '@/types';
 import ProductItem from './ProductItem';
 import { ProductListSkeleton } from '@/components/ui';
 import { Search, Filter } from 'lucide-react';
@@ -17,8 +17,8 @@ interface ProductListProps {
 export default function ProductList({
   products,
   isLoading = false,
-  title = "Premium Products",
-  subtitle = "Discover our curated collection of luxury items"
+  title = 'Premium Products',
+  subtitle = 'Discover our curated collection of luxury items',
 }: ProductListProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredProducts, setFilteredProducts] = useState<ProductsWithImages[]>(products);
@@ -30,7 +30,7 @@ export default function ProductList({
   useEffect(() => {
     const filtered = products.filter(product =>
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.description?.toLowerCase().includes(searchTerm.toLowerCase())
+      product.description?.toLowerCase().includes(searchTerm.toLowerCase()),
     );
     setFilteredProducts(filtered);
   }, [searchTerm, products]);
