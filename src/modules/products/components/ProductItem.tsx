@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Button } from '@/components/ui';
 import { Star, ShoppingCart, Zap } from 'lucide-react';
 import type { ProductsWithImages } from '@/types';
@@ -16,7 +17,7 @@ export default function ProductItem({ product, index = 0 }: { product: ProductsW
   const isPremium = (product?.price || 0) > 50;
 
   // Generate deterministic rating and review count based on product ID hash
-  const idHash = product.id.split('').reduce((acc:number, char:string) => acc + char.charCodeAt(0), 0);
+  const idHash = product.id.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
   const rating = 4 + (idHash % 2); // Either 4 or 5
   const reviewCount = 50 + (idHash % 200); // Between 50 and 249
 
@@ -42,33 +43,37 @@ export default function ProductItem({ product, index = 0 }: { product: ProductsW
       </div>
 
       {/* Product Image */}
-      <div className="relative w-full h-48 bg-gradient-to-br from-amber-950/20 via-stone-900/20 to-amber-950/20 backdrop-blur-sm flex items-center justify-center p-4 border-t border-b border-amber-200/10">
-        {!isImageLoaded && (
-          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-yellow-500/10 animate-pulse rounded-lg" />
-        )}
-        <Image
-          src={product?.images[0]?.image || '/assets/noImage.jpg'}
-          alt={product?.name || 'Product image'}
-          width={200}
-          height={200}
-          className={cn(
-            'object-contain max-h-full max-w-full transition-all duration-300',
-            isImageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95',
+      <Link href={`/product/${product.id}`} className="block">
+        <div className="relative w-full h-48 bg-gradient-to-br from-amber-950/20 via-stone-900/20 to-amber-950/20 backdrop-blur-sm flex items-center justify-center p-4 border-t border-b border-amber-200/10 cursor-pointer hover:bg-gradient-to-br hover:from-amber-950/30 hover:via-stone-900/30 hover:to-amber-950/30 transition-all duration-300">
+          {!isImageLoaded && (
+            <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-yellow-500/10 animate-pulse rounded-lg" />
           )}
-          loading={index < 4 ? 'eager' : 'lazy'}
-          priority={index < 4}
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-          onLoad={() => setIsImageLoaded(true)}
-          onError={() => setIsImageLoaded(true)}
-        />
-      </div>
+          <Image
+            src={product?.images[0]?.image || '/assets/noImage.jpg'}
+            alt={product?.name || 'Product image'}
+            width={200}
+            height={200}
+            className={cn(
+              'object-contain max-h-full max-w-full transition-all duration-300',
+              isImageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95',
+            )}
+            loading={index < 4 ? 'eager' : 'lazy'}
+            priority={index < 4}
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+            onLoad={() => setIsImageLoaded(true)}
+            onError={() => setIsImageLoaded(true)}
+          />
+        </div>
+      </Link>
 
       {/* Product Info */}
       <div className="relative z-10 p-4 pt-2">
         {/* Product Name */}
-        <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-amber-200 transition-colors duration-300">
-          {product?.name}
-        </h3>
+        <Link href={`/product/${product.id}`} className="block">
+          <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-amber-200 transition-colors duration-300 cursor-pointer hover:underline">
+            {product?.name}
+          </h3>
+        </Link>
 
         {/* Product Description */}
         <p className="text-amber-200/80 text-sm mb-3">
@@ -109,10 +114,13 @@ export default function ProductItem({ product, index = 0 }: { product: ProductsW
           <Button
             variant="outline"
             size="sm"
+            asChild
             className="flex-1 bg-white/8 backdrop-blur-sm border border-amber-200/20 text-white hover:bg-white/12 hover:border-amber-300/40 transition-all duration-300"
           >
-            <Zap className="w-4 h-4 mr-1" />
-            View Details
+            <Link href={`/product/${product.id}`}>
+              <Zap className="w-4 h-4 mr-1" />
+              View Details
+            </Link>
           </Button>
         </div>
       </div>
