@@ -1,24 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { cookies } from 'next/headers';
-import { jwtVerify } from 'jose';
+import { verifyJwtToken } from '@/lib/auth/jwt';
 
 // Helper function to get user ID from JWT
 async function getUserIdFromToken(request: NextRequest) {
     try {
-        const cookieStore = await cookies();
-        const token = cookieStore.get('token')?.value;
+        const token = request.cookies.get('session-token')?.value;
 
         if (!token) {
             return null;
         }
 
-        const { payload } = await jwtVerify(
-            token,
-            new TextEncoder().encode(process.env.JWT_SECRET)
-        );
-
-        return payload.id as string;
+        const user = verifyJwtToken(token);
+        return user?.id || null;
     } catch (error) {
         return null;
     }
