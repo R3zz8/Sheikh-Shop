@@ -13,7 +13,7 @@ export default function UserRolesPage() {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [search, setSearch] = useState('');
-  const [roleFilter, setRoleFilter] = useState('');
+  const [roleFilter, setRoleFilter] = useState('all');
   const [loading, setLoading] = useState(false);
   const [changing, setChanging] = useState<string | null>(null);
   const [confirm, setConfirm] = useState<{ id: string; email: string; role: string } | null>(null);
@@ -23,7 +23,7 @@ export default function UserRolesPage() {
   useEffect(() => {
     setLoading(true);
     fetch('/api/user').then(res => res.json()).then(user => setCurrentUserId(user?.id || null));
-    fetch(`/api/users?page=${page}&size=${PAGE_SIZE}&search=${encodeURIComponent(search)}&role=${roleFilter}`)
+    fetch(`/api/users?page=${page}&size=${PAGE_SIZE}&search=${encodeURIComponent(search)}&role=${roleFilter === 'all' ? '' : roleFilter}`)
       .then(res => res.json())
       .then(data => {
         setUsers(data.users);
@@ -77,7 +77,7 @@ export default function UserRolesPage() {
               <SelectValue placeholder="Filter by role" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Roles</SelectItem>
+              <SelectItem value="all">All Roles</SelectItem>
               {ROLES.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
             </SelectContent>
           </Select>

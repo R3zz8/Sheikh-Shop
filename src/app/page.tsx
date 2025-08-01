@@ -2,6 +2,20 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui';
+import dynamic from 'next/dynamic';
+
+// Dynamically import the 3D palm tree component
+const PalmTreeContainer = dynamic(() => import('@/components/3d/PalmTreeWrapper'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-[500px] bg-gradient-to-br from-amber-50 to-orange-100 rounded-2xl flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-16 h-16 border-4 border-amber-300 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+        <p className="text-amber-700 font-medium">Loading 3D Palm Tree...</p>
+      </div>
+    </div>
+  ),
+});
 
 export default function Home() {
   return (
@@ -11,26 +25,50 @@ export default function Home() {
       <div className="absolute inset-0 bg-gradient-to-b from-amber-500/2 via-transparent to-orange-500/2 pointer-events-none" />
 
       <div className="relative z-10">
-        {/* Hero Section */}
+        {/* Hero Section with 3D Palm Tree */}
         <section className="container-fluid section-padding">
-          <div className="max-w-6xl mx-auto text-center">
-            <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent mb-6">
-              Welcome to Sheikh Shop
-            </h1>
-            <p className="text-gray-300 text-lg md:text-xl max-w-2xl mx-auto mb-8">
-              Experience luxury redefined with our curated collection of premium products.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link href="/products">
-                <Button className="btn-primary text-lg">
-                  Explore Products
-                </Button>
-              </Link>
-              <Link href="/register">
-                <Button className="btn-secondary text-lg">
-                  Get Started
-                </Button>
-              </Link>
+          <div className="max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+              {/* Text Content */}
+              <div className="text-center lg:text-left">
+                <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent mb-6">
+                  Welcome to Sheikh Shop
+                </h1>
+                <p className="text-gray-300 text-lg md:text-xl max-w-2xl lg:max-w-none mb-8">
+                  Experience luxury redefined with our curated collection of premium products,
+                  inspired by the elegance of Arabian heritage.
+                </p>
+                <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-4">
+                  <Link href="/products">
+                    <Button className="btn-primary text-lg">
+                      Explore Products
+                    </Button>
+                  </Link>
+                  <Link href="/register">
+                    <Button className="btn-secondary text-lg">
+                      Get Started
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+
+              {/* 3D Palm Tree */}
+              <div className="relative">
+                <div className="w-full h-[500px] rounded-2xl overflow-hidden shadow-2xl">
+                  <PalmTreeContainer
+                    height="500px"
+                    enableControls={true}
+                    autoRotate={true}
+                    intensity={1.2}
+                    className="rounded-2xl"
+                  />
+                </div>
+                {/* Decorative overlay */}
+                <div className="absolute inset-0 pointer-events-none">
+                  <div className="absolute top-4 right-4 w-16 h-16 bg-gradient-to-br from-amber-400/20 to-orange-400/20 rounded-full blur-xl" />
+                  <div className="absolute bottom-4 left-4 w-12 h-12 bg-gradient-to-br from-yellow-400/20 to-amber-400/20 rounded-full blur-lg" />
+                </div>
+              </div>
             </div>
           </div>
         </section>
