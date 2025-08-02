@@ -85,10 +85,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-  ads,
 }: {
   children: React.ReactNode;
-  ads: React.ReactNode;
 }) {
   return (
     <html lang="en" className={`${inter.variable} ${poppins.variable} ${jetbrainsMono.variable}`}>
@@ -108,7 +106,6 @@ export default function RootLayout({
               <ClientHeader />
               <main className="flex-1 pt-20">
                 {children}
-                {ads}
               </main>
               <Footer />
             </div>

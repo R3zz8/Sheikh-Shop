@@ -80,7 +80,7 @@ export default function AboutUsPage() {
               <div className="relative">
                 <Image
                   src="/Reza.jpg"
-                  alt="Reza Dehaghi - Full-Stack Web Developer"
+                  alt="Reza Dehghani - Full-Stack Web Developer"
                   width={280}
                   height={280}
                   className="rounded-2xl shadow-2xl shadow-amber-300/25 border-2 border-amber-300/30 object-cover"
@@ -96,8 +96,8 @@ export default function AboutUsPage() {
             className="text-5xl md:text-7xl font-bold text-white mb-4 tracking-tight"
             variants={itemVariants}
           >
-            REZA DEHAGHI
-          </motion.h1>
+            REZA DEHGHANI
+            </motion.h1>
 
           {/* Title */}
           <motion.div
