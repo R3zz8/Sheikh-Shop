@@ -119,7 +119,7 @@ export default function AddToCartButton({ product }: AddToCartButtonProps) {
                                 ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
                                 : 'bg-gradient-to-r from-amber-600 via-yellow-600 to-orange-600 hover:from-amber-700 hover:via-yellow-700 hover:to-orange-700 text-white shadow-lg hover:shadow-xl hover:shadow-amber-900/30 transform hover:-translate-y-0.5'
                             }
-              focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2
+              focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2
             `}
                     >
                         {isAdding ? (

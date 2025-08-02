@@ -54,10 +54,13 @@ export default function AboutUsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.1)_1px,transparent_0)] bg-[length:20px_20px]" />
+    <div className="min-h-screen bg-gradient-to-br from-amber-950/95 via-stone-900/95 to-amber-950/95 relative overflow-hidden">
+      {/* Background effects matching header/footer */}
+      <div className="absolute inset-0">
+        <div className="absolute inset-0 bg-gradient-radial from-amber-500/3 via-orange-500/2 to-yellow-500/3 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-amber-500/2 via-transparent to-orange-500/2 pointer-events-none" />
+        <div className="absolute top-0 left-0 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
       </div>
 
       <div className="relative z-10 container mx-auto px-6 py-16">
@@ -73,17 +76,17 @@ export default function AboutUsPage() {
             variants={imageVariants}
           >
             <div className="relative inline-block">
-              <div className="absolute inset-0 bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-400 rounded-2xl blur-xl opacity-30 animate-pulse" />
+              <div className="absolute inset-0 bg-gradient-to-r from-amber-300 via-yellow-300 to-orange-300 rounded-2xl blur-xl opacity-30 animate-pulse" />
               <div className="relative">
                 <Image
                   src="/Reza.jpg"
                   alt="Reza Dehaghi - Full-Stack Web Developer"
                   width={280}
                   height={280}
-                  className="rounded-2xl shadow-2xl shadow-amber-500/20 border-2 border-amber-500/30 object-cover"
+                  className="rounded-2xl shadow-2xl shadow-amber-300/25 border-2 border-amber-300/30 object-cover"
                   priority
                 />
-                <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-amber-500/10 to-transparent" />
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-amber-300/10 to-transparent" />
               </div>
             </div>
           </motion.div>
@@ -93,7 +96,7 @@ export default function AboutUsPage() {
             className="text-5xl md:text-7xl font-bold text-white mb-4 tracking-tight"
             variants={itemVariants}
           >
-                        REZA DEHAGHI
+            REZA DEHAGHI
           </motion.h1>
 
           {/* Title */}
@@ -101,10 +104,10 @@ export default function AboutUsPage() {
             className="mb-8"
             variants={itemVariants}
           >
-            <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-amber-500/10 to-orange-500/10 rounded-full border border-amber-500/30 backdrop-blur-sm">
-              <Sparkles className="w-5 h-5 text-amber-400" />
-              <h2 className="text-xl md:text-2xl font-semibold bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-400 bg-clip-text text-transparent">
-                                Full-Stack Next.js Web Designer & Exporter
+            <div className="inline-flex items-center gap-3 px-6 py-3 bg-white/8 backdrop-blur-sm rounded-full border border-amber-200/20">
+              <Sparkles className="w-5 h-5 text-amber-300" />
+              <h2 className="text-xl md:text-2xl font-semibold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
+                Full-Stack Next.js Web Designer & Exporter
               </h2>
             </div>
           </motion.div>
@@ -125,13 +128,13 @@ export default function AboutUsPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 + 0.5 }}
                 >
-                  <div className="px-4 py-2 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg hover:border-amber-500/50 transition-all duration-300 group-hover:bg-white/10">
+                  <div className="px-4 py-2 bg-white/8 backdrop-blur-sm border border-white/15 rounded-lg hover:border-amber-300/50 transition-all duration-300 group-hover:bg-white/12">
                     <div className="flex items-center gap-2">
-                      {skill.icon && <skill.icon className="w-4 h-4 text-amber-400" />}
+                      {skill.icon && <skill.icon className="w-4 h-4 text-amber-300" />}
                       <span className="text-white font-medium text-sm">{skill.name}</span>
                     </div>
                   </div>
-                  <div className="absolute inset-0 bg-gradient-to-r from-amber-500/20 to-orange-500/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm -z-10" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-amber-300/20 to-orange-300/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm -z-10" />
                 </motion.div>
               ))}
             </div>
@@ -143,10 +146,10 @@ export default function AboutUsPage() {
             variants={itemVariants}
           >
             <p className="text-lg md:text-xl text-gray-300 leading-relaxed">
-                            As a company engaged in both ecommerce website development and export sales, we possess deep insights into our client&apos;s requirements.
+              As a company engaged in both ecommerce website development and export sales, we possess deep insights into our client&apos;s requirements.
             </p>
             <p className="text-lg md:text-xl text-gray-300 leading-relaxed">
-                            I am a full-stack web designer and exporter who not only builds conversion-focused ecommerce platforms but also understands how to drive real business results through design.
+              I am a full-stack web designer and exporter who not only builds conversion-focused ecommerce platforms but also understands how to drive real business results through design.
             </p>
           </motion.div>
 
@@ -158,18 +161,18 @@ export default function AboutUsPage() {
           >
             <button
               onClick={handleContact}
-              className="group relative inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold text-lg rounded-xl shadow-2xl shadow-amber-500/25 hover:shadow-amber-500/40 transition-all duration-300 transform hover:-translate-y-1"
+              className="group relative inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-amber-600 via-yellow-600 to-orange-600 hover:from-amber-700 hover:via-yellow-700 hover:to-orange-700 text-white font-semibold text-lg rounded-xl shadow-2xl shadow-amber-900/30 hover:shadow-amber-900/40 transition-all duration-300 transform hover:-translate-y-1"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-orange-400 rounded-xl opacity-0 group-hover:opacity-20 transition-opacity duration-300 blur-xl" />
+              <div className="absolute inset-0 bg-gradient-to-r from-amber-300 to-orange-300 rounded-xl opacity-0 group-hover:opacity-20 transition-opacity duration-300 blur-xl" />
               <Mail className="w-5 h-5" />
               <span>Contact Me</span>
-              <div className="absolute inset-0 rounded-xl border border-amber-400/30 group-hover:border-amber-300/50 transition-colors duration-300" />
+              <div className="absolute inset-0 rounded-xl border border-amber-300/30 group-hover:border-amber-200/50 transition-colors duration-300" />
             </button>
           </motion.div>
 
           {/* Decorative Elements */}
           <motion.div
-            className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-r from-amber-500/10 to-orange-500/10 rounded-full blur-3xl"
+            className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-r from-amber-300/10 to-orange-300/10 rounded-full blur-3xl"
             animate={{
               scale: [1, 1.2, 1],
               opacity: [0.3, 0.6, 0.3],
@@ -181,7 +184,7 @@ export default function AboutUsPage() {
             }}
           />
           <motion.div
-            className="absolute bottom-20 right-10 w-40 h-40 bg-gradient-to-r from-orange-500/10 to-amber-500/10 rounded-full blur-3xl"
+            className="absolute bottom-20 right-10 w-40 h-40 bg-gradient-to-r from-orange-300/10 to-amber-300/10 rounded-full blur-3xl"
             animate={{
               scale: [1.2, 1, 1.2],
               opacity: [0.6, 0.3, 0.6],

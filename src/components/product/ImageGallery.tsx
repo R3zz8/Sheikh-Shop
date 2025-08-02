@@ -15,7 +15,7 @@ export default function ImageGallery({ images, productName }: ImageGalleryProps)
 
     if (!images || images.length === 0) {
         return (
-            <div className="relative bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-8 border border-white/10">
+            <div className="relative bg-white/8 backdrop-blur-sm rounded-2xl p-8 border border-white/15">
                 <div className="aspect-square bg-gray-800 rounded-xl flex items-center justify-center">
                     <div className="text-center text-gray-400">
                         <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -48,7 +48,7 @@ export default function ImageGallery({ images, productName }: ImageGalleryProps)
     return (
         <div className="space-y-6">
             {/* Main Image */}
-            <div className="relative bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 border border-white/10 overflow-hidden">
+            <div className="relative bg-white/8 backdrop-blur-sm rounded-2xl p-6 border border-white/15 overflow-hidden">
                 {/* Navigation arrows for multiple images */}
                 {images.length > 1 && (
                     <>
@@ -56,7 +56,7 @@ export default function ImageGallery({ images, productName }: ImageGalleryProps)
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
                             onClick={handlePrevious}
-                            className="absolute left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-black/50 backdrop-blur-sm border border-white/20 rounded-full flex items-center justify-center text-white hover:bg-black/70 transition-all duration-300"
+                            className="absolute left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white/8 backdrop-blur-sm border border-white/20 rounded-full flex items-center justify-center text-white hover:bg-white/12 transition-all duration-300"
                         >
                             <ChevronLeft className="w-5 h-5" />
                         </motion.button>
@@ -64,7 +64,7 @@ export default function ImageGallery({ images, productName }: ImageGalleryProps)
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
                             onClick={handleNext}
-                            className="absolute right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-black/50 backdrop-blur-sm border border-white/20 rounded-full flex items-center justify-center text-white hover:bg-black/70 transition-all duration-300"
+                            className="absolute right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white/8 backdrop-blur-sm border border-white/20 rounded-full flex items-center justify-center text-white hover:bg-white/12 transition-all duration-300"
                         >
                             <ChevronRight className="w-5 h-5" />
                         </motion.button>
@@ -97,7 +97,7 @@ export default function ImageGallery({ images, productName }: ImageGalleryProps)
 
                 {/* Image counter */}
                 {images.length > 1 && (
-                    <div className="absolute bottom-4 right-4 bg-black/50 backdrop-blur-sm border border-white/20 rounded-full px-3 py-1 text-white text-sm font-medium">
+                    <div className="absolute bottom-4 right-4 bg-white/8 backdrop-blur-sm border border-white/20 rounded-full px-3 py-1 text-white text-sm font-medium">
                         {selectedImageIndex + 1} / {images.length}
                     </div>
                 )}
@@ -113,8 +113,8 @@ export default function ImageGallery({ images, productName }: ImageGalleryProps)
                             whileTap={{ scale: 0.95 }}
                             onClick={() => handleImageChange(index)}
                             className={`relative w-20 h-20 rounded-xl overflow-hidden border-2 transition-all duration-300 ${index === selectedImageIndex
-                                    ? 'border-amber-400 shadow-lg shadow-amber-400/25'
-                                    : 'border-white/20 hover:border-white/40'
+                                ? 'border-amber-300 shadow-lg shadow-amber-300/25'
+                                : 'border-white/20 hover:border-white/40'
                                 }`}
                         >
                             <Image
@@ -126,7 +126,7 @@ export default function ImageGallery({ images, productName }: ImageGalleryProps)
                             />
                             {/* Selected indicator */}
                             {index === selectedImageIndex && (
-                                <div className="absolute inset-0 bg-amber-400/20 backdrop-blur-sm" />
+                                <div className="absolute inset-0 bg-amber-300/20 backdrop-blur-sm" />
                             )}
                         </motion.button>
                     ))}
