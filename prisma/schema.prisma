@@ -57,6 +57,9 @@ model Product {
   @@index([price])
   @@index([status])
   @@index([createdAt])
+  @@index([name])
+  @@index([category, status])
+  @@index([price, status])
 }
 
 // Security: Image model with validation
@@ -84,6 +87,8 @@ model CartItem {
   // Performance: Add indexes
   @@index([userId])
   @@index([productId])
+  @@index([userId, productId])
+  @@index([createdAt])
 }
 
 // Security: Enhanced User model with better validation

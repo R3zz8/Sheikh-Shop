@@ -30,7 +30,7 @@ export const useCart = () => {
     error,
     refetch,
   } = useQuery({
-    queryKey: ['cart'],
+    queryKey: ['cart', user?.id],
     queryFn: async () => {
       console.log('🛒 Fetching cart data...');
       console.log('👤 User:', user?.email);
@@ -40,7 +40,11 @@ export const useCart = () => {
         return [];
       }
 
-      const res = await fetch('/api/cart');
+      const res = await fetch('/api/cart', {
+        headers: {
+          'Cache-Control': 'no-cache',
+        },
+      });
       console.log('📡 Cart API response status:', res.status);
 
       if (!res.ok) {
@@ -56,10 +60,11 @@ export const useCart = () => {
       console.log('✅ Cart data fetched:', cartData);
       return cartData;
     },
-    staleTime: 2 * 60 * 1000, // Cache for 2 minutes
-    gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
-    retry: 2,
+    staleTime: 30 * 1000, // Cache for 30 seconds (cart changes frequently)
+    gcTime: 2 * 60 * 1000, // Keep in cache for 2 minutes
+    retry: 1,
     enabled: !!user, // Only fetch if user is authenticated
+    refetchOnWindowFocus: false, // Prevent unnecessary refetches
   });
 
   // Add to cart mutation with optimistic updates

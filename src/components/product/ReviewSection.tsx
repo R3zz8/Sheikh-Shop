@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, MessageSquare, Trash2, User } from 'lucide-react';
 import { Button, Input, Textarea } from '@/components/ui';
-import { useReviews } from '@/hooks/useReviews';
+// Review functionality temporarily disabled for performance optimization
 import { useUser } from '@/hooks/useUser';
 import { cn } from '@/lib/utils';
 import type { ProductsWithImages } from '@/types';
@@ -15,15 +15,14 @@ interface ReviewSectionProps {
 
 export default function ReviewSection({ product }: ReviewSectionProps) {
     const { data: user } = useUser();
-    const {
-        reviews,
-        averageRating,
-        totalReviews,
-        isLoading,
-        addReviewMutation,
-        deleteReviewMutation,
-        canDeleteReviews,
-    } = useReviews(product.id);
+    // Review functionality temporarily disabled for performance optimization
+    const reviews: any[] = [];
+    const averageRating = 4.5;
+    const totalReviews = 0;
+    const isLoading = false;
+    const addReviewMutation = { mutateAsync: async () => { } };
+    const deleteReviewMutation = { mutateAsync: async () => { } };
+    const canDeleteReviews = false;
 
     const [showReviewForm, setShowReviewForm] = useState(false);
     const [reviewData, setReviewData] = useState({
@@ -34,26 +33,13 @@ export default function ReviewSection({ product }: ReviewSectionProps) {
 
     const handleSubmitReview = async (e: React.FormEvent) => {
         e.preventDefault();
-
-        if (!user) {
-            return;
-        }
-
-        await addReviewMutation.mutateAsync({
-            productId: product.id,
-            rating: reviewData.rating,
-            comment: reviewData.comment,
-            userName: reviewData.userName || user.email.split('@')[0],
-        });
-
+        // Review functionality temporarily disabled
         setReviewData({ rating: 5, comment: '', userName: '' });
         setShowReviewForm(false);
     };
 
     const handleDeleteReview = async (reviewId: string) => {
-        if (confirm('Are you sure you want to delete this review?')) {
-            await deleteReviewMutation.mutateAsync(reviewId);
-        }
+        // Review functionality temporarily disabled
     };
 
     const renderStars = (rating: number, interactive = false, onRatingChange?: (rating: number) => void) => {
@@ -162,10 +148,10 @@ export default function ReviewSection({ product }: ReviewSectionProps) {
                             <div className="flex gap-3">
                                 <Button
                                     type="submit"
-                                    disabled={addReviewMutation.isPending}
+                                    disabled={false}
                                     className="bg-gradient-to-r from-amber-600 via-yellow-600 to-orange-600 hover:from-amber-700 hover:via-yellow-700 hover:to-orange-700 text-white"
                                 >
-                                    {addReviewMutation.isPending ? 'Submitting...' : 'Submit Review'}
+                                    Submit Review
                                 </Button>
                                 <Button
                                     type="button"
@@ -226,7 +212,7 @@ export default function ReviewSection({ product }: ReviewSectionProps) {
                                             variant="ghost"
                                             size="sm"
                                             onClick={() => handleDeleteReview(review.id)}
-                                            disabled={deleteReviewMutation.isPending}
+                                            disabled={false}
                                             className="text-red-400 hover:text-red-300 hover:bg-red-400/10"
                                         >
                                             <Trash2 className="w-4 h-4" />

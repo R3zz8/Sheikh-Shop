@@ -127,7 +127,7 @@ export default function CartDropdown() {
                   {/* Product Image */}
                   <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
                     <Image
-                      src={item.product.images[0]?.image || '/assets/noImage.jpg'}
+                      src={(item.product as any).images?.[0]?.image || '/assets/noImage.jpg'}
                       alt={item.product.name}
                       fill
                       className="object-cover"

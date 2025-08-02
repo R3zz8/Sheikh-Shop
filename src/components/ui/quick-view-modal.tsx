@@ -10,8 +10,8 @@ import { useCart } from '@/hooks/useCart';
 import { cn } from '@/lib/utils';
 
 interface QuickViewModalProps {
-    product: ProductsWithImages;
-    children: React.ReactNode;
+  product: ProductsWithImages;
+  children: React.ReactNode;
 }
 
 export const QuickViewModal = ({ product, children }: QuickViewModalProps) => {
@@ -104,7 +104,7 @@ export const QuickViewModal = ({ product, children }: QuickViewModalProps) => {
                   {product?.name}
                 </h2>
                 <p className="text-4xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent tracking-tight">
-                                    ${(product?.price || 0).toFixed(2)}
+                  ${(product?.price || 0).toFixed(2)}
                 </p>
 
                 {/* Rating */}
@@ -123,7 +123,7 @@ export const QuickViewModal = ({ product, children }: QuickViewModalProps) => {
                     ))}
                   </div>
                   <span className="text-gray-300 text-lg font-medium">
-                                        ({reviewCount} reviews)
+                    ({reviewCount} reviews)
                   </span>
                 </div>
 
@@ -164,7 +164,7 @@ export const QuickViewModal = ({ product, children }: QuickViewModalProps) => {
                     'touch-feedback',
                   )}
                   onClick={() => {
-                    addToCartMutation.mutate(product.id);
+                    addToCartMutation.mutate({ productId: product.id, quantity: 1 });
                     setOpen(false);
                   }}
                   disabled={addToCartMutation.isPending}
@@ -187,7 +187,7 @@ export const QuickViewModal = ({ product, children }: QuickViewModalProps) => {
                 >
                   <div className="flex items-center justify-center gap-2">
                     <Eye className="w-5 h-5" />
-                                        View Full Details
+                    View Full Details
                   </div>
                 </Button>
               </div>

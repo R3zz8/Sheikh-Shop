@@ -1,22 +1,7 @@
-'use client';
-
 import Link from 'next/link';
-import { Button } from '@/components/ui';
-import dynamic from 'next/dynamic';
+import { Button } from '@/components/ui/button';
+import PalmTreeWrapper from '@/components/3d/PalmTreeWrapper';
 import Categories from '@/components/Categories';
-
-// Dynamically import the 3D palm tree component
-const PalmTreeContainer = dynamic(() => import('@/components/3d/PalmTreeWrapper'), {
-  ssr: false,
-  loading: () => (
-    <div className="w-full h-[500px] bg-gradient-to-br from-amber-50 to-orange-100 rounded-2xl flex items-center justify-center">
-      <div className="text-center">
-        <div className="w-16 h-16 border-4 border-amber-300 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-        <p className="text-amber-700 font-medium">Loading 3D Palm Tree...</p>
-      </div>
-    </div>
-  ),
-});
 
 export default function Home() {
   return (
@@ -58,7 +43,7 @@ export default function Home() {
               {/* 3D Palm Tree */}
               <div className="relative">
                 <div className="w-full h-[500px] rounded-2xl overflow-hidden shadow-2xl">
-                  <PalmTreeContainer
+                  <PalmTreeWrapper
                     height="500px"
                     enableControls={true}
                     autoRotate={true}
@@ -76,7 +61,7 @@ export default function Home() {
           </div>
         </section>
 
-      
+
 
         {/* Features Section */}
         <section className="container-fluid section-padding-sm">

@@ -200,7 +200,7 @@ export default function ProductDetail(product: ProductsWithImages) {
                           'focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2',
                           'touch-feedback',
                         )}
-                        onClick={() => addToCartMutation.mutate(product.id)}
+                        onClick={() => addToCartMutation.mutate({ productId: product.id, quantity: 1 })}
                         disabled={addToCartMutation.isPending}
                       >
                         <ShoppingCart className="w-5 h-5 mr-2" />

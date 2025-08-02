@@ -4,6 +4,9 @@ import customMetadataGenerator from '@/lib/metadata';
 import ProductDetailPage from '@/components/product/ProductDetailPage';
 import type { ProductsWithImages } from '@/types';
 
+// Cache product pages for 5 minutes
+export const revalidate = 300;
+
 export async function generateMetadata({
     params,
 }: {
@@ -26,7 +29,7 @@ export async function generateMetadata({
     return customMetadataGenerator({
         title: product.name,
         description: product.description || `Discover ${product.name} - Premium quality product`,
-        images: product.images.map(img => img.image),
+        images: product.images.map(img => ({ id: img.id, image: img.image, productId: img.productId, createdAt: img.createdAt })),
     });
 }
 
@@ -54,13 +57,18 @@ async function page({ params }: { params: Promise<{ id: string }> }) {
         notFound();
     }
 
+    // Add cache headers for better performance
+    const headers = {
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+    };
+
     // Generate structured data for SEO
     const jsonLd = {
         '@context': 'https://schema.org',
         '@type': 'Product',
         name: product.name,
         description: product.description,
-        image: product.images.length > 0 ? product.images[0].image : undefined,
+        image: product.images.length > 0 ? product.images[0]?.image : undefined,
         offers: {
             '@type': 'Offer',
             price: product.price,

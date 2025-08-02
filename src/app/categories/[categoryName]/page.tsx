@@ -70,7 +70,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
                 <div className="relative z-10">
                     <CategoryProducts
-                        products={products}
+                        products={products as any}
                         categoryName={categoryDisplayName}
                         categorySlug={categoryName}
                     />

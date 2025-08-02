@@ -68,11 +68,11 @@ function StaticPalmTree() {
 }
 
 interface PalmTreeContainerProps {
-    className?: string;
-    height?: string;
-    enableControls?: boolean;
-    autoRotate?: boolean;
-    intensity?: number;
+  className?: string;
+  height?: string;
+  enableControls?: boolean;
+  autoRotate?: boolean;
+  intensity?: number;
 }
 
 export default function PalmTreeContainer({
@@ -83,9 +83,13 @@ export default function PalmTreeContainer({
   intensity = 1,
 }: PalmTreeContainerProps) {
   const [isClient, setIsClient] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     setIsClient(true);
+    // Add a small delay to ensure smooth transition
+    const timer = setTimeout(() => setIsLoading(false), 100);
+    return () => clearTimeout(timer);
   }, []);
 
   // Show loading fallback on server-side
@@ -98,6 +102,7 @@ export default function PalmTreeContainer({
       className={`relative w-full ${className}`}
       style={{ height }}
     >
+      {isLoading && <PalmTreeFallback />}
       <ErrorBoundary fallback={<StaticPalmTree />}>
         <Suspense fallback={<PalmTreeFallback />}>
           <Canvas
@@ -109,6 +114,7 @@ export default function PalmTreeContainer({
               powerPreference: 'high-performance',
             }}
             dpr={[1, 2]} // Responsive pixel ratio
+            onCreated={() => setIsLoading(false)}
           >
             <PalmTreeScene
               enableControls={enableControls}

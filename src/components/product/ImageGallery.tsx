@@ -83,7 +83,7 @@ export default function ImageGallery({ images, productName }: ImageGalleryProps)
                             className="w-full h-full"
                         >
                             <Image
-                                src={images[selectedImageIndex].image}
+                                src={images[selectedImageIndex]?.image || ''}
                                 alt={`${productName} - Image ${selectedImageIndex + 1}`}
                                 fill
                                 className="object-contain rounded-xl"

@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyJwtToken } from '@/lib/auth/jwt';
 
+// Cache cart data for 1 minute (cart data changes frequently)
+export const revalidate = 60;
+
 // Helper function to get user ID from JWT
 async function getUserIdFromToken(request: NextRequest) {
     try {

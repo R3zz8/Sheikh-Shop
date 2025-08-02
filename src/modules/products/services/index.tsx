@@ -8,10 +8,25 @@ export const getProducts = async () => {
   return result;
 };
 
-export const getProductsAPI = async () => {
-  // Use relative URL to avoid port issues
-  const result = await fetch('/api/product', {
-    next: { revalidate: 30 },
+export const getProductsAPI = async (params?: {
+  page?: number;
+  limit?: number;
+  category?: string;
+  search?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+}) => {
+  const searchParams = new URLSearchParams();
+
+  if (params?.page) searchParams.append('page', params.page.toString());
+  if (params?.limit) searchParams.append('limit', params.limit.toString());
+  if (params?.category) searchParams.append('category', params.category);
+  if (params?.search) searchParams.append('search', params.search);
+  if (params?.sortBy) searchParams.append('sortBy', params.sortBy);
+  if (params?.sortOrder) searchParams.append('sortOrder', params.sortOrder);
+
+  const result = await fetch(`/api/product?${searchParams.toString()}`, {
+    next: { revalidate: 300 }, // Cache for 5 minutes
   });
   const response = await result.json();
   return response;

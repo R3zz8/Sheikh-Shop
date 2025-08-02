@@ -23,12 +23,21 @@ export default function ClientHeader() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
-  // Handle scroll effect
+  // Handle scroll effect with throttling
   useEffect(() => {
+    let ticking = false;
+
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          setIsScrolled(window.scrollY > 10);
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
-    window.addEventListener('scroll', handleScroll);
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -39,13 +48,16 @@ export default function ClientHeader() {
 
   // Prevent body scroll when mobile menu is open
   useEffect(() => {
+    const originalStyle = window.getComputedStyle(document.body).overflow;
+
     if (isMobileMenuOpen) {
       document.body.style.overflow = 'hidden';
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = originalStyle;
     }
+
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = originalStyle;
     };
   }, [isMobileMenuOpen]);
 
@@ -85,7 +97,7 @@ export default function ClientHeader() {
             <div className="flex items-center gap-2">
               <Crown className="w-8 h-8 text-amber-300" />
               <Link href="/" className="font-bold text-2xl tracking-wide bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
-                                Sheikh Shop
+                Sheikh Shop
               </Link>
             </div>
           </div>
@@ -156,7 +168,7 @@ export default function ClientHeader() {
                 )}
               >
                 <LogOut className="w-4 h-4" />
-                                Logout
+                Logout
               </button>
             )}
 
@@ -165,12 +177,12 @@ export default function ClientHeader() {
               <div className="hidden md:flex items-center gap-3">
                 <Link href="/login">
                   <button className="btn-ghost">
-                                        Sign In
+                    Sign In
                   </button>
                 </Link>
                 <Link href="/register">
                   <button className="btn-primary">
-                                        Get Started
+                    Get Started
                   </button>
                 </Link>
               </div>
@@ -281,18 +293,18 @@ export default function ClientHeader() {
                   )}
                 >
                   <LogOut className="w-5 h-5" />
-                                    Logout
+                  Logout
                 </button>
               ) : (
                 <>
                   <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
                     <button className="w-full btn-secondary min-h-[44px] touch-manipulation">
-                                            Sign In
+                      Sign In
                     </button>
                   </Link>
                   <Link href="/register" onClick={() => setIsMobileMenuOpen(false)}>
                     <button className="w-full btn-primary min-h-[44px] touch-manipulation">
-                                            Get Started
+                      Get Started
                     </button>
                   </Link>
                 </>
