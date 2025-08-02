@@ -112,6 +112,7 @@ model User {
   sessions       Session[]
   auditLogs      AuditLog[]
   recoveryCodes  RecoveryCode[]
+  articles       Article[]
   
   // Performance: Add indexes for common queries
   @@index([email])
@@ -168,4 +169,24 @@ model AuditLog {
   @@index([action])
   @@index([createdAt])
   @@index([ip])
+}
+
+// Security: Article model with proper validation and relations
+model Article {
+  id        String   @id @default(uuid())
+  title     String   @db.VarChar(255)
+  slug      String   @unique @db.VarChar(255)
+  imageUrl  String?  @db.VarChar(500)
+  summary   String   @db.VarChar(500)
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  
+  // Performance: Add indexes for common queries
+  @@index([slug])
+  @@index([authorId])
+  @@index([createdAt])
+  @@index([title])
 }

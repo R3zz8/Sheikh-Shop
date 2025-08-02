@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui';
 import dynamic from 'next/dynamic';
+import Categories from '@/components/Categories';
 
 // Dynamically import the 3D palm tree component
 const PalmTreeContainer = dynamic(() => import('@/components/3d/PalmTreeWrapper'), {
@@ -23,6 +24,8 @@ export default function Home() {
       {/* Background effects */}
       <div className="absolute inset-0 bg-gradient-radial from-amber-500/3 via-orange-500/2 to-yellow-500/3 pointer-events-none animate-pulse" />
       <div className="absolute inset-0 bg-gradient-to-b from-amber-500/2 via-transparent to-orange-500/2 pointer-events-none" />
+      {/* Categories Section */}
+      <Categories />
 
       <div className="relative z-10">
         {/* Hero Section with 3D Palm Tree */}
@@ -72,6 +75,8 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+      
 
         {/* Features Section */}
         <section className="container-fluid section-padding-sm">
