@@ -16,6 +16,7 @@ import { useState, useEffect } from 'react';
 import CartDropdown from '@/components/cart';
 import { useUser } from '@/hooks/useUser';
 import { cn } from '@/lib/utils';
+import UserBadge from '@/components/UserBadge';
 
 export default function ClientHeader() {
   const { data: user, refetch } = useUser();
@@ -144,33 +145,17 @@ export default function ClientHeader() {
 
           {/* Right Side Actions */}
           <div className="flex items-center gap-4">
-            {/* Welcome Message */}
+            {/* User Badge */}
             {user && (
-              <div className="hidden md:flex items-center gap-2 text-sm">
-                <Sparkles className="w-4 h-4 text-amber-300" />
-                <span className="text-gray-300">Welcome, {user.email}</span>
-              </div>
+              <UserBadge 
+                user={user} 
+                onLogout={handleLogout}
+                className="hidden md:flex"
+              />
             )}
 
             {/* Cart */}
             <CartDropdown />
-
-            {/* Logout Button */}
-            {user && (
-              <button
-                onClick={handleLogout}
-                className={cn(
-                  'hidden md:flex items-center gap-2 px-4 py-2 rounded-xl',
-                  'bg-white/8 backdrop-blur-sm border border-white/20',
-                  'text-white hover:bg-white/12 hover:text-white hover:border-white/30',
-                  'font-medium transition-all duration-300',
-                  'focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2',
-                )}
-              >
-                <LogOut className="w-4 h-4" />
-                Logout
-              </button>
-            )}
 
             {/* Login/Sign Up Buttons */}
             {!user && (
@@ -231,16 +216,12 @@ export default function ClientHeader() {
           <div className="max-w-7xl mx-auto px-6 py-8">
             {/* User Info */}
             {user && (
-              <div className="flex items-center gap-3 mb-8 p-4 bg-white/8 backdrop-blur-sm rounded-xl border border-white/20">
-                <div className="w-10 h-10 bg-gradient-to-r from-amber-400 to-orange-400 rounded-full flex items-center justify-center">
-                  <span className="text-white font-semibold text-sm">
-                    {user.email?.charAt(0).toUpperCase()}
-                  </span>
-                </div>
-                <div>
-                  <p className="text-white font-medium">{user.email}</p>
-                  <p className="text-gray-400 text-sm">{user.role}</p>
-                </div>
+              <div className="mb-8">
+                <UserBadge 
+                  user={user} 
+                  onLogout={handleLogout}
+                  variant="mobile"
+                />
               </div>
             )}
 
@@ -278,24 +259,7 @@ export default function ClientHeader() {
 
             {/* Action Buttons */}
             <div className="space-y-3">
-              {user ? (
-                <button
-                  onClick={() => {
-                    handleLogout();
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className={cn(
-                    'w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl',
-                    'bg-white/8 backdrop-blur-sm border border-white/20',
-                    'text-white hover:bg-white/12 hover:border-white/30',
-                    'font-medium transition-all duration-300',
-                    'min-h-[44px] touch-manipulation',
-                  )}
-                >
-                  <LogOut className="w-5 h-5" />
-                  Logout
-                </button>
-              ) : (
+              {!user && (
                 <>
                   <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
                     <button className="w-full btn-secondary min-h-[44px] touch-manipulation">

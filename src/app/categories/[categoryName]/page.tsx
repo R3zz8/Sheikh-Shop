@@ -26,7 +26,8 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: CategoryPageProps) {
-    const categoryName = params.categoryName;
+    const data = await params;
+    const categoryName = data.categoryName;
     const categoryDisplayName = categoryName.charAt(0).toUpperCase() + categoryName.slice(1);
 
     return {
@@ -36,7 +37,8 @@ export async function generateMetadata({ params }: CategoryPageProps) {
 }
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
-    const { categoryName } = params;
+    const data = await params;
+    const { categoryName } = data;
 
     // Validate category name
     if (!categoryMap[categoryName]) {

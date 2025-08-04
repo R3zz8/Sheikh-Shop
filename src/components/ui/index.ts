@@ -13,3 +13,5 @@ export * from './table';
 export * from './textarea';
 export * from './theme-switcher';
 export * from './checkbox';
+export * from './avatar';
+export * from './tooltip';

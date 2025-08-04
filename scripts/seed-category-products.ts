@@ -130,7 +130,11 @@ async function seedCategoryProducts() {
             const { images, ...productInfo } = productData;
 
             const product = await prisma.product.create({
-                data: productInfo
+                data: {
+                    ...productInfo,
+                    category: productInfo.category as any,
+                    status: productInfo.status as any
+                }
             });
 
             // Create images for the product
