@@ -22,8 +22,8 @@ export default function UserRolesPage() {
 
   useEffect(() => {
     setLoading(true);
-    fetch('/api/user').then(res => res.json()).then(user => setCurrentUserId(user?.id || null));
-    fetch(`/api/users?page=${page}&size=${PAGE_SIZE}&search=${encodeURIComponent(search)}&role=${roleFilter === 'all' ? '' : roleFilter}`)
+    void fetch('/api/user').then(res => res.json()).then(user => setCurrentUserId(user?.id || null));
+    void fetch(`/api/users?page=${page}&size=${PAGE_SIZE}&search=${encodeURIComponent(search)}&role=${roleFilter === 'all' ? '' : roleFilter}`)
       .then(res => res.json())
       .then(data => {
         setUsers(data.users);

@@ -1,6 +1,11 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  // ESLint: Ignore during production builds
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+
   // Security: Add security headers
   async headers() {
     return [

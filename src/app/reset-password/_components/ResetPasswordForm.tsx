@@ -14,7 +14,7 @@ export default function ResetPasswordForm() {
   const token = searchParams.get('token');
 
   useEffect(() => {
-    fetch('/api/csrf')
+    void fetch('/api/csrf')
       .then(res => res.json())
       .then(data => setCsrfToken(data.csrfToken));
   }, []);

@@ -38,6 +38,11 @@ enum ProductStatus {
   DRAFT
 }
 
+enum ArticleStatus {
+  DRAFT
+  PUBLISHED
+}
+
 enum Gender {
   MALE
   FEMALE
@@ -195,6 +200,7 @@ model Article {
   imageUrl  String?  @db.VarChar(500)
   summary   String   @db.VarChar(500)
   content   String   @db.Text
+  status    ArticleStatus @default(DRAFT)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   authorId  String
@@ -205,4 +211,5 @@ model Article {
   @@index([authorId])
   @@index([createdAt])
   @@index([title])
+  @@index([status])
 }

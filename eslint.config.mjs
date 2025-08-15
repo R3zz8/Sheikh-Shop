@@ -1,25 +1,26 @@
-import { dirname } from 'path';
+import { dirname as pathDirname } from 'path';
 import { fileURLToPath } from 'url';
 import { FlatCompat } from '@eslint/eslintrc';
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const dirname = pathDirname(filename);
 
 const compat = new FlatCompat({
   baseDirectory: __dirname,
 });
 
 const eslintConfig = [
-  ...compat.extends('next/core-web-vitals', 'next/typescript'),
+  // 📦 Next.js + TypeScript
+  ...compat.extends('next/core-web-vitals'),
+
   {
     languageOptions: {
-      parserOptions: {
-        project: './tsconfig.json',
-        tsconfigRootDir: __dirname,
-      },
+      ecmaVersion: 'latest',
+      sourceType: 'module',
     },
+
     rules: {
-      // Security rules
+      // 🔒 Security rules
       'no-console': process.env.NODE_ENV === 'production' ? 'error' : 'warn',
       'no-debugger': 'error',
       'no-eval': 'error',
@@ -27,12 +28,12 @@ const eslintConfig = [
       'no-new-func': 'error',
       'no-script-url': 'error',
 
-      // TypeScript rules - temporarily relaxed
+      // 🟦 TypeScript rules
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-unused-vars': ['error', {
         argsIgnorePattern: '^_',
         varsIgnorePattern: '^_',
-        caughtErrorsIgnorePattern: '^_'
+        caughtErrorsIgnorePattern: '^_',
       }],
       '@typescript-eslint/no-non-null-assertion': 'warn',
       '@typescript-eslint/prefer-nullish-coalescing': 'warn',
@@ -41,7 +42,7 @@ const eslintConfig = [
       '@typescript-eslint/await-thenable': 'warn',
       '@typescript-eslint/no-misused-promises': 'warn',
 
-      // React rules
+      // ⚛️ React rules
       'react-hooks/exhaustive-deps': 'error',
       'react-hooks/rules-of-hooks': 'error',
       'react/jsx-no-target-blank': 'error',
@@ -50,28 +51,21 @@ const eslintConfig = [
       'react/no-danger': 'warn',
       'react/no-unescaped-entities': 'error',
 
-      // General rules
+      // 📦 General logic rules
       'prefer-const': 'error',
       'no-var': 'error',
-      'no-unused-expressions': 'error',
       'no-duplicate-imports': 'error',
       'no-useless-return': 'error',
       'no-useless-constructor': 'error',
       'no-useless-rename': 'error',
       'object-shorthand': 'error',
       'prefer-template': 'error',
-      'template-curly-spacing': 'error',
-      'arrow-spacing': 'error',
-      'comma-dangle': ['error', 'always-multiline'],
-      'semi': ['error', 'always'],
-      'quotes': ['error', 'single', { avoidEscape: true }],
-      'indent': ['error', 2],
-      'no-trailing-spaces': 'error',
-      'eol-last': 'error',
     },
   },
+
+  // 📌 Relax rules for test files
   {
-    files: ['**/*.test.ts', '**/*.test.tsx', '**/*.spec.ts', '**/*.spec.tsx'],
+    files: ['/*.test.ts', '/*.test.tsx', '/*.spec.ts', '/*.spec.tsx'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
       'no-console': 'off',

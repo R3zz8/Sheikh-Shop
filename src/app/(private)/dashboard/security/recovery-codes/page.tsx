@@ -13,7 +13,7 @@ export default function RecoveryCodesPage() {
   const [csrfToken, setCsrfToken] = useState('');
 
   useEffect(() => {
-    fetch('/api/csrf')
+    void fetch('/api/csrf')
       .then(res => res.json())
       .then(data => setCsrfToken(data.csrfToken));
   }, []);
@@ -103,13 +103,13 @@ export default function RecoveryCodesPage() {
                 <div key={i} className="flex items-center gap-2">
                   <span className="font-mono text-lg bg-gray-100 px-3 py-1 rounded select-all">{c}</span>
                   <Button type="button" size="sm" variant="outline" onClick={() => handleCopyOne(c)}>
-                                        Copy
+                    Copy
                   </Button>
                 </div>
               ))}
             </div>
             <Button type="button" className="mt-4 w-full" onClick={handleCopyAll}>
-                            Copy All
+              Copy All
             </Button>
             {lastGenerated && (
               <div className="text-xs text-gray-500 mt-2 text-right">Last generated: {lastGenerated}</div>

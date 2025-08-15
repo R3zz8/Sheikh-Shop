@@ -5,10 +5,10 @@ import { toast } from 'sonner';
 import { useRequireRole } from '@/hooks/useRBAC';
 
 type User = {
-    id: string;
-    email: string;
-    role: string;
-    disabled: boolean;
+  id: string;
+  email: string;
+  role: string;
+  disabled: boolean;
 };
 
 export default function AdminUsersPage() {
@@ -19,7 +19,7 @@ export default function AdminUsersPage() {
 
   useEffect(() => {
     setLoading(true);
-    fetch('/api/users')
+    void fetch('/api/users')
       .then(res => res.json())
       .then(data => setUsers(data.users))
       .catch(err => toast.error(err.message || 'Failed to load users'))

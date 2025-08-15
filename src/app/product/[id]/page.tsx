@@ -28,7 +28,7 @@ export async function generateMetadata({
 
     return customMetadataGenerator({
         title: product.name,
-        description: product.description || `Discover ${product.name} - Premium quality product`,
+        description: product.description ?? `Discover ${product.name} - Premium quality product`,
         images: product.images.map(img => ({ id: img.id, image: img.image, productId: img.productId, createdAt: img.createdAt })),
     });
 }

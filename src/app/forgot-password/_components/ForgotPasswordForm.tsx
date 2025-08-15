@@ -10,7 +10,7 @@ export default function ForgotPasswordForm() {
   const [csrfToken, setCsrfToken] = useState('');
 
   useEffect(() => {
-    fetch('/api/csrf')
+    void fetch('/api/csrf')
       .then(res => res.json())
       .then(data => setCsrfToken(data.csrfToken));
   }, []);

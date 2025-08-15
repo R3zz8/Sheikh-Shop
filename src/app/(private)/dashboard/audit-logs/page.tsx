@@ -16,7 +16,7 @@ export default function AuditLogsPage() {
 
   useEffect(() => {
     setLoading(true);
-    fetch(`/api/audit-logs?page=${page}&size=${PAGE_SIZE}&search=${encodeURIComponent(search)}&sort=${sort}`)
+    void fetch(`/api/audit-logs?page=${page}&size=${PAGE_SIZE}&search=${encodeURIComponent(search)}&sort=${sort}`)
       .then(res => res.json())
       .then(data => {
         setLogs(data.logs);
@@ -39,7 +39,7 @@ export default function AuditLogsPage() {
             className="w-80"
           />
           <Button variant="outline" onClick={() => setSort(s => s === 'desc' ? 'asc' : 'desc')}>
-                        Sort: {sort === 'desc' ? 'Newest' : 'Oldest'}
+            Sort: {sort === 'desc' ? 'Newest' : 'Oldest'}
           </Button>
         </div>
         <Table>
