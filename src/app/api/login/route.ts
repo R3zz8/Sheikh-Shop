@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcrypt';
-import { signJwtToken } from '@/lib/auth/jwt';
+import { signAccessToken, signRefreshToken, generateSessionId, generateTokenId } from '@/lib/auth/jwt';
+import { createSession } from '@/lib/actions/auth/session';
+import { logLogin } from '@/lib/actions/auth/audit';
 import { z } from 'zod';
 
 // Security: Input validation schema
@@ -70,6 +72,7 @@ export async function POST(req: NextRequest) {
         canLogin: true,
         disabled: true,
         emailVerified: true,
+        twoFactorEnabled: true,
       },
     });
 
@@ -91,20 +94,43 @@ export async function POST(req: NextRequest) {
     // Security: Verify password with timing attack protection
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
+      await logLogin(user.id, 'login_failed', { reason: 'invalid_password' });
       return NextResponse.json(
         { success: false, message: 'Invalid credentials' },
         { status: 401 },
       );
     }
 
-    // Security: Generate JWT token
-    const token = signJwtToken({
-      id: user.id,
-      email: user.email,
-      role: user.role,
+    // Security: Get client information
+    const userAgent = req.headers.get('user-agent') || 'Unknown';
+    const ip = req.headers.get('x-forwarded-for') ||
+      req.headers.get('x-real-ip') ||
+      'Unknown';
+
+    // Security: Create session with refresh token rotation
+    const { session, accessToken, refreshToken } = await createSession(
+      user.id,
+      userAgent,
+      ip
+    );
+
+    // Security: Update user's last login
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        lastLoginAt: new Date(),
+        loginAttempts: 0, // Reset failed attempts on successful login
+      },
     });
 
-    // Security: Set secure cookie
+    // Security: Log successful login
+    await logLogin(user.id, 'login_success', {
+      sessionId: session.id,
+      userAgent,
+      ip,
+    });
+
+    // Security: Set secure cookies
     const response = NextResponse.json({
       success: true,
       user: {
@@ -112,15 +138,27 @@ export async function POST(req: NextRequest) {
         email: user.email,
         role: user.role,
         emailVerified: user.emailVerified,
+        twoFactorEnabled: user.twoFactorEnabled,
       },
+      requires2FA: user.twoFactorEnabled,
     });
 
-    response.cookies.set('session-token', token, {
+    // Set access token (short-lived)
+    response.cookies.set('access-token', accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
+      maxAge: 15 * 60, // 15 minutes
+    });
+
+    // Set refresh token (longer-lived)
+    response.cookies.set('refresh-token', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 7 * 24 * 60 * 60, // 7 days
     });
 
     return response;

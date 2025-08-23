@@ -7,14 +7,12 @@ if (!JWT_SECRET || JWT_SECRET === 'changeme') {
   throw new Error('JWT_SECRET environment variable must be set to a secure value');
 }
 
-// Security: Define allowed roles for better type safety
+// Security: Define allowed roles for restricted app areas
 const ALLOWED_ROLES = ['ADMIN', 'SUPERADMIN', 'SYSTEM'] as const;
 type AllowedRole = typeof ALLOWED_ROLES[number];
 
-// Security: Rate limiting map (in production, use Redis)
+// Security: Simple in-memory rate limiting (use Redis in production)
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
-
-// Security: Rate limiting function
 function isRateLimited(ip: string): boolean {
   const now = Date.now();
   const windowMs = 15 * 60 * 1000; // 15 minutes
@@ -35,55 +33,113 @@ function isRateLimited(ip: string): boolean {
 }
 
 export async function middleware(request: NextRequest) {
-  // Security: Rate limiting
-  const ip = request.headers.get('x-forwarded-for') ||
-        request.headers.get('x-real-ip') ||
-        'unknown';
+  const pathname = request.nextUrl.pathname;
+  const isApiRoute = pathname.startsWith('/api');
+
+  // Security: Rate limiting (consider separate limits per route type in production)
+  const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
   if (isRateLimited(ip)) {
-    return NextResponse.json(
-      { error: 'Too many requests' },
-      { status: 429 },
-    );
+    return isApiRoute
+      ? NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+      : NextResponse.redirect(new URL('/login', request.url));
   }
 
-  // Security: Get token from cookies
-  const token = request.cookies.get('session-token')?.value;
-
-  if (!token) {
-    return NextResponse.redirect(new URL('/login', request.url));
+  // Skip auth for specific API routes (handled by their own logic)
+  if (
+    isApiRoute && (
+      pathname.startsWith('/api/auth') ||
+      pathname.startsWith('/api/login') ||
+      pathname.startsWith('/api/register')
+    )
+  ) {
+    return NextResponse.next();
   }
 
-  let user: { id: string; email: string; role: string } | null = null;
+  // Security: Get tokens from cookies
+  const accessToken = request.cookies.get('access-token')?.value;
+  const refreshToken = request.cookies.get('refresh-token')?.value;
+
+  if (!accessToken && !refreshToken) {
+    return isApiRoute
+      ? NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      : NextResponse.redirect(new URL('/login', request.url));
+  }
+
+  let user: { id: string; email: string; role: string; sessionId: string } | null = null;
 
   try {
-    // Security: Proper JWT verification with jose
-    const { payload } = await jwtVerify(
-      token,
-      new TextEncoder().encode(JWT_SECRET),
-      {
-        algorithms: ['HS256'],
-        issuer: 'sheikh-shop',
-        audience: 'sheikh-shop-users',
-      },
-    );
+    // Verify access token first
+    if (accessToken) {
+      const { payload } = await jwtVerify(
+        accessToken,
+        new TextEncoder().encode(JWT_SECRET),
+        {
+          algorithms: ['HS256'],
+          issuer: 'sheikh-shop',
+          audience: 'sheikh-shop-users',
+        },
+      );
+      user = payload as { id: string; email: string; role: string; sessionId: string };
+    }
+  } catch {
+    // Access token invalid/expired, try refresh token
+    if (refreshToken) {
+      try {
+        const { payload } = await jwtVerify(
+          refreshToken,
+          new TextEncoder().encode(JWT_SECRET),
+          {
+            algorithms: ['HS256'],
+            issuer: 'sheikh-shop',
+            audience: 'sheikh-shop-refresh',
+          },
+        );
 
-    user = payload as { id: string; email: string; role: string };
-  } catch (error) {
-    // Security: Log failed authentication attempts (in production)
-    console.warn('JWT verification failed:', error);
+        // Validate session from DB
+        const { PrismaClient } = await import('@prisma/client');
+        const prisma = new PrismaClient();
+        const session = await prisma.session.findUnique({
+          where: {
+            id: payload.sessionId as string,
+            refreshToken: payload.tokenId as string,
+          },
+          include: { user: true },
+        });
+
+        if (session && session.expiresAt > new Date()) {
+          user = {
+            id: session.userId,
+            email: session.user.email,
+            role: session.user.role,
+            sessionId: session.id,
+          };
+          await prisma.session.update({ where: { id: session.id }, data: { lastUsedAt: new Date() } });
+        }
+
+        await prisma.$disconnect();
+      } catch {
+        // Both tokens invalid
+      }
+    }
+  }
+
+  if (!user) {
+    return isApiRoute
+      ? NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      : NextResponse.redirect(new URL('/login', request.url));
+  }
+
+  // Role-gate only protected app areas; allow any authenticated user for API routes
+  const requiresRole = pathname.startsWith('/dashboard') || pathname.startsWith('/admin');
+  if (requiresRole && !ALLOWED_ROLES.includes(user.role as AllowedRole)) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  // Security: Validate user role
-  if (!user || !ALLOWED_ROLES.includes(user.role as AllowedRole)) {
-    return NextResponse.redirect(new URL('/login', request.url));
-  }
-
-  // Security: Add user info to headers for downstream use
+  // Pass user context downstream
   const response = NextResponse.next();
   response.headers.set('x-user-id', user.id);
   response.headers.set('x-user-role', user.role);
-
+  response.headers.set('x-session-id', user.sessionId);
   return response;
 }
 
@@ -91,6 +147,6 @@ export const config = {
   matcher: [
     '/dashboard/:path*',
     '/admin/:path*',
-    // Security: Add more protected routes as needed
+    '/api/:path*', // Protect all API routes; exclusions handled inside middleware
   ],
 };

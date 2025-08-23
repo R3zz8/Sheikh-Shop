@@ -9,13 +9,13 @@ if (!JWT_SECRET || JWT_SECRET === 'dev-secret-key' || JWT_SECRET === 'changeme')
 
 // Security: Define JWT payload interface
 export interface JWTPayload {
-    id: string;
-    email: string;
-    role: string;
-    iat?: number;
-    exp?: number;
-    iss?: string;
-    aud?: string;
+  id: string;
+  email: string;
+  role: string;
+  iat?: number;
+  exp?: number;
+  iss?: string;
+  aud?: string;
 }
 
 // Security: JWT options with proper configuration

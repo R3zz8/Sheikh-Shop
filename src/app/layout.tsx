@@ -3,6 +3,7 @@ import { Inter, Poppins, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import ClientHeader from '@/components/ClientHeader';
 import Footer from '@/components/footer/footer';
+import MobileFooter from '@/components/MobileFooter';
 import { Toaster } from '@/components/ui';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import ReactQueryProvider from '@/providers/ReactQuery';
@@ -104,10 +105,11 @@ export default function RootLayout({
           <ReactQueryProvider>
             <div className="flex flex-col min-h-screen">
               <ClientHeader />
-              <main className="flex-1 pt-20">
+              <main className="flex-1 pt-20 pb-20 md:pb-0">
                 {children}
               </main>
               <Footer />
+              <MobileFooter />
             </div>
             <Toaster />
           </ReactQueryProvider>

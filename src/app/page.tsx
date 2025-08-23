@@ -61,41 +61,50 @@ export default function Home() {
           </div>
         </section>
 
-
-
         {/* Features Section */}
         <section className="container-fluid section-padding-sm">
           <div className="max-w-6xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/*
+              Responsive grid behaviour:
+              - Default/mobile: 1 col baseline
+              - max-[400px]: 2 cols (2x2); center the last card by spanning 2 cols and centering
+              - min-[500px]: 3 cols in one row
+              - lg+: keep 3 cols as current
+            */}
+            <div className="grid grid-cols-1 max-[400px]:grid-cols-2 min-[500px]:grid-cols-3 lg:grid-cols-3 gap-6">
               {/* Feature 1 */}
               <div className="card p-6 text-center">
-                <div className="w-16 h-16 bg-gradient-to-r from-amber-400 to-orange-400 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl">🌟</span>
+                <div className="mx-auto mb-3 flex items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-400 shadow-lg w-16 h-16 max-[400px]:w-12 max-[400px]:h-12 min-[500px]:w-14 min-[500px]:h-14 lg:w-16 lg:h-16">
+                  <span className="text-2xl max-[400px]:text-xl min-[500px]:text-xl lg:text-2xl">🌟</span>
                 </div>
-                <h3 className="text-xl font-semibold text-white mb-2">Premium Quality</h3>
-                <p className="text-gray-300 text-sm">
+                {/* Thin gradient separator */}
+                <div className="mx-auto mb-4 h-px w-16 bg-gradient-to-r from-amber-300 via-yellow-300 to-orange-300/70" />
+                <h3 className="text-xl max-[400px]:text-sm min-[500px]:text-base lg:text-xl font-semibold text-white mb-2">Premium Quality</h3>
+                <p className="text-gray-300 text-sm max-[400px]:text-xs min-[500px]:text-xs lg:text-sm">
                   Curated selection of the finest products with exceptional craftsmanship
                 </p>
               </div>
 
               {/* Feature 2 */}
               <div className="card p-6 text-center">
-                <div className="w-16 h-16 bg-gradient-to-r from-yellow-400 to-amber-400 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl">🚚</span>
+                <div className="mx-auto mb-3 flex items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-amber-400 shadow-lg w-16 h-16 max-[400px]:w-12 max-[400px]:h-12 min-[500px]:w-14 min-[500px]:h-14 lg:w-16 lg:h-16">
+                  <span className="text-2xl max-[400px]:text-xl min-[500px]:text-xl lg:text-2xl">🚚</span>
                 </div>
-                <h3 className="text-xl font-semibold text-white mb-2">Fast Delivery</h3>
-                <p className="text-gray-300 text-sm">
+                <div className="mx-auto mb-4 h-px w-16 bg-gradient-to-r from-amber-300 via-yellow-300 to-orange-300/70" />
+                <h3 className="text-xl max-[400px]:text-sm min-[500px]:text-base lg:text-xl font-semibold text-white mb-2">Fast Delivery</h3>
+                <p className="text-gray-300 text-sm max-[400px]:text-xs min-[500px]:text-xs lg:text-sm">
                   Swift and secure delivery to your doorstep with premium packaging
                 </p>
               </div>
 
               {/* Feature 3 */}
-              <div className="card p-6 text-center">
-                <div className="w-16 h-16 bg-gradient-to-r from-orange-400 to-red-400 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl">💎</span>
+              <div className="card p-6 text-center max-[400px]:col-span-2 max-[400px]:justify-self-center">
+                <div className="mx-auto mb-3 flex items-center justify-center rounded-full bg-gradient-to-br from-orange-400 to-red-400 shadow-lg w-16 h-16 max-[400px]:w-12 max-[400px]:h-12 min-[500px]:w-14 min-[500px]:h-14 lg:w-16 lg:h-16">
+                  <span className="text-2xl max-[400px]:text-xl min-[500px]:text-xl lg:text-2xl">💎</span>
                 </div>
-                <h3 className="text-xl font-semibold text-white mb-2">Exclusive Collection</h3>
-                <p className="text-gray-300 text-sm">
+                <div className="mx-auto mb-4 h-px w-16 bg-gradient-to-r from-amber-300 via-yellow-300 to-orange-300/70" />
+                <h3 className="text-xl max-[400px]:text-sm min-[500px]:text-base lg:text-xl font-semibold text-white mb-2">Exclusive Collection</h3>
+                <p className="text-gray-300 text-sm max-[400px]:text-xs min-[500px]:text-xs lg:text-sm">
                   Limited edition items and exclusive deals for our valued customers
                 </p>
               </div>

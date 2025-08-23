@@ -1,14 +1,29 @@
 'use client';
 
-import { useState, useTransition } from 'react';
-import { registerAction } from './actions';
+import { useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { Input, Button, Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
+import { ArrowRight, Mail, User } from 'lucide-react';
+import Link from 'next/link';
+import AuthCard from '@/components/auth/AuthCard';
+import InputField from '@/components/auth/InputField';
+import PasswordField from '@/components/auth/PasswordField';
+import PasswordStrength from '@/components/auth/PasswordStrength';
+import SocialAuthButtons from '@/components/auth/SocialAuthButtons';
+import AnimatedBackground from '@/components/auth/AnimatedBackground';
+import { toast } from 'sonner';
 
-function getPasswordStrength(password: string) {
-  if (password.length < 6) return 'Weak';
-  if (password.match(/[A-Z]/) && password.match(/[0-9]/) && password.length >= 8) return 'Strong';
-  return 'Medium';
+function validateEmail(email: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function getChecks(password: string) {
+  return {
+    length: password.length >= 12,
+    upper: /[A-Z]/.test(password),
+    lower: /[a-z]/.test(password),
+    number: /[0-9]/.test(password),
+    special: /[^A-Za-z0-9]/.test(password),
+  };
 }
 
 export default function RegisterPage() {
@@ -17,115 +32,131 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [message, setMessage] = useState<string | null>(null);
-  const [errors, setErrors] = useState<{ email?: string; password?: string; confirmPassword?: string; fullName?: string }>({});
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
-  const passwordStrength = getPasswordStrength(password);
+  const emailValid = useMemo(() => (email ? validateEmail(email) : true), [email]);
+  const checks = useMemo(() => getChecks(password), [password]);
+  const passwordsMatch = useMemo(() => (confirmPassword ? password === confirmPassword : true), [password, confirmPassword]);
 
-  function validate() {
-    const errs: typeof errors = {};
-    if (!fullName.trim()) errs.fullName = 'Full name is required.';
-    if (!email.match(/^[^@]+@[^@]+\.[^@]+$/)) errs.email = 'Invalid email address.';
-    if (password.length < 6) errs.password = 'Password must be at least 6 characters.';
-    if (password !== confirmPassword) errs.confirmPassword = 'Passwords do not match.';
-    return errs;
-  }
+  const formValid =
+    fullName.trim().length > 0 &&
+    validateEmail(email) &&
+    checks.length && checks.upper && checks.lower && checks.number && checks.special &&
+    password === confirmPassword;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setMessage(null);
-    const errs = validate();
-    setErrors(errs);
-    if (Object.keys(errs).length > 0) return;
     startTransition(async () => {
       try {
-        const result = await registerAction(email, password);
-        if (result.success) {
-          router.push('/');
-        } else {
-          setMessage('Registration failed');
+        const [firstName, ...rest] = fullName.trim().split(' ');
+        const lastName = rest.join(' ');
+        const res = await fetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ email, password, firstName, lastName }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data?.success) {
+          toast.success('Account created successfully!');
+          if (data?.requiresEmailVerification) {
+            router.push('/verify-email-sent');
+          } else {
+            router.push('/');
+          }
+          return;
         }
+        if (res.status === 409) {
+          setMessage(data?.message || 'Email already in use');
+          return;
+        }
+        setMessage(data?.message || 'Registration failed');
       } catch (err: any) {
-        setMessage(err.message || 'Registration failed');
+        setMessage(err?.message || 'Registration failed');
       }
     });
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-white/80 to-blue-100/60">
-      <Card className="w-full max-w-md p-0 bg-white/40 backdrop-blur-md shadow-2xl rounded-2xl border border-white/30">
-        <CardHeader className="pt-8 pb-2">
-          <CardTitle className="text-3xl font-bold text-center tracking-wide">Sign Up</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4 pb-8">
-          <form onSubmit={handleSubmit} className="space-y-4" aria-label="Sign up form">
-            <Input
-              type="text"
-              placeholder="Full Name"
-              value={fullName}
-              onChange={e => setFullName(e.target.value)}
-              aria-label="Full Name"
-              autoFocus
-              required
-              className={errors.fullName ? 'border-red-400' : ''}
-            />
-            {errors.fullName && <div className="text-red-500 text-xs">{errors.fullName}</div>}
-            <Input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              aria-label="Email"
-              required
-              className={errors.email ? 'border-red-400' : ''}
-            />
-            {errors.email && <div className="text-red-500 text-xs">{errors.email}</div>}
-            <Input
-              type="password"
-              placeholder="Password (min 6 chars)"
+    <AnimatedBackground>
+      <AuthCard
+        title="Create your account"
+        subtitle="Join our premium experience"
+        footer={(
+          <div className="text-center text-sm text-slate-600 dark:text-slate-300">
+            Already have an account?{' '}
+            <Link href="/login" className="text-blue-700 hover:underline dark:text-blue-400">Login here</Link>
+          </div>
+        )}
+      >
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4" aria-label="Register form">
+          <InputField
+            label="Full Name"
+            type="text"
+            placeholder="John Doe"
+            value={fullName}
+            onChange={e => setFullName(e.target.value)}
+            icon={<User className="size-4 text-slate-400" aria-hidden />}
+            required
+          />
+
+          <InputField
+            label="Email"
+            type="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            icon={<Mail className="size-4 text-slate-400" aria-hidden />}
+            error={email && !emailValid ? 'Invalid email address' : undefined}
+            required
+          />
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <PasswordField
+              label="Password"
+              placeholder="At least 12 chars, upper/lower/number/special"
               value={password}
               onChange={e => setPassword(e.target.value)}
-              aria-label="Password"
               required
-              className={errors.password ? 'border-red-400' : ''}
             />
-            <div className="flex items-center gap-2 text-xs">
-              <span>Password strength:</span>
-              <span className={
-                passwordStrength === 'Weak' ? 'text-red-500' : passwordStrength === 'Medium' ? 'text-yellow-500' : 'text-green-600'
-              }>{passwordStrength}</span>
-            </div>
-            {errors.password && <div className="text-red-500 text-xs">{errors.password}</div>}
-            <Input
-              type="password"
-              placeholder="Confirm Password"
+
+            <PasswordField
+              label="Confirm Password"
+              placeholder="Re-enter password"
               value={confirmPassword}
               onChange={e => setConfirmPassword(e.target.value)}
-              aria-label="Confirm Password"
+              error={confirmPassword && !passwordsMatch ? 'Passwords do not match' : undefined}
               required
-              className={errors.confirmPassword ? 'border-red-400' : ''}
             />
-            {errors.confirmPassword && <div className="text-red-500 text-xs">{errors.confirmPassword}</div>}
-            <Button
-              type="submit"
-              className="w-full font-semibold tracking-wide bg-blue-600/80 hover:bg-blue-700/90 text-white py-2 rounded-xl shadow-md hover:shadow-lg transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              disabled={isPending}
-              aria-busy={isPending}
-            >
-              {isPending ? 'Registering...' : 'Sign Up'}
-            </Button>
-            {message && (
-              <div
-                className={`text-center mt-2 ${message.includes('success') ? 'text-green-600' : 'text-red-600'}`}
-                role="alert"
-              >
-                {message}
-              </div>
-            )}
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+          </div>
+
+          <PasswordStrength password={password} />
+
+          <button
+            type="submit"
+            disabled={!formValid || isPending}
+            className="group relative inline-flex w-full items-center justify-center rounded-xl bg-blue-600/90 text-white font-medium px-4 py-2.5 shadow-md hover:shadow-lg transition-all disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-400"
+            aria-busy={isPending}
+          >
+            <span className="mr-2">{isPending ? 'Creating account...' : 'Create account'}</span>
+            <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
+          </button>
+
+          {message && (
+            <p className="text-center text-sm text-red-600" role="alert">{message}</p>
+          )}
+
+          <div className="relative my-2">
+            <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-slate-200 dark:border-slate-700" /></div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white/80 dark:bg-slate-900/50 px-2 text-slate-500 dark:text-slate-400">Or continue with</span>
+            </div>
+          </div>
+          <SocialAuthButtons showGoogle={false} showGithub={false} />
+        </form>
+      </AuthCard>
+    </AnimatedBackground>
   );
 }
