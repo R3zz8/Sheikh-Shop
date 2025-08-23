@@ -1,6 +1,6 @@
 "use client";
 
-import { Github, Google } from "lucide-react";
+import { Github, Mail } from "lucide-react";
 
 interface SocialAuthButtonsProps {
     onGoogle?: () => void;
@@ -19,7 +19,7 @@ export default function SocialAuthButtons({ onGoogle, onGithub, showGoogle = tru
                     onClick={onGoogle}
                     className="inline-flex items-center justify-center gap-2 w-full rounded-xl border border-slate-200/60 dark:border-slate-700/60 bg-white/70 dark:bg-slate-950/40 backdrop-blur-sm px-4 py-2.5 text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-white/90 dark:hover:bg-slate-900/60 transition"
                 >
-                    <Google className="size-4" /> Continue with Google
+                    <Mail className="size-4" /> Continue with Google
                 </button>
             )}
             {showGithub && (

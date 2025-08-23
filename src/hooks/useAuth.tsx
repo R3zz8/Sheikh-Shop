@@ -44,22 +44,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [loading, setLoading] = useState(true);
     const router = useRouter();
 
-    // Check authentication status on mount
-    useEffect(() => {
-        checkAuth();
-    }, []);
-
-    // Set up token refresh interval
-    useEffect(() => {
-        if (user) {
-            const interval = setInterval(() => {
-                refreshToken();
-            }, 14 * 60 * 1000); // Refresh 1 minute before expiry
-
-            return () => clearInterval(interval);
-        }
-    }, [user]);
-
     // Check authentication status
     const checkAuth = useCallback(async () => {
         try {
@@ -102,6 +86,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             return false;
         }
     }, []);
+
+    // Check authentication status on mount
+    useEffect(() => {
+        checkAuth();
+    }, [checkAuth]);
+
+    // Set up token refresh interval
+    useEffect(() => {
+        if (user) {
+            const interval = setInterval(() => {
+                refreshToken();
+            }, 14 * 60 * 1000); // Refresh 1 minute before expiry
+
+            return () => clearInterval(interval);
+        }
+        return undefined; // Explicit return for when user is null
+    }, [user, refreshToken]);
 
     // Login function
     const login = useCallback(async (email: string, password: string): Promise<boolean> => {

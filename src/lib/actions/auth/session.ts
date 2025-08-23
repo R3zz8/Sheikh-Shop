@@ -2,7 +2,7 @@
 import { prisma } from '@/lib/prisma';
 import { cookies } from 'next/headers';
 import { verifyAccessToken, verifyRefreshToken, signAccessToken, signRefreshToken, generateSessionId, generateTokenId } from '@/lib/auth/jwt';
-import { logLogin } from './audit';
+import { logAudit } from './audit';
 
 // Security: Session management with refresh token rotation
 export async function createSession(userId: string, userAgent?: string, ip?: string) {
@@ -41,6 +41,8 @@ export async function createSession(userId: string, userAgent?: string, ip?: str
 
   const refreshToken = signRefreshToken({
     id: userId,
+    email: user.email,
+    role: user.role,
     sessionId,
     tokenId,
   });
@@ -67,7 +69,7 @@ export async function refreshAccessToken(refreshToken: string, userAgent?: strin
 
   // Check for suspicious activity
   if (userAgent && session.userAgent !== userAgent) {
-    await logLogin(session.userId, 'suspicious_refresh_attempt', {
+    await logAudit(session.userId, 'suspicious_refresh_attempt', {
       expectedUserAgent: session.userAgent,
       receivedUserAgent: userAgent,
       ip,
@@ -85,6 +87,8 @@ export async function refreshAccessToken(refreshToken: string, userAgent?: strin
 
   const newRefreshToken = signRefreshToken({
     id: session.userId,
+    email: session.user.email,
+    role: session.user.role,
     sessionId: session.id,
     tokenId: newTokenId,
   });
@@ -98,7 +102,8 @@ export async function refreshAccessToken(refreshToken: string, userAgent?: strin
     },
   });
 
-  await logLogin(session.userId, 'token_refreshed', { ip });
+  // Log token refresh
+  await logAudit(session.userId, 'token_refreshed', { ip });
 
   return { accessToken: newAccessToken, refreshToken: newRefreshToken };
 }
@@ -112,7 +117,7 @@ export async function invalidateSession(sessionId: string, userId: string) {
     },
   });
 
-  await logLogin(userId, 'session_invalidated');
+  await logAudit(userId, 'session_invalidated');
 }
 
 // Security: Invalidate all user sessions
@@ -121,7 +126,7 @@ export async function invalidateAllUserSessions(userId: string) {
     where: { userId },
   });
 
-  await logLogin(userId, 'all_sessions_invalidated');
+  await logAudit(userId, 'all_sessions_invalidated');
 }
 
 // Security: Get current user ID from session
@@ -191,7 +196,7 @@ export async function cleanupExpiredSessions() {
 }
 
 // Legacy functions for backward compatibility
-export async function createSession(userId: string, refreshToken: string, expiresAt: Date, userAgent?: string, ip?: string) {
+export async function createLegacySession(userId: string, refreshToken: string, expiresAt: Date, userAgent?: string, ip?: string) {
   return prisma.session.create({
     data: {
       userId,

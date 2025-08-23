@@ -223,7 +223,7 @@ const Banner = () => {
           <div className="flex justify-center mt-8 space-x-2">
             {carouselData.map((_, index) => (
               <button
-                key={index}
+                key={`banner-dot-${index}`}
                 onClick={() => goToSlide(index)}
                 className={cn(
                   'w-3 h-3 rounded-full transition-all duration-300',

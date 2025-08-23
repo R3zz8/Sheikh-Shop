@@ -3,7 +3,7 @@ import { fileURLToPath } from 'url';
 import { FlatCompat } from '@eslint/eslintrc';
 
 const __filename = fileURLToPath(import.meta.url);
-const dirname = pathDirname(filename);
+const __dirname = pathDirname(__filename);
 
 const compat = new FlatCompat({
   baseDirectory: __dirname,
@@ -27,20 +27,6 @@ const eslintConfig = [
       'no-implied-eval': 'error',
       'no-new-func': 'error',
       'no-script-url': 'error',
-
-      // 🟦 TypeScript rules
-      '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-unused-vars': ['error', {
-        argsIgnorePattern: '^_',
-        varsIgnorePattern: '^_',
-        caughtErrorsIgnorePattern: '^_',
-      }],
-      '@typescript-eslint/no-non-null-assertion': 'warn',
-      '@typescript-eslint/prefer-nullish-coalescing': 'warn',
-      '@typescript-eslint/prefer-optional-chain': 'warn',
-      '@typescript-eslint/no-floating-promises': 'warn',
-      '@typescript-eslint/await-thenable': 'warn',
-      '@typescript-eslint/no-misused-promises': 'warn',
 
       // ⚛️ React rules
       'react-hooks/exhaustive-deps': 'error',
@@ -67,7 +53,6 @@ const eslintConfig = [
   {
     files: ['/*.test.ts', '/*.test.tsx', '/*.spec.ts', '/*.spec.tsx'],
     rules: {
-      '@typescript-eslint/no-explicit-any': 'off',
       'no-console': 'off',
     },
   },

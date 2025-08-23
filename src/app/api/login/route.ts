@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcrypt';
 import { signAccessToken, signRefreshToken, generateSessionId, generateTokenId } from '@/lib/auth/jwt';
 import { createSession } from '@/lib/actions/auth/session';
-import { logLogin } from '@/lib/actions/auth/audit';
+import { logLogin, logFailedAttempt, logAudit } from '@/lib/actions/auth/audit';
 import { z } from 'zod';
 
 // Security: Input validation schema
@@ -91,21 +91,21 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Security: Verify password with timing attack protection
-    const validPassword = await bcrypt.compare(password, user.password);
-    if (!validPassword) {
-      await logLogin(user.id, 'login_failed', { reason: 'invalid_password' });
-      return NextResponse.json(
-        { success: false, message: 'Invalid credentials' },
-        { status: 401 },
-      );
-    }
-
     // Security: Get client information
     const userAgent = req.headers.get('user-agent') || 'Unknown';
     const ip = req.headers.get('x-forwarded-for') ||
       req.headers.get('x-real-ip') ||
       'Unknown';
+
+    // Security: Verify password with timing attack protection
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword) {
+      await logFailedAttempt(user.id, 'login_failed', ip, userAgent);
+      return NextResponse.json(
+        { success: false, message: 'Invalid credentials' },
+        { status: 401 },
+      );
+    }
 
     // Security: Create session with refresh token rotation
     const { session, accessToken, refreshToken } = await createSession(
@@ -124,7 +124,7 @@ export async function POST(req: NextRequest) {
     });
 
     // Security: Log successful login
-    await logLogin(user.id, 'login_success', {
+    await logAudit(user.id, 'login_success', {
       sessionId: session.id,
       userAgent,
       ip,

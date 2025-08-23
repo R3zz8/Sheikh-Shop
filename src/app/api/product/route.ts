@@ -1,8 +1,8 @@
 import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 
-// Cache for 5 minutes
-export const revalidate = 300;
+// Force dynamic rendering for this API route
+export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {

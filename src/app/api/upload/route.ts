@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
                     resource_type: 'image',
                     overwrite: true,
                 },
-                (error, result) => {
+                (error: any, result: any) => {
                     if (error) reject(error);
                     else resolve(result);
                 },

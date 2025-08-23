@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUserId } from '@/lib/actions/auth/session';
-import { logLogin } from '@/lib/actions/auth/audit';
+import { logAudit } from '@/lib/actions/auth/audit';
 import { z } from 'zod';
 
 // Security: Profile update validation schema
@@ -127,7 +127,7 @@ export async function PUT(req: NextRequest) {
         });
 
         // Security: Log profile update
-        await logLogin(userId, 'profile_updated', {
+        await logAudit(userId, 'profile_updated', {
             userAgent,
             ip,
             updatedFields: Object.keys(validationResult.data),
@@ -234,7 +234,7 @@ export async function PATCH(req: NextRequest) {
         });
 
         // Security: Log password change
-        await logLogin(userId, 'password_changed', {
+        await logAudit(userId, 'password_changed', {
             userAgent,
             ip,
             passwordStrength: passwordValidation.score,

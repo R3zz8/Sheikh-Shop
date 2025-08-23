@@ -303,7 +303,10 @@ export const useCart = () => {
     uniqueItems: 0,
   };
 
-  console.log('🛒 Cart state:', { cart, cartTotals, isLoading, error });
+    // Log cart state for debugging (only in development)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🛒 Cart state:', { cart, cartTotals, isLoading, error });
+    }
 
   return {
     cart,

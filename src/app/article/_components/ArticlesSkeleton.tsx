@@ -3,7 +3,7 @@ export default function ArticlesSkeleton() {
         <div className="space-y-8">
             {[1, 2, 3].map((index) => (
                 <div
-                    key={index}
+                    key={`skeleton-${index}`}
                     className="bg-white/8 backdrop-blur-sm rounded-2xl p-6 border border-white/15 animate-pulse"
                 >
                     <div className="flex flex-col md:flex-row gap-6">

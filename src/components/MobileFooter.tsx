@@ -51,7 +51,7 @@ export default function MobileFooter() {
 
                     return (
                         <Link
-                            key={item.href}
+                            key={`${item.href}-${index}`}
                             href={item.href}
                             className={`relative flex flex-col items-center justify-center min-w-0 flex-1 px-2 py-2 transition-colors duration-200 ${isActive && !isCenter
                                     ? 'text-amber-600 dark:text-amber-400'

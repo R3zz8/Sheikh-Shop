@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import { Inter, Poppins, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import ClientHeader from '@/components/ClientHeader';
 import Footer from '@/components/footer/footer';
@@ -8,24 +7,8 @@ import { Toaster } from '@/components/ui';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import ReactQueryProvider from '@/providers/ReactQuery';
 
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
-  display: 'swap',
-});
-
-const poppins = Poppins({
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700', '800', '900'],
-  variable: '--font-poppins',
-  display: 'swap',
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ['latin'],
-  variable: '--font-jetbrains-mono',
-  display: 'swap',
-});
+// Font variables with fallbacks
+const fontVariables = '--font-inter --font-poppins --font-jetbrains-mono';
 
 export const metadata: Metadata = {
   title: {
@@ -90,7 +73,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${poppins.variable} ${jetbrainsMono.variable}`}>
+    <html lang="en" className={fontVariables}>
       <head>
         <link rel="icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
@@ -100,7 +83,7 @@ export default function RootLayout({
         <meta name="theme-color" content="#451a03" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
       </head>
-      <body className={`${inter.className} antialiased`}>
+      <body className="antialiased">
         <ErrorBoundary>
           <ReactQueryProvider>
             <div className="flex flex-col min-h-screen">

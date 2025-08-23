@@ -112,7 +112,7 @@ export const QuickViewModal = ({ product, children }: QuickViewModalProps) => {
                   <div className="flex items-center gap-1">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <Star
-                        key={star}
+                        key={`quick-view-star-${star}`}
                         className={cn(
                           'w-5 h-5 transition-all duration-300',
                           star <= rating

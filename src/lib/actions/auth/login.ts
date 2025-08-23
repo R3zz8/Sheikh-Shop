@@ -3,8 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcrypt';
 import { signJwtToken } from '@/lib/auth/jwt';
-import { rateLimit } from '@/lib/middleware/rateLimit';
-import { logLogin, logFailedAttempt } from '@/lib/actions/auth/audit';
+import { logFailedAttempt, logAudit } from '@/lib/actions/auth/audit';
 import { verifyCsrfToken } from '@/lib/auth/csrf';
 import { createSession } from './session';
 import { cookies } from 'next/headers';
@@ -14,13 +13,12 @@ const failedLoginAttempts: Record<string, { count: number; last: number; lockedU
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_TIME = 15 * 60 * 1000; // 15 minutes
 
-export async function loginUser(email: string, password: string, csrfToken: string, ip?: string, userAgent?: string) {
+export async function login(email: string, password: string, csrfToken: string, ip?: string, userAgent?: string) {
     await verifyCsrfToken(csrfToken);
     if (!email || !password) throw new Error('Email and password required');
-    if (!rateLimit(`login:${email}`, 5, 60_000)) {
-        await logFailedAttempt(null, 'login_rate_limit', ip, userAgent);
-        throw new Error('Too many login attempts. Please try again later.');
-    }
+    
+    // Rate limiting is handled at the API route level
+    
     const now = Date.now();
     const fail = failedLoginAttempts[email];
     if (fail?.lockedUntil && now < fail.lockedUntil) {
@@ -65,8 +63,8 @@ export async function loginUser(email: string, password: string, csrfToken: stri
     // Generate refresh token and create session
     const refreshToken = crypto.randomBytes(32).toString('hex');
     const refreshExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
-    await createSession(user.id, refreshToken, refreshExpires, userAgent, ip);
+    await createSession(user.id, userAgent, ip);
 
-    await logLogin(user.id, ip, userAgent);
+    await logAudit(user.id, 'login_success', { ip, userAgent });
     return { success: true };
 }

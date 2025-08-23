@@ -149,7 +149,7 @@ export default function ProductDetail(product: ProductsWithImages) {
                         <div className="flex items-center gap-1">
                           {[1, 2, 3, 4, 5].map((star) => (
                             <Star
-                              key={star}
+                              key={`product-star-${star}`}
                               className={cn(
                                 'w-5 h-5 sm:w-6 sm:h-6 transition-all duration-300',
                                 star <= rating

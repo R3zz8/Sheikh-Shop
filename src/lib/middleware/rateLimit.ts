@@ -87,10 +87,9 @@ setInterval(() => {
 
 // Security: Default key generator
 function defaultKeyGenerator(req: NextRequest): string {
-  const ip = req.headers.get('x-forwarded-for') ||
-    req.headers.get('x-real-ip') ||
-    req.ip ||
-    'unknown';
+      const ip = req.headers.get('x-forwarded-for') ||
+      req.headers.get('x-real-ip') ||
+      'unknown';
 
   const userAgent = req.headers.get('user-agent') || 'unknown';
   const path = req.nextUrl.pathname;
@@ -148,6 +147,7 @@ export function createRateLimitMiddleware(config: RateLimitConfig) {
 
 // Security: Specific rate limit middlewares
 export const apiRateLimit = createRateLimitMiddleware(RATE_LIMIT_CONFIGS.api);
+export const rateLimit = apiRateLimit; // Add this alias for backward compatibility
 export const loginRateLimit = createRateLimitMiddleware(RATE_LIMIT_CONFIGS.login);
 export const refreshRateLimit = createRateLimitMiddleware(RATE_LIMIT_CONFIGS.refresh);
 export const twoFactorRateLimit = createRateLimitMiddleware(RATE_LIMIT_CONFIGS.twoFactor);
@@ -178,7 +178,6 @@ export function createIPRateLimitMiddleware(config: RateLimitConfig, whitelist: 
   return async function ipRateLimitMiddleware(req: NextRequest): Promise<NextResponse | null> {
     const ip = req.headers.get('x-forwarded-for') ||
       req.headers.get('x-real-ip') ||
-      req.ip ||
       'unknown';
 
     // Skip rate limiting for whitelisted IPs

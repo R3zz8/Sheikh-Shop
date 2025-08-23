@@ -115,7 +115,7 @@ export function PerformanceDashboard() {
                     <div className="h-8 bg-gray-200 rounded w-1/4"></div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {[1, 2, 3].map(i => (
-                            <div key={i} className="h-32 bg-gray-200 rounded"></div>
+                            <div key={`perf-skeleton-${i}`} className="h-32 bg-gray-200 rounded"></div>
                         ))}
                     </div>
                 </div>
@@ -255,7 +255,7 @@ export function PerformanceDashboard() {
                             </thead>
                             <tbody>
                                 {webVitals.map((metric, index) => (
-                                    <tr key={index} className="border-b">
+                                    <tr key={`webvital-${metric.name}-${index}`} className="border-b">
                                         <td className="py-2 font-medium">{metric.name}</td>
                                         <td className="py-2">{formatValue(metric.value, metric.unit)}</td>
                                         <td className="py-2">

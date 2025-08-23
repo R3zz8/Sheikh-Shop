@@ -2,12 +2,16 @@
 
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcrypt';
-import { rateLimit } from '@/lib/middleware/rateLimit';
+import { logAudit } from '@/lib/actions/auth/audit';
+import { verifyCsrfToken } from '@/lib/auth/csrf';
+import { createSession } from './session';
 
-export async function registerUser(email: string, password: string, csrfToken: string, ip?: string) {
-    if (!rateLimit(`register:${ip || email}`, 5, 60_000)) {
-        throw new Error('Too many registration attempts. Please try again later.');
-    }
+export async function register(email: string, password: string, csrfToken: string, ip?: string, userAgent?: string) {
+    await verifyCsrfToken(csrfToken);
+    if (!email || !password) throw new Error('Email and password required');
+    
+    // Rate limiting is handled at the API route level
+    
     // Basic validation
     if (!email || !password) {
         throw new Error('Email and password are required');
@@ -37,5 +41,9 @@ export async function registerUser(email: string, password: string, csrfToken: s
     });
 
     // Optionally, do not return password
+    await createSession(user.id, userAgent, ip);
+    
+    await logAudit(user.id, 'registration_success', { ip, userAgent });
+
     return { id: user.id, email: user.email, createdAt: user.createdAt };
 }

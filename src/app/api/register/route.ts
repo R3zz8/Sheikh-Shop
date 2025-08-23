@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { hashPassword, validatePassword } from '@/lib/auth/password';
 import { createSession } from '@/lib/actions/auth/session';
-import { logLogin } from '@/lib/actions/auth/audit';
+import { logAudit } from '@/lib/actions/auth/audit';
 import { registrationRateLimit } from '@/lib/middleware/rateLimit';
 import { z } from 'zod';
 
@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
 
         // Security: Check username availability if provided
         if (username) {
-            const existingUsername = await prisma.user.findUnique({
+            const existingUsername = await prisma.user.findFirst({
                 where: { username },
                 select: { id: true },
             });
@@ -124,7 +124,7 @@ export async function POST(req: NextRequest) {
         );
 
         // Security: Log successful registration
-        await logLogin(user.id, 'registration_success', {
+        await logAudit(user.id, 'registration_success', {
             sessionId: session.id,
             userAgent,
             ip,

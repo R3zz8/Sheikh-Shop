@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import PalmTreeWrapper from '@/components/3d/PalmTreeWrapper';
 import Categories from '@/components/Categories';
+import MobileCarousel from '@/components/MobileCarousel';
 
 export default function Home() {
   return (
@@ -9,6 +10,12 @@ export default function Home() {
       {/* Background effects */}
       <div className="absolute inset-0 bg-gradient-radial from-amber-500/3 via-orange-500/2 to-yellow-500/3 pointer-events-none animate-pulse" />
       <div className="absolute inset-0 bg-gradient-to-b from-amber-500/2 via-transparent to-orange-500/2 pointer-events-none" />
+      
+      {/* Mobile Carousel - Above the fold */}
+      <div className="relative z-20 px-4 pt-6 pb-4">
+        <MobileCarousel />
+      </div>
+      
       {/* Categories Section */}
       <Categories />
 

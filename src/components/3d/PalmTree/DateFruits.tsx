@@ -38,7 +38,7 @@ export function DateFruits() {
       <group position={[0, 0, 0]}>
         {dateClusters.map((cluster, index) => (
           <Float
-            key={index}
+            key={`date-cluster-${index}`}
             speed={2}
             rotationIntensity={1}
             floatIntensity={0.5}
