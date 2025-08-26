@@ -1,0 +1,285 @@
+'use client';
+
+import React, { useState, useRef, useEffect } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { Button } from '@/components/ui';
+import { Star, ShoppingCart, Zap } from 'lucide-react';
+import type { ProductsWithImages, Unit } from '@/types';
+import { useCart } from '@/hooks/useCart';
+import { useUnits } from '@/hooks/useUnits';
+import { cn, formatPrice } from '@/lib/utils';
+import FlyToCartAnimation from '@/components/cart/FlyToCartAnimation';
+import UnitSelector from '@/components/ui/UnitSelector';
+import DiscountBadge from '@/components/ui/DiscountBadge';
+import ProductBadge from '@/components/ui/ProductBadge';
+import { calculateFinalPricing, formatPrice as formatPriceUtil } from '@/lib/pricing';
+
+export default function ProductItem({ product, index = 0 }: { product: ProductsWithImages; index?: number }) {
+  const { addToCartMutation } = useCart();
+  const { units: availableUnits, getDefaultUnit } = useUnits();
+  const [isImageLoaded, setIsImageLoaded] = useState(false);
+  const [showFlyAnimation, setShowFlyAnimation] = useState(false);
+  const [animationPosition, setAnimationPosition] = useState({ x: 0, y: 0 });
+  const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null);
+  const [selectedQuantity, setSelectedQuantity] = useState(1);
+  const [showUnitSelector, setShowUnitSelector] = useState(false);
+  const productRef = useRef<HTMLDivElement>(null);
+  const cartButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Set default unit when availableUnits are loaded
+  useEffect(() => {
+    if (availableUnits.length > 0 && !selectedUnit) {
+      setSelectedUnit(getDefaultUnit() || availableUnits[0]);
+    }
+  }, [availableUnits, selectedUnit, getDefaultUnit]);
+
+  // Fallback if no units are available
+  if (!selectedUnit || availableUnits.length === 0) {
+    return <div>Loading...</div>;
+  }
+
+  // Calculate pricing with discounts
+  const pricing = calculateFinalPricing(
+    product.basePrice,
+    selectedUnit,
+    selectedQuantity,
+    product.discounts
+  );
+
+  // Determine premium badge based on price
+  const isPremium = (pricing.finalPrice || 0) > 50;
+
+  // Generate deterministic rating and review count based on product ID hash
+  const idHash = product.id.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
+  const rating = 4 + (idHash % 2); // Either 4 or 5
+  const reviewCount = 50 + (idHash % 200); // Between 50 and 249
+
+  const handleAddToCart = async () => {
+    if (!productRef.current || !cartButtonRef.current) return;
+
+    // Get positions for animation
+    const productRect = productRef.current.getBoundingClientRect();
+    const cartRect = cartButtonRef.current.getBoundingClientRect();
+
+    // Calculate animation start position (center of product image)
+    const startX = productRect.left + productRect.width / 2;
+    const startY = productRect.top + productRect.height / 2;
+
+    // Calculate animation end position (center of cart button)
+    const endX = cartRect.left + cartRect.width / 2;
+    const endY = cartRect.top + cartRect.height / 2;
+
+    setAnimationPosition({ x: startX, y: startY });
+    setShowFlyAnimation(true);
+
+    try {
+      await addToCartMutation.mutateAsync({ 
+        productId: product.id,
+        unitId: selectedUnit.id,
+        quantity: selectedQuantity,
+        unitPrice: pricing.finalPrice / selectedQuantity
+      });
+    } catch (error) {
+      // Error handling is done in the mutation
+    }
+  };
+
+  const handleAnimationComplete = () => {
+    setShowFlyAnimation(false);
+  };
+
+  const toggleUnitSelector = () => {
+    setShowUnitSelector(!showUnitSelector);
+  };
+
+  return (
+    <>
+      <div ref={productRef} className="relative bg-white/8 backdrop-blur-sm border border-amber-200/20 rounded-2xl overflow-hidden hover:border-amber-300/40 hover:bg-white/12 transition-all duration-300 group">
+        {/* Subtle glow effect on hover */}
+        <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-orange-500/3 to-yellow-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+        {/* Product Badges */}
+        <div className="absolute top-4 left-4 z-20">
+          <ProductBadge 
+            isNew={product.isNew}
+            isBestSeller={product.isBestSeller}
+            size="sm"
+          />
+        </div>
+
+        {/* Discount Badge */}
+        {pricing.hasDiscount && (
+          <div className="absolute top-4 right-4 z-20">
+            <DiscountBadge 
+              discount={{
+                type: product.discounts[0]?.discountType || 'PERCENTAGE',
+                value: product.discounts[0]?.value || 0,
+                amount: pricing.discountAmount,
+                percentage: pricing.discountPercentage,
+                endDate: product.discounts[0]?.endDate || new Date(),
+                isActive: true,
+              }}
+              showCountdown={false}
+            />
+          </div>
+        )}
+
+        {/* Price and Premium Badge */}
+        <div className="relative z-10 p-4 pb-2 flex justify-between items-start">
+          <div className="space-y-1">
+            {/* Final Price */}
+            <p className="text-2xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
+              {formatPriceUtil(pricing.finalPrice)}
+            </p>
+            
+            {/* Original Price with line-through if discounted */}
+            {pricing.hasDiscount && (
+              <p className="text-sm text-gray-400 line-through">
+                {formatPriceUtil(pricing.originalPrice)}
+              </p>
+            )}
+            
+            {/* Unit Display */}
+            <p className="text-xs text-amber-200/60">
+              per {selectedUnit.symbol}
+            </p>
+          </div>
+          
+          {isPremium && (
+            <span className="text-xs bg-gradient-to-r from-amber-600 via-yellow-600 to-orange-600 text-white px-3 py-1 rounded-xl font-semibold border border-amber-500/30">
+              PREMIUM
+            </span>
+          )}
+        </div>
+
+        {/* Product Image */}
+        <Link href={`/product/${product.id}`} className="block">
+          <div className="relative w-full h-48 bg-gradient-to-br from-amber-950/20 via-stone-900/20 to-amber-950/20 backdrop-blur-sm flex items-center justify-center p-4 border-t border-b border-amber-200/10 cursor-pointer hover:bg-gradient-to-br hover:from-amber-950/30 hover:via-stone-900/30 hover:to-amber-950/30 transition-all duration-300">
+            {!isImageLoaded && (
+              <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-yellow-500/10 animate-pulse rounded-lg" />
+            )}
+            <Image
+              src={product?.images[0]?.image || '/assets/noImage.jpg'}
+              alt={product?.name || 'Product image'}
+              width={200}
+              height={200}
+              className={cn(
+                'object-contain max-h-full max-w-full transition-all duration-300',
+                isImageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95',
+              )}
+              loading={index < 4 ? 'eager' : 'lazy'}
+              priority={index < 4}
+              sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              quality={85}
+              placeholder="blur"
+              blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
+              onLoad={() => setIsImageLoaded(true)}
+              onError={() => setIsImageLoaded(true)}
+            />
+          </div>
+        </Link>
+
+        {/* Product Info */}
+        <div className="relative z-10 p-4 pt-2">
+          {/* Product Name */}
+          <Link href={`/product/${product.id}`} className="block">
+            <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-amber-200 transition-colors duration-300 cursor-pointer hover:underline">
+              {product?.name}
+            </h3>
+          </Link>
+
+          {/* Product Description - Hidden on mobile (grid-cols-2) */}
+          <div className="hidden md:block">
+            <p className="text-amber-200/80 text-sm mb-3">
+              {product?.description || 'Premium quality product with exceptional features.'}
+            </p>
+          </div>
+
+          {/* Star Rating */}
+          <div className="flex items-center gap-1 mb-4">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <Star
+                key={`product-item-star-${star}`}
+                className={cn(
+                  'w-4 h-4',
+                  star <= rating
+                    ? 'fill-amber-300 text-amber-300'
+                    : 'text-amber-200/40',
+                )}
+              />
+            ))}
+            <span className="text-amber-200/60 text-sm ml-2">
+              ({reviewCount})
+            </span>
+          </div>
+
+          {/* Unit Selector Toggle */}
+          <div className="mb-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={toggleUnitSelector}
+              className="w-full bg-white/8 backdrop-blur-sm border border-amber-200/20 text-white hover:bg-white/12 hover:border-amber-300/40 transition-all duration-300"
+            >
+              <Zap className="w-4 h-4 mr-2" />
+              {showUnitSelector ? 'Hide Options' : 'Select Unit & Quantity'}
+            </Button>
+          </div>
+
+          {/* Unit Selector */}
+          {showUnitSelector && (
+            <div className="mb-4 p-3 bg-white/5 backdrop-blur-sm border border-amber-200/20 rounded-lg">
+              <UnitSelector
+                units={availableUnits}
+                basePrice={product.basePrice}
+                baseUnit={product.baseUnit}
+                selectedUnit={selectedUnit}
+                selectedQuantity={selectedQuantity}
+                onUnitChange={setSelectedUnit}
+                onQuantityChange={setSelectedQuantity}
+                showPriceCalculation={false}
+              />
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="flex gap-2">
+            {/* Add to Cart Button */}
+            <Button
+              ref={cartButtonRef}
+              onClick={handleAddToCart}
+              disabled={addToCartMutation.isPending}
+              className="flex-1 bg-gradient-to-r from-amber-600 via-yellow-600 to-orange-600 hover:from-amber-700 hover:via-yellow-700 hover:to-orange-700 text-white font-semibold border border-amber-500/30 shadow-lg hover:shadow-xl hover:shadow-amber-900/30 transition-all duration-300 transform hover:-translate-y-0.5"
+            >
+              <ShoppingCart className="w-4 h-4 mr-1" />
+              {addToCartMutation.isPending ? 'Adding...' : 'Add to Cart'}
+            </Button>
+
+            {/* View Details Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              asChild
+              className="flex-1 bg-white/8 backdrop-blur-sm border border-amber-200/20 text-white hover:bg-white/12 hover:border-amber-300/40 transition-all duration-300"
+            >
+              <Link href={`/product/${product.id}`}>
+                <Zap className="w-4 h-4 mr-1" />
+                View Details
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Fly to Cart Animation */}
+      <FlyToCartAnimation
+        isVisible={showFlyAnimation}
+        productImage={product?.images[0]?.image || '/assets/noImage.jpg'}
+        productName={product?.name || 'Product'}
+        onAnimationComplete={handleAnimationComplete}
+      />
+    </>
+  );
+}
+

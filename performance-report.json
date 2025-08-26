@@ -1,0 +1,82 @@
+{
+  "timestamp": "2025-08-04T06:53:58.210Z",
+  "pages": [
+    {
+      "name": "Homepage",
+      "url": "/"
+    },
+    {
+      "name": "Product Page",
+      "url": "/product/6027ea6b-7bd4-40e8-8e74-ffade953965b"
+    },
+    {
+      "name": "Category Page",
+      "url": "/categories/dates"
+    }
+  ],
+  "bundleAnalysis": {
+    "totalSize": "37.03",
+    "fileCount": 40,
+    "averageSize": "947.94"
+  },
+  "codeAnalysis": {
+    "components": 42,
+    "pages": 28,
+    "apiRoutes": 22,
+    "totalLines": 4650,
+    "largeFiles": [
+      {
+        "file": "/home/parkas/digitalshop/src/components/ClientHeader.tsx",
+        "lines": 319
+      },
+      {
+        "file": "/home/parkas/digitalshop/src/components/banner/index.tsx",
+        "lines": 252
+      },
+      {
+        "file": "/home/parkas/digitalshop/src/components/cart/index.tsx",
+        "lines": 232
+      },
+      {
+        "file": "/home/parkas/digitalshop/src/components/footer/footer.tsx",
+        "lines": 266
+      },
+      {
+        "file": "/home/parkas/digitalshop/src/components/product/ReviewSection.tsx",
+        "lines": 229
+      },
+      {
+        "file": "/home/parkas/digitalshop/src/components/ui/carousel.tsx",
+        "lines": 263
+      },
+      {
+        "file": "/home/parkas/digitalshop/src/components/ui/dropdown-menu.tsx",
+        "lines": 202
+      },
+      {
+        "file": "/home/parkas/digitalshop/src/components/ui/quick-view-modal.tsx",
+        "lines": 201
+      }
+    ]
+  },
+  "imageAnalysis": {
+    "totalImages": 30,
+    "largeImages": [],
+    "totalSize": 2213506
+  },
+  "depsAnalysis": {
+    "totalDeps": 58,
+    "largeDeps": [
+      "three",
+      "@react-three/fiber",
+      "@react-three/drei",
+      "framer-motion"
+    ],
+    "securityIssues": []
+  },
+  "recommendations": [
+    "📦 Consider code splitting and lazy loading for large bundles",
+    "🎮 Consider lazy loading 3D components for better initial page load",
+    "📝 Break down large components into smaller, more manageable pieces"
+  ]
+}
