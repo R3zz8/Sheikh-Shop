@@ -85,9 +85,20 @@ export default function RegisterPage() {
         title="Create your account"
         subtitle="Join our premium experience"
         footer={(
-          <div className="text-center text-sm text-slate-600 dark:text-slate-300">
-            Already have an account?{' '}
-            <Link href="/login" className="text-blue-700 hover:underline dark:text-blue-400">Login here</Link>
+          <div className="space-y-4">
+            {/* Main footer link */}
+            <div className="text-center text-sm text-slate-600 dark:text-slate-300">
+              Already have an account?{' '}
+              <Link href="/login" className="text-blue-700 hover:underline dark:text-blue-400">Login here</Link>
+            </div>
+            
+            {/* Terms and Privacy links */}
+            <div className="text-center text-xs text-slate-500 dark:text-slate-400">
+              By creating an account, you agree to our{' '}
+              <Link href="/terms" className="hover:underline">Terms of Service</Link>
+              {' '}and{' '}
+              <Link href="/privacy" className="hover:underline">Privacy Policy</Link>
+            </div>
           </div>
         )}
       >

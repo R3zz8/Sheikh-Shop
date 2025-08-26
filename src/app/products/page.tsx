@@ -21,6 +21,14 @@ export default async function Products() {
             createdAt: true,
           },
         },
+        baseUnit: true,
+        discounts: {
+          where: {
+            isActive: true,
+            startDate: { lte: new Date() },
+            endDate: { gte: new Date() },
+          },
+        },
       },
       take: 50, // Limit initial load
     });

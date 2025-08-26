@@ -76,11 +76,24 @@ export default function LoginPage() {
         title="Welcome back"
         subtitle="Sign in to continue"
         footer={(
-          <div className="flex items-center justify-between text-sm">
-            <Link href="/forgot-password" className="text-blue-700 hover:underline dark:text-blue-400">Forgot password?</Link>
-            <div className="text-slate-600 dark:text-slate-300">
-              Don't have an account?{' '}
-              <Link href="/register" className="text-blue-700 hover:underline dark:text-blue-400">Register here</Link>
+          <div className="space-y-4">
+            {/* Main footer links */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm">
+              <Link href="/forgot-password" className="text-blue-700 hover:underline dark:text-blue-400 text-center sm:text-left">
+                Forgot password?
+              </Link>
+              <div className="text-slate-600 dark:text-slate-300 text-center sm:text-right">
+                Don't have an account?{' '}
+                <Link href="/register" className="text-blue-700 hover:underline dark:text-blue-400">Register here</Link>
+              </div>
+            </div>
+            
+            {/* Terms and Privacy links */}
+            <div className="text-center text-xs text-slate-500 dark:text-slate-400">
+              By signing in, you agree to our{' '}
+              <Link href="/terms" className="hover:underline">Terms of Service</Link>
+              {' '}and{' '}
+              <Link href="/privacy" className="hover:underline">Privacy Policy</Link>
             </div>
           </div>
         )}

@@ -1,25 +1,54 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui';
 import { Star, ShoppingCart, Zap } from 'lucide-react';
-import type { ProductsWithImages } from '@/types';
+import type { ProductsWithImages, Unit } from '@/types';
 import { useCart } from '@/hooks/useCart';
+import { useUnits } from '@/hooks/useUnits';
 import { cn, formatPrice } from '@/lib/utils';
 import FlyToCartAnimation from '@/components/cart/FlyToCartAnimation';
+import UnitSelector from '@/components/ui/UnitSelector';
+import DiscountBadge from '@/components/ui/DiscountBadge';
+import ProductBadge from '@/components/ui/ProductBadge';
+import { calculateFinalPricing, formatPrice as formatPriceUtil } from '@/lib/pricing';
 
 export default function ProductItem({ product, index = 0 }: { product: ProductsWithImages; index?: number }) {
   const { addToCartMutation } = useCart();
+  const { units: availableUnits, getDefaultUnit } = useUnits();
   const [isImageLoaded, setIsImageLoaded] = useState(false);
   const [showFlyAnimation, setShowFlyAnimation] = useState(false);
   const [animationPosition, setAnimationPosition] = useState({ x: 0, y: 0 });
+  const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null);
+  const [selectedQuantity, setSelectedQuantity] = useState(1);
+  const [showUnitSelector, setShowUnitSelector] = useState(false);
   const productRef = useRef<HTMLDivElement>(null);
   const cartButtonRef = useRef<HTMLButtonElement>(null);
 
+  // Set default unit when availableUnits are loaded
+  useEffect(() => {
+    if (availableUnits.length > 0 && !selectedUnit) {
+      setSelectedUnit(getDefaultUnit() || availableUnits[0]);
+    }
+  }, [availableUnits, selectedUnit, getDefaultUnit]);
+
+  // Fallback if no units are available
+  if (!selectedUnit || availableUnits.length === 0) {
+    return <div>Loading...</div>;
+  }
+
+  // Calculate pricing with discounts
+  const pricing = calculateFinalPricing(
+    product.basePrice,
+    selectedUnit,
+    selectedQuantity,
+    product.discounts
+  );
+
   // Determine premium badge based on price
-  const isPremium = (product?.price || 0) > 50;
+  const isPremium = (pricing.finalPrice || 0) > 50;
 
   // Generate deterministic rating and review count based on product ID hash
   const idHash = product.id.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
@@ -45,7 +74,12 @@ export default function ProductItem({ product, index = 0 }: { product: ProductsW
     setShowFlyAnimation(true);
 
     try {
-      await addToCartMutation.mutateAsync({ productId: product.id });
+      await addToCartMutation.mutateAsync({ 
+        productId: product.id,
+        unitId: selectedUnit.id,
+        quantity: selectedQuantity,
+        unitPrice: pricing.finalPrice / selectedQuantity
+      });
     } catch (error) {
       // Error handling is done in the mutation
     }
@@ -55,17 +89,63 @@ export default function ProductItem({ product, index = 0 }: { product: ProductsW
     setShowFlyAnimation(false);
   };
 
+  const toggleUnitSelector = () => {
+    setShowUnitSelector(!showUnitSelector);
+  };
+
   return (
     <>
       <div ref={productRef} className="relative bg-white/8 backdrop-blur-sm border border-amber-200/20 rounded-2xl overflow-hidden hover:border-amber-300/40 hover:bg-white/12 transition-all duration-300 group">
         {/* Subtle glow effect on hover */}
         <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-orange-500/3 to-yellow-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
+        {/* Product Badges */}
+        <div className="absolute top-4 left-4 z-20">
+          <ProductBadge 
+            isNew={product.isNew}
+            isBestSeller={product.isBestSeller}
+            size="sm"
+          />
+        </div>
+
+        {/* Discount Badge */}
+        {pricing.hasDiscount && (
+          <div className="absolute top-4 right-4 z-20">
+            <DiscountBadge 
+              discount={{
+                type: product.discounts[0]?.discountType || 'PERCENTAGE',
+                value: product.discounts[0]?.value || 0,
+                amount: pricing.discountAmount,
+                percentage: pricing.discountPercentage,
+                endDate: product.discounts[0]?.endDate || new Date(),
+                isActive: true,
+              }}
+              showCountdown={false}
+            />
+          </div>
+        )}
+
         {/* Price and Premium Badge */}
         <div className="relative z-10 p-4 pb-2 flex justify-between items-start">
-          <p className="text-2xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
-            {formatPrice(product?.price)}
-          </p>
+          <div className="space-y-1">
+            {/* Final Price */}
+            <p className="text-2xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
+              {formatPriceUtil(pricing.finalPrice)}
+            </p>
+            
+            {/* Original Price with line-through if discounted */}
+            {pricing.hasDiscount && (
+              <p className="text-sm text-gray-400 line-through">
+                {formatPriceUtil(pricing.originalPrice)}
+              </p>
+            )}
+            
+            {/* Unit Display */}
+            <p className="text-xs text-amber-200/60">
+              per {selectedUnit.symbol}
+            </p>
+          </div>
+          
           {isPremium && (
             <span className="text-xs bg-gradient-to-r from-amber-600 via-yellow-600 to-orange-600 text-white px-3 py-1 rounded-xl font-semibold border border-amber-500/30">
               PREMIUM
@@ -109,10 +189,12 @@ export default function ProductItem({ product, index = 0 }: { product: ProductsW
             </h3>
           </Link>
 
-          {/* Product Description */}
-          <p className="text-amber-200/80 text-sm mb-3">
-            {product?.description || 'Premium quality product with exceptional features.'}
-          </p>
+          {/* Product Description - Hidden on mobile (grid-cols-2) */}
+          <div className="hidden md:block">
+            <p className="text-amber-200/80 text-sm mb-3">
+              {product?.description || 'Premium quality product with exceptional features.'}
+            </p>
+          </div>
 
           {/* Star Rating */}
           <div className="flex items-center gap-1 mb-4">
@@ -131,6 +213,35 @@ export default function ProductItem({ product, index = 0 }: { product: ProductsW
               ({reviewCount})
             </span>
           </div>
+
+          {/* Unit Selector Toggle */}
+          <div className="mb-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={toggleUnitSelector}
+              className="w-full bg-white/8 backdrop-blur-sm border border-amber-200/20 text-white hover:bg-white/12 hover:border-amber-300/40 transition-all duration-300"
+            >
+              <Zap className="w-4 h-4 mr-2" />
+              {showUnitSelector ? 'Hide Options' : 'Select Unit & Quantity'}
+            </Button>
+          </div>
+
+          {/* Unit Selector */}
+          {showUnitSelector && (
+            <div className="mb-4 p-3 bg-white/5 backdrop-blur-sm border border-amber-200/20 rounded-lg">
+              <UnitSelector
+                units={availableUnits}
+                basePrice={product.basePrice}
+                baseUnit={product.baseUnit}
+                selectedUnit={selectedUnit}
+                selectedQuantity={selectedQuantity}
+                onUnitChange={setSelectedUnit}
+                onQuantityChange={setSelectedQuantity}
+                showPriceCalculation={false}
+              />
+            </div>
+          )}
 
           {/* Action Buttons */}
           <div className="flex gap-2">

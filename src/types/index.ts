@@ -1,22 +1,23 @@
-import { Prisma } from '@prisma/client';
+// Temporary types until Prisma client is generated with new schema
+export * from './temp';
 
-export type ProductsWithImages = Prisma.ProductGetPayload<{
-  include: { images: true };
-}>;
+// Extended types for enhanced functionality
+export interface ProductPricing {
+  basePrice: number;
+  selectedUnit: Unit;
+  selectedQuantity: number;
+  finalPrice: number;
+  discountAmount: number;
+  discountPercentage: number;
+  originalPrice: number;
+  hasDiscount: boolean;
+}
 
-export type CartWithProduct = Prisma.CartItemGetPayload<{
-  include: { product: true };
-}>;
-
-export type ArticleWithAuthor = Prisma.ArticleGetPayload<{
-  include: {
-    author: {
-      select: {
-        id: true;
-        email: true;
-      };
-    };
-  };
-}>;
-
-export type Article = Prisma.ArticleGetPayload<{}>;
+export interface DiscountInfo {
+  type: 'PERCENTAGE' | 'FIXED';
+  value: number;
+  amount: number;
+  percentage: number;
+  endDate: Date;
+  isActive: boolean;
+}

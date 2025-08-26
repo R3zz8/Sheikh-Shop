@@ -1,177 +1,159 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { ShoppingCart, Check, Plus, Minus } from 'lucide-react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui';
-import type { ProductsWithImages } from '@/types';
+import { ShoppingCart, Check, Loader2 } from 'lucide-react';
+import type { ProductsWithImages, Unit, ProductPricing } from '@/types';
 import { useCart } from '@/hooks/useCart';
-import { toast } from 'sonner';
-import FlyToCartAnimation from '@/components/cart/FlyToCartAnimation';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface AddToCartButtonProps {
     product: ProductsWithImages;
+    selectedUnit: Unit;
+    selectedQuantity: number;
+    pricing: ProductPricing;
 }
 
-export default function AddToCartButton({ product }: AddToCartButtonProps) {
-    const [quantity, setQuantity] = useState(1);
-    const [isAdding, setIsAdding] = useState(false);
-    const [showFlyAnimation, setShowFlyAnimation] = useState(false);
+export default function AddToCartButton({ 
+    product, 
+    selectedUnit, 
+    selectedQuantity, 
+    pricing 
+}: AddToCartButtonProps) {
     const { addToCartMutation } = useCart();
-    const buttonRef = useRef<HTMLButtonElement>(null);
+    const [showSuccess, setShowSuccess] = useState(false);
 
     const handleAddToCart = async () => {
-        if (product.quantity === 0) {
-            toast.error('This product is out of stock');
-            return;
-        }
-
-        if (quantity > product.quantity) {
-            toast.error(`Only ${product.quantity} units available`);
-            return;
-        }
-
-        setIsAdding(true);
-        setShowFlyAnimation(true);
-
         try {
-            // Add to cart with quantity
             await addToCartMutation.mutateAsync({
                 productId: product.id,
-                quantity
+                unitId: selectedUnit.id,
+                quantity: selectedQuantity,
+                unitPrice: pricing.finalPrice / selectedQuantity
             });
 
-            toast.success(`Added ${quantity} ${quantity === 1 ? 'item' : 'items'} to cart`);
-            setQuantity(1); // Reset quantity
+            // Show success state
+            setShowSuccess(true);
+            setTimeout(() => setShowSuccess(false), 2000);
         } catch (error) {
-            toast.error('Failed to add to cart');
-        } finally {
-            setIsAdding(false);
+            // Error handling is done in the mutation
+            console.error('Failed to add to cart:', error);
         }
     };
 
-    const handleQuantityChange = (newQuantity: number) => {
-        if (newQuantity >= 1 && newQuantity <= product.quantity) {
-            setQuantity(newQuantity);
-        }
-    };
-
-    const handleAnimationComplete = () => {
-        setShowFlyAnimation(false);
-    };
-
-    const isOutOfStock = product.quantity === 0;
+    const isDisabled = addToCartMutation.isPending || product.quantity === 0;
 
     return (
-        <>
-            <div className="space-y-4">
-                {/* Quantity Selector */}
-                {!isOutOfStock && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.8 }}
-                        className="flex items-center gap-4"
-                    >
-                        <span className="text-white font-medium">Quantity:</span>
-                        <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-1">
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleQuantityChange(quantity - 1)}
-                                disabled={quantity <= 1}
-                                className="w-8 h-8 p-0 text-white hover:bg-white/20"
-                            >
-                                <Minus className="w-4 h-4" />
-                            </Button>
-                            <span className="w-12 text-center text-white font-medium">
-                                {quantity}
-                            </span>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleQuantityChange(quantity + 1)}
-                                disabled={quantity >= product.quantity}
-                                className="w-8 h-8 p-0 text-white hover:bg-white/20"
-                            >
-                                <Plus className="w-4 h-4" />
-                            </Button>
-                        </div>
-                        <span className="text-gray-400 text-sm">
-                            {product.quantity} available
-                        </span>
-                    </motion.div>
-                )}
+        <div className="space-y-4">
+            {/* Add to Cart Button */}
+            <Button
+                onClick={handleAddToCart}
+                disabled={isDisabled}
+                className="w-full bg-gradient-to-r from-amber-600 via-yellow-600 to-orange-600 hover:from-amber-700 hover:via-yellow-700 hover:to-orange-700 text-white font-semibold border border-amber-500/30 shadow-lg hover:shadow-xl hover:shadow-amber-900/30 transition-all duration-300 transform hover:-translate-y-0.5 disabled:transform-none disabled:opacity-50 disabled:cursor-not-allowed text-lg py-6"
+                size="lg"
+            >
+                <AnimatePresence mode="wait">
+                    {showSuccess ? (
+                        <motion.div
+                            key="success"
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.8 }}
+                            className="flex items-center gap-2"
+                        >
+                            <Check className="w-5 h-5" />
+                            Added to Cart!
+                        </motion.div>
+                    ) : addToCartMutation.isPending ? (
+                        <motion.div
+                            key="loading"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="flex items-center gap-2"
+                        >
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                            Adding to Cart...
+                        </motion.div>
+                    ) : (
+                        <motion.div
+                            key="default"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="flex items-center gap-2"
+                        >
+                            <ShoppingCart className="w-5 h-5" />
+                            Add to Cart
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </Button>
 
-                {/* Add to Cart Button */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.9 }}
-                >
-                    <Button
-                        ref={buttonRef}
-                        onClick={handleAddToCart}
-                        disabled={isOutOfStock || isAdding}
-                        className={`
-              w-full h-14 text-lg font-semibold rounded-xl transition-all duration-300
-              ${isOutOfStock
-                                ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                                : 'bg-gradient-to-r from-amber-600 via-yellow-600 to-orange-600 hover:from-amber-700 hover:via-yellow-700 hover:to-orange-700 text-white shadow-lg hover:shadow-xl hover:shadow-amber-900/30 transform hover:-translate-y-0.5'
+            {/* Pricing Summary */}
+            <div className="bg-white/5 backdrop-blur-sm border border-amber-200/20 rounded-lg p-4 space-y-3">
+                <h4 className="text-white font-semibold text-center">Order Summary</h4>
+                
+                <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                        <span className="text-gray-300">Product:</span>
+                        <span className="text-white">{product.name}</span>
+                    </div>
+                    
+                    <div className="flex justify-between">
+                        <span className="text-gray-300">Unit:</span>
+                        <span className="text-white">{selectedQuantity} {selectedUnit.symbol}</span>
+                    </div>
+                    
+                    <div className="flex justify-between">
+                        <span className="text-gray-300">Unit Price:</span>
+                        <span className="text-white">
+                            {pricing.finalPrice / selectedQuantity > 0 
+                                ? `$${(pricing.finalPrice / selectedQuantity).toFixed(2)}`
+                                : 'Free'
                             }
-              focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2
-            `}
-                    >
-                        {isAdding ? (
-                            <motion.div
-                                animate={{ rotate: 360 }}
-                                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                                className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
-                            />
-                        ) : isOutOfStock ? (
-                            <>
-                                <ShoppingCart className="w-5 h-5 mr-2" />
-                                Out of Stock
-                            </>
-                        ) : (
-                            <>
-                                <ShoppingCart className="w-5 h-5 mr-2" />
-                                Add to Cart
-                            </>
-                        )}
-                    </Button>
-                </motion.div>
-
-                {/* Success/Error State */}
-                {addToCartMutation.isSuccess && (
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="flex items-center justify-center gap-2 text-green-400 font-medium"
-                    >
-                        <Check className="w-5 h-5" />
-                        Added to cart successfully!
-                    </motion.div>
-                )}
-
-                {addToCartMutation.isError && (
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="flex items-center justify-center gap-2 text-red-400 font-medium"
-                    >
-                        Failed to add to cart. Please try again.
-                    </motion.div>
-                )}
+                        </span>
+                    </div>
+                    
+                    {pricing.hasDiscount && (
+                        <>
+                            <div className="flex justify-between text-green-400">
+                                <span>Discount:</span>
+                                <span>-${pricing.discountAmount.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between text-green-400">
+                                <span>You Save:</span>
+                                <span>{pricing.discountPercentage.toFixed(1)}%</span>
+                            </div>
+                        </>
+                    )}
+                    
+                    <div className="border-t border-amber-200/20 pt-2">
+                        <div className="flex justify-between">
+                            <span className="text-white font-semibold">Total:</span>
+                            <span className="text-xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
+                                ${pricing.finalPrice.toFixed(2)}
+                            </span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            {/* Fly to Cart Animation */}
-            <FlyToCartAnimation
-                isVisible={showFlyAnimation}
-                productImage={product?.images[0]?.image || '/assets/noImage.jpg'}
-                productName={product?.name || 'Product'}
-                onAnimationComplete={handleAnimationComplete}
-            />
-        </>
+            {/* Stock Warning */}
+            {product.quantity <= 5 && product.quantity > 0 && (
+                <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3">
+                    <p className="text-yellow-200 text-sm text-center">
+                        ⚠️ Only {product.quantity} units left in stock!
+                    </p>
+                </div>
+            )}
+
+            {/* Out of Stock Message */}
+            {product.quantity === 0 && (
+                <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
+                    <p className="text-red-200 text-sm text-center">
+                        ❌ This product is currently out of stock
+                    </p>
+                </div>
+            )}
+        </div>
     );
 } 

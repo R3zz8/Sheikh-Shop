@@ -1,38 +1,44 @@
-import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
-import ArticleForm from '../../_components/ArticleForm';
+import { prisma } from '@/lib/prisma';
+import EnhancedArticleForm from '../../_components/EnhancedArticleForm';
 
 interface EditArticlePageProps {
-    params: Promise<{ id: string }>;
+  params: Promise<{ id: string }>;
 }
 
 export default async function EditArticlePage({ params }: EditArticlePageProps) {
-    const { id } = await params;
+  const { id } = await params;
 
-    const result = await prisma.article.findUnique({
-        where: { id },
-        include: {
-            author: {
-                select: {
-                    id: true,
-                    email: true,
-                    username: true,
-                },
-            },
+  const article = await prisma.article.findUnique({
+    where: { id },
+    include: {
+      author: {
+        select: {
+          id: true,
+          email: true,
+          username: true,
         },
-    });
+      },
+    },
+  });
 
-    if (!result) {
-        notFound();
-    }
+  if (!article) {
+    notFound();
+  }
 
-    return (
-        <div className="container mx-auto p-6">
-            <h1 className="text-2xl font-bold mb-6">Edit Article</h1>
-            <ArticleForm article={{
-                ...result,
-                imageUrl: result.imageUrl ?? undefined,
-            }} />
-        </div>
-    );
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <EnhancedArticleForm article={{
+        ...article,
+        imageUrl: article.imageUrl ?? undefined,
+        // Add default values for new fields
+        tags: [],
+        seoTitle: article.title,
+        seoDescription: article.summary,
+        featured: false,
+        allowComments: true,
+        scheduledAt: undefined,
+      }} />
+    </div>
+  );
 } 

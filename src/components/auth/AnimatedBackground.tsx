@@ -39,8 +39,8 @@ export default function AnimatedBackground({ children }: AnimatedBackgroundProps
                 />
             </div>
 
-            {/* Content container */}
-            <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
+            {/* Content container - Enhanced for mobile with bottom padding */}
+            <div className="relative z-10 min-h-screen flex items-center justify-center p-4 pb-16 sm:pb-4">
                 {children}
             </div>
         </div>

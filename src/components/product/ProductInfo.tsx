@@ -2,25 +2,41 @@
 
 import { motion } from 'framer-motion';
 import { Star, Package, Tag } from 'lucide-react';
-import type { ProductsWithImages } from '@/types';
+import type { ProductsWithImages, Unit } from '@/types';
 import AddToCartButton from './AddToCartButton';
+import UnitSelector from '@/components/ui/UnitSelector';
+import DiscountBadge from '@/components/ui/DiscountBadge';
+import ProductBadge from '@/components/ui/ProductBadge';
+import { calculateFinalPricing, formatPrice } from '@/lib/pricing';
+import { useState } from 'react';
 
 interface ProductInfoProps {
     product: ProductsWithImages;
 }
 
 export default function ProductInfo({ product }: ProductInfoProps) {
+    const [selectedUnit, setSelectedUnit] = useState<Unit>(product.baseUnit);
+    const [selectedQuantity, setSelectedQuantity] = useState(1);
+
+    // Get available units (you might want to fetch this from an API)
+    const availableUnits: Unit[] = [
+        { id: '1', name: 'Gram', symbol: 'g', multiplier: 0.001, isActive: true, sortOrder: 1, createdAt: new Date(), updatedAt: new Date() },
+        { id: '2', name: 'Kilogram', symbol: 'kg', multiplier: 1.0, isActive: true, sortOrder: 2, createdAt: new Date(), updatedAt: new Date() },
+        { id: '3', name: 'Package', symbol: 'pkg', multiplier: 1.0, isActive: true, sortOrder: 3, createdAt: new Date(), updatedAt: new Date() },
+    ];
+
+    // Calculate pricing with discounts
+    const pricing = calculateFinalPricing(
+        product.basePrice,
+        selectedUnit,
+        selectedQuantity,
+        product.discounts
+    );
+
     // Simulate rating data (in real app, this would come from database)
     const rating = 4.8;
     const reviewCount = 124;
     const stars = Array.from({ length: 5 }, (_, i) => i + 1);
-
-    const formatPrice = (price: number) => {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD',
-        }).format(price);
-    };
 
     const getStockStatus = (quantity: number) => {
         if (quantity === 0) return { text: 'Out of Stock', color: 'text-red-400' };
@@ -43,27 +59,61 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                 </h1>
             </motion.div>
 
-            {/* Price */}
+            {/* Product Badges */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.15 }}
+            >
+                <ProductBadge 
+                    isNew={product.isNew}
+                    isBestSeller={product.isBestSeller}
+                    size="lg"
+                />
+            </motion.div>
+
+            {/* Price Section */}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
-                className="space-y-2"
+                className="space-y-4"
             >
-                <div className="flex items-baseline gap-3">
-                    <span className="text-5xl lg:text-6xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
-                        {formatPrice(product.price)}
-                    </span>
-                    {product.price > 100 && (
-                        <span className="text-lg text-gray-400 line-through">
-                            {formatPrice(product.price * 1.2)}
+                <div className="space-y-2">
+                    <div className="flex items-baseline gap-3">
+                        {/* Final Price */}
+                        <span className="text-5xl lg:text-6xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
+                            {formatPrice(pricing.finalPrice)}
                         </span>
-                    )}
+                        
+                        {/* Original Price with line-through if discounted */}
+                        {pricing.hasDiscount && (
+                            <span className="text-lg text-gray-400 line-through">
+                                {formatPrice(pricing.originalPrice)}
+                            </span>
+                        )}
+                    </div>
+                    
+                    {/* Unit Display */}
+                    <p className="text-lg text-amber-200/80">
+                        per {selectedUnit.symbol}
+                    </p>
                 </div>
-                {product.price > 100 && (
-                    <span className="inline-block bg-gradient-to-r from-green-500 to-emerald-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                        Save 20%
-                    </span>
+
+                {/* Discount Badge */}
+                {pricing.hasDiscount && (
+                    <DiscountBadge 
+                        discount={{
+                            type: product.discounts[0]?.discountType || 'PERCENTAGE',
+                            value: product.discounts[0]?.value || 0,
+                            amount: pricing.discountAmount,
+                            percentage: pricing.discountPercentage,
+                            endDate: product.discounts[0]?.endDate || new Date(),
+                            isActive: true,
+                        }}
+                        showCountdown={true}
+                        className="text-base"
+                    />
                 )}
             </motion.div>
 
@@ -121,6 +171,24 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                 </span>
             </motion.div>
 
+            {/* Unit Selection */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.55 }}
+            >
+                <UnitSelector
+                    units={availableUnits}
+                    basePrice={product.basePrice}
+                    baseUnit={product.baseUnit}
+                    selectedUnit={selectedUnit}
+                    selectedQuantity={selectedQuantity}
+                    onUnitChange={setSelectedUnit}
+                    onQuantityChange={setSelectedQuantity}
+                    showPriceCalculation={true}
+                />
+            </motion.div>
+
             {/* Description */}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -169,7 +237,12 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                 transition={{ duration: 0.6, delay: 0.8 }}
                 className="pt-4"
             >
-                <AddToCartButton product={product} />
+                <AddToCartButton 
+                    product={product} 
+                    selectedUnit={selectedUnit}
+                    selectedQuantity={selectedQuantity}
+                    pricing={pricing}
+                />
             </motion.div>
 
             {/* Additional Info */}
