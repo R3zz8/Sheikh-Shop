@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Plane, MeshWobbleMaterial, Environment, Lightformer } from '@react-three/drei';
+import { Plane, MeshWobbleMaterial, Lightformer } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 
@@ -34,21 +34,36 @@ export function DesertEnvironment() {
         />
       </Plane>
 
-      {/* Ambient environment lighting */}
-      <Environment preset="sunset" background={false}>
-        <Lightformer
-          intensity={0.5}
-          color="#fbbf24"
-          position={[10, 10, 5]}
-          scale={[10, 10, 1]}
-        />
-        <Lightformer
-          intensity={0.3}
-          color="#f59e0b"
-          position={[-10, -10, -5]}
-          scale={[10, 10, 1]}
-        />
-      </Environment>
+      {/* Custom ambient environment lighting - replacing problematic Environment component */}
+      <Lightformer
+        intensity={0.5}
+        color="#fbbf24"
+        position={[10, 10, 5]}
+        scale={[10, 10, 1]}
+      />
+      <Lightformer
+        intensity={0.3}
+        color="#f59e0b"
+        position={[-10, -10, -5]}
+        scale={[10, 10, 1]}
+      />
+      
+      {/* Additional ambient lighting for better desert atmosphere */}
+      <ambientLight intensity={0.2} color="#fef3c7" />
+      
+      {/* Sky gradient effect using multiple lightformers */}
+      <Lightformer
+        intensity={0.1}
+        color="#fbbf24"
+        position={[0, 15, 0]}
+        scale={[20, 1, 20]}
+      />
+      <Lightformer
+        intensity={0.05}
+        color="#f59e0b"
+        position={[0, 20, 0]}
+        scale={[25, 1, 25]}
+      />
     </group>
   );
 }

@@ -7,9 +7,11 @@ async function testSuperadminAccess() {
     try {
         console.log('🧪 Testing Superadmin Access...\n');
 
+        const superadminEmail = process.env.SUPERADMIN_EMAIL || 'rezadhu615@gmail.com';
+        
         // 1. Verify superadmin user exists
         const superadmin = await prisma.user.findUnique({
-            where: { email: 'rezadhu615@gmail.com' },
+            where: { email: superadminEmail },
             select: {
                 id: true,
                 email: true,
@@ -34,7 +36,7 @@ async function testSuperadminAccess() {
         console.log(`   Disabled: ${superadmin.disabled}\n`);
 
         // 2. Test password authentication
-        const testPassword = 'Temp#1234';
+        const testPassword = process.env.SUPERADMIN_PASSWORD || 'Temp#1234';
         const passwordValid = await bcrypt.compare(testPassword, superadmin.password);
 
         if (passwordValid) {
@@ -102,7 +104,7 @@ async function testSuperadminAccess() {
         console.log('\n🎉 All tests passed! Superadmin user is properly configured.');
         console.log('\n📋 Login Credentials:');
         console.log(`   Email: ${superadmin.email}`);
-        console.log(`   Password: ${testPassword}`);
+        console.log(`   Password: [Check your environment variables]`);
         console.log('\n🔗 Access URLs:');
         console.log('   Dashboard: http://localhost:3008/dashboard');
         console.log('   Users: http://localhost:3008/dashboard/users');

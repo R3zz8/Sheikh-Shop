@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { hashPassword } from '../src/lib/auth/password';
 
 const prisma = new PrismaClient();
 
@@ -210,6 +211,41 @@ async function main() {
   ]);
 
   console.log(`✅ Created ${images.length} images`);
+
+  // Create Super Admin User
+  console.log('👑 Creating super admin user...');
+  
+  const superadminEmail = process.env.SUPERADMIN_EMAIL || 'rezadhu615@gmail.com';
+  const superadminPassword = process.env.SUPERADMIN_PASSWORD || 'Temp#1234';
+  
+  // Hash the password securely
+  const hashedPassword = await hashPassword(superadminPassword);
+  
+  const superadmin = await prisma.user.upsert({
+    where: { email: superadminEmail },
+    update: {
+      // Update password if it changed
+      password: hashedPassword,
+      role: 'SUPERADMIN',
+      emailVerified: true,
+      canLogin: true,
+      disabled: false,
+    },
+    create: {
+      email: superadminEmail,
+      password: hashedPassword,
+      role: 'SUPERADMIN',
+      emailVerified: true,
+      canLogin: true,
+      disabled: false,
+    },
+  });
+
+  console.log(`✅ Super admin user created/updated: ${superadmin.email}`);
+  console.log(`   Role: ${superadmin.role}`);
+  console.log(`   Email Verified: ${superadmin.emailVerified}`);
+  console.log(`   Can Login: ${superadmin.canLogin}`);
+  console.log(`   Disabled: ${superadmin.disabled}`);
 
   console.log('🎉 Database seeding completed successfully!');
 }

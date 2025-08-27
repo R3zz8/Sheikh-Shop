@@ -10,6 +10,8 @@ generator client {
   previewFeatures = ["postgresqlExtensions"]
 }
 
+
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -57,7 +59,7 @@ enum DiscountType {
 // Performance: Product model with optimized fields and dynamic pricing support
 model Product {
   id          String         @id @default(uuid())
-  name        String         @db.VarChar(255)
+  name        String         @unique @db.VarChar(255)
   category    ProductCategory
   description String?
   basePrice   Float          @default(0.0) // Base price for 1 unit
@@ -91,7 +93,7 @@ model Product {
 model Unit {
   id          String   @id @default(uuid())
   name        String   @db.VarChar(50) // e.g., "gram", "kilogram", "liter", "package"
-  symbol      String   @db.VarChar(10) // e.g., "g", "kg", "L", "pkg"
+  symbol      String   @unique @db.VarChar(10) // e.g., "g", "kg", "L", "pkg"
   multiplier  Float    @default(1.0) // Multiplier for base price calculation
   isActive    Boolean  @default(true)
   sortOrder   Int      @default(0)
@@ -129,6 +131,9 @@ model Discount {
   @@index([endDate])
   @@index([isActive])
   @@index([discountType])
+  
+  // Unique constraint for product + discount type combination
+  @@unique([productId, discountType])
 }
 
 // Security: Image model with validation
@@ -141,6 +146,7 @@ model Image {
   
   // Performance: Add index for product queries
   @@index([productId])
+  @@index([id])
 }
 
 // Security: Cart item model with validation and unit support
@@ -205,6 +211,18 @@ model User {
   @@index([lastLoginAt])
 }
 
+// Security: Blacklisted token model for JWT token revocation
+model BlacklistedToken {
+  id        String   @id @default(cuid())
+  token     String   @unique @db.VarChar(500)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  
+  // Performance: Add indexes for cleanup queries
+  @@index([expiresAt])
+  @@index([token])
+}
+
 // Security: Recovery codes model
 model RecoveryCode {
   id        String   @id @default(cuid())
@@ -226,6 +244,7 @@ model Session {
   refreshToken String   @unique @db.VarChar(255)
   userAgent    String?  @db.VarChar(500)
   ip           String?  @db.VarChar(45) // IPv6 compatible
+  deviceFingerprint String? @db.VarChar(64) // SHA256 hash of device fingerprint
   createdAt    DateTime @default(now())
   expiresAt    DateTime
   lastUsedAt   DateTime @default(now())
@@ -235,6 +254,7 @@ model Session {
   @@index([userId])
   @@index([expiresAt])
   @@index([createdAt])
+  @@index([deviceFingerprint])
 }
 
 // Security: Audit log model with better structure

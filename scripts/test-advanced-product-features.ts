@@ -97,9 +97,10 @@ async function testAdvancedProductFeatures() {
         console.log('   ✅ Responsive design');
         console.log('   ✅ Real-time feedback and notifications');
 
+        const superadminEmail = process.env.SUPERADMIN_EMAIL || 'rezadhu615@gmail.com';
         console.log('\n⚠️  Login with superadmin to test:');
-        console.log('   Email: rezadhu615@gmail.com');
-        console.log('   Password: Temp#1234');
+        console.log(`   Email: ${superadminEmail}`);
+        console.log('   Password: [Check your environment variables]');
 
         console.log('\n📊 Usage Instructions:');
         console.log('   1. Use checkboxes to select multiple products');

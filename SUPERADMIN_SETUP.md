@@ -6,9 +6,9 @@ This document describes the superadmin user setup for the Digital Shop Next.js a
 ## ✅ Completed Setup
 
 ### 1. Database User Creation
-- **Email:** rezadhu615@gmail.com
+- **Email:** Configured via `SUPERADMIN_EMAIL` environment variable
 - **Role:** SUPERADMIN
-- **Password:** Temp#1234 (hashed with bcrypt)
+- **Password:** Configured via `SUPERADMIN_PASSWORD` environment variable (hashed with bcrypt)
 - **Status:** Email verified, can login, not disabled
 
 ### 2. Authentication & Authorization
@@ -41,8 +41,8 @@ INSERT INTO "User" (
   canLogin, disabled, createdAt, updatedAt
 ) VALUES (
   'cmdqbxypm0000120tnjsnt6ce', 
-  'rezadhu615@gmail.com', 
-  '$2b$10$...', -- bcrypt hashed password
+  '${SUPERADMIN_EMAIL}', 
+  '$2b$10$...', -- bcrypt hashed password from SUPERADMIN_PASSWORD
   'SUPERADMIN', 
   true, true, false, 
   NOW(), NOW()
@@ -79,8 +79,8 @@ npm run db:seed
 1. Start development server: `npm run dev`
 2. Navigate to: `http://localhost:3008/login`
 3. Login with:
-   - Email: rezadhu615@gmail.com
-   - Password: Temp#1234
+   - Email: Check your `SUPERADMIN_EMAIL` environment variable
+   - Password: Check your `SUPERADMIN_PASSWORD` environment variable
 4. Test access to all admin routes
 
 ## 🧹 Cleanup Instructions
@@ -107,10 +107,9 @@ npm run db:seed
 
 4. **Update seed file:**
    ```typescript
-   // Remove this section from prisma/seed.ts:
-   // Create superadmin user
-   const superadminEmail = 'rezadhu615@gmail.com';
-   const superadminPassword = 'Temp#1234';
+   // The seed file now uses environment variables:
+   const superadminEmail = process.env.SUPERADMIN_EMAIL || 'rezadhu615@gmail.com';
+   const superadminPassword = process.env.SUPERADMIN_PASSWORD || 'Temp#1234';
    // ... rest of superadmin creation code
    ```
 
@@ -132,7 +131,7 @@ npm run db:seed
 
 ## 📋 Login Credentials
 
-- **Email:** rezadhu615@gmail.com
-- **Password:** Temp#1234
+- **Email:** Configured via `SUPERADMIN_EMAIL` environment variable
+- **Password:** Configured via `SUPERADMIN_PASSWORD` environment variable
 
 **⚠️ IMPORTANT:** Change the password after first login! 
