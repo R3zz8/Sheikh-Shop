@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
-    // Fetch amazing deals products
+    // Fetch amazing deals products with correct schema relations
     const amazingDeals = await prisma.product.findMany({
       where: {
         isAmazing: true,
@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
       },
       include: {
         images: true,
-        baseUnit: true,
+        baseUnit: true, // This is correct - it's the relation name in the schema
         discounts: {
           where: {
             isActive: true,

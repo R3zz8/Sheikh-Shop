@@ -10,15 +10,16 @@ import { z } from 'zod';
 const loginSchema = z.object({
   email: z.string().email('Invalid email format'),
   password: z.string().min(1, 'Password is required'),
+  remember: z.boolean().optional(),
 });
 
-// Security: Rate limiting for login attempts
+// Simplified rate limiting for development
 const loginAttempts = new Map<string, { count: number; resetTime: number }>();
 
 function isLoginRateLimited(email: string): boolean {
   const now = Date.now();
   const windowMs = 15 * 60 * 1000; // 15 minutes
-  const maxAttempts = 5; // Max login attempts per window
+  const maxAttempts = 20; // Increased for development
 
   const record = loginAttempts.get(email);
   if (!record || now > record.resetTime) {

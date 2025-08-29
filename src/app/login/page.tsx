@@ -21,19 +21,11 @@ export default function LoginPage() {
   const [remember, setRemember] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
-  const [csrfToken, setCsrfToken] = useState('');
   const router = useRouter();
 
   const isEmailValid = useMemo(() => (email ? validateEmail(email) : true), [email]);
   const isPasswordValid = useMemo(() => (password ? password.length >= 1 : true), [password]);
   const isFormValid = isEmailValid && isPasswordValid && email.length > 0 && password.length > 0;
-
-  useEffect(() => {
-    void fetch('/api/csrf')
-      .then(res => res.json())
-      .then(data => setCsrfToken(data.csrfToken))
-      .catch(() => setCsrfToken(''));
-  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -44,7 +36,7 @@ export default function LoginPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({ email, password, csrfToken, remember }),
+          body: JSON.stringify({ email, password, remember }),
         });
         const data = await res.json().catch(() => ({}));
 

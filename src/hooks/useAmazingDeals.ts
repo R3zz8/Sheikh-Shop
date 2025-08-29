@@ -1,14 +1,5 @@
 import { useState, useEffect } from 'react';
-
-interface Product {
-  id: string;
-  name: string;
-  basePrice: number;
-  images: { id: string; image: string }[];
-  baseUnit: { id: string; name: string; symbol: string };
-  discounts: { id: string; value: number; discountType: string; endDate: string }[];
-  isAmazing: boolean;
-}
+import type { Product } from '@/types';
 
 interface AmazingDealsResponse {
   success: boolean;

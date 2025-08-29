@@ -56,7 +56,13 @@ export default function RegisterPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({ email, password, firstName, lastName }),
+          body: JSON.stringify({ 
+            email, 
+            password, 
+            firstName, 
+            lastName,
+            username: `${firstName.toLowerCase()}${Date.now()}` // Auto-generate username
+          }),
         });
         const data = await res.json().catch(() => ({}));
         if (res.ok && data?.success) {

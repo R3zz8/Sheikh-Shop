@@ -34,6 +34,8 @@
     "db:push": "npx prisma db push",
     "db:seed": "npx prisma db seed",
     "db:reset": "npx prisma migrate reset",
+    "reset-db": "tsx scripts/reset-database.ts",
+    "test-auth": "tsx scripts/test-auth.ts",
     "security:audit": "npm audit --audit-level=moderate",
     "security:fix": "npm audit fix",
     "security:check": "npm run security:audit && npm run type-check && npm run lint",
