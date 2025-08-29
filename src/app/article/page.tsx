@@ -4,6 +4,9 @@ import { prisma } from '@/lib/prisma';
 import ArticlesList from './_components/ArticlesList';
 import ArticlesSkeleton from './_components/ArticlesSkeleton';
 
+// Force dynamic rendering to prevent build-time database queries
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
     title: 'Articles - Sheikh Shop',
     description: 'Discover insightful articles about premium products, health benefits, and culinary excellence.',

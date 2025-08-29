@@ -3,8 +3,8 @@ import ProductListView from '@/modules/products/views/ProductListView';
 import React from 'react';
 import type { ProductsWithImages } from '@/types';
 
-// Revalidate every 5 minutes
-export const revalidate = 300;
+// Force dynamic rendering to prevent build-time database queries
+export const dynamic = 'force-dynamic';
 
 export default async function Products() {
   try {

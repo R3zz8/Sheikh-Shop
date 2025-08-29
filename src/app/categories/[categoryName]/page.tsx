@@ -2,6 +2,9 @@ import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import CategoryProducts from './_components/CategoryProducts';
 
+// Force dynamic rendering to prevent build-time database queries
+export const dynamic = 'force-dynamic';
+
 interface CategoryPageProps {
     params: {
         categoryName: string;

@@ -14,6 +14,7 @@ interface AmazingDealsResponse {
   success: boolean;
   data: Product[];
   count: number;
+  error?: string;
 }
 
 export function useAmazingDeals() {
