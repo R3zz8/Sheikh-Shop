@@ -51,7 +51,8 @@ export default function RegisterPage() {
     startTransition(async () => {
       try {
         const [firstName, ...rest] = fullName.trim().split(' ');
-        const lastName = rest.join(' ');
+        const lastName = rest.join(' ') || 'User'; // Fallback if no last name
+        const safeFirstName = firstName || 'User'; // Fallback if no first name
         const res = await fetch('/api/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -59,9 +60,9 @@ export default function RegisterPage() {
           body: JSON.stringify({ 
             email, 
             password, 
-            firstName, 
+            firstName: safeFirstName, 
             lastName,
-            username: `${firstName.toLowerCase()}${Date.now()}` // Auto-generate username
+            username: `${safeFirstName.toLowerCase()}${Date.now()}` // Auto-generate username with safe fallback
           }),
         });
         const data = await res.json().catch(() => ({}));
