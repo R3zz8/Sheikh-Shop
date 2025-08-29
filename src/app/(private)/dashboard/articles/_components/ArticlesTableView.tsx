@@ -127,7 +127,7 @@ export default function ArticlesTableView({
           <Checkbox
             checked={allSelected}
             ref={(el) => {
-              if (el) el.indeterminate = someSelected;
+                                      if (el && 'indeterminate' in el) (el as HTMLInputElement).indeterminate = someSelected;
             }}
             onCheckedChange={onSelectAll}
           />
@@ -150,7 +150,7 @@ export default function ArticlesTableView({
                   <Checkbox
                     checked={allSelected}
                     ref={(el) => {
-                      if (el) el.indeterminate = someSelected;
+                      if (el && 'indeterminate' in el) (el as HTMLInputElement).indeterminate = someSelected;
                     }}
                     onCheckedChange={onSelectAll}
                   />

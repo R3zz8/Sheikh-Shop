@@ -371,7 +371,7 @@ export const exportProducts = async (filters?: {
     const csvHeader = 'ID,Name,Category,Price,Quantity,Status,Description,Images,Created At\n';
     const csvRows = products.map(product => {
       const images = product.images.map(img => img.image).join(';');
-      return `"${product.id}","${product.name}","${product.category}","${product.price}","${product.quantity}","${product.status}","${product.description || ''}","${images}","${product.createdAt}"`;
+      return `"${product.id}","${product.name}","${product.category}","${product.basePrice}","${product.quantity}","${product.status}","${product.description || ''}","${images}","${product.createdAt}"`;
     }).join('\n');
 
     return csvHeader + csvRows;

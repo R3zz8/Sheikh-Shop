@@ -22,7 +22,7 @@ async function testShoppingCartSystem() {
             console.log(`   Product ${index + 1}:`);
             console.log(`     - Name: ${product.name}`);
             console.log(`     - ID: ${product.id}`);
-            console.log(`     - Price: ${product.price}`);
+            console.log(`     - Price: ${product.basePrice}`);
             console.log(`     - Category: ${product.category}`);
             console.log(`     - Status: ${product.status}`);
             console.log(`     - Quantity: ${product.quantity}`);

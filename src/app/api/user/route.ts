@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Security: Verify JWT token
-    const user = verifyJwtToken(token);
+    const user = await verifyJwtToken(token);
     if (!user) {
       return NextResponse.json(
         { error: 'Invalid or expired token' },

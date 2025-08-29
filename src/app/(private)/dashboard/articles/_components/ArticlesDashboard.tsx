@@ -26,7 +26,6 @@ import {
   Trash2, 
   Copy, 
   Calendar,
-  User,
   Clock,
   BarChart3,
   TrendingUp,
@@ -42,9 +41,7 @@ import {
   RefreshCw,
   Settings,
   Archive,
-  Unarchive,
   EyeOff,
-  EyeOn,
   CalendarDays,
   History,
   Users,
@@ -53,7 +50,9 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
-import type { Article, User } from '@prisma/client';
+import type { Article } from '@prisma/client';
+import ArticlesGridView from './ArticlesGridView';
+import ArticlesTableView from './ArticlesTableView';
 
 interface ArticleWithAuthor extends Article {
   author: {

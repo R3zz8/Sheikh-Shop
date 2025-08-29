@@ -110,7 +110,7 @@ export async function logoutAllSessions() {
 }
 
 // Security: Invalidate all user sessions (for security incidents)
-export async function invalidateAllUserSessions(userId: string) {
+export async function logoutAllUserSessions(userId: string) {
   const { PrismaClient } = await import('@prisma/client');
   const prisma = new PrismaClient();
 

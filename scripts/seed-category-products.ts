@@ -6,6 +6,15 @@ async function seedCategoryProducts() {
     try {
         console.log('🌱 Seeding category products...');
 
+        // Get the kilogram unit as default base unit
+        const kgUnit = await prisma.unit.findFirst({
+            where: { symbol: 'kg' }
+        });
+
+        if (!kgUnit) {
+            throw new Error('Kilogram unit not found. Please run the main seed script first.');
+        }
+
         // Sample products for each category
         const sampleProducts = [
             // Dates Category
@@ -133,7 +142,9 @@ async function seedCategoryProducts() {
                 data: {
                     ...productInfo,
                     category: productInfo.category as any,
-                    status: productInfo.status as any
+                    status: productInfo.status as any,
+                    baseUnitId: kgUnit.id,
+                    basePrice: productInfo.price
                 }
             });
 

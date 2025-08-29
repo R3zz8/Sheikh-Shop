@@ -26,10 +26,10 @@ export const RISK_SCORES = {
 
 // Security: Calculate risk score based on action and context
 export async function calculateRiskScore(
-  action: string,
+  action: string | (typeof AUDIT_CONFIG.HIGH_RISK_ACTIONS)[number],
   metadata: Record<string, any> = {}
-): Promise<number> {
-  let score = RISK_SCORES.LOW;
+): Promise<(typeof RISK_SCORES)[keyof typeof RISK_SCORES]> {
+  let score: (typeof RISK_SCORES)[keyof typeof RISK_SCORES] = RISK_SCORES.LOW;
 
   // Security: High-risk actions
   if (AUDIT_CONFIG.HIGH_RISK_ACTIONS.includes(action)) {
@@ -37,7 +37,7 @@ export async function calculateRiskScore(
   }
 
   // Security: Failed authentication attempts
-  if (action.includes('failed') || action.includes('invalid')) {
+  if (typeof action === 'string' && (action.includes('failed') || action.includes('invalid'))) {
     score = Math.max(score, RISK_SCORES.MEDIUM);
   }
 
@@ -57,12 +57,12 @@ export async function calculateRiskScore(
   }
 
   // Security: Admin actions
-  if (action.includes('admin') || metadata.isAdminAction) {
+  if ((typeof action === 'string' && action.includes('admin')) || metadata.isAdminAction) {
     score = Math.max(score, RISK_SCORES.HIGH);
   }
 
   // Security: Critical security events
-  if (action.includes('breach') || action.includes('compromise')) {
+  if (typeof action === 'string' && (action.includes('breach') || action.includes('compromise'))) {
     score = RISK_SCORES.CRITICAL;
   }
 
@@ -72,7 +72,7 @@ export async function calculateRiskScore(
 // Security: Enhanced audit logging with detailed metadata
 export async function logAudit(
   userId: string | null,
-  action: string,
+  action: string | (typeof AUDIT_CONFIG.HIGH_RISK_ACTIONS)[number],
   metadata: {
     ip?: string;
     userAgent?: string;

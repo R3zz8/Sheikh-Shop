@@ -101,6 +101,7 @@ async function main() {
         status: 'ACTIVE',
         isNew: true,
         isBestSeller: true,
+        isAmazing: true,
       },
     }),
     prisma.product.upsert({
@@ -116,6 +117,7 @@ async function main() {
         status: 'ACTIVE',
         isNew: false,
         isBestSeller: true,
+        isAmazing: true,
       },
     }),
     prisma.product.upsert({

@@ -71,7 +71,7 @@ async function page({ params }: { params: Promise<{ id: string }> }) {
         image: product.images.length > 0 ? product.images[0]?.image : undefined,
         offers: {
             '@type': 'Offer',
-            price: product.price,
+            price: product.basePrice,
             priceCurrency: 'USD',
             availability: product.quantity > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
         },

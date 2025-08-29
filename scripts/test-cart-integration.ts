@@ -26,7 +26,7 @@ async function testCartIntegration() {
             console.log(`   Product ${index + 1}:`);
             console.log(`     - Name: ${product.name}`);
             console.log(`     - ID: ${product.id}`);
-            console.log(`     - Price: $${product.price}`);
+            console.log(`     - Price: $${product.basePrice}`);
             console.log(`     - Stock: ${product.quantity}`);
             console.log(`     - Status: ${product.status}`);
             console.log(`     - Images: ${product.images.length}`);

@@ -10,6 +10,12 @@ generator client {
   previewFeatures = ["postgresqlExtensions"]
 }
 
+// Seed configuration
+generator seed {
+  provider = "ts-node"
+  output   = "./seed.ts"
+}
+
 
 
 datasource db {
@@ -68,6 +74,7 @@ model Product {
   status      ProductStatus  @default(ACTIVE)
   isNew       Boolean        @default(false) // New product badge
   isBestSeller Boolean       @default(false) // Best seller badge
+  isAmazing   Boolean        @default(false) // Amazing deals badge
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
   
@@ -87,6 +94,7 @@ model Product {
   @@index([basePrice, status])
   @@index([isNew])
   @@index([isBestSeller])
+  @@index([isAmazing])
 }
 
 // Unit model for dynamic pricing

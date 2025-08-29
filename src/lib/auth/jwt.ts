@@ -45,6 +45,9 @@ export function signJwtToken(
   expiresIn: StringValue | number = '7d',
 ): string {
   try {
+    if (!JWT_SECRET) {
+      throw new Error('JWT_SECRET environment variable is not set');
+    }
     return jwt.sign(payload, JWT_SECRET, {
       ...JWT_OPTIONS,
       expiresIn,
@@ -57,6 +60,10 @@ export function signJwtToken(
 // Security: Enhanced JWT verification with proper error handling and blacklist check
 export async function verifyJwtToken(token: string): Promise<JWTPayload | null> {
   try {
+    if (!JWT_SECRET) {
+      throw new Error('JWT_SECRET environment variable is not set');
+    }
+    
     // Security: Check if token is blacklisted
     if (await isTokenBlacklisted(token)) {
       return null;

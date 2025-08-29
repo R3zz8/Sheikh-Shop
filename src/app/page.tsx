@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import PalmTreeWrapper from '@/components/3d/PalmTreeWrapper';
 import Categories from '@/components/Categories';
+import AmazingDeals from '@/components/AmazingDeals';
 import MobileCarousel from '@/components/MobileCarousel';
 
 export default function Home() {
@@ -18,6 +19,9 @@ export default function Home() {
       
       {/* Categories Section */}
       <Categories />
+
+      {/* Amazing Deals Section */}
+      <AmazingDeals />
 
       <div className="relative z-10">
         {/* Hero Section with 3D Palm Tree */}

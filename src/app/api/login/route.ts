@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (!user) {
-      await logFailedAttempt(null, 'login_failed', req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip'), req.headers.get('user-agent'));
+      await logFailedAttempt(null, 'login_failed', req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || undefined, req.headers.get('user-agent') || undefined);
       return NextResponse.json(
         { success: false, message: 'Invalid credentials' },
         { status: 401 },
@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
 
     // Security: Check if user can login
     if (!user.canLogin || user.disabled) {
-      await logFailedAttempt(user.id, 'login_blocked', req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip'), req.headers.get('user-agent'));
+      await logFailedAttempt(user.id, 'login_blocked', req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || undefined, req.headers.get('user-agent') || undefined);
       return NextResponse.json(
         { success: false, message: 'Account is disabled' },
         { status: 403 },
@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
 
     // Security: Check if account is locked
     if (user.lockedUntil && user.lockedUntil > new Date()) {
-      await logFailedAttempt(user.id, 'login_blocked_locked', req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip'), req.headers.get('user-agent'));
+      await logFailedAttempt(user.id, 'login_blocked_locked', req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || undefined, req.headers.get('user-agent') || undefined);
       return NextResponse.json(
         { success: false, message: 'Account is temporarily locked due to too many failed attempts.' },
         { status: 423 },

@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
         const { email, password, firstName, lastName, username } = validationResult.data;
 
         // Security: Enhanced password validation
-        const passwordValidation = validatePassword(password);
+        const passwordValidation = await validatePassword(password);
         if (!passwordValidation.isValid) {
             return NextResponse.json(
                 {

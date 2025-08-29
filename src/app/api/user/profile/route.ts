@@ -195,7 +195,7 @@ export async function PATCH(req: NextRequest) {
 
         // Security: Validate new password
         const { validatePassword, hashPassword } = await import('@/lib/auth/password');
-        const passwordValidation = validatePassword(newPassword);
+        const passwordValidation = await validatePassword(newPassword);
 
         if (!passwordValidation.isValid) {
             return NextResponse.json(

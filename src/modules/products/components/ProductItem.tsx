@@ -30,7 +30,7 @@ export default function ProductItem({ product, index = 0 }: { product: ProductsW
   // Set default unit when availableUnits are loaded
   useEffect(() => {
     if (availableUnits.length > 0 && !selectedUnit) {
-      setSelectedUnit(getDefaultUnit() || availableUnits[0]);
+              setSelectedUnit(getDefaultUnit() || availableUnits[0] || null);
     }
   }, [availableUnits, selectedUnit, getDefaultUnit]);
 
@@ -74,12 +74,10 @@ export default function ProductItem({ product, index = 0 }: { product: ProductsW
     setShowFlyAnimation(true);
 
     try {
-      await addToCartMutation.mutateAsync({ 
-        productId: product.id,
-        unitId: selectedUnit.id,
-        quantity: selectedQuantity,
-        unitPrice: pricing.finalPrice / selectedQuantity
-      });
+              await addToCartMutation.mutateAsync({ 
+          productId: product.id,
+          quantity: selectedQuantity
+        });
     } catch (error) {
       // Error handling is done in the mutation
     }

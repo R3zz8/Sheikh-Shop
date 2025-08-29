@@ -27,9 +27,7 @@ export default function AddToCartButton({
         try {
             await addToCartMutation.mutateAsync({
                 productId: product.id,
-                unitId: selectedUnit.id,
-                quantity: selectedQuantity,
-                unitPrice: pricing.finalPrice / selectedQuantity
+                quantity: selectedQuantity
             });
 
             // Show success state

@@ -15,8 +15,8 @@ export default function ProductDetail(product: ProductsWithImages) {
   const [ref, inView] = useInView({ threshold: 0.1, triggerOnce: true });
 
   // Determine premium badge based on price
-  const isPremium = (product?.price || 0) > 50;
-  const isLuxury = (product?.price || 0) > 100;
+  const isPremium = (product?.basePrice || 0) > 50;
+  const isLuxury = (product?.basePrice || 0) > 100;
 
   // Generate random rating for demo
   const rating = Math.floor(Math.random() * 2) + 4;
@@ -140,7 +140,7 @@ export default function ProductDetail(product: ProductsWithImages) {
                       {/* Price */}
                       <div className="text-center lg:text-left">
                         <p className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent tracking-tight">
-                          ${(product?.price || 0).toFixed(2)}
+                          ${(product?.basePrice || 0).toFixed(2)}
                         </p>
                       </div>
 

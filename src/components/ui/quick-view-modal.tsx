@@ -19,8 +19,8 @@ export const QuickViewModal = ({ product, children }: QuickViewModalProps) => {
   const [mounted, setMounted] = useState(false);
   const { addToCartMutation } = useCart();
 
-  const isPremium = (product?.price || 0) > 50;
-  const isLuxury = (product?.price || 0) > 100;
+  const isPremium = (product?.basePrice || 0) > 50;
+  const isLuxury = (product?.basePrice || 0) > 100;
   const rating = Math.floor(Math.random() * 2) + 4;
   const reviewCount = Math.floor(Math.random() * 200) + 50;
 
@@ -104,7 +104,7 @@ export const QuickViewModal = ({ product, children }: QuickViewModalProps) => {
                   {product?.name}
                 </h2>
                 <p className="text-4xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent tracking-tight">
-                  ${(product?.price || 0).toFixed(2)}
+                  ${(product?.basePrice || 0).toFixed(2)}
                 </p>
 
                 {/* Rating */}

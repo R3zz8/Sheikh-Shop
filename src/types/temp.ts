@@ -33,6 +33,7 @@ export interface Product {
   status: string;
   isNew: boolean;
   isBestSeller: boolean;
+  isAmazing: boolean;
   createdAt: Date;
   updatedAt: Date;
   baseUnit: Unit;

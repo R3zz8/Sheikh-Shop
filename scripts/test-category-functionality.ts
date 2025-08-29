@@ -37,7 +37,7 @@ async function testCategoryFunctionality() {
 
             console.log(`\n  ${category}:`);
             products.forEach(product => {
-                console.log(`    - ${product.name} ($${product.price}) - ${product.images.length} images`);
+                console.log(`    - ${product.name} ($${product.basePrice}) - ${product.images.length} images`);
             });
         }
 

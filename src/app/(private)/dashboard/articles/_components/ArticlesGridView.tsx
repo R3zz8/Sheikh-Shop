@@ -120,7 +120,7 @@ export default function ArticlesGridView({
           <Checkbox
             checked={allSelected}
             ref={(el) => {
-              if (el) el.indeterminate = someSelected;
+                              if (el && 'indeterminate' in el) (el as HTMLInputElement).indeterminate = someSelected;
             }}
             onCheckedChange={onSelectAll}
           />

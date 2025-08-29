@@ -93,7 +93,8 @@ export async function middleware(request: NextRequest) {
       pathname.startsWith('/api/auth') ||
       pathname.startsWith('/api/login') ||
       pathname.startsWith('/api/register') ||
-      pathname.startsWith('/api/csrf')
+      pathname.startsWith('/api/csrf') ||
+      pathname.startsWith('/api/amazing-deals')
     )
   ) {
     const response = NextResponse.next();
