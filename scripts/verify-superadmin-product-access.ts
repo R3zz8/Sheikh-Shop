@@ -45,7 +45,7 @@ async function verifySuperadminProductAccess() {
         if (products.length > 0) {
             console.log('   Sample products:');
             products.forEach((product, index) => {
-                console.log(`   ${index + 1}. ${product.name} (${product.category}) - $${product.basePrice}`);
+                console.log(`   ${index + 1}. ${product.name} (${product.category}) - $${product.basePrice || 'N/A'}`);
             });
         }
 

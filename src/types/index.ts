@@ -1,8 +1,20 @@
-// Temporary types until Prisma client is generated with new schema
-export * from './temp';
+import type { Prisma } from '@prisma/client';
 
-// Import types from temp to make them available
-import type { Unit, Product } from './temp';
+// Use Prisma-generated types
+export type Product = Prisma.ProductGetPayload<{
+  include: {
+    images: true;
+    baseUnit: true;
+    discounts: true;
+  };
+}>;
+
+export type Unit = Prisma.UnitGetPayload<{}>;
+export type Discount = Prisma.DiscountGetPayload<{}>;
+export type Image = Prisma.ImageGetPayload<{}>;
+export type User = Prisma.UserGetPayload<{}>;
+export type Session = Prisma.SessionGetPayload<{}>;
+export type BlacklistedToken = Prisma.BlacklistedTokenGetPayload<{}>;
 
 // Extended types for enhanced functionality
 export interface ProductPricing {
@@ -27,14 +39,16 @@ export interface DiscountInfo {
 
 // Additional types for components
 export interface CartWithProduct {
-  id: string;
+  id: number;
   userId: string;
   productId: string;
   quantity: number;
+  unitId: string;
   unitPrice: number;
   createdAt: Date;
   updatedAt: Date;
   product: Product;
+  unit: Unit;
 }
 
 export interface ArticleWithAuthor {
@@ -44,15 +58,16 @@ export interface ArticleWithAuthor {
   content: string;
   summary: string;
   imageUrl: string | null;
-  featured: boolean;
-  allowComments: boolean;
   status: string;
   authorId: string;
   createdAt: Date;
   updatedAt: Date;
   author: {
     id: string;
-    username: string | undefined;
+    username: string | null;
     email: string;
   };
 }
+
+// Type for products with images
+export type ProductsWithImages = Product;

@@ -37,7 +37,11 @@ export const getProductById = async (id: string) => {
   // await new Promise((resolve) => setTimeout(resolve, 4000));
   const result = await prisma.product.findFirst({
     where: { id },
-    include: { images: true },
+    include: { 
+      images: true,
+      baseUnit: true,
+      discounts: true,
+    },
   });
   if (!result) {
     return null;

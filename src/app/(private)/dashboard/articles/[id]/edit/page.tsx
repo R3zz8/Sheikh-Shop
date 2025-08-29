@@ -30,14 +30,7 @@ export default async function EditArticlePage({ params }: EditArticlePageProps) 
     <div className="container mx-auto px-4 py-8">
       <EnhancedArticleForm article={{
         ...article,
-        imageUrl: article.imageUrl ?? undefined,
-        // Add default values for new fields
-        tags: [],
-        seoTitle: article.title,
-        seoDescription: article.summary,
-        featured: false,
-        allowComments: true,
-        scheduledAt: undefined,
+        imageUrl: article.imageUrl,
       }} />
     </div>
   );

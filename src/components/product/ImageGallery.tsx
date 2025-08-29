@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface ImageGalleryProps {
-    images: Array<{ id: string; image: string; productId: string | null }>;
+    images: Array<{ id: string; image: string; productId: string | null | undefined }>;
     productName: string;
 }
 

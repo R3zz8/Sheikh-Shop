@@ -33,11 +33,15 @@ export async function generateMetadata({
     });
 }
 
-async function getProduct(id: string): Promise<ProductsWithImages | null> {
+async function getProduct(id: string) {
     try {
         const product = await prisma.product.findUnique({
             where: { id },
-            include: { images: true },
+            include: { 
+                images: true,
+                baseUnit: true,
+                discounts: true,
+            },
         });
 
         return product;

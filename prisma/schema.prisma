@@ -10,14 +10,6 @@ generator client {
   previewFeatures = ["postgresqlExtensions"]
 }
 
-// Seed configuration
-generator seed {
-  provider = "ts-node"
-  output   = "./seed.ts"
-}
-
-
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")

@@ -11,7 +11,7 @@ export async function generateMetadata({
 }) {
   const data = await params;
   const { id } = data;
-  const product = (await getProductById(id)) as ProductsWithImages;
+  const product = await getProductById(id);
   if (!product) {
     return customMetadataGenerator({
       title: 'not found',
@@ -28,14 +28,14 @@ export async function generateMetadata({
 async function page({ params }: { params: Promise<{ id: string }> }) {
   const data = await params;
   const { id } = data;
-  const product = (await getProductById(id)) as ProductsWithImages;
+  const product = await getProductById(id);
 
   const jsonLd = {
     '@context': 'http://schema.org',
     '@type': 'Product',
-    name: product.name,
-    image: product?.images.length ? product.images[0]?.image : undefined,
-    description: product.description,
+    name: product?.name || '',
+    image: product?.images?.length ? product.images[0]?.image : undefined,
+    description: product?.description || '',
   };
 
   return (
@@ -44,7 +44,7 @@ async function page({ params }: { params: Promise<{ id: string }> }) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <ProductDetail {...product} />;
+      {product && <ProductDetail {...product} />};
     </section>
   );
 }

@@ -510,7 +510,7 @@
 /* Focus utilities */
 @layer utilities {
   .focus-ring {
-    @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+    @apply focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2;
   }
   
   .focus-ring-white {

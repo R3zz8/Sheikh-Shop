@@ -147,7 +147,7 @@ const ProductForm = (props: { product: Product | null }) => {
                 id="price"
                 step="0.01"
                 min="0"
-                defaultValue={data?.basePrice || ''}
+                defaultValue={data?.basePrice?.toString() || ''}
                 placeholder="0.00"
                 required
               />

@@ -26,7 +26,7 @@ async function testCartRealTimeUpdates() {
             console.log(`   Product ${index + 1}:`);
             console.log(`     - Name: ${product.name}`);
             console.log(`     - ID: ${product.id}`);
-            console.log(`     - Price: $${product.basePrice}`);
+            console.log(`     - Price: $${product.basePrice || 'N/A'}`);
             console.log(`     - Stock: ${product.quantity}`);
             console.log(`     - Status: ${product.status}`);
             console.log(`     - Images: ${product.images.length}`);

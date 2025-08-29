@@ -61,8 +61,8 @@ export default function ForgotPasswordForm() {
         title="Forgot Password"
         subtitle="We'll send a reset link to your email"
         footer={(
-          <div className="text-center text-sm text-slate-600 dark:text-slate-300">
-            <Link href="/login" className="text-blue-700 hover:underline dark:text-blue-400">Back to login</Link>
+          <div className="text-center text-sm text-slate-600">
+            <Link href="/login" className="text-slate-600 hover:text-amber-600 transition-colors">Back to login</Link>
           </div>
         )}
       >
@@ -80,7 +80,7 @@ export default function ForgotPasswordForm() {
 
           <button
             type="submit"
-            className="group relative inline-flex w-full items-center justify-center rounded-xl bg-blue-600/90 text-white font-medium px-4 py-2.5 shadow-md hover:shadow-lg transition-all disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="group relative inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-medium px-4 py-2.5 shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2"
             disabled={loading}
             aria-busy={loading}
           >

@@ -1,64 +1,42 @@
 'use server';
 import { prisma } from '@/lib/prisma';
-
-// Security: Audit log configuration
-export const AUDIT_CONFIG = {
-  MAX_LOG_AGE: 90 * 24 * 60 * 60 * 1000, // 90 days
-  CLEANUP_INTERVAL: 24 * 60 * 60 * 1000, // 24 hours
-  HIGH_RISK_ACTIONS: [
-    'login_failed',
-    'password_changed',
-    '2fa_enabled',
-    '2fa_disabled',
-    'account_locked',
-    'suspicious_activity',
-    'admin_action',
-  ],
-} as const;
-
-// Security: Risk scoring configuration
-export const RISK_SCORES = {
-  LOW: 1,
-  MEDIUM: 2,
-  HIGH: 3,
-  CRITICAL: 4,
-} as const;
+import { AUDIT_CONFIG, RISK_SCORES } from '@/lib/config/auth';
 
 // Security: Calculate risk score based on action and context
 export async function calculateRiskScore(
   action: string | (typeof AUDIT_CONFIG.HIGH_RISK_ACTIONS)[number],
   metadata: Record<string, any> = {}
-): Promise<(typeof RISK_SCORES)[keyof typeof RISK_SCORES]> {
-  let score: (typeof RISK_SCORES)[keyof typeof RISK_SCORES] = RISK_SCORES.LOW;
+): Promise<1 | 2 | 3 | 4> {
+  let score: 1 | 2 | 3 | 4 = RISK_SCORES.LOW;
 
   // Security: High-risk actions
-  if (AUDIT_CONFIG.HIGH_RISK_ACTIONS.includes(action)) {
+  if (typeof action === 'string' && AUDIT_CONFIG.HIGH_RISK_ACTIONS.includes(action as any)) {
     score = RISK_SCORES.HIGH;
   }
 
   // Security: Failed authentication attempts
   if (typeof action === 'string' && (action.includes('failed') || action.includes('invalid'))) {
-    score = Math.max(score, RISK_SCORES.MEDIUM);
+    score = Math.max(score, RISK_SCORES.MEDIUM) as 1 | 2 | 3 | 4;
   }
 
   // Security: Multiple failed attempts
   if (metadata.failedAttempts && metadata.failedAttempts > 3) {
-    score = Math.max(score, RISK_SCORES.HIGH);
+    score = Math.max(score, RISK_SCORES.HIGH) as 1 | 2 | 3 | 4;
   }
 
   // Security: Suspicious IP or location
   if (metadata.suspiciousIP || metadata.unusualLocation) {
-    score = Math.max(score, RISK_SCORES.HIGH);
+    score = Math.max(score, RISK_SCORES.HIGH) as 1 | 2 | 3 | 4;
   }
 
   // Security: Device mismatch
   if (metadata.deviceMismatch) {
-    score = Math.max(score, RISK_SCORES.MEDIUM);
+    score = Math.max(score, RISK_SCORES.MEDIUM) as 1 | 2 | 3 | 4;
   }
 
   // Security: Admin actions
   if ((typeof action === 'string' && action.includes('admin')) || metadata.isAdminAction) {
-    score = Math.max(score, RISK_SCORES.HIGH);
+    score = Math.max(score, RISK_SCORES.HIGH) as 1 | 2 | 3 | 4;
   }
 
   // Security: Critical security events
@@ -98,9 +76,10 @@ export async function logAudit(
     const suspicious = riskScore >= RISK_SCORES.HIGH;
 
     // Security: Get location information if not provided
-    let location = metadata.location;
+    let location: string | undefined = metadata.location;
     if (!location && metadata.ip) {
-      location = await getLocationFromIP(metadata.ip);
+      const ipLocation = await getLocationFromIP(metadata.ip);
+      location = ipLocation || undefined;
     }
 
     // Security: Create audit log entry

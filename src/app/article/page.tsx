@@ -17,6 +17,7 @@ async function getArticles() {
                     select: {
                         id: true,
                         email: true,
+                        username: true,
                     },
                 },
             },

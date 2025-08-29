@@ -73,6 +73,9 @@ export async function POST(request: NextRequest) {
         // Check if product exists and is active
         const product = await prisma.product.findUnique({
             where: { id: productId },
+            include: {
+                baseUnit: true,
+            },
         });
 
         if (!product) {

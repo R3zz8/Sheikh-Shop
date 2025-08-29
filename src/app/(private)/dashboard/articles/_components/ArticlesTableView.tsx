@@ -34,7 +34,7 @@ interface ArticleWithAuthor extends Article {
   author: {
     id: string;
     email: string;
-    username?: string;
+    username: string | null;
   };
 }
 

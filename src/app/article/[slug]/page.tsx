@@ -38,6 +38,7 @@ async function getArticle(slug: string): Promise<ArticleWithAuthor | null> {
                     select: {
                         id: true,
                         email: true,
+                        username: true,
                     },
                 },
             },

@@ -80,7 +80,7 @@ async function main() {
   console.log(`✅ Created ${units.length} units`);
 
   // Get the kilogram unit as default base unit
-  const kgUnit = units.find(u => u.symbol === 'kg');
+  const kgUnit = units.find((u: any) => u.symbol === 'kg');
   if (!kgUnit) {
     throw new Error('Kilogram unit not found');
   }
@@ -89,9 +89,10 @@ async function main() {
   console.log('🛍️ Creating sample products...');
   const products = await Promise.all([
     prisma.product.upsert({
-      where: { name: 'Premium Barhi Dates' },
+      where: { id: 'premium-barhi-dates' },
       update: {},
       create: {
+        id: 'premium-barhi-dates',
         name: 'Premium Barhi Dates',
         category: 'DATES',
         description: 'Sweet, soft, and naturally caramel-flavored, Barhi Dates are one of the most premium date varieties from southern Iran. Perfect as a healthy snack, for gifting, or for an elegant touch to your table.',
@@ -105,9 +106,10 @@ async function main() {
       },
     }),
     prisma.product.upsert({
-      where: { name: 'Kabkab Dates' },
+      where: { id: 'kabkab-dates' },
       update: {},
       create: {
+        id: 'kabkab-dates',
         name: 'Kabkab Dates',
         category: 'DATES',
         description: 'Discover the natural sweetness of Kabkab Dates – soft, rich, and full of energy. A healthy delight from the heart of nature.',
@@ -121,14 +123,15 @@ async function main() {
       },
     }),
     prisma.product.upsert({
-      where: { name: 'Premium Saffron' },
+      where: { id: 'premium-saffron' },
       update: {},
       create: {
+        id: 'premium-saffron',
         name: 'Premium Saffron',
         category: 'SAFFRON',
         description: 'The world\'s most precious spice, our premium saffron is hand-picked and carefully processed to maintain its exceptional quality and vibrant color.',
         basePrice: 45.00,
-        baseUnitId: units.find(u => u.symbol === 'g')?.id || kgUnit.id,
+        baseUnitId: units.find((u: any) => u.symbol === 'g')?.id || kgUnit.id,
         quantity: 50,
         status: 'ACTIVE',
         isNew: true,

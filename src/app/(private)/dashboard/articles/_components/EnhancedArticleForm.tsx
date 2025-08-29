@@ -61,19 +61,16 @@ interface Article {
   slug: string;
   summary: string;
   content: string;
-  imageUrl?: string;
-  status: 'DRAFT' | 'PUBLISHED' | 'REVIEW' | 'SCHEDULED';
+  imageUrl: string | null;
+  status: string;
+  authorId: string;
+  createdAt: Date;
+  updatedAt: Date;
   author: {
     id: string;
     email: string;
-    username?: string;
+    username: string | null;
   };
-  scheduledAt?: Date;
-  tags?: string[];
-  seoTitle?: string;
-  seoDescription?: string;
-  featured?: boolean;
-  allowComments?: boolean;
 }
 
 interface ArticleFormProps {
@@ -110,13 +107,7 @@ export default function EnhancedArticleForm({ article }: ArticleFormProps) {
     title: article?.title ?? '',
     summary: article?.summary ?? '',
     content: article?.content ?? '',
-    status: article?.status ?? 'DRAFT' as 'DRAFT' | 'PUBLISHED' | 'REVIEW' | 'SCHEDULED',
-    scheduledAt: article?.scheduledAt ? new Date(article.scheduledAt) : null,
-    tags: article?.tags ?? [],
-    seoTitle: article?.seoTitle ?? '',
-    seoDescription: article?.seoDescription ?? '',
-    featured: article?.featured ?? false,
-    allowComments: article?.allowComments ?? true,
+    status: article?.status ?? 'DRAFT' as 'DRAFT' | 'PUBLISHED',
   });
 
   // UI state
@@ -147,12 +138,12 @@ export default function EnhancedArticleForm({ article }: ArticleFormProps) {
       setFormData(prev => ({ ...prev, slug }));
     }
 
-    // Auto-generate SEO fields if empty
-    if (field === 'title' && !formData.seoTitle) {
-      setFormData(prev => ({ ...prev, seoTitle: value }));
+    // Auto-generate fields if empty
+    if (field === 'title') {
+      // Handle title changes
     }
-    if (field === 'summary' && !formData.seoDescription) {
-      setFormData(prev => ({ ...prev, seoDescription: value }));
+    if (field === 'summary') {
+      // Handle summary changes
     }
 
     // Validate form
@@ -181,18 +172,8 @@ export default function EnhancedArticleForm({ article }: ArticleFormProps) {
       newErrors.content = 'Content must be at least 100 characters';
     }
 
-    if (formData.status === 'SCHEDULED' && !formData.scheduledAt) {
-      newErrors.scheduledAt = 'Scheduled date is required for scheduled articles';
-    }
-
     setErrors(newErrors);
     setIsValid(Object.keys(newErrors).length === 0);
-
-    // Validate SEO
-    if (formData.seoTitle || formData.seoDescription) {
-      const issues = validateSEO(formData.seoTitle, formData.seoDescription);
-      setSeoIssues(issues);
-    }
   }, [formData]);
 
   // Validate on form data changes
@@ -267,21 +248,13 @@ export default function EnhancedArticleForm({ article }: ArticleFormProps) {
         summary: formData.summary,
         content: formData.content,
         status: formData.status,
-        imageUrl: imageUrl || undefined,
-        scheduledAt: formData.scheduledAt,
-        tags: formData.tags,
-        seoTitle: formData.seoTitle,
-        seoDescription: formData.seoDescription,
-        featured: formData.featured,
-        allowComments: formData.allowComments,
+        imageUrl: imageUrl || null,
       };
 
       const formDataObj = new FormData();
       Object.entries(submitData).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
-          if (value instanceof Date) {
-            formDataObj.append(key, value.toISOString());
-          } else if (Array.isArray(value)) {
+          if (Array.isArray(value)) {
             formDataObj.append(key, JSON.stringify(value));
           } else {
             formDataObj.append(key, value.toString());
@@ -307,20 +280,11 @@ export default function EnhancedArticleForm({ article }: ArticleFormProps) {
 
   // Handle tag management
   const addTag = () => {
-    if (newTag.trim() && !formData.tags.includes(newTag.trim())) {
-      setFormData(prev => ({
-        ...prev,
-        tags: [...prev.tags, newTag.trim()]
-      }));
-      setNewTag('');
-    }
+    // Tags not supported in this version
   };
 
   const removeTag = (tagToRemove: string) => {
-    setFormData(prev => ({
-      ...prev,
-      tags: prev.tags.filter(tag => tag !== tagToRemove)
-    }));
+    // Tags not supported in this version
   };
 
   // Remove image
@@ -574,136 +538,23 @@ export default function EnhancedArticleForm({ article }: ArticleFormProps) {
                     </Select>
                   </div>
 
-                  {/* Scheduled Date */}
-                  {formData.status === 'SCHEDULED' && (
-                    <div className="space-y-2">
-                      <Label htmlFor="scheduledAt">Publish Date</Label>
-                      <Input
-                        id="scheduledAt"
-                        type="datetime-local"
-                        value={formData.scheduledAt ? formData.scheduledAt.toISOString().slice(0, 16) : ''}
-                        onChange={(e) => handleInputChange('scheduledAt', e.target.value ? new Date(e.target.value) : null)}
-                        className={errors.scheduledAt ? 'border-red-500' : ''}
-                      />
-                      {errors.scheduledAt && (
-                        <p className="text-sm text-red-500">{errors.scheduledAt}</p>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Options */}
+                  {/* Options - Not available in this version */}
                   <div className="space-y-3">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="featured"
-                        checked={formData.featured}
-                        onCheckedChange={(checked) => handleInputChange('featured', !!checked)}
-                      />
-                      <Label htmlFor="featured">Featured Article</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="allowComments"
-                        checked={formData.allowComments}
-                        onCheckedChange={(checked) => handleInputChange('allowComments', !!checked)}
-                      />
-                      <Label htmlFor="allowComments">Allow Comments</Label>
-                    </div>
+                    <p className="text-sm text-gray-500">Advanced options not available in this version</p>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* SEO Settings */}
+              {/* Advanced Features - Not available in this version */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Target className="w-5 h-5" />
-                    SEO Settings
+                    Advanced Features
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  {/* SEO Title */}
-                  <div className="space-y-2">
-                    <Label htmlFor="seoTitle">SEO Title</Label>
-                    <Input
-                      id="seoTitle"
-                      value={formData.seoTitle}
-                      onChange={(e) => handleInputChange('seoTitle', e.target.value)}
-                      placeholder="SEO optimized title"
-                    />
-                    <p className="text-xs text-gray-500">
-                      {formData.seoTitle.length}/60 characters
-                    </p>
-                  </div>
-
-                  {/* SEO Description */}
-                  <div className="space-y-2">
-                    <Label htmlFor="seoDescription">SEO Description</Label>
-                    <Textarea
-                      id="seoDescription"
-                      value={formData.seoDescription}
-                      onChange={(e) => handleInputChange('seoDescription', e.target.value)}
-                      placeholder="SEO optimized description"
-                      rows={3}
-                    />
-                    <p className="text-xs text-gray-500">
-                      {formData.seoDescription.length}/160 characters
-                    </p>
-                  </div>
-
-                  {/* SEO Issues */}
-                  {seoIssues.length > 0 && (
-                    <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                      <h4 className="text-sm font-medium text-yellow-800 mb-2">SEO Issues</h4>
-                      <ul className="text-xs text-yellow-700 space-y-1">
-                        {seoIssues.map((issue, index) => (
-                          <li key={index}>• {issue}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Tags */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="w-5 h-5" />
-                    Tags
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {/* Add Tag */}
-                  <div className="flex gap-2">
-                    <Input
-                      value={newTag}
-                      onChange={(e) => setNewTag(e.target.value)}
-                      placeholder="Add a tag"
-                      onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-                    />
-                    <Button type="button" onClick={addTag} size="sm">
-                      Add
-                    </Button>
-                  </div>
-
-                  {/* Tags List */}
-                  {formData.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                      {formData.tags.map((tag, index) => (
-                        <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                          {tag}
-                          <button
-                            type="button"
-                            onClick={() => removeTag(tag)}
-                            className="ml-1 hover:text-red-500"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
+                <CardContent>
+                  <p className="text-sm text-gray-500">SEO settings and tags are not available in this version.</p>
                 </CardContent>
               </Card>
             </div>

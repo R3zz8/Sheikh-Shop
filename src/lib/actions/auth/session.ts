@@ -3,29 +3,12 @@ import { prisma } from '@/lib/prisma';
 import { cookies } from 'next/headers';
 import { verifyAccessToken, verifyRefreshToken, signAccessToken, signRefreshToken, generateSessionId, generateTokenId, blacklistToken } from '@/lib/auth/jwt';
 import { logAudit } from './audit';
+import { SESSION_CONFIG } from '@/lib/config/auth';
+import type { DeviceFingerprint } from '@/lib/config/auth';
 import crypto from 'crypto';
 
-// Security: Session management configuration
-export const SESSION_CONFIG = {
-  MAX_SESSIONS_PER_USER: 5,
-  SESSION_CLEANUP_INTERVAL: 24 * 60 * 60 * 1000, // 24 hours
-  ACCESS_TOKEN_EXPIRY: '15m',
-  REFRESH_TOKEN_EXPIRY: '7d',
-  DEVICE_FINGERPRINT_EXPIRY: 30 * 24 * 60 * 60 * 1000, // 30 days
-} as const;
-
-// Security: Device fingerprint interface
-export interface DeviceFingerprint {
-  userAgent: string;
-  screenResolution?: string;
-  timezone?: string;
-  language?: string;
-  platform?: string;
-  ip?: string;
-}
-
 // Security: Generate device fingerprint hash
-export function generateDeviceFingerprint(fingerprint: DeviceFingerprint): string {
+function generateDeviceFingerprint(fingerprint: DeviceFingerprint): string {
   const fingerprintData = {
     userAgent: fingerprint.userAgent,
     screenResolution: fingerprint.screenResolution || '',
@@ -380,7 +363,7 @@ export async function revokeAllSessionsForUser(userId: string) {
 }
 
 // Security: Schedule periodic session cleanup
-export function scheduleSessionCleanup() {
+function scheduleSessionCleanup() {
   setInterval(async () => {
     await cleanupExpiredSessions();
   }, SESSION_CONFIG.SESSION_CLEANUP_INTERVAL);

@@ -79,21 +79,21 @@ export default function LoginPage() {
           <div className="space-y-4">
             {/* Main footer links */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm">
-              <Link href="/forgot-password" className="text-blue-700 hover:underline dark:text-blue-400 text-center sm:text-left">
+              <Link href="/forgot-password" className="text-slate-600 hover:text-amber-600 transition-colors text-center sm:text-left">
                 Forgot password?
               </Link>
-              <div className="text-slate-600 dark:text-slate-300 text-center sm:text-right">
+              <div className="text-slate-600 text-center sm:text-right">
                 Don't have an account?{' '}
-                <Link href="/register" className="text-blue-700 hover:underline dark:text-blue-400">Register here</Link>
+                <Link href="/register" className="text-slate-600 hover:text-amber-600 transition-colors">Register here</Link>
               </div>
             </div>
             
             {/* Terms and Privacy links */}
-            <div className="text-center text-xs text-slate-500 dark:text-slate-400">
+            <div className="text-center text-xs text-slate-500">
               By signing in, you agree to our{' '}
-              <Link href="/terms" className="hover:underline">Terms of Service</Link>
+              <Link href="/terms" className="hover:text-amber-600 transition-colors">Terms of Service</Link>
               {' '}and{' '}
-              <Link href="/privacy" className="hover:underline">Privacy Policy</Link>
+              <Link href="/privacy" className="hover:text-amber-600 transition-colors">Privacy Policy</Link>
             </div>
           </div>
         )}
@@ -120,10 +120,10 @@ export default function LoginPage() {
           />
 
           <div className="flex items-center justify-between">
-            <label className="inline-flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+            <label className="inline-flex items-center gap-2 text-sm text-slate-700">
               <input
                 type="checkbox"
-                className="h-4 w-4 rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500"
+                className="h-4 w-4 rounded border-slate-300 text-amber-600 focus:ring-amber-500"
                 checked={remember}
                 onChange={e => setRemember(e.target.checked)}
               />
@@ -134,7 +134,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={!isFormValid || isPending}
-            className="group relative inline-flex w-full items-center justify-center rounded-xl bg-blue-600/90 text-white font-medium px-4 py-2.5 shadow-md hover:shadow-lg transition-all disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="group relative inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-medium px-4 py-2.5 shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2"
             aria-busy={isPending}
           >
             <span className="mr-2">{isPending ? 'Signing in...' : 'Sign in'}</span>
@@ -146,9 +146,9 @@ export default function LoginPage() {
           )}
 
           <div className="relative my-2">
-            <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-slate-200 dark:border-slate-700" /></div>
+            <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-slate-200" /></div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white/80 dark:bg-slate-900/50 px-2 text-slate-500 dark:text-slate-400">Or continue with</span>
+              <span className="bg-white px-2 text-slate-500">Or continue with</span>
             </div>
           </div>
           <SocialAuthButtons showGoogle={false} showGithub={false} />

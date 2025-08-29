@@ -35,8 +35,21 @@ export async function GET(req: NextRequest) {
     });
   } catch (error) {
     console.error('Amazing Deals API error:', error);
+    
+    // Provide more specific error messages based on the error type
+    let errorMessage = 'Internal server error';
+    if (error instanceof Error) {
+      if (error.message.includes('Can\'t reach database server')) {
+        errorMessage = 'Database connection failed. Please check if the database is running.';
+      } else if (error.message.includes('Unknown column') || error.message.includes('column') && error.message.includes('does not exist')) {
+        errorMessage = 'Database schema mismatch. Please run database migrations.';
+      } else {
+        errorMessage = error.message;
+      }
+    }
+    
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: errorMessage },
       { status: 500 }
     );
   }

@@ -9,7 +9,7 @@ export const revalidate = 300;
 export default async function Products() {
   try {
     // Enhanced Prisma query with proper validation and error handling
-    const data: ProductsWithImages[] = await prisma.product.findMany({
+    const data = await prisma.product.findMany({
       where: {
         status: 'ACTIVE',
       },
@@ -22,28 +22,12 @@ export default async function Products() {
             createdAt: true,
           },
         },
-        baseUnit: {
-          select: {
-            id: true,
-            name: true,
-            symbol: true,
-            multiplier: true,
-            isActive: true,
-          },
-        },
+        baseUnit: true,
         discounts: {
           where: {
             isActive: true,
             startDate: { lte: new Date() },
             endDate: { gte: new Date() },
-          },
-          select: {
-            id: true,
-            discountType: true,
-            value: true,
-            startDate: true,
-            endDate: true,
-            isActive: true,
           },
         },
       },

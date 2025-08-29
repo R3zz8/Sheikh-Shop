@@ -47,7 +47,7 @@ export default async function CheckoutPage() {
         redirect('/products');
     }
 
-    const subtotal = cartItems.reduce((total, item) => total + (item.product.basePrice * item.quantity), 0);
+    const subtotal = cartItems.reduce((total, item) => total + (item.unitPrice * item.quantity), 0);
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
@@ -78,12 +78,12 @@ export default async function CheckoutPage() {
                                         </div>
                                         <div className="flex-1">
                                             <h3 className="text-white font-medium">{item.product.name}</h3>
-                                            <p className="text-amber-300 text-sm">${item.product.basePrice.toFixed(2)}</p>
+                                            <p className="text-amber-300 text-sm">${item.unitPrice.toFixed(2)}</p>
                                         </div>
                                         <div className="text-right">
                                             <p className="text-white font-medium">Qty: {item.quantity}</p>
                                             <p className="text-amber-300 font-semibold">
-                                                ${(item.product.basePrice * item.quantity).toFixed(2)}
+                                                ${(item.unitPrice * item.quantity).toFixed(2)}
                                             </p>
                                         </div>
                                     </div>
