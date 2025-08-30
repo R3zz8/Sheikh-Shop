@@ -96,6 +96,20 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Security: Check if email is verified
+    if (!user.emailVerified) {
+      await logFailedAttempt(user.id, 'login_unverified_email', req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || undefined, req.headers.get('user-agent') || undefined);
+      return NextResponse.json(
+        { 
+          success: false, 
+          message: 'Please verify your email before logging in.',
+          requiresEmailVerification: true,
+          email: user.email 
+        },
+        { status: 403 },
+      );
+    }
+
     // Security: Check if account is locked
     if (user.lockedUntil && user.lockedUntil > new Date()) {
       await logFailedAttempt(user.id, 'login_blocked_locked', req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || undefined, req.headers.get('user-agent') || undefined);

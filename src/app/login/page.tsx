@@ -50,8 +50,21 @@ export default function LoginPage() {
           setMessage(data?.message || 'Too many login attempts. Please try again later.');
           return;
         }
-        if (res.status === 401 || res.status === 403) {
+        if (res.status === 401) {
           setMessage(data?.message || 'Invalid credentials.');
+          return;
+        }
+        
+        if (res.status === 403) {
+          if (data?.requiresEmailVerification) {
+            setMessage(data?.message || 'Please verify your email before logging in');
+            // Store email for verification page
+            if (data?.email) {
+              localStorage.setItem('pendingVerificationEmail', data.email);
+            }
+          } else {
+            setMessage(data?.message || 'Account is disabled');
+          }
           return;
         }
 

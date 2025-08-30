@@ -68,11 +68,9 @@ export default function RegisterPage() {
         const data = await res.json().catch(() => ({}));
         if (res.ok && data?.success) {
           toast.success('Account created successfully!');
-          if (data?.requiresEmailVerification) {
-            router.push('/verify-email-sent');
-          } else {
-            router.push('/');
-          }
+          // Store email for verification page
+          localStorage.setItem('pendingVerificationEmail', email);
+          router.push('/verify-email');
           return;
         }
         if (res.status === 409) {

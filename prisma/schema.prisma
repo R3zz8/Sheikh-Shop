@@ -202,6 +202,7 @@ model User {
   sessions       Session[]
   auditLogs      AuditLog[]
   recoveryCodes  RecoveryCode[]
+  emailVerifications EmailVerification[]
   articles       Article[]
   
   // Performance: Add indexes for common queries
@@ -234,6 +235,24 @@ model RecoveryCode {
   
   // Performance: Add indexes
   @@index([userId])
+  @@index([createdAt])
+}
+
+// Security: Email verification model with hashed codes
+model EmailVerification {
+  id        String   @id @default(cuid())
+  userId    String
+  email     String   @db.VarChar(255)
+  codeHash  String   @db.VarChar(255) // SHA256 hash of verification code
+  attempts  Int      @default(0) // Track verification attempts
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Performance: Add indexes
+  @@index([userId])
+  @@index([email])
+  @@index([expiresAt])
   @@index([createdAt])
 }
 

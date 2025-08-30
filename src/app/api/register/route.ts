@@ -110,6 +110,44 @@ export async function POST(req: NextRequest) {
             sessionId: session.id,
         });
 
+        // Security: Send verification email automatically
+        try {
+            const { sendVerificationEmail, generateVerificationCode, hashVerificationCode, EMAIL_CONFIG } = await import('@/lib/email/sendEmail');
+            
+            const verificationCode = generateVerificationCode();
+            const codeHash = hashVerificationCode(verificationCode);
+            const expiresAt = new Date(Date.now() + EMAIL_CONFIG.VERIFICATION_CODE_EXPIRY);
+
+            // Create verification record
+            await prisma.emailVerification.create({
+                data: {
+                    userId: user.id,
+                    email: user.email,
+                    codeHash,
+                    expiresAt,
+                    attempts: 0,
+                },
+            });
+
+            // Send verification email
+            await sendVerificationEmail(
+                user.email,
+                user.firstName || 'User',
+                verificationCode,
+                15
+            );
+
+            await logAudit(user.id, 'verification_code_sent', {
+                email: user.email,
+                ip,
+                userAgent,
+                autoSent: true,
+            });
+        } catch (emailError) {
+            console.error('Failed to send verification email:', emailError);
+            // Don't fail registration if email fails
+        }
+
         // Security: Set cookies for immediate login
         const response = NextResponse.json({
             success: true,
