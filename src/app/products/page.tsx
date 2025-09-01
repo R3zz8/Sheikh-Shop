@@ -9,33 +9,43 @@ export const dynamic = 'force-dynamic';
 export default async function Products() {
   try {
     // Enhanced Prisma query with proper validation and error handling
-    const data = await prisma.product.findMany({
-      where: {
-        status: 'ACTIVE',
-      },
-      include: {
-        images: {
-          select: {
-            id: true,
-            image: true,
-            productId: true,
-            createdAt: true,
+    const [data, units] = await Promise.all([
+      prisma.product.findMany({
+        where: {
+          status: 'ACTIVE',
+        },
+        include: {
+          images: {
+            select: {
+              id: true,
+              image: true,
+              productId: true,
+              createdAt: true,
+            },
+          },
+          baseUnit: true,
+          discounts: {
+            where: {
+              isActive: true,
+              startDate: { lte: new Date() },
+              endDate: { gte: new Date() },
+            },
           },
         },
-        baseUnit: true,
-        discounts: {
-          where: {
-            isActive: true,
-            startDate: { lte: new Date() },
-            endDate: { gte: new Date() },
-          },
+        take: 50, // Limit initial load
+        orderBy: {
+          createdAt: 'desc', // Show newest products first
         },
-      },
-      take: 50, // Limit initial load
-      orderBy: {
-        createdAt: 'desc', // Show newest products first
-      },
-    });
+      }),
+      prisma.unit.findMany({
+        where: {
+          isActive: true,
+        },
+        orderBy: {
+          sortOrder: 'asc',
+        },
+      }),
+    ]);
 
     // Validate that we received data
     if (!data || !Array.isArray(data)) {
@@ -45,7 +55,7 @@ export default async function Products() {
 
     return (
       <div className="min-h-screen">
-        <ProductListView products={data} />
+        <ProductListView products={data} units={units} />
       </div>
     );
   } catch (error) {

@@ -11,16 +11,15 @@ import {
   X,
 } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import CartDropdown from '@/components/cart';
 import { useUser } from '@/hooks/useUser';
 import { cn } from '@/lib/utils';
 import UserBadge from '@/components/UserBadge';
+import PremiumMobileMenu from '@/components/PremiumMobileMenu';
 
 export default function ClientHeader() {
   const { data: user, refetch } = useUser();
-  const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -45,7 +44,7 @@ export default function ClientHeader() {
   // Close mobile menu on route change
   useEffect(() => {
     setIsMobileMenuOpen(false);
-  }, [pathname]);
+  }, []);
 
   // Prevent body scroll when mobile menu is open
   useEffect(() => {
@@ -75,12 +74,7 @@ export default function ClientHeader() {
     { name: 'Article', href: '/article', icon: FileText },
   ];
 
-  const isActive = (href: string) => {
-    if (href === '/') {
-      return pathname === '/';
-    }
-    return pathname.startsWith(href);
-  };
+
 
   return (
     <header className={cn(
@@ -107,37 +101,18 @@ export default function ClientHeader() {
           <div className="hidden lg:flex items-center gap-1">
             {navigation.map((item) => {
               const Icon = item.icon;
-              const active = isActive(item.href);
 
               return (
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={cn(
-                    'relative group px-6 py-3 rounded-xl transition-all duration-300',
-                    'flex items-center gap-2 font-medium text-sm',
-                    active
-                      ? 'text-amber-200 bg-white/12 backdrop-blur-sm border border-amber-200/20'
-                      : 'text-gray-300 hover:text-amber-200 hover:bg-white/8 backdrop-blur-sm',
-                  )}
+                  className="relative group px-6 py-3 rounded-xl transition-all duration-300 flex items-center gap-2 font-medium text-sm text-gray-300 hover:text-amber-200 hover:bg-white/8 backdrop-blur-sm"
                 >
-                  <Icon className={cn(
-                    'w-4 h-4 transition-all duration-300',
-                    active ? 'text-amber-300' : 'text-gray-400 group-hover:text-amber-300',
-                  )} />
+                  <Icon className="w-4 h-4 transition-all duration-300 text-gray-400 group-hover:text-amber-300" />
                   {item.name}
 
-                  {/* Active indicator */}
-                  {active && (
-                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-8 h-0.5 bg-gradient-to-r from-amber-300 via-yellow-300 to-orange-300 rounded-full" />
-                  )}
-
                   {/* Hover glow effect */}
-                  <div className={cn(
-                    'absolute inset-0 rounded-xl opacity-0 transition-opacity duration-300',
-                    'bg-gradient-to-r from-amber-200/10 via-yellow-200/8 to-orange-200/10',
-                    'group-hover:opacity-100',
-                  )} />
+                  <div className="absolute inset-0 rounded-xl opacity-0 transition-opacity duration-300 bg-gradient-to-r from-amber-200/10 via-yellow-200/8 to-orange-200/10 group-hover:opacity-100" />
                 </Link>
               );
             })}
@@ -196,87 +171,13 @@ export default function ClientHeader() {
         </nav>
       </div>
 
-      {/* Mobile Menu Overlay */}
-      <div className={cn(
-        'lg:hidden fixed inset-0 z-40 transition-all duration-300 ease-out',
-        isMobileMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible',
-      )}>
-        {/* Backdrop */}
-        <div
-          className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-          onClick={() => setIsMobileMenuOpen(false)}
-        />
-
-        {/* Menu Panel */}
-        <div className={cn(
-          'absolute top-20 left-0 right-0 bg-amber-950/98 backdrop-blur-2xl border-b border-amber-200/10',
-          'transform transition-transform duration-300 ease-out',
-          isMobileMenuOpen ? 'translate-y-0' : '-translate-y-full',
-        )}>
-          <div className="max-w-7xl mx-auto px-6 py-8">
-            {/* User Info */}
-            {user && (
-              <div className="mb-8">
-                <UserBadge 
-                  user={user} 
-                  onLogout={handleLogout}
-                  variant="mobile"
-                />
-              </div>
-            )}
-
-            {/* Navigation Links */}
-            <nav className="space-y-2 mb-8">
-              {navigation.map((item) => {
-                const Icon = item.icon;
-                const active = isActive(item.href);
-
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className={cn(
-                      'flex items-center gap-3 px-4 py-4 rounded-xl transition-all duration-300',
-                      'min-h-[44px] touch-manipulation', // iOS touch target size
-                      active
-                        ? 'bg-white/12 text-amber-200 border border-amber-200/20'
-                        : 'text-gray-300 hover:bg-white/8 hover:text-amber-200',
-                    )}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    <Icon className={cn(
-                      'w-5 h-5 transition-all duration-300',
-                      active ? 'text-amber-300' : 'text-gray-400',
-                    )} />
-                    <span className="font-medium">{item.name}</span>
-                    {active && (
-                      <div className="ml-auto w-2 h-2 bg-amber-300 rounded-full" />
-                    )}
-                  </Link>
-                );
-              })}
-            </nav>
-
-            {/* Action Buttons */}
-            <div className="space-y-3">
-              {!user && (
-                <>
-                  <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
-                    <button className="w-full btn-secondary min-h-[44px] touch-manipulation">
-                      Sign In
-                    </button>
-                  </Link>
-                  <Link href="/register" onClick={() => setIsMobileMenuOpen(false)}>
-                    <button className="w-full btn-primary min-h-[44px] touch-manipulation">
-                      Get Started
-                    </button>
-                  </Link>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Premium Mobile Menu */}
+      <PremiumMobileMenu
+        isOpen={isMobileMenuOpen}
+        onClose={() => setIsMobileMenuOpen(false)}
+        user={user}
+        onLogout={handleLogout}
+      />
     </header>
   );
 }

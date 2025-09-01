@@ -94,7 +94,8 @@ export async function middleware(request: NextRequest) {
       pathname.startsWith('/api/login') ||
       pathname.startsWith('/api/register') ||
       pathname.startsWith('/api/csrf') ||
-      pathname.startsWith('/api/amazing-deals')
+      pathname.startsWith('/api/amazing-deals') ||
+      pathname.startsWith('/api/units')
     )
   ) {
     const response = NextResponse.next();

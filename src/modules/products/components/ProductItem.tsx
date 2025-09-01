@@ -7,7 +7,6 @@ import { Button } from '@/components/ui';
 import { Star, ShoppingCart, Zap } from 'lucide-react';
 import type { ProductsWithImages, Unit } from '@/types';
 import { useCart } from '@/hooks/useCart';
-import { useUnits } from '@/hooks/useUnits';
 import { cn, formatPrice } from '@/lib/utils';
 import FlyToCartAnimation from '@/components/cart/FlyToCartAnimation';
 import UnitSelector from '@/components/ui/UnitSelector';
@@ -15,9 +14,16 @@ import DiscountBadge from '@/components/ui/DiscountBadge';
 import ProductBadge from '@/components/ui/ProductBadge';
 import { calculateFinalPricing, formatPrice as formatPriceUtil } from '@/lib/pricing';
 
-export default function ProductItem({ product, index = 0 }: { product: ProductsWithImages; index?: number }) {
+export default function ProductItem({ 
+  product, 
+  index = 0, 
+  units: availableUnits = [] 
+}: { 
+  product: ProductsWithImages; 
+  index?: number;
+  units?: Unit[];
+}) {
   const { addToCartMutation } = useCart();
-  const { units: availableUnits, getDefaultUnit } = useUnits();
   const [isImageLoaded, setIsImageLoaded] = useState(false);
   const [showFlyAnimation, setShowFlyAnimation] = useState(false);
   const [animationPosition, setAnimationPosition] = useState({ x: 0, y: 0 });
@@ -28,15 +34,24 @@ export default function ProductItem({ product, index = 0 }: { product: ProductsW
   const cartButtonRef = useRef<HTMLButtonElement>(null);
 
   // Set default unit when availableUnits are loaded
-  useEffect(() => {
+    useEffect(() => {
     if (availableUnits.length > 0 && !selectedUnit) {
-              setSelectedUnit(getDefaultUnit() || availableUnits[0] || null);
+      setSelectedUnit(availableUnits[0] || null);
     }
-  }, [availableUnits, selectedUnit, getDefaultUnit]);
+  }, [availableUnits]); // Removed selectedUnit from dependencies to prevent infinite loop
 
-  // Fallback if no units are available
+  // Fallback if no units are available - temporarily simplified to show products
   if (!selectedUnit || availableUnits.length === 0) {
-    return <div>Loading...</div>;
+    return (
+      <div className="relative bg-white/8 backdrop-blur-sm border border-amber-200/20 rounded-2xl overflow-hidden p-6">
+        <div className="text-center">
+          <h3 className="text-white font-bold text-lg mb-2">{product.name}</h3>
+          <p className="text-gray-300 text-sm mb-3">{product.description}</p>
+          <p className="text-amber-300 font-semibold">${product.basePrice}</p>
+          <p className="text-gray-400 text-xs mt-2">Units: {availableUnits.length}</p>
+        </div>
+      </div>
+    );
   }
 
   // Calculate pricing with discounts

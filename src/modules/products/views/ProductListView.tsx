@@ -1,24 +1,19 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import ProductList from '../components/ProductList';
-import { getProductsAPI } from '../services';
-import type { ProductsWithImages } from '@/types';
+import type { ProductsWithImages, Unit } from '@/types';
 
 interface ProductListViewProps {
   products?: ProductsWithImages[];
+  units?: Unit[];
 }
 
-function ProductListView({ products: initialProducts }: ProductListViewProps) {
-  const [products, setProducts] = useState<ProductsWithImages[]>(initialProducts || []);
-
-  useEffect(() => {
-    if (!initialProducts) {
-      getProductsAPI().then(response => setProducts(response.data));
-    }
-  }, [initialProducts]);
-
-  return <ProductList products={products} />;
+function ProductListView({ products: initialProducts, units: initialUnits }: ProductListViewProps) {
+  console.log('ProductListView render:', { initialProducts, initialUnits });
+  
+  // Just pass the props directly without state management
+  return <ProductList products={initialProducts || []} units={initialUnits} />;
 }
 
 export default ProductListView;
