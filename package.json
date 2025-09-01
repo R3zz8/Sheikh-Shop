@@ -33,6 +33,7 @@
     "migrate:deploy": "npx prisma migrate deploy",
     "db:push": "npx prisma db push",
     "db:seed": "npx prisma db seed",
+    "db:verify-seed": "tsx scripts/verify-seed.ts",
     "db:reset": "npx prisma migrate reset",
     "reset-db": "tsx scripts/reset-database.ts",
     "test-auth": "tsx scripts/test-auth.ts",
@@ -123,6 +124,9 @@
     "tsx": "^4.20.3",
     "typescript": "^5",
     "webpack-bundle-analyzer": "^4.10.2"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   },
   "jest": {
     "testEnvironment": "jsdom",

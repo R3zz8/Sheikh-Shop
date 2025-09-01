@@ -1,10 +1,28 @@
 import { PrismaClient } from '@prisma/client';
 import { hashPassword } from '../src/lib/auth/password';
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  log: ['info', 'warn', 'error'],
+});
 
 async function main() {
   console.log('🌱 Starting database seed...');
+  console.log('📊 Environment:', process.env.NODE_ENV || 'development');
+  console.log('🗄️ Database URL:', process.env.DATABASE_URL ? 'Set ✅' : 'Missing ❌');
+  
+  // Validate environment variables
+  if (!process.env.DATABASE_URL) {
+    throw new Error('DATABASE_URL environment variable is required');
+  }
+
+  // Test database connection
+  try {
+    await prisma.$connect();
+    console.log('🔗 Database connection successful');
+  } catch (error) {
+    console.error('❌ Database connection failed:', error);
+    throw new Error('Failed to connect to database. Please check your DATABASE_URL and ensure the database is running.');
+  }
 
   // Create Units
   console.log('📏 Creating units...');
@@ -278,10 +296,26 @@ async function main() {
 }
 
 main()
+  .then(() => {
+    console.log('✨ Seed script completed successfully!');
+    process.exit(0);
+  })
   .catch((e) => {
-    console.error('❌ Error during seeding:', e);
+    console.error('\n❌ SEEDING FAILED:');
+    console.error('Error:', e.message);
+    if (e.stack) {
+      console.error('Stack trace:', e.stack);
+    }
+    
+    // Provide helpful debugging information
+    console.error('\n🔍 Debugging Information:');
+    console.error('- Environment:', process.env.NODE_ENV || 'development');
+    console.error('- Database URL present:', process.env.DATABASE_URL ? 'Yes' : 'No');
+    console.error('- Current working directory:', process.cwd());
+    
     process.exit(1);
   })
   .finally(async () => {
+    console.log('🔌 Disconnecting from database...');
     await prisma.$disconnect();
   }); 
