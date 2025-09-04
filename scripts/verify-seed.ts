@@ -134,7 +134,7 @@ async function main() {
     
   } catch (error) {
     console.error('\n❌ VERIFICATION FAILED:');
-    console.error('Error:', error.message);
+    console.error('Error:', error instanceof Error ? error.message : String(error));
     process.exit(1);
   }
 }

@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { prisma } from '@/lib/prisma';
+import { getAllArticlesForAdmin } from '@/lib/actions/articles';
 import ArticlesDashboard from './_components/ArticlesDashboard';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -78,25 +78,16 @@ function ArticlesDashboardSkeleton() {
   );
 }
 
-// Fetch articles for server-side rendering
+// Fetch articles for server-side rendering (admin only)
 async function getArticles() {
   try {
-    const articles = await prisma.article.findMany({
-      include: {
-        author: {
-          select: {
-            id: true,
-            email: true,
-            username: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
-
-    return articles;
+    const result = await getAllArticlesForAdmin();
+    if (result.success) {
+      return result.data;
+    } else {
+      console.error('Error fetching articles:', result.error);
+      return [];
+    }
   } catch (error) {
     console.error('Error fetching articles:', error);
     return [];

@@ -51,7 +51,14 @@
     "performance:monitor": "node scripts/performance-monitor.js",
     "performance:analyze": "node scripts/analyze-bundle.js",
     "performance:lighthouse": "lighthouse http://localhost:3000 --output=json --output-path=./lighthouse-results.json",
-    "performance:report": "npm run performance:monitor && npm run performance:analyze"
+    "performance:report": "npm run performance:monitor && npm run performance:analyze",
+    "db:validate": "npx prisma validate",
+    "db:status": "DATABASE_URL=\"$DATABASE_URL\" npx prisma migrate status --schema prisma/schema.prisma",
+    "db:drift": "DATABASE_URL=\"$DATABASE_URL\" npx prisma migrate diff --from-url \"$DATABASE_URL\" --to-schema-datamodel prisma/schema.prisma --exit-code",
+    "db:health": "npm run db:validate && npm run db:status",
+    "db:backup": "bash scripts/backup.sh",
+    "db:diff:baseline": "bash scripts/generate-baseline.sh",
+    "db:deploy:safe": "npm run db:health && npx prisma migrate deploy --schema prisma/schema.prisma"
   },
   "dependencies": {
     "@prisma/client": "^6.12.0",
@@ -74,6 +81,7 @@
     "@types/ms": "^2.1.0",
     "@types/three": "^0.178.1",
     "bcrypt": "^6.0.0",
+    "bcryptjs": "^3.0.2",
     "class-variance-authority": "^0.7.1",
     "cloudinary": "^2.7.0",
     "clsx": "^2.1.1",

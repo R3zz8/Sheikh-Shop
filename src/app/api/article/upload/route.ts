@@ -3,6 +3,7 @@ import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
+import { getCurrentUserId } from '@/lib/actions/auth/session';
 
 // Security: File validation schema
 const fileSchema = z.object({
@@ -31,29 +32,50 @@ function sanitizeFilename(filename: string): string {
     return filename.replace(/[^a-zA-Z0-9.-]/g, '_');
 }
 
+// Security: RBAC function to check user permissions for article operations
+async function checkArticlePermissions(allowedRoles: string[] = ['SUPERADMIN', 'ADMIN', 'EDITOR']) {
+  try {
+    const userId = await getCurrentUserId();
+    
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, role: true, email: true },
+    });
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    if (!allowedRoles.includes(user.role)) {
+      throw new Error(`Insufficient permissions. Required roles: ${allowedRoles.join(', ')}. Your role: ${user.role}`);
+    }
+
+    return user;
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('No authentication token found')) {
+      throw new Error('Authentication required. Please log in.');
+    }
+    throw error;
+  }
+}
+
 export async function POST(req: NextRequest) {
     try {
-        // Security: Check authentication
-        // const session = await getServerSession();
-        // if (!session?.user) {
-        //   return NextResponse.json(
-        //     { error: 'Unauthorized' },
-        //     { status: 401 },
-        //   );
-        // }
-
-        // Security: Check user role
-        // const user = await prisma.user.findUnique({
-        //   where: { email: session.user.email! },
-        //   select: { role: true },
-        // });
-
-        // if (!user || !['SUPERADMIN', 'ADMIN', 'EDITOR'].includes(user.role)) {
-        //   return NextResponse.json(
-        //     { error: 'Insufficient permissions' },
-        //     { status: 403 },
-        //   );
-        // }
+        // Security: Check authentication and authorization
+        try {
+            await checkArticlePermissions(['SUPERADMIN', 'ADMIN', 'EDITOR']);
+        } catch (error) {
+            if (error instanceof Error && error.message.includes('Authentication required')) {
+                return NextResponse.json(
+                    { error: 'Authentication required. Please log in.' },
+                    { status: 401 },
+                );
+            }
+            return NextResponse.json(
+                { error: error instanceof Error ? error.message : 'Insufficient permissions' },
+                { status: 403 },
+            );
+        }
 
         const formData = await req.formData();
 

@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
+import { getCurrentUserId } from '@/lib/actions/auth/session';
 
 // Validation schemas
 const _createArticleSchema = z.object({
@@ -22,26 +23,37 @@ function _generateSlug(title: string): string {
         .replace(/(^-|-$)/g, '');
 }
 
-// Helper function to check user permissions (commented out for now)
-// async function checkUserPermissions(allowedRoles: string[] = ['SUPERADMIN', 'ADMIN', 'EDITOR']) {
-//   const session = await getServerSession();
-//   if (!session?.user?.email) {
-//     throw new Error('Unauthorized');
-//   }
+// Security: RBAC function to check user permissions for article operations
+async function checkArticlePermissions(allowedRoles: string[] = ['SUPERADMIN', 'ADMIN', 'EDITOR']) {
+  try {
+    const userId = await getCurrentUserId();
+    
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, role: true, email: true },
+    });
 
-//   const user = await prisma.user.findUnique({
-//     where: { email: session.user.email },
-//     select: { id: true, role: true },
-//   });
+    if (!user) {
+      throw new Error('User not found');
+    }
 
-//   if (!user || !allowedRoles.includes(user.role)) {
-//     throw new Error('Insufficient permissions');
-//   }
+    if (!allowedRoles.includes(user.role)) {
+      throw new Error(`Insufficient permissions. Required roles: ${allowedRoles.join(', ')}. Your role: ${user.role}`);
+    }
 
-//   return user;
-// }
+    return user;
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('No authentication token found')) {
+      throw new Error('Authentication required. Please log in.');
+    }
+    throw error;
+  }
+}
 
 export async function createArticle(formData: FormData) {
+    // Security: Check user permissions first
+    const user = await checkArticlePermissions(['SUPERADMIN', 'ADMIN', 'EDITOR']);
+    
     const schema = z.object({
         title: z.string().min(1, 'Title is required'),
         slug: z.string().min(1, 'Slug is required'),
@@ -68,7 +80,7 @@ export async function createArticle(formData: FormData) {
         const _article = await prisma.article.create({
             data: {
                 ...validatedFields.data,
-                authorId: 'system-user-id', // Replace with actual user ID
+                authorId: user.id, // Use actual authenticated user ID
             },
         });
 
@@ -80,6 +92,9 @@ export async function createArticle(formData: FormData) {
 }
 
 export async function updateArticle(id: string, formData: FormData) {
+    // Security: Check user permissions first
+    const user = await checkArticlePermissions(['SUPERADMIN', 'ADMIN', 'EDITOR']);
+    
     const schema = z.object({
         title: z.string().min(1, 'Title is required'),
         slug: z.string().min(1, 'Slug is required'),
@@ -116,6 +131,9 @@ export async function updateArticle(id: string, formData: FormData) {
 }
 
 export async function deleteArticle(id: string) {
+    // Security: Check user permissions first
+    await checkArticlePermissions(['SUPERADMIN', 'ADMIN', 'EDITOR']);
+    
     try {
         await prisma.article.delete({
             where: { id },
@@ -128,9 +146,11 @@ export async function deleteArticle(id: string) {
     }
 }
 
+// Public read functions - no authentication required
 export async function getArticles() {
     try {
         const articles = await prisma.article.findMany({
+            where: { status: 'PUBLISHED' }, // Only show published articles to public
             include: {
                 author: {
                     select: {
@@ -154,7 +174,10 @@ export async function getArticles() {
 export async function getArticleById(id: string) {
     try {
         const article = await prisma.article.findUnique({
-            where: { id },
+            where: { 
+                id,
+                status: 'PUBLISHED' // Only show published articles to public
+            },
             include: {
                 author: {
                     select: {
@@ -173,5 +196,32 @@ export async function getArticleById(id: string) {
         return { success: true, data: article };
     } catch (error: any) {
         return { success: false, error: error.message ?? 'Failed to fetch article' };
+    }
+}
+
+// Admin-only function to get all articles (including drafts)
+export async function getAllArticlesForAdmin() {
+    // Security: Check user permissions first
+    await checkArticlePermissions(['SUPERADMIN', 'ADMIN', 'EDITOR']);
+    
+    try {
+        const articles = await prisma.article.findMany({
+            include: {
+                author: {
+                    select: {
+                        id: true,
+                        username: true,
+                        email: true,
+                    },
+                },
+            },
+            orderBy: {
+                createdAt: 'desc',
+            },
+        });
+
+        return { success: true, data: articles };
+    } catch (error: any) {
+        return { success: false, error: error.message ?? 'Failed to fetch articles' };
     }
 }

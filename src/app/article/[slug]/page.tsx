@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { prisma } from '@/lib/prisma';
+import { getArticleById } from '@/lib/actions/articles';
 import { Calendar, User, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -12,39 +12,27 @@ interface ArticlePageProps {
 }
 
 export async function generateMetadata({ params }: ArticlePageProps) {
-    const article = await prisma.article.findUnique({
-        where: { slug: params.slug },
-        include: { author: true },
-    });
-
-    if (!article) {
+    const result = await getArticleById(params.slug);
+    
+    if (!result.success || !result.data) {
         return {
             title: 'Article Not Found - Sheikh Shop',
         };
     }
 
     return {
-        title: `${article.title} - Sheikh Shop`,
-        description: article.summary,
+        title: `${result.data.title} - Sheikh Shop`,
+        description: result.data.summary,
     };
 }
 
 async function getArticle(slug: string): Promise<ArticleWithAuthor | null> {
     try {
-        const article = await prisma.article.findUnique({
-            where: { slug },
-            include: {
-                author: {
-                    select: {
-                        id: true,
-                        email: true,
-                        username: true,
-                    },
-                },
-            },
-        });
-
-        return article;
+        const result = await getArticleById(slug);
+        if (result.success && result.data) {
+            return result.data as ArticleWithAuthor;
+        }
+        return null;
     } catch (error) {
         console.error('Error fetching article:', error);
         return null;

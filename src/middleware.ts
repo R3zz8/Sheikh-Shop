@@ -1,10 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
 
-// Security: Use environment variable with proper fallback
+// Security: Use environment variable with proper fallback and validation
 const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET || JWT_SECRET.length < 32) {
-  throw new Error('JWT_SECRET environment variable must be set to a secure value (min 32 chars)');
+
+// Validate JWT_SECRET with better error handling
+if (!JWT_SECRET) {
+  throw new Error(
+    'JWT_SECRET environment variable is missing. Please add JWT_SECRET="your-secret-here" to your .env file. ' +
+    'The secret should be at least 32 characters long for security.'
+  );
+}
+
+if (JWT_SECRET.length < 32) {
+  throw new Error(
+    `JWT_SECRET environment variable is too short (${JWT_SECRET.length} chars). ` +
+    'It must be at least 32 characters long for security. Current value: ' +
+    `${JWT_SECRET.substring(0, 8)}...`
+  );
+}
+
+// Additional security check for common weak secrets
+if (JWT_SECRET.toLowerCase().includes('secret') || JWT_SECRET.toLowerCase().includes('password')) {
+  console.warn('⚠️  Warning: JWT_SECRET contains common weak words. Consider using a more random secret.');
 }
 
 // Security: Define allowed roles for restricted app areas
