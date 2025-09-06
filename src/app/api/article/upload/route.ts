@@ -33,7 +33,7 @@ function sanitizeFilename(filename: string): string {
 }
 
 // Security: RBAC function to check user permissions for article operations
-async function checkArticlePermissions(allowedRoles: string[] = ['SUPERADMIN', 'ADMIN', 'EDITOR']) {
+async function checkArticlePermissions(allowedRoles: string[] = ['SUPERADMIN', 'ADMIN', 'EDITOR', 'AUTHOR']) {
   try {
     const userId = await getCurrentUserId();
     
@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
     try {
         // Security: Check authentication and authorization
         try {
-            await checkArticlePermissions(['SUPERADMIN', 'ADMIN', 'EDITOR']);
+            await checkArticlePermissions(['SUPERADMIN', 'ADMIN', 'EDITOR', 'AUTHOR']);
         } catch (error) {
             if (error instanceof Error && error.message.includes('Authentication required')) {
                 return NextResponse.json(

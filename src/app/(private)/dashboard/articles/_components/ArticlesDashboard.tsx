@@ -94,7 +94,7 @@ interface BulkAction {
 
 export default function ArticlesDashboard({ initialArticles = [] }: ArticlesDashboardProps) {
   const router = useRouter();
-  const hasAccess = useRequireRole(['SUPERADMIN', 'ADMIN', 'EDITOR']);
+  const hasAccess = useRequireRole(['SUPERADMIN', 'ADMIN', 'EDITOR', 'AUTHOR']);
   
   // State management
   const [articles, setArticles] = useState<ArticleWithAuthor[]>(initialArticles);
@@ -140,7 +140,7 @@ export default function ArticlesDashboard({ initialArticles = [] }: ArticlesDash
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch('/api/articles');
+      const response = await fetch('/api/articles?admin=true');
       const result = await response.json();
 
       if (result.success && result.data) {

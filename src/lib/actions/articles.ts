@@ -24,7 +24,7 @@ function _generateSlug(title: string): string {
 }
 
 // Security: RBAC function to check user permissions for article operations
-async function checkArticlePermissions(allowedRoles: string[] = ['SUPERADMIN', 'ADMIN', 'EDITOR']) {
+async function checkArticlePermissions(allowedRoles: string[] = ['SUPERADMIN', 'ADMIN', 'EDITOR', 'AUTHOR']) {
   try {
     const userId = await getCurrentUserId();
     
@@ -50,9 +50,26 @@ async function checkArticlePermissions(allowedRoles: string[] = ['SUPERADMIN', '
   }
 }
 
+// Check if user can modify specific article (ownership or admin privileges)
+async function canModifyArticle(articleId: string, userId: string, userRole: string): Promise<boolean> {
+  if (['SUPERADMIN', 'ADMIN', 'EDITOR'].includes(userRole)) {
+    return true; // Admins and editors can modify any article
+  }
+  
+  if (userRole === 'AUTHOR') {
+    const article = await prisma.article.findUnique({
+      where: { id: articleId },
+      select: { authorId: true },
+    });
+    return article?.authorId === userId; // Authors can only modify their own articles
+  }
+  
+  return false;
+}
+
 export async function createArticle(formData: FormData) {
     // Security: Check user permissions first
-    const user = await checkArticlePermissions(['SUPERADMIN', 'ADMIN', 'EDITOR']);
+    const user = await checkArticlePermissions(['SUPERADMIN', 'ADMIN', 'EDITOR', 'AUTHOR']);
     
     const schema = z.object({
         title: z.string().min(1, 'Title is required'),
@@ -61,6 +78,8 @@ export async function createArticle(formData: FormData) {
         content: z.string().min(1, 'Content is required'),
         status: z.enum(['DRAFT', 'PUBLISHED']),
         imageUrl: z.string().optional(),
+        category: z.string().optional(),
+        tags: z.array(z.string()).optional(),
     });
 
     const validatedFields = schema.safeParse({
@@ -70,6 +89,8 @@ export async function createArticle(formData: FormData) {
         content: formData.get('content'),
         status: formData.get('status'),
         imageUrl: formData.get('imageUrl'),
+        category: formData.get('category'),
+        tags: formData.get('tags') ? JSON.parse(formData.get('tags') as string) : [],
     });
 
     if (!validatedFields.success) {
@@ -93,7 +114,13 @@ export async function createArticle(formData: FormData) {
 
 export async function updateArticle(id: string, formData: FormData) {
     // Security: Check user permissions first
-    const user = await checkArticlePermissions(['SUPERADMIN', 'ADMIN', 'EDITOR']);
+    const user = await checkArticlePermissions(['SUPERADMIN', 'ADMIN', 'EDITOR', 'AUTHOR']);
+    
+    // Check if user can modify this specific article
+    const canModify = await canModifyArticle(id, user.id, user.role);
+    if (!canModify) {
+        return { success: false, error: 'You can only modify your own articles' };
+    }
     
     const schema = z.object({
         title: z.string().min(1, 'Title is required'),
@@ -102,6 +129,8 @@ export async function updateArticle(id: string, formData: FormData) {
         content: z.string().min(1, 'Content is required'),
         status: z.enum(['DRAFT', 'PUBLISHED']),
         imageUrl: z.string().optional(),
+        category: z.string().optional(),
+        tags: z.array(z.string()).optional(),
     });
 
     const validatedFields = schema.safeParse({
@@ -111,6 +140,8 @@ export async function updateArticle(id: string, formData: FormData) {
         content: formData.get('content'),
         status: formData.get('status'),
         imageUrl: formData.get('imageUrl'),
+        category: formData.get('category'),
+        tags: formData.get('tags') ? JSON.parse(formData.get('tags') as string) : [],
     });
 
     if (!validatedFields.success) {
@@ -132,7 +163,13 @@ export async function updateArticle(id: string, formData: FormData) {
 
 export async function deleteArticle(id: string) {
     // Security: Check user permissions first
-    await checkArticlePermissions(['SUPERADMIN', 'ADMIN', 'EDITOR']);
+    const user = await checkArticlePermissions(['SUPERADMIN', 'ADMIN', 'EDITOR', 'AUTHOR']);
+    
+    // Check if user can modify this specific article
+    const canModify = await canModifyArticle(id, user.id, user.role);
+    if (!canModify) {
+        return { success: false, error: 'You can only delete your own articles' };
+    }
     
     try {
         await prisma.article.delete({
@@ -202,7 +239,7 @@ export async function getArticleById(id: string) {
 // Admin-only function to get all articles (including drafts)
 export async function getAllArticlesForAdmin() {
     // Security: Check user permissions first
-    await checkArticlePermissions(['SUPERADMIN', 'ADMIN', 'EDITOR']);
+    const user = await checkArticlePermissions(['SUPERADMIN', 'ADMIN', 'EDITOR', 'AUTHOR']);
     
     try {
         const articles = await prisma.article.findMany({

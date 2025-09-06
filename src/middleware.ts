@@ -26,7 +26,7 @@ if (JWT_SECRET.toLowerCase().includes('secret') || JWT_SECRET.toLowerCase().incl
 }
 
 // Security: Define allowed roles for restricted app areas
-const ALLOWED_ROLES = ['ADMIN', 'SUPERADMIN', 'SYSTEM'] as const;
+const ALLOWED_ROLES = ['AUTHOR', 'EDITOR', 'ADMIN', 'SUPERADMIN', 'SYSTEM'] as const;
 type AllowedRole = typeof ALLOWED_ROLES[number];
 
 // Security: Simple in-memory rate limiting (use Redis in production)

@@ -1,12 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider        = "prisma-client-js"
-  // Performance: Enable preview features for better performance
   previewFeatures = ["postgresqlExtensions"]
 }
 
@@ -15,7 +8,232 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Security: Define role enum for better type safety
+model Product {
+  id           String          @id @default(uuid())
+  name         String          @unique @db.VarChar(255)
+  category     ProductCategory
+  description  String?
+  basePrice    Float           @default(0.0)
+  baseUnitId   String
+  quantity     Int             @default(0)
+  status       ProductStatus   @default(ACTIVE)
+  isNew        Boolean         @default(false)
+  isBestSeller Boolean         @default(false)
+  isAmazing    Boolean         @default(false)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  cartItems    CartItem[]
+  discounts    Discount[]
+  images       Image[]
+  baseUnit     Unit            @relation(fields: [baseUnitId], references: [id])
+
+  @@index([category])
+  @@index([basePrice])
+  @@index([status])
+  @@index([createdAt])
+  @@index([name])
+  @@index([category, status])
+  @@index([basePrice, status])
+  @@index([isNew])
+  @@index([isBestSeller])
+  @@index([isAmazing])
+}
+
+model Unit {
+  id         String     @id @default(uuid())
+  name       String     @db.VarChar(50)
+  symbol     String     @unique @db.VarChar(10)
+  multiplier Float      @default(1.0)
+  isActive   Boolean    @default(true)
+  sortOrder  Int        @default(0)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  cartItems  CartItem[]
+  products   Product[]
+
+  @@index([name])
+  @@index([isActive])
+  @@index([sortOrder])
+}
+
+model Discount {
+  id           String       @id @default(uuid())
+  productId    String
+  discountType DiscountType
+  value        Float
+  startDate    DateTime
+  endDate      DateTime
+  isActive     Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  product      Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, discountType])
+  @@index([productId])
+  @@index([startDate])
+  @@index([endDate])
+  @@index([isActive])
+  @@index([discountType])
+}
+
+model Image {
+  id        String   @id @default(uuid())
+  image     String   @db.VarChar(500)
+  productId String?
+  createdAt DateTime @default(now())
+  product   Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@index([id])
+}
+
+model CartItem {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  productId String
+  quantity  Int      @default(1)
+  unitId    String
+  unitPrice Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  unit      Unit     @relation(fields: [unitId], references: [id])
+
+  @@index([userId])
+  @@index([productId])
+  @@index([userId, productId])
+  @@index([createdAt])
+}
+
+model User {
+  id                            String              @id @default(cuid())
+  email                         String              @unique @db.VarChar(255)
+  username                      String?             @unique @db.VarChar(100)
+  firstName                     String?             @db.VarChar(100)
+  lastName                      String?             @db.VarChar(100)
+  gender                        Gender?
+  profilePicture                String?             @db.VarChar(500)
+  password                      String              @db.VarChar(255)
+  emailVerified                 Boolean             @default(false)
+  emailVerificationToken        String?             @unique @db.VarChar(255)
+  emailVerificationTokenExpires DateTime?
+  twoFactorEnabled              Boolean             @default(false)
+  twoFactorSecret               String?             @db.VarChar(255)
+  refreshToken                  String?             @unique @db.VarChar(255)
+  passwordResetToken            String?             @unique @db.VarChar(255)
+  passwordResetTokenExpires     DateTime?
+  role                          UserRole            @default(USER)
+  canLogin                      Boolean             @default(true)
+  disabled                      Boolean             @default(false)
+  lastLoginAt                   DateTime?
+  loginAttempts                 Int                 @default(0)
+  lockedUntil                   DateTime?
+  createdAt                     DateTime            @default(now())
+  updatedAt                     DateTime            @updatedAt
+  articles                      Article[]
+  auditLogs                     AuditLog[]
+  emailVerifications            EmailVerification[]
+  recoveryCodes                 RecoveryCode[]
+  sessions                      Session[]
+
+  @@index([email])
+  @@index([role])
+  @@index([createdAt])
+  @@index([lastLoginAt])
+}
+
+model BlacklistedToken {
+  id        String   @id @default(cuid())
+  token     String   @unique @db.VarChar(500)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([expiresAt])
+  @@index([token])
+}
+
+model RecoveryCode {
+  id        String   @id @default(cuid())
+  userId    String
+  codeHash  String   @db.VarChar(255)
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model EmailVerification {
+  id        String   @id @default(cuid())
+  userId    String
+  email     String   @db.VarChar(255)
+  codeHash  String   @db.VarChar(255)
+  attempts  Int      @default(0)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([email])
+  @@index([expiresAt])
+  @@index([createdAt])
+}
+
+model Session {
+  id                String   @id @default(cuid())
+  userId            String
+  refreshToken      String   @unique @db.VarChar(255)
+  userAgent         String?  @db.VarChar(500)
+  ip                String?  @db.VarChar(45)
+  deviceFingerprint String?  @db.VarChar(64)
+  createdAt         DateTime @default(now())
+  expiresAt         DateTime
+  lastUsedAt        DateTime @default(now())
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([createdAt])
+  @@index([deviceFingerprint])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String   @db.VarChar(100)
+  ip        String?  @db.VarChar(45)
+  userAgent String?  @db.VarChar(500)
+  metadata  Json?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@index([ip])
+}
+
+model Article {
+  id        String        @id @default(uuid())
+  title     String        @db.VarChar(255)
+  slug      String        @unique @db.VarChar(255)
+  imageUrl  String?       @db.VarChar(500)
+  summary   String        @db.VarChar(500)
+  content   String
+  status    ArticleStatus @default(DRAFT)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  authorId  String
+  author    User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([slug])
+  @@index([authorId])
+  @@index([createdAt])
+  @@index([title])
+  @@index([status])
+}
+
 enum UserRole {
   USER
   ADMIN
@@ -52,265 +270,4 @@ enum Gender {
 enum DiscountType {
   PERCENTAGE
   FIXED
-}
-
-// Performance: Product model with optimized fields and dynamic pricing support
-model Product {
-  id           String          @id @default(uuid())
-  name         String          @unique @db.VarChar(255)
-  category     ProductCategory
-  description  String?
-  basePrice    Float           @default(0.0) // Base price for 1 unit
-  baseUnitId   String // Reference to base unit
-  quantity     Int             @default(0)
-  status       ProductStatus   @default(ACTIVE)
-  isNew        Boolean         @default(false) // New product badge
-  isBestSeller Boolean         @default(false) // Best seller badge
-  isAmazing    Boolean         @default(false) // Amazing deals badge
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
-
-  // Relations
-  images    Image[]
-  cartItems CartItem[]
-  discounts Discount[]
-  baseUnit  Unit       @relation(fields: [baseUnitId], references: [id])
-
-  // Performance: Add indexes for common queries
-  @@index([category])
-  @@index([basePrice])
-  @@index([status])
-  @@index([createdAt])
-  @@index([name])
-  @@index([category, status])
-  @@index([basePrice, status])
-  @@index([isNew])
-  @@index([isBestSeller])
-  @@index([isAmazing])
-}
-
-// Unit model for dynamic pricing
-model Unit {
-  id         String   @id @default(uuid())
-  name       String   @db.VarChar(50) // e.g., "gram", "kilogram", "liter", "package"
-  symbol     String   @unique @db.VarChar(10) // e.g., "g", "kg", "L", "pkg"
-  multiplier Float    @default(1.0) // Multiplier for base price calculation
-  isActive   Boolean  @default(true)
-  sortOrder  Int      @default(0)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  // Relations
-  products  Product[] // Products that use this as base unit
-  cartItems CartItem[] // Cart items using this unit
-
-  // Performance: Add indexes
-  @@index([name])
-  @@index([isActive])
-  @@index([sortOrder])
-}
-
-// Discount model for Amazon-style discounts
-model Discount {
-  id           String       @id @default(uuid())
-  productId    String
-  discountType DiscountType
-  value        Float // Percentage (0-100) or fixed amount
-  startDate    DateTime
-  endDate      DateTime
-  isActive     Boolean      @default(true)
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
-
-  // Relations
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-
-  // Unique constraint for product + discount type combination
-  @@unique([productId, discountType])
-  // Performance: Add indexes
-  @@index([productId])
-  @@index([startDate])
-  @@index([endDate])
-  @@index([isActive])
-  @@index([discountType])
-}
-
-// Security: Image model with validation
-model Image {
-  id        String   @id @default(uuid())
-  image     String   @db.VarChar(500) // Limit URL length
-  productId String?
-  product   Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-
-  // Performance: Add index for product queries
-  @@index([productId])
-  @@index([id])
-}
-
-// Security: Cart item model with validation and unit support
-model CartItem {
-  id        Int      @id @default(autoincrement())
-  userId    String
-  productId String
-  quantity  Int      @default(1)
-  unitId    String // Selected unit for this cart item
-  unitPrice Float // Price per unit at time of adding to cart
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-  unit    Unit    @relation(fields: [unitId], references: [id])
-
-  // Performance: Add indexes
-  @@index([userId])
-  @@index([productId])
-  @@index([userId, productId])
-  @@index([createdAt])
-}
-
-// Security: Enhanced User model with better validation
-model User {
-  id                            String    @id @default(cuid())
-  email                         String    @unique @db.VarChar(255)
-  username                      String?   @unique @db.VarChar(100) // Display name for better UX
-  firstName                     String?   @db.VarChar(100)
-  lastName                      String?   @db.VarChar(100)
-  gender                        Gender? // For personalized UI
-  profilePicture                String?   @db.VarChar(500) // URL to profile image
-  password                      String    @db.VarChar(255)
-  emailVerified                 Boolean   @default(false)
-  emailVerificationToken        String?   @unique @db.VarChar(255)
-  emailVerificationTokenExpires DateTime?
-  twoFactorEnabled              Boolean   @default(false)
-  twoFactorSecret               String?   @db.VarChar(255)
-  refreshToken                  String?   @unique @db.VarChar(255)
-  passwordResetToken            String?   @unique @db.VarChar(255)
-  passwordResetTokenExpires     DateTime?
-  role                          UserRole  @default(USER)
-  canLogin                      Boolean   @default(true)
-  disabled                      Boolean   @default(false)
-  lastLoginAt                   DateTime?
-  loginAttempts                 Int       @default(0)
-  lockedUntil                   DateTime?
-  createdAt                     DateTime  @default(now())
-  updatedAt                     DateTime  @updatedAt
-
-  // Relations
-  sessions           Session[]
-  auditLogs          AuditLog[]
-  recoveryCodes      RecoveryCode[]
-  emailVerifications EmailVerification[]
-  articles           Article[]
-
-  // Performance: Add indexes for common queries
-  @@index([email])
-  @@index([role])
-  @@index([createdAt])
-  @@index([lastLoginAt])
-}
-
-// Security: Blacklisted token model for JWT token revocation
-model BlacklistedToken {
-  id        String   @id @default(cuid())
-  token     String   @unique @db.VarChar(500)
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-
-  // Performance: Add indexes for cleanup queries
-  @@index([expiresAt])
-  @@index([token])
-}
-
-// Security: Recovery codes model
-model RecoveryCode {
-  id        String   @id @default(cuid())
-  userId    String
-  codeHash  String   @db.VarChar(255)
-  used      Boolean  @default(false)
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Performance: Add indexes
-  @@index([userId])
-  @@index([createdAt])
-}
-
-// Security: Email verification model with hashed codes
-model EmailVerification {
-  id        String   @id @default(cuid())
-  userId    String
-  email     String   @db.VarChar(255)
-  codeHash  String   @db.VarChar(255) // SHA256 hash of verification code
-  attempts  Int      @default(0) // Track verification attempts
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Performance: Add indexes
-  @@index([userId])
-  @@index([email])
-  @@index([expiresAt])
-  @@index([createdAt])
-}
-
-// Security: Session model with better tracking
-model Session {
-  id                String   @id @default(cuid())
-  userId            String
-  refreshToken      String   @unique @db.VarChar(255)
-  userAgent         String?  @db.VarChar(500)
-  ip                String?  @db.VarChar(45) // IPv6 compatible
-  deviceFingerprint String?  @db.VarChar(64) // SHA256 hash of device fingerprint
-  createdAt         DateTime @default(now())
-  expiresAt         DateTime
-  lastUsedAt        DateTime @default(now())
-  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Performance: Add indexes
-  @@index([userId])
-  @@index([expiresAt])
-  @@index([createdAt])
-  @@index([deviceFingerprint])
-}
-
-// Security: Audit log model with better structure
-model AuditLog {
-  id        String   @id @default(cuid())
-  userId    String?
-  action    String   @db.VarChar(100)
-  ip        String?  @db.VarChar(45)
-  userAgent String?  @db.VarChar(500)
-  metadata  Json?
-  createdAt DateTime @default(now())
-  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-
-  // Performance: Add indexes for common queries
-  @@index([userId])
-  @@index([action])
-  @@index([createdAt])
-  @@index([ip])
-}
-
-// Security: Article model with proper validation and relations
-model Article {
-  id        String        @id @default(uuid())
-  title     String        @db.VarChar(255)
-  slug      String        @unique @db.VarChar(255)
-  imageUrl  String?       @db.VarChar(500)
-  summary   String        @db.VarChar(500)
-  content   String        @db.Text
-  status    ArticleStatus @default(DRAFT)
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
-  authorId  String
-  author    User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
-
-  // Performance: Add indexes for common queries
-  @@index([slug])
-  @@index([authorId])
-  @@index([createdAt])
-  @@index([title])
-  @@index([status])
 }

@@ -63,6 +63,8 @@ interface Article {
   content: string;
   imageUrl: string | null;
   status: string;
+  category: string | null;
+  tags: string[];
   authorId: string;
   createdAt: Date;
   updatedAt: Date;
@@ -99,7 +101,7 @@ function validateSEO(title: string, description: string) {
 
 export default function EnhancedArticleForm({ article }: ArticleFormProps) {
   const router = useRouter();
-  const hasAccess = useRequireRole(['SUPERADMIN', 'ADMIN', 'EDITOR']);
+  const hasAccess = useRequireRole(['SUPERADMIN', 'ADMIN', 'EDITOR', 'AUTHOR']);
   const isEditing = !!article;
 
   // Form state
@@ -108,6 +110,8 @@ export default function EnhancedArticleForm({ article }: ArticleFormProps) {
     summary: article?.summary ?? '',
     content: article?.content ?? '',
     status: article?.status ?? 'DRAFT' as 'DRAFT' | 'PUBLISHED',
+    category: article?.category ?? '',
+    tags: article?.tags ?? [],
   });
 
   // UI state
@@ -249,6 +253,8 @@ export default function EnhancedArticleForm({ article }: ArticleFormProps) {
         content: formData.content,
         status: formData.status,
         imageUrl: imageUrl || null,
+        category: formData.category || null,
+        tags: formData.tags,
       };
 
       const formDataObj = new FormData();
@@ -538,9 +544,68 @@ export default function EnhancedArticleForm({ article }: ArticleFormProps) {
                     </Select>
                   </div>
 
-                  {/* Options - Not available in this version */}
-                  <div className="space-y-3">
-                    <p className="text-sm text-gray-500">Advanced options not available in this version</p>
+                  {/* Category */}
+                  <div className="space-y-2">
+                    <Label htmlFor="category">Category</Label>
+                    <Input
+                      id="category"
+                      value={formData.category}
+                      onChange={(e) => handleInputChange('category', e.target.value)}
+                      placeholder="Enter article category"
+                    />
+                  </div>
+
+                  {/* Tags */}
+                  <div className="space-y-2">
+                    <Label htmlFor="tags">Tags</Label>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {formData.tags.map((tag: string, index: number) => (
+                        <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                          {tag}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newTags = formData.tags.filter((_: string, i: number) => i !== index);
+                              handleInputChange('tags', newTags);
+                            }}
+                            className="ml-1 hover:text-red-500"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                    <div className="flex gap-2">
+                      <Input
+                        id="tag-input"
+                        placeholder="Add a tag"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            const input = e.target as HTMLInputElement;
+                            const tag = input.value.trim();
+                            if (tag && !formData.tags.includes(tag)) {
+                              handleInputChange('tags', [...formData.tags, tag]);
+                              input.value = '';
+                            }
+                          }
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          const input = document.getElementById('tag-input') as HTMLInputElement;
+                          const tag = input.value.trim();
+                          if (tag && !formData.tags.includes(tag)) {
+                            handleInputChange('tags', [...formData.tags, tag]);
+                            input.value = '';
+                          }
+                        }}
+                      >
+                        Add
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
