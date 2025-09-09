@@ -131,6 +131,7 @@ model User {
   createdAt                     DateTime            @default(now())
   updatedAt                     DateTime            @updatedAt
   articles                      Article[]
+  comments                      Comment[]
   auditLogs                     AuditLog[]
   emailVerifications            EmailVerification[]
   recoveryCodes                 RecoveryCode[]
@@ -222,10 +223,13 @@ model Article {
   summary   String        @db.VarChar(500)
   content   String
   status    ArticleStatus @default(DRAFT)
+  category  String?       @db.VarChar(100)
+  tags      String[]      @default([])
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
   authorId  String
   author    User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  comments  Comment[]
 
   @@index([slug])
   @@index([authorId])
@@ -241,6 +245,7 @@ enum UserRole {
   MODERATOR
   SUPERADMIN
   SYSTEM
+  AUTHOR
 }
 
 enum ProductCategory {
@@ -271,3 +276,28 @@ enum DiscountType {
   PERCENTAGE
   FIXED
 }
+
+enum CommentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Comment {
+  id        String         @id @default(cuid())
+  content   String
+  status    CommentStatus  @default(PENDING)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  articleId String
+  authorId  String?
+
+  article   Article        @relation(fields: [articleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  author    User?          @relation(fields: [authorId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([articleId])
+  @@index([authorId])
+  @@index([createdAt])
+  @@index([status])
+}
+
