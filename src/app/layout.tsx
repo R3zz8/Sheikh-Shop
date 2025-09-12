@@ -6,6 +6,8 @@ import MobileFooter from '@/components/MobileFooter';
 import { Toaster } from '@/components/ui';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import ReactQueryProvider from '@/providers/ReactQuery';
+import JsonLd from '@/components/seo/JsonLd';
+import { generateOrganizationSchema, generateWebSiteSchema } from '@/lib/seo';
 
 // Font variables with fallbacks
 const fontVariables = '--font-inter --font-poppins --font-jetbrains-mono';
@@ -84,6 +86,8 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
       </head>
       <body className="antialiased">
+        <JsonLd data={generateOrganizationSchema()} />
+        <JsonLd data={generateWebSiteSchema()} />
         <ErrorBoundary>
           <ReactQueryProvider>
             <div className="flex flex-col min-h-screen">

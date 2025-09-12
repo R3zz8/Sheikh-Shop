@@ -1,12 +1,34 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import PalmTreeWrapper from '@/components/3d/PalmTreeWrapper';
+import LazyPalmTree from '@/components/3d/LazyPalmTree';
 import Categories from '@/components/Categories';
 import MobileCarousel from '@/components/MobileCarousel';
+import JsonLd from '@/components/seo/JsonLd';
+import { generateBreadcrumbSchema, generateFAQSchema } from '@/lib/seo';
 
 export default function Home() {
+  // FAQ data for homepage
+  const homepageFAQs = [
+    {
+      question: "What makes Sheikh Shop products premium?",
+      answer: "Our products are carefully selected from the finest sources, ensuring exceptional quality and authentic Arabian heritage. Each item undergoes rigorous quality checks to meet our premium standards."
+    },
+    {
+      question: "Do you offer international shipping?",
+      answer: "Yes, we provide secure and fast delivery worldwide. Our premium packaging ensures your luxury products arrive in perfect condition."
+    },
+    {
+      question: "What payment methods do you accept?",
+      answer: "We accept all major credit cards, PayPal, and bank transfers. All transactions are secure and encrypted for your protection."
+    }
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-950 via-stone-900 to-amber-950 relative">
+      <JsonLd data={generateBreadcrumbSchema([
+        { name: 'Home', url: '/' }
+      ])} />
+      <JsonLd data={generateFAQSchema(homepageFAQs)} />
       {/* Background effects */}
       <div className="absolute inset-0 bg-gradient-radial from-amber-500/3 via-orange-500/2 to-yellow-500/3 pointer-events-none animate-pulse" />
       <div className="absolute inset-0 bg-gradient-to-b from-amber-500/2 via-transparent to-orange-500/2 pointer-events-none" />
@@ -47,21 +69,16 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* 3D Palm Tree */}
+              {/* Optimized 3D Palm Tree with Lazy Loading */}
               <div className="relative">
                 <div className="w-full h-[500px] rounded-2xl overflow-hidden shadow-2xl">
-                  <PalmTreeWrapper
+                  <LazyPalmTree
                     height="500px"
                     enableControls={true}
                     autoRotate={true}
                     intensity={1.2}
                     className="rounded-2xl"
                   />
-                </div>
-                {/* Decorative overlay */}
-                <div className="absolute inset-0 pointer-events-none">
-                  <div className="absolute top-4 right-4 w-16 h-16 bg-gradient-to-br from-amber-400/20 to-orange-400/20 rounded-full blur-xl" />
-                  <div className="absolute bottom-4 left-4 w-12 h-12 bg-gradient-to-br from-yellow-400/20 to-amber-400/20 rounded-full blur-lg" />
                 </div>
               </div>
             </div>

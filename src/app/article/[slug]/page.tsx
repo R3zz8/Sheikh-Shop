@@ -4,6 +4,8 @@ import { Calendar, User, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import type { ArticleWithAuthor } from '@/types';
+import JsonLd from '@/components/seo/JsonLd';
+import { generateArticleSchema, generateMetadata as genMeta } from '@/lib/seo';
 
 interface ArticlePageProps {
     params: {
@@ -23,10 +25,13 @@ export async function generateMetadata({ params }: ArticlePageProps) {
         };
     }
 
-    return {
+    return genMeta({
         title: `${article.title} - Sheikh Shop`,
         description: article.summary,
-    };
+        images: article.imageUrl ? [article.imageUrl] : [],
+        canonicalPath: `/article/${article.slug}`,
+        type: 'article',
+    });
 }
 
 async function getArticle(slug: string): Promise<ArticleWithAuthor | null> {
@@ -67,6 +72,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-amber-950/95 via-stone-900/95 to-amber-950/95 relative overflow-hidden">
+            <JsonLd data={generateArticleSchema(article as any)} />
             {/* Background effects matching header/footer */}
             <div className="absolute inset-0">
                 <div className="absolute inset-0 bg-gradient-radial from-amber-500/3 via-orange-500/2 to-yellow-500/3 pointer-events-none" />

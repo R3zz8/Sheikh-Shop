@@ -23,6 +23,7 @@ enum UserRole {
   MODERATOR
   SUPERADMIN
   SYSTEM
+  AUTHOR
 }
 
 enum ProductCategory {
@@ -51,26 +52,76 @@ enum Gender {
 
 // Performance: Product model with optimized fields
 model Product {
-  id          String         @id @default(uuid())
-  name        String         @db.VarChar(255)
-  category    ProductCategory
-  description String?
-  price       Float          @default(0.0)
-  quantity    Int            @default(0)
-  status      ProductStatus  @default(ACTIVE)
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  images      Image[]
-  cartItems   CartItem[]
-  
-  // Performance: Add indexes for common queries
+  id           String          @id @default(uuid())
+  name         String          @unique @db.VarChar(255)
+  category     ProductCategory
+  description  String?
+  basePrice    Float           @default(0.0)
+  baseUnitId   String
+  quantity     Int             @default(0)
+  status       ProductStatus   @default(ACTIVE)
+  isNew        Boolean         @default(false)
+  isBestSeller Boolean         @default(false)
+  isAmazing    Boolean         @default(false)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  cartItems    CartItem[]
+  discounts    Discount[]
+  images       Image[]
+  baseUnit     Unit            @relation(fields: [baseUnitId], references: [id])
+
   @@index([category])
-  @@index([price])
+  @@index([basePrice])
   @@index([status])
   @@index([createdAt])
   @@index([name])
   @@index([category, status])
-  @@index([price, status])
+  @@index([basePrice, status])
+  @@index([isNew])
+  @@index([isBestSeller])
+  @@index([isAmazing])
+}
+
+model Unit {
+  id         String     @id @default(uuid())
+  name       String     @db.VarChar(50)
+  symbol     String     @unique @db.VarChar(10)
+  multiplier Float      @default(1.0)
+  isActive   Boolean    @default(true)
+  sortOrder  Int        @default(0)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  cartItems  CartItem[]
+  products   Product[]
+
+  @@index([name])
+  @@index([isActive])
+  @@index([sortOrder])
+}
+
+model Discount {
+  id           String       @id @default(uuid())
+  productId    String
+  discountType DiscountType
+  value        Float
+  startDate    DateTime
+  endDate      DateTime
+  isActive     Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  product      Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, discountType])
+  @@index([productId])
+  @@index([startDate])
+  @@index([endDate])
+  @@index([isActive])
+  @@index([discountType])
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED
 }
 
 // Security: Image model with validation
@@ -91,11 +142,13 @@ model CartItem {
   userId    String
   productId String
   quantity  Int      @default(1)
+  unitId    String
+  unitPrice Float
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  
-  // Performance: Add indexes
+  unit      Unit     @relation(fields: [unitId], references: [id])
+
   @@index([userId])
   @@index([productId])
   @@index([userId, productId])
@@ -134,6 +187,7 @@ model User {
   auditLogs      AuditLog[]
   recoveryCodes  RecoveryCode[]
   articles       Article[]
+  comments       Comment[]
   
   // Performance: Add indexes for common queries
   @@index([email])
@@ -194,22 +248,49 @@ model AuditLog {
 
 // Security: Article model with proper validation and relations
 model Article {
-  id        String   @id @default(uuid())
-  title     String   @db.VarChar(255)
-  slug      String   @unique @db.VarChar(255)
-  imageUrl  String?  @db.VarChar(500)
-  summary   String   @db.VarChar(500)
-  content   String   @db.Text
+  id        String        @id @default(uuid())
+  title     String        @db.VarChar(255)
+  slug      String        @unique @db.VarChar(255)
+  imageUrl  String?       @db.VarChar(500)
+  summary   String        @db.VarChar(500)
+  content   String        @db.Text
   status    ArticleStatus @default(DRAFT)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  category  String?       @db.VarChar(100)
+  tags      String[]      @default([])
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
   authorId  String
-  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  
-  // Performance: Add indexes for common queries
+  author    User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  comments  Comment[]
+
   @@index([slug])
   @@index([authorId])
   @@index([createdAt])
   @@index([title])
   @@index([status])
+  @@index([category])
+}
+
+model Comment {
+  id        String         @id @default(cuid())
+  content   String
+  status    CommentStatus  @default(PENDING)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  articleId String
+  authorId  String?
+
+  article   Article        @relation(fields: [articleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  author    User?          @relation(fields: [authorId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([articleId])
+  @@index([authorId])
+  @@index([createdAt])
+  @@index([status])
+}
+
+enum CommentStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }

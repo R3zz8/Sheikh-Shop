@@ -14,6 +14,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import CartDropdown from '@/components/cart';
+import GlobalSearch from '@/components/search/GlobalSearch';
+import LocaleSwitcher from '@/components/i18n/LocaleSwitcher';
 import { useUser } from '@/hooks/useUser';
 import { cn } from '@/lib/utils';
 import UserBadge from '@/components/UserBadge';
@@ -145,6 +147,13 @@ export default function ClientHeader() {
 
           {/* Right Side Actions */}
           <div className="flex items-center gap-4">
+            {/* Global Search */}
+            <div className="hidden md:block min-w-[320px]">
+              <GlobalSearch />
+            </div>
+
+            {/* Locale Switcher */}
+            <LocaleSwitcher className="hidden md:block" />
             {/* User Badge */}
             {user && (
               <UserBadge 
