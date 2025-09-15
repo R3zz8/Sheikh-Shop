@@ -5,6 +5,7 @@ import type { ProductsWithImages } from '@/types';
 import ProductItem from './ProductItem';
 import { ProductListSkeleton } from '@/components/ui';
 import { Search, Filter } from 'lucide-react';
+import ProductFilters, { type FilterOptions } from '@/components/products/ProductFilters';
 
 
 interface ProductListProps {
@@ -22,18 +23,69 @@ export default function ProductList({
 }: ProductListProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredProducts, setFilteredProducts] = useState<ProductsWithImages[]>(products);
+  const [filters, setFilters] = useState<FilterOptions>({});
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
 
   useEffect(() => {
     setFilteredProducts(products);
   }, [products]);
 
   useEffect(() => {
-    const filtered = products.filter(product =>
+    let result = products.filter(product =>
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.description?.toLowerCase().includes(searchTerm.toLowerCase()),
     );
-    setFilteredProducts(filtered);
-  }, [searchTerm, products]);
+
+    // Apply filters
+    if (filters.category) {
+      result = result.filter(p => p.category === filters.category);
+    }
+
+    if (filters.priceRange) {
+      result = result.filter(p => {
+        const price = (p as any).basePrice ?? (p as any).price ?? 0;
+        return price >= filters.priceRange!.min && price <= filters.priceRange!.max;
+      });
+    }
+
+    if (filters.isNew) {
+      result = result.filter(p => (p as any).isNew);
+    }
+
+    if (filters.isBestSeller) {
+      result = result.filter(p => (p as any).isBestSeller);
+    }
+
+    if (filters.isAmazing) {
+      result = result.filter(p => (p as any).isAmazing);
+    }
+
+    if (filters.inStock) {
+      result = result.filter(p => (p as any).status === 'ACTIVE' && ((p as any).quantity ?? 0) > 0);
+    }
+
+    // Sorting
+    if (filters.sortBy) {
+      result = [...result].sort((a, b) => {
+        const priceA = (a as any).basePrice ?? (a as any).price ?? 0;
+        const priceB = (b as any).basePrice ?? (b as any).price ?? 0;
+        switch (filters.sortBy) {
+          case 'name':
+            return a.name.localeCompare(b.name);
+          case 'price':
+            return priceA - priceB;
+          case 'newest':
+            return new Date((b as any).createdAt).getTime() - new Date((a as any).createdAt).getTime();
+          case 'popular':
+            return ((b as any).isBestSeller ? 1 : 0) - ((a as any).isBestSeller ? 1 : 0);
+          default:
+            return 0;
+        }
+      });
+    }
+
+    setFilteredProducts(result);
+  }, [searchTerm, products, filters]);
 
   if (isLoading) {
     return (
@@ -70,11 +122,17 @@ export default function ProductList({
               />
             </div>
           </div>
-          <button className="flex items-center gap-2 px-6 py-3 bg-white/8 backdrop-blur-sm border border-amber-200/20 rounded-2xl text-white hover:bg-white/12 hover:border-amber-300/40 transition-all duration-300">
+          <button onClick={() => setIsFiltersOpen(!isFiltersOpen)} className="flex items-center gap-2 px-6 py-3 bg-white/8 backdrop-blur-sm border border-amber-200/20 rounded-2xl text-white hover:bg-white/12 hover:border-amber-300/40 transition-all duration-300">
             <Filter className="w-5 h-5" />
             Filter
           </button>
         </div>
+
+        {isFiltersOpen && (
+          <div className="mb-8">
+            <ProductFilters filters={filters} onFiltersChange={setFilters} />
+          </div>
+        )}
 
         {/* Products Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">

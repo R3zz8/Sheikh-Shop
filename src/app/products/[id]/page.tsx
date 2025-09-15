@@ -1,4 +1,6 @@
 import customMetadataGenerator from '@/lib/metadata';
+import JsonLd from '@/components/seo/JsonLd';
+import { generateProductSchema, generateProductMetadata } from '@/lib/seo';
 import ProductDetail from '@/modules/products/components/ProductDetail';
 import { getProductById } from '@/modules/products/services';
 import type { ProductsWithImages } from '@/types';
@@ -18,11 +20,9 @@ export async function generateMetadata({
     });
   }
 
-  return customMetadataGenerator({
-    title: product?.name,
-    description: product?.description,
-    images: product?.images,
-  });
+  // Prefer the enhanced SEO metadata generator
+  const metadata = generateProductMetadata(product as any);
+  return metadata;
 }
 
 async function page({ params }: { params: Promise<{ id: string }> }) {
@@ -30,21 +30,12 @@ async function page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = data;
   const product = (await getProductById(id)) as ProductsWithImages;
 
-  const jsonLd = {
-    '@context': 'http://schema.org',
-    '@type': 'Product',
-    name: product.name,
-    image: product?.images.length ? product.images[0]?.image : undefined,
-    description: product.description,
-  };
+  const jsonLd = generateProductSchema(product as any, { currency: process.env.SHOP_DEFAULT_CURRENCY || 'USD' });
 
   return (
     <section>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
-      <ProductDetail {...product} />;
+      <JsonLd data={jsonLd as any} />
+      <ProductDetail {...product} />
     </section>
   );
 }

@@ -1,6 +1,12 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  // Internationalization
+  i18n: {
+    locales: ['en', 'ar'],
+    defaultLocale: 'en',
+    localeDetection: true,
+  },
   // ESLint: Ignore during production builds
   eslint: {
     ignoreDuringBuilds: true,
@@ -111,6 +117,8 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 60,
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    // Configure image qualities including 85 to avoid Next.js 16 warnings
+    qualities: [25, 50, 75, 85, 100],
     // Allow external image domains for development and production
     remotePatterns: [
       {
