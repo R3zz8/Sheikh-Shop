@@ -4,6 +4,7 @@ import { Calendar, User, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import type { ArticleWithAuthor } from '@/types';
+import { generateArticleMetadata } from '@/lib/seo/metadata';
 
 interface ArticlePageProps {
     params: {
@@ -20,10 +21,14 @@ export async function generateMetadata({ params }: ArticlePageProps) {
         };
     }
 
-    return {
-        title: `${result.data.title} - Sheikh Shop`,
-        description: result.data.summary,
-    };
+    return generateArticleMetadata({
+        title: result.data.title,
+        summary: result.data.summary,
+        slug: result.data.slug,
+        imageUrl: result.data.imageUrl || undefined,
+        category: result.data.category || undefined,
+        tags: result.data.tags || [],
+    });
 }
 
 async function getArticle(slug: string): Promise<ArticleWithAuthor | null> {

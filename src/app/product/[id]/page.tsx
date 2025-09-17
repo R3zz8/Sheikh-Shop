@@ -1,8 +1,11 @@
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
-import customMetadataGenerator from '@/lib/metadata';
+import { generateProductMetadata } from '@/lib/seo/metadata';
+import { ProductOfferJsonLd } from '@/components/seo/JsonLd';
+import Breadcrumbs, { generateProductBreadcrumbs } from '@/components/seo/Breadcrumbs';
 import ProductDetailPage from '@/components/product/ProductDetailPage';
 import type { ProductsWithImages } from '@/types';
+import { getDefaultCurrency } from '@/lib/currency';
 
 // Cache product pages for 5 minutes
 export const revalidate = 300;
@@ -21,15 +24,15 @@ export async function generateMetadata({
     });
 
     if (!product) {
-        return customMetadataGenerator({
-            title: 'Product Not Found',
-        });
+        return {
+            title: 'Product Not Found | Sheikh Shop',
+            description: 'The requested product could not be found.',
+        };
     }
 
-    return customMetadataGenerator({
-        title: product.name,
-        description: product.description ?? `Discover ${product.name} - Premium quality product`,
-        images: product.images.map(img => ({ id: img.id, image: img.image, productId: img.productId, createdAt: img.createdAt })),
+    return generateProductMetadata({
+      ...product,
+      description: product.description || undefined,
     });
 }
 
@@ -61,37 +64,18 @@ async function page({ params }: { params: Promise<{ id: string }> }) {
         notFound();
     }
 
-    // Add cache headers for better performance
-    const headers = {
-        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
-    };
+    const breadcrumbs = generateProductBreadcrumbs(product);
 
-    // Generate structured data for SEO
-    const jsonLd = {
-        '@context': 'https://schema.org',
-        '@type': 'Product',
-        name: product.name,
-        description: product.description,
-        image: product.images.length > 0 ? product.images[0]?.image : undefined,
-        offers: {
-            '@type': 'Offer',
-            price: product.basePrice,
-            priceCurrency: 'USD',
-            availability: product.quantity > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-        },
-        aggregateRating: {
-            '@type': 'AggregateRating',
-            ratingValue: 4.8,
-            reviewCount: 124,
-        },
-    };
+    // Placeholder rating data; integrate real reviews when available
+    const rating = product.isBestSeller ? { ratingValue: 4.8, reviewCount: 127 } : undefined;
+    const currency = getDefaultCurrency();
 
     return (
         <>
-            <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-            />
+            <ProductOfferJsonLd product={product} currency={currency} rating={rating} />
+            <div className="container mx-auto px-4 py-6">
+                <Breadcrumbs items={breadcrumbs} className="mb-6" />
+            </div>
             <ProductDetailPage product={product} />
         </>
     );

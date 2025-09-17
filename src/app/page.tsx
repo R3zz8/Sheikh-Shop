@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import PalmTreeWrapper from '@/components/3d/PalmTreeWrapper';
+import OptimizedPalmTree from '@/components/3d/OptimizedPalmTree';
 import Categories from '@/components/Categories';
 import AmazingDeals from '@/components/AmazingDeals';
 import MobileCarousel from '@/components/MobileCarousel';
@@ -51,22 +51,16 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* 3D Palm Tree */}
+              {/* Optimized 3D Palm Tree */}
               <div className="relative">
-                <div className="w-full h-[500px] rounded-2xl overflow-hidden shadow-2xl">
-                  <PalmTreeWrapper
-                    height="500px"
-                    enableControls={true}
-                    autoRotate={true}
-                    intensity={1.2}
-                    className="rounded-2xl"
-                  />
-                </div>
-                {/* Decorative overlay */}
-                <div className="absolute inset-0 pointer-events-none">
-                  <div className="absolute top-4 right-4 w-16 h-16 bg-gradient-to-br from-amber-400/20 to-orange-400/20 rounded-full blur-xl" />
-                  <div className="absolute bottom-4 left-4 w-12 h-12 bg-gradient-to-br from-yellow-400/20 to-amber-400/20 rounded-full blur-lg" />
-                </div>
+                <OptimizedPalmTree
+                  height="500px"
+                  enableControls={true}
+                  autoRotate={true}
+                  intensity={1.2}
+                  className="rounded-2xl"
+                  posterImage="/palm-tree-poster.jpg"
+                />
               </div>
             </div>
           </div>

@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import CategoryProducts from './_components/CategoryProducts';
+import { generateCategoryMetadata } from '@/lib/seo/metadata';
 
 // Force dynamic rendering to prevent build-time database queries
 export const dynamic = 'force-dynamic';
@@ -31,12 +32,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: CategoryPageProps) {
     const data = await params;
     const categoryName = data.categoryName;
-    const categoryDisplayName = categoryName.charAt(0).toUpperCase() + categoryName.slice(1);
-
-    return {
-        title: `${categoryDisplayName} Products - Sheikh Shop`,
-        description: `Explore our premium collection of ${categoryDisplayName.toLowerCase()} products.`,
-    };
+    return generateCategoryMetadata(categoryName);
 }
 
 export default async function CategoryPage({ params }: CategoryPageProps) {

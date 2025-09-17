@@ -25,6 +25,50 @@ if (JWT_SECRET.toLowerCase().includes('secret') || JWT_SECRET.toLowerCase().incl
   console.warn('⚠️  Warning: JWT_SECRET contains common weak words. Consider using a more random secret.');
 }
 
+// Currency/Region helpers
+function detectCountryCode(request: NextRequest): string | null {
+  return (
+    request.headers.get('x-vercel-ip-country') ||
+    request.headers.get('cf-ipcountry') ||
+    request.headers.get('x-country-code') ||
+    null
+  );
+}
+
+function detectLocaleFromPathname(pathname: string): 'en' | 'ar' {
+  const first = pathname.split('/').filter(Boolean)[0];
+  return first === 'ar' ? 'ar' : 'en';
+}
+
+function chooseCurrency(locale: 'en' | 'ar', country: string | null): 'USD' | 'AED' | 'SAR' {
+  if (locale === 'en') return 'USD';
+  if (!country) return 'AED';
+  const code = country.toUpperCase();
+  if (code === 'AE' || code === 'ARE' || code === 'UAE') return 'AED';
+  if (code === 'SA' || code === 'SAU' || code === 'KSA') return 'SAR';
+  return 'AED';
+}
+
+function setCurrencyCookieIfNeeded(request: NextRequest, response: NextResponse) {
+  try {
+    const pathname = request.nextUrl.pathname;
+    const locale = detectLocaleFromPathname(pathname);
+    const country = detectCountryCode(request);
+    const desired = chooseCurrency(locale, country);
+
+    const existing = request.cookies.get('preferred-currency')?.value;
+    if (existing !== desired) {
+      response.cookies.set('preferred-currency', desired, {
+        httpOnly: false,
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
+        path: '/',
+        maxAge: 60 * 60 * 24 * 30, // 30 days
+      });
+    }
+  } catch {}
+}
+
 // Security: Define allowed roles for restricted app areas
 const ALLOWED_ROLES = ['AUTHOR', 'EDITOR', 'ADMIN', 'SUPERADMIN', 'SYSTEM'] as const;
 type AllowedRole = typeof ALLOWED_ROLES[number];
@@ -92,6 +136,7 @@ export async function middleware(request: NextRequest) {
   const isAuthPage = ['/login', '/register', '/forgot-password', '/reset-password', '/system-login', '/verify-email-sent'].includes(pathname);
   if (isAuthPage) {
     const response = NextResponse.next();
+    setCurrencyCookieIfNeeded(request, response);
     return addSecurityHeaders(response);
   }
 
@@ -102,6 +147,7 @@ export async function middleware(request: NextRequest) {
       ? NextResponse.json({ error: 'Too many requests' }, { status: 429 })
       : NextResponse.redirect(new URL('/login', request.url));
     
+    setCurrencyCookieIfNeeded(request, response);
     return addSecurityHeaders(response);
   }
 
@@ -113,10 +159,12 @@ export async function middleware(request: NextRequest) {
       pathname.startsWith('/api/register') ||
       pathname.startsWith('/api/csrf') ||
       pathname.startsWith('/api/amazing-deals') ||
-      pathname.startsWith('/api/units')
+      pathname.startsWith('/api/units') ||
+      pathname.startsWith('/api/og')
     )
   ) {
     const response = NextResponse.next();
+    setCurrencyCookieIfNeeded(request, response);
     return addSecurityHeaders(response);
   }
 
@@ -132,11 +180,12 @@ export async function middleware(request: NextRequest) {
     '/privacy',
     '/article',
     '/checkout', // Allow checkout for guest users
-  ].some(route => pathname.startsWith(route));
+  ].some(route => pathname.startsWith(route) || pathname.startsWith(`/ar${route === '/' ? '' : route}`));
 
   // Allow public access to store pages
   if (isPublicRoute && !isApiRoute) {
     const response = NextResponse.next();
+    setCurrencyCookieIfNeeded(request, response);
     return addSecurityHeaders(response);
   }
 
@@ -155,6 +204,7 @@ export async function middleware(request: NextRequest) {
       ? NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
       : NextResponse.redirect(new URL('/login', request.url));
     
+    setCurrencyCookieIfNeeded(request, response);
     return addSecurityHeaders(response);
   }
 
@@ -221,6 +271,7 @@ export async function middleware(request: NextRequest) {
       ? NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
       : NextResponse.redirect(new URL('/login', request.url));
     
+    setCurrencyCookieIfNeeded(request, response);
     return addSecurityHeaders(response);
   }
 
@@ -228,6 +279,7 @@ export async function middleware(request: NextRequest) {
   const requiresRole = pathname.startsWith('/dashboard') || pathname.startsWith('/admin');
   if (requiresRole && !ALLOWED_ROLES.includes(user.role as AllowedRole)) {
     const response = NextResponse.redirect(new URL('/login', request.url));
+    setCurrencyCookieIfNeeded(request, response);
     return addSecurityHeaders(response);
   }
 
@@ -236,6 +288,7 @@ export async function middleware(request: NextRequest) {
   response.headers.set('x-user-id', user.id);
   response.headers.set('x-user-role', user.role);
   response.headers.set('x-session-id', user.sessionId);
+  setCurrencyCookieIfNeeded(request, response);
   
   return addSecurityHeaders(response);
 }
@@ -262,5 +315,6 @@ export const config = {
     '/privacy',
     '/article/:path*',
     '/checkout',
+    '/ar/:path*',
   ],
 };
