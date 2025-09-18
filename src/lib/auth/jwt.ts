@@ -2,20 +2,19 @@ import jwt from 'jsonwebtoken';
 import type { StringValue } from 'ms';
 import { randomBytes } from 'crypto';
 
-// Security: Enforce secure JWT secret from environment variables only
-const JWT_SECRET = process.env.JWT_SECRET;
-
-// Security: Validate JWT secret requirements
-if (!JWT_SECRET) {
-  throw new Error('JWT_SECRET environment variable must be set');
-}
-
-if (JWT_SECRET.length < 32) {
-  throw new Error('JWT_SECRET must be at least 32 characters long');
-}
-
-if (JWT_SECRET === 'dev-secret-key' || JWT_SECRET === 'changeme' || JWT_SECRET.includes('dev-secret')) {
-  throw new Error('JWT_SECRET cannot use development or default values');
+// Security: Accessor to read and validate JWT secret on demand (avoid top-level throws during build)
+function getJwtSecret(): string {
+  const secret = process.env.JWT_SECRET || '';
+  if (!secret) {
+    throw new Error('JWT_SECRET environment variable is not set');
+  }
+  if (secret.length < 32) {
+    throw new Error('JWT_SECRET must be at least 32 characters long');
+  }
+  if (secret === 'dev-secret-key' || secret === 'changeme' || secret.includes('dev-secret')) {
+    throw new Error('JWT_SECRET cannot use development or default values');
+  }
+  return secret;
 }
 
 // Security: Define JWT payload interface
@@ -45,9 +44,7 @@ export function signJwtToken(
   expiresIn: StringValue | number = '7d',
 ): string {
   try {
-    if (!JWT_SECRET) {
-      throw new Error('JWT_SECRET environment variable is not set');
-    }
+    const JWT_SECRET = getJwtSecret();
     return jwt.sign(payload, JWT_SECRET, {
       ...JWT_OPTIONS,
       expiresIn,
@@ -60,9 +57,7 @@ export function signJwtToken(
 // Security: Enhanced JWT verification with proper error handling and blacklist check
 export async function verifyJwtToken(token: string): Promise<JWTPayload | null> {
   try {
-    if (!JWT_SECRET) {
-      throw new Error('JWT_SECRET environment variable is not set');
-    }
+    const JWT_SECRET = getJwtSecret();
     
     // Security: Check if token is blacklisted
     if (await isTokenBlacklisted(token)) {

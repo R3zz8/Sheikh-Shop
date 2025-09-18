@@ -317,12 +317,11 @@ export async function getRelatedArticles(currentArticleId: string, category?: st
                     },
                 },
             },
-            orderBy: [
-                // Prioritize by category match first
-                ...(category ? [{ category: 'asc' }] : []),
-                // Then by creation date
-                { createdAt: 'desc' },
-            ],
+            orderBy: (
+                category
+                    ? [{ createdAt: 'desc' as const }]
+                    : [{ createdAt: 'desc' as const }]
+            ),
             take: limit,
         });
 

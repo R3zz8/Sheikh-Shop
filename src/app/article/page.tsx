@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { getArticles } from '@/lib/actions/articles';
 import ArticlesList from './_components/ArticlesList';
+import type { ArticleWithAuthor } from '@/types';
 import ArticlesSkeleton from './_components/ArticlesSkeleton';
 
 // Force dynamic rendering to prevent build-time database queries
@@ -28,7 +29,7 @@ async function fetchArticles() {
 }
 
 export default async function ArticlesPage() {
-    const articles = await fetchArticles();
+    const articles = (await fetchArticles()) as ArticleWithAuthor[];
 
     if (!articles || articles.length === 0) {
         return (

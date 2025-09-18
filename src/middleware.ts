@@ -1,28 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
 
-// Security: Use environment variable with proper fallback and validation
-const JWT_SECRET = process.env.JWT_SECRET;
-
-// Validate JWT_SECRET with better error handling
-if (!JWT_SECRET) {
-  throw new Error(
-    'JWT_SECRET environment variable is missing. Please add JWT_SECRET="your-secret-here" to your .env file. ' +
-    'The secret should be at least 32 characters long for security.'
-  );
-}
-
-if (JWT_SECRET.length < 32) {
-  throw new Error(
-    `JWT_SECRET environment variable is too short (${JWT_SECRET.length} chars). ` +
-    'It must be at least 32 characters long for security. Current value: ' +
-    `${JWT_SECRET.substring(0, 8)}...`
-  );
-}
-
-// Additional security check for common weak secrets
-if (JWT_SECRET.toLowerCase().includes('secret') || JWT_SECRET.toLowerCase().includes('password')) {
-  console.warn('⚠️  Warning: JWT_SECRET contains common weak words. Consider using a more random secret.');
+// Security: Accessor to read JWT secret on demand to avoid build-time/runtime init throws
+function getJwtSecret(): string | null {
+  const secret = process.env.JWT_SECRET || '';
+  if (!secret || secret.length < 32) return null;
+  return secret;
 }
 
 // Currency/Region helpers
@@ -131,6 +114,7 @@ function addSecurityHeaders(response: NextResponse): NextResponse {
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const isApiRoute = pathname.startsWith('/api');
+  const hasJwtSecret = !!getJwtSecret();
 
   // Security: Prevent redirect loops by checking if we're already on an auth page
   const isAuthPage = ['/login', '/register', '/forgot-password', '/reset-password', '/system-login', '/verify-email-sent'].includes(pathname);
@@ -211,8 +195,13 @@ export async function middleware(request: NextRequest) {
   let user: { id: string; email: string; role: string; sessionId: string } | null = null;
 
   try {
+    if (!hasJwtSecret) {
+      throw new Error('Missing JWT secret');
+    }
     // Security: Verify access token first
     if (accessToken) {
+      const JWT_SECRET = getJwtSecret();
+      if (!JWT_SECRET) throw new Error('Missing JWT secret');
       const { payload } = await jwtVerify(
         accessToken,
         new TextEncoder().encode(JWT_SECRET),
@@ -228,6 +217,8 @@ export async function middleware(request: NextRequest) {
     // Access token invalid/expired, try refresh token
     if (refreshToken) {
       try {
+        const JWT_SECRET = getJwtSecret();
+        if (!JWT_SECRET) throw new Error('Missing JWT secret');
         const { payload } = await jwtVerify(
           refreshToken,
           new TextEncoder().encode(JWT_SECRET),

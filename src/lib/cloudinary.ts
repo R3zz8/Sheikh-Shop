@@ -7,13 +7,11 @@ const {
     CLOUDINARY_API_SECRET,
 } = process.env as Record<string, string | undefined>;
 
-// Only throw error in production or when actually using the functions
+// Do not throw at import time; log once. Enforce in route handler before use.
 if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
-    if (process.env.NODE_ENV === 'production') {
-        throw new Error('Cloudinary env vars are missing: CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET');
+    if (process.env.NODE_ENV !== 'production') {
+        console.warn('Cloudinary env vars not set, using fallbacks for development');
     }
-    // In development/build, use fallbacks
-    console.warn('Cloudinary env vars not set, using fallbacks for development');
 }
 
 // Configure cloudinary with fallbacks for development

@@ -192,6 +192,6 @@ export function generateCategoryMetadata(category: string) {
     description,
     keywords,
     canonical: `/categories/${category.toLowerCase()}`,
-    ogImage: `/${category.toLowerCase()}.jpg`,
+    ogImage: `/api/og/category?name=${encodeURIComponent(category)}`,
   });
 }

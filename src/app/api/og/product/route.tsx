@@ -2,15 +2,14 @@ import { ImageResponse } from 'next/og';
 import { prisma } from '@/lib/prisma';
 
 export const runtime = 'edge';
-export const alt = 'Sheikh Shop Article';
+export const alt = 'Sheikh Shop Product';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-  const slug = searchParams.get('slug');
-
-  if (!slug) {
+  const id = searchParams.get('id');
+  if (!id) {
     return new ImageResponse(
       (
         <div
@@ -26,16 +25,19 @@ export async function GET(req: Request) {
             fontFamily: 'Inter',
           }}
         >
-          Sheikh Shop Blog
+          Sheikh Shop
         </div>
       ),
       { ...size }
     );
   }
 
-  const article = await prisma.article.findUnique({ where: { slug } });
+  const product = await prisma.product.findUnique({
+    where: { id },
+    include: { images: true },
+  });
 
-  if (!article) {
+  if (!product) {
     return new ImageResponse(
       (
         <div
@@ -51,12 +53,14 @@ export async function GET(req: Request) {
             fontFamily: 'Inter',
           }}
         >
-          Sheikh Shop Blog
+          Sheikh Shop
         </div>
       ),
       { ...size }
     );
   }
+
+  const image = product.images?.[0]?.image;
 
   return new ImageResponse(
     (
@@ -73,11 +77,23 @@ export async function GET(req: Request) {
         }}
       >
         <div style={{ fontSize: 42, color: '#f59e0b', marginBottom: 16 }}>Sheikh Shop</div>
-        <div style={{ fontSize: 64, fontWeight: 800, lineHeight: 1.1 }}>{article.title}</div>
-        <div style={{ fontSize: 28, opacity: 0.9, marginTop: 16 }}>Blog</div>
+        <div style={{ fontSize: 64, fontWeight: 800, lineHeight: 1.1 }}>{product.name}</div>
+        <div style={{ fontSize: 28, opacity: 0.9, marginTop: 16 }}>{product.category}</div>
+        {image && (
+          // @ts-expect-error - next/og runtime accepts standard img props
+          <img
+            src={image.startsWith('http') ? image : `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}${image}`}
+            width={1000}
+            height={420}
+            style={{ marginTop: 24, objectFit: 'cover', borderRadius: 12 }}
+          />
+        )}
       </div>
     ),
     { ...size }
   );
 }
+
+export default GET;
+
 

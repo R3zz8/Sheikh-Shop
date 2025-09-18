@@ -181,25 +181,45 @@ export default function MobileCarousel({
                   }}
                 >
                   {/* Fixed height container with 16:9 aspect ratio */}
-                  <div className="relative h-[200px] w-full">
+                  <div className="relative h-[200px] w-full overflow-hidden">
+                    {/* Curved gradient background (SVG) */}
+                    <svg
+                      className="absolute inset-0 w-full h-full z-0"
+                      viewBox="0 0 1440 320"
+                      preserveAspectRatio="none"
+                      aria-hidden="true"
+                    >
+                      <defs>
+                        <linearGradient id="mc-gradient" x1="0" y1="0" x2="1" y2="1">
+                          <stop offset="0%" stopColor="#f59e0b" />
+                          <stop offset="50%" stopColor="#fbbf24" />
+                          <stop offset="100%" stopColor="#fcd34d" />
+                        </linearGradient>
+                      </defs>
+                      <path
+                        d="M0,160L80,165.3C160,171,320,181,480,186.7C640,192,800,192,960,181.3C1120,171,1280,149,1360,138.7L1440,128L1440,0L0,0Z"
+                        fill="url(#mc-gradient)"
+                        fillOpacity="1"
+                      />
+                    </svg>
                     <Image
                       src={getImageSource(img.url)}
                       alt={img.alt}
                       fill
-                      className="object-cover"
+                      className="object-cover z-10"
                       sizes="(max-width: 768px) 100vw, 0vw"
                       priority={i === 0}
                       onError={() => handleImageError(img.url)}
                     />
                     
                     {/* Semi-transparent overlay for better text readability */}
-                    <div className="absolute inset-0 bg-black/30" />
+                    <div className="absolute inset-0 bg-black/30 z-20" />
                     
                     {/* Gradient overlay for premium look */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-20" />
                     
                     {/* Content overlay - centered */}
-                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 z-30">
                       {/* Title */}
                       <h3 className="text-lg font-bold text-white drop-shadow-md mb-4 leading-tight">
                         {img.title}

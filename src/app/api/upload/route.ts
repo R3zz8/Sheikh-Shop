@@ -5,6 +5,10 @@ const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_SIZE_BYTES = 2 * 1024 * 1024; // 2MB
 
 export async function POST(req: NextRequest) {
+    const { CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } = process.env as Record<string, string | undefined>;
+    if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
+        return NextResponse.json({ error: 'Cloudinary not configured' }, { status: 500 });
+    }
     try {
         const formData = await req.formData();
         const file = formData.get('file');

@@ -53,7 +53,7 @@ export default function ProductFilters({ onFiltersChange, className = '' }: Prod
   };
 
   const clearFilters = () => {
-    const clearedFilters = { sortBy: 'name' };
+    const clearedFilters: FilterOptions = { sortBy: 'name' };
     setFilters(clearedFilters);
     onFiltersChange(clearedFilters);
   };

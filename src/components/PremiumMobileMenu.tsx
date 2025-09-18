@@ -160,22 +160,25 @@ export default function PremiumMobileMenu({
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-50 lg:hidden"
+          className="fixed inset-0 z-[9999] lg:hidden isolate"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3, ease: "easeOut" }}
         >
-          {/* Solid Background */}
+          {/* Solid Background Base (ensures full coverage even during fade-in) */}
+          <div className="absolute inset-0 bg-black opacity-100 z-20" />
+
+          {/* Luxury Opaque Gradient Overlay */}
           <motion.div
-            className="absolute inset-0 bg-gradient-to-br from-amber-950 via-stone-900 to-amber-950"
+            className="absolute inset-0 bg-gradient-to-br from-amber-950 via-stone-900 to-amber-950 opacity-100 z-30"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
           >
             {/* Brand watermark */}
-            <div className="absolute inset-0 flex items-center justify-center opacity-5">
+            <div className="absolute inset-0 flex items-center justify-center opacity-5 z-30">
               <Crown className="w-96 h-96 text-amber-500/20" />
             </div>
           </motion.div>
@@ -183,7 +186,7 @@ export default function PremiumMobileMenu({
           {/* Close button */}
           <motion.button
             onClick={onClose}
-            className="absolute top-6 right-6 z-10 w-12 h-12 rounded-full bg-amber-800/80 border border-amber-600/50 flex items-center justify-center text-white hover:bg-amber-700/90 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-transparent"
+            className="absolute top-6 right-6 z-50 w-12 h-12 rounded-full bg-amber-800/80 border border-amber-600/50 flex items-center justify-center text-white hover:bg-amber-700/90 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-transparent"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
@@ -195,7 +198,7 @@ export default function PremiumMobileMenu({
           </motion.button>
 
           {/* Main Content */}
-          <div className="relative z-10 flex flex-col h-full">
+          <div className="relative z-50 flex flex-col h-full">
             {/* Header */}
             <motion.div
               className="flex items-center justify-center pt-20 pb-8"

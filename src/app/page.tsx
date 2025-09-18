@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import OptimizedPalmTree from '@/components/3d/OptimizedPalmTree';
 import Categories from '@/components/Categories';
 import AmazingDeals from '@/components/AmazingDeals';
+import FAQSchema from '@/components/seo/FAQSchema';
 import MobileCarousel from '@/components/MobileCarousel';
 
 export default function Home() {
@@ -22,6 +23,15 @@ export default function Home() {
 
       {/* Amazing Deals Section */}
       <AmazingDeals />
+
+      {/* Inject FAQ JSON-LD for common homepage questions */}
+      <FAQSchema
+        faqs={[
+          { question: 'Do you ship internationally?', answer: 'Yes, we ship worldwide with tracked delivery options.' },
+          { question: 'What payment methods are accepted?', answer: 'We accept major credit cards and secure third-party payments.' },
+          { question: 'How long does delivery take?', answer: 'Standard delivery is 3–7 business days depending on your region.' },
+        ]}
+      />
 
       <div className="relative z-10">
         {/* Hero Section with 3D Palm Tree */}

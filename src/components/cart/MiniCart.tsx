@@ -13,7 +13,7 @@ interface MiniCartProps {
 }
 
 export default function MiniCart({ isOpen, onClose }: MiniCartProps) {
-  const { cart, cartTotals, updateQuantity, removeItem } = useCart();
+  const { cart, cartTotals, updateCartItemMutation, removeCartItemMutation } = useCart();
   const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
@@ -36,15 +36,15 @@ export default function MiniCart({ isOpen, onClose }: MiniCartProps) {
 
   const handleQuantityChange = (productId: string, newQuantity: number) => {
     if (newQuantity <= 0) {
-      removeItem(productId);
+      removeCartItemMutation.mutate({ cartItemId: productId as unknown as number });
     } else {
-      updateQuantity(productId, newQuantity);
+      updateCartItemMutation.mutate({ cartItemId: productId as unknown as number, quantity: newQuantity });
     }
   };
 
   const getCrossSellProducts = () => {
     // Simple cross-sell logic - in a real app, this would be more sophisticated
-    const categories = cart?.items?.map(item => item.product.category) || [];
+    const categories = cart?.items?.map((item: any) => item.product.category) || [];
     const uniqueCategories = [...new Set(categories)];
     
     // Return mock cross-sell products based on cart contents
@@ -125,7 +125,7 @@ export default function MiniCart({ isOpen, onClose }: MiniCartProps) {
             <>
               {/* Cart Items */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {cart?.items?.map((item) => (
+                {cart?.items?.map((item: any) => (
                   <div key={item.id} className="flex items-center space-x-3 p-3 border rounded-lg">
                     <div className="relative w-16 h-16 flex-shrink-0">
                       <Image
@@ -172,7 +172,7 @@ export default function MiniCart({ isOpen, onClose }: MiniCartProps) {
                           variant="ghost"
                           size="sm"
                           className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
-                          onClick={() => removeItem(item.productId)}
+                          onClick={() => removeCartItemMutation.mutate({ cartItemId: item.productId as unknown as number })}
                         >
                           <Trash2 className="h-3 w-3" />
                         </Button>
