@@ -236,6 +236,102 @@ export async function getArticleById(id: string) {
     }
 }
 
+export async function getArticleBySlug(slug: string) {
+    try {
+        const article = await prisma.article.findUnique({
+            where: { 
+                slug,
+                status: 'PUBLISHED' // Only show published articles to public
+            },
+            include: {
+                author: {
+                    select: {
+                        id: true,
+                        username: true,
+                        email: true,
+                        firstName: true,
+                        lastName: true,
+                        profilePicture: true,
+                    },
+                },
+                comments: {
+                    where: { status: 'APPROVED' },
+                    select: {
+                        id: true,
+                        content: true,
+                        createdAt: true,
+                        author: {
+                            select: {
+                                username: true,
+                                firstName: true,
+                                lastName: true,
+                            },
+                        },
+                    },
+                    orderBy: {
+                        createdAt: 'desc',
+                    },
+                },
+            },
+        });
+
+        if (!article) {
+            return { success: false, error: 'Article not found' };
+        }
+
+        return { success: true, data: article };
+    } catch (error: any) {
+        return { success: false, error: error.message ?? 'Failed to fetch article' };
+    }
+}
+
+export async function getRelatedArticles(currentArticleId: string, category?: string, tags?: string[], limit: number = 3) {
+    try {
+        const whereConditions: any = {
+            id: { not: currentArticleId },
+            status: 'PUBLISHED',
+        };
+
+        // If category is provided, prioritize articles from the same category
+        if (category) {
+            whereConditions.category = category;
+        }
+
+        // If tags are provided, look for articles with similar tags
+        if (tags && tags.length > 0) {
+            whereConditions.tags = {
+                hasSome: tags,
+            };
+        }
+
+        const relatedArticles = await prisma.article.findMany({
+            where: whereConditions,
+            include: {
+                author: {
+                    select: {
+                        id: true,
+                        username: true,
+                        email: true,
+                        firstName: true,
+                        lastName: true,
+                    },
+                },
+            },
+            orderBy: [
+                // Prioritize by category match first
+                ...(category ? [{ category: 'asc' }] : []),
+                // Then by creation date
+                { createdAt: 'desc' },
+            ],
+            take: limit,
+        });
+
+        return { success: true, data: relatedArticles };
+    } catch (error: any) {
+        return { success: false, error: error.message ?? 'Failed to fetch related articles' };
+    }
+}
+
 // Admin-only function to get all articles (including drafts)
 export async function getAllArticlesForAdmin() {
     // Security: Check user permissions first

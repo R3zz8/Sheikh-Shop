@@ -62,11 +62,26 @@ export interface ArticleWithAuthor {
   authorId: string;
   createdAt: Date;
   updatedAt: Date;
+  category: string | null;
+  tags: string[];
   author: {
     id: string;
     username: string | null;
     email: string;
+    firstName: string | null;
+    lastName: string | null;
+    profilePicture: string | null;
   };
+  comments?: {
+    id: string;
+    content: string;
+    createdAt: Date;
+    author: {
+      username: string | null;
+      firstName: string | null;
+      lastName: string | null;
+    } | null;
+  }[];
 }
 
 // Type for products with images

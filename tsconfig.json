@@ -55,6 +55,7 @@
     ".next",
     "out",
     "dist",
-    "build"
+    "build",
+    "src/app/api/og/**/*"
   ]
 }

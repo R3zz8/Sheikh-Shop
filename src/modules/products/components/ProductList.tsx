@@ -3,8 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import type { ProductsWithImages, Unit } from '@/types';
 import ProductItem from './ProductItem';
+import ProductItemResponsive from './ProductItemResponsive';
+import ProductCarouselMobile from '@/components/product/ProductCarouselMobile';
 import { ProductListSkeleton } from '@/components/ui';
-import { Search, Filter } from 'lucide-react';
+import { Search, Filter, Grid, Smartphone } from 'lucide-react';
 
 interface ProductListProps {
   products: ProductsWithImages[];
@@ -12,6 +14,7 @@ interface ProductListProps {
   isLoading?: boolean;
   title?: string;
   subtitle?: string;
+  mobileLayout?: 'grid' | 'carousel' | 'auto';
 }
 
 export default function ProductList({
@@ -20,9 +23,11 @@ export default function ProductList({
   isLoading = false,
   title = 'Premium Products',
   subtitle = 'Discover our curated collection of luxury items',
+  mobileLayout = 'auto',
 }: ProductListProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredProducts, setFilteredProducts] = useState<ProductsWithImages[]>(products);
+  const [currentMobileLayout, setCurrentMobileLayout] = useState<'grid' | 'carousel'>(mobileLayout === 'auto' ? 'grid' : mobileLayout);
 
   console.log('ProductList render:', { products, units, filteredProducts, isLoading });
 
@@ -82,10 +87,36 @@ export default function ProductList({
                 className="w-full pl-10 pr-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
               />
             </div>
-            <button className="px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-lg transition-colors duration-200 flex items-center gap-2">
-              <Filter className="w-5 h-5" />
-              Filter
-            </button>
+            <div className="flex gap-2">
+              <button className="px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-lg transition-colors duration-200 flex items-center gap-2">
+                <Filter className="w-5 h-5" />
+                Filter
+              </button>
+              
+              {/* Mobile Layout Toggle - Only visible on mobile */}
+              <div className="md:hidden flex bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg overflow-hidden">
+                <button
+                  onClick={() => setCurrentMobileLayout('grid')}
+                  className={`px-3 py-3 flex items-center gap-1 transition-colors duration-200 ${
+                    currentMobileLayout === 'grid' 
+                      ? 'bg-amber-600 text-white' 
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  <Grid className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setCurrentMobileLayout('carousel')}
+                  className={`px-3 py-3 flex items-center gap-1 transition-colors duration-200 ${
+                    currentMobileLayout === 'carousel' 
+                      ? 'bg-amber-600 text-white' 
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  <Smartphone className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
           </div>
 
           {/* Debug Info */}
@@ -95,18 +126,51 @@ export default function ProductList({
             </p>
           </div>
 
-          {/* Products Grid */}
+          {/* Products Display */}
           {filteredProducts && filteredProducts.length > 0 ? (
-            <div className="responsive-grid gap-6">
-              {filteredProducts.map((product, index) => (
-                <ProductItem 
-                  key={product.id} 
-                  product={product} 
-                  index={index} 
-                  units={units}
-                />
-              ))}
-            </div>
+            <>
+              {/* Mobile: Carousel or Grid based on selection */}
+              <div className="md:hidden">
+                {currentMobileLayout === 'carousel' ? (
+                  <ProductCarouselMobile
+                    products={filteredProducts}
+                    units={units}
+                    title=""
+                    subtitle=""
+                    autoplay={true}
+                    showPagination={true}
+                    showNavigation={false}
+                  />
+                ) : (
+                  <div className="grid grid-cols-2 gap-4">
+                    {filteredProducts.map((product, index) => (
+                      <ProductItemResponsive 
+                        key={product.id} 
+                        product={product} 
+                        index={index} 
+                        units={units}
+                        variant="compact"
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Desktop: Responsive Grid */}
+              <div className="hidden md:block">
+                <div className="responsive-grid gap-6">
+                  {filteredProducts.map((product, index) => (
+                    <ProductItemResponsive 
+                      key={product.id} 
+                      product={product} 
+                      index={index} 
+                      units={units}
+                      variant="auto"
+                    />
+                  ))}
+                </div>
+              </div>
+            </>
           ) : (
             <div className="text-center py-12">
               <p className="text-gray-400 text-lg">

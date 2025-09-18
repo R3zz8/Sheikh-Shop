@@ -166,38 +166,24 @@ export default function PremiumMobileMenu({
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3, ease: "easeOut" }}
         >
-          {/* Luxury Backdrop with Glassmorphism */}
+          {/* Solid Background */}
           <motion.div
-            className="absolute inset-0"
+            className="absolute inset-0 bg-gradient-to-br from-amber-950 via-stone-900 to-amber-950"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
           >
-            {/* Multi-layered background for depth */}
-            <div className="absolute inset-0 bg-gradient-to-br from-black/90 via-amber-950/80 to-black/90" />
-            <div className="absolute inset-0 bg-gradient-to-t from-amber-900/20 via-transparent to-orange-900/20" />
-            
-            {/* Luxury pattern overlay */}
-            <div className="absolute inset-0 opacity-5">
-              <div className="absolute inset-0" style={{
-                backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M30 30c0-11.046-8.954-20-20-20s-20 8.954-20 20 8.954 20 20 20 20-8.954 20-20zm0 0c0 11.046 8.954 20 20 20s20-8.954 20-20-8.954-20-20-20-20 8.954-20 20z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-              }} />
-            </div>
-
             {/* Brand watermark */}
-            <div className="absolute inset-0 flex items-center justify-center opacity-3">
-              <Crown className="w-96 h-96 text-amber-500/10" />
+            <div className="absolute inset-0 flex items-center justify-center opacity-5">
+              <Crown className="w-96 h-96 text-amber-500/20" />
             </div>
-
-            {/* Backdrop blur */}
-            <div className="absolute inset-0 backdrop-blur-xl" />
           </motion.div>
 
           {/* Close button */}
           <motion.button
             onClick={onClose}
-            className="absolute top-6 right-6 z-10 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-transparent"
+            className="absolute top-6 right-6 z-10 w-12 h-12 rounded-full bg-amber-800/80 border border-amber-600/50 flex items-center justify-center text-white hover:bg-amber-700/90 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-transparent"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
@@ -341,7 +327,7 @@ export default function PremiumMobileMenu({
                     <motion.div variants={buttonVariants}>
                       <Link href="/login" onClick={onClose}>
                         <motion.button
-                          className="w-full px-6 py-4 rounded-2xl border border-white/20 bg-white/5 backdrop-blur-sm text-white font-medium transition-all duration-500 hover:bg-white/10 hover:border-white/30 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-transparent"
+                          className="w-full px-6 py-4 rounded-2xl border border-amber-600/50 bg-amber-800/30 text-white font-medium transition-all duration-500 hover:bg-amber-700/40 hover:border-amber-500/70 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-transparent"
                           whileHover="hover"
                           whileTap="tap"
                           variants={buttonVariants}
@@ -376,7 +362,7 @@ export default function PremiumMobileMenu({
                   <motion.div variants={buttonVariants}>
                     <motion.button
                       onClick={onLogout}
-                      className="w-full px-6 py-4 rounded-2xl border border-red-500/30 bg-red-500/10 backdrop-blur-sm text-red-300 font-medium transition-all duration-500 hover:bg-red-500/20 hover:border-red-500/50 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 focus:ring-offset-transparent"
+                      className="w-full px-6 py-4 rounded-2xl border border-red-500/50 bg-red-800/30 text-red-300 font-medium transition-all duration-500 hover:bg-red-700/40 hover:border-red-400/70 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 focus:ring-offset-transparent"
                       whileHover="hover"
                       whileTap="tap"
                       variants={buttonVariants}
