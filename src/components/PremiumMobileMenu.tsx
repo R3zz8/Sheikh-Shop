@@ -160,18 +160,18 @@ export default function PremiumMobileMenu({
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-[9999] lg:hidden isolate"
+          className="mobile-menu-overlay lg:hidden"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3, ease: "easeOut" }}
         >
-          {/* Solid Background Base (ensures full coverage even during fade-in) */}
-          <div className="absolute inset-0 bg-black opacity-100 z-20" />
+          {/* Solid Background Base - Immediately visible, no transparency */}
+          <div className="absolute inset-0 bg-black z-20" />
 
-          {/* Luxury Opaque Gradient Overlay */}
+          {/* Solid Opaque Gradient Overlay - No transparency */}
           <motion.div
-            className="absolute inset-0 bg-gradient-to-br from-amber-950 via-stone-900 to-amber-950 opacity-100 z-30"
+            className="absolute inset-0 bg-gradient-to-br from-amber-950 via-stone-900 to-amber-950 z-30"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -179,14 +179,14 @@ export default function PremiumMobileMenu({
           >
             {/* Brand watermark */}
             <div className="absolute inset-0 flex items-center justify-center opacity-5 z-30">
-              <Crown className="w-96 h-96 text-amber-500/20" />
+              <Crown className="w-96 h-96 text-amber-500" />
             </div>
           </motion.div>
 
           {/* Close button */}
           <motion.button
             onClick={onClose}
-            className="absolute top-6 right-6 z-50 w-12 h-12 rounded-full bg-amber-800/80 border border-amber-600/50 flex items-center justify-center text-white hover:bg-amber-700/90 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-transparent"
+            className="absolute top-6 right-6 z-50 w-12 h-12 rounded-full bg-amber-800 border border-amber-600 flex items-center justify-center text-white hover:bg-amber-700 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-transparent"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
@@ -247,16 +247,16 @@ export default function PremiumMobileMenu({
                           'group relative flex items-center gap-4 px-6 py-5 rounded-2xl transition-all duration-500',
                           'min-h-[60px] touch-manipulation',
                           active
-                            ? 'bg-gradient-to-r from-amber-500/20 via-yellow-500/15 to-orange-500/20 text-amber-200 border border-amber-300/30 shadow-lg shadow-amber-500/10'
-                            : 'text-gray-300 hover:text-amber-200 hover:bg-white/5 border border-transparent hover:border-white/10',
+                            ? 'bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 text-amber-200 border border-amber-300 shadow-lg shadow-amber-500'
+                            : 'text-gray-300 hover:text-amber-200 hover:bg-white border border-transparent hover:border-white',
                         )}
                       >
                         {/* Icon */}
                         <div className={cn(
                           'relative w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-500',
                           active
-                            ? 'bg-gradient-to-br from-amber-400 to-orange-400 shadow-lg shadow-amber-500/25'
-                            : 'bg-white/10 group-hover:bg-white/20',
+                            ? 'bg-gradient-to-br from-amber-400 to-orange-400 shadow-lg shadow-amber-500'
+                            : 'bg-white group-hover:bg-white',
                         )}>
                           <Icon className={cn(
                             'w-6 h-6 transition-all duration-500',
@@ -265,8 +265,8 @@ export default function PremiumMobileMenu({
                           
                           {/* Active glow effect */}
                           {active && (
-                            <motion.div
-                              className="absolute inset-0 rounded-xl bg-gradient-to-br from-amber-400/50 to-orange-400/50"
+                          <motion.div
+                            className="absolute inset-0 rounded-xl bg-gradient-to-br from-amber-400 to-orange-400"
                               initial={{ opacity: 0, scale: 0.8 }}
                               animate={{ opacity: 1, scale: 1 }}
                               transition={{ duration: 0.5, ease: "easeOut" }}
@@ -305,7 +305,7 @@ export default function PremiumMobileMenu({
                         {/* Hover glow */}
                         <div className={cn(
                           'absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-500',
-                          'bg-gradient-to-r from-amber-500/10 via-yellow-500/8 to-orange-500/10',
+                          'bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500',
                           'group-hover:opacity-100',
                         )} />
                       </Link>
@@ -330,7 +330,7 @@ export default function PremiumMobileMenu({
                     <motion.div variants={buttonVariants}>
                       <Link href="/login" onClick={onClose}>
                         <motion.button
-                          className="w-full px-6 py-4 rounded-2xl border border-amber-600/50 bg-amber-800/30 text-white font-medium transition-all duration-500 hover:bg-amber-700/40 hover:border-amber-500/70 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-transparent"
+                          className="w-full px-6 py-4 rounded-2xl border border-amber-600 bg-amber-800 text-white font-medium transition-all duration-500 hover:bg-amber-700 hover:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-transparent"
                           whileHover="hover"
                           whileTap="tap"
                           variants={buttonVariants}
@@ -365,7 +365,7 @@ export default function PremiumMobileMenu({
                   <motion.div variants={buttonVariants}>
                     <motion.button
                       onClick={onLogout}
-                      className="w-full px-6 py-4 rounded-2xl border border-red-500/50 bg-red-800/30 text-red-300 font-medium transition-all duration-500 hover:bg-red-700/40 hover:border-red-400/70 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 focus:ring-offset-transparent"
+                      className="w-full px-6 py-4 rounded-2xl border border-red-500 bg-red-800 text-red-300 font-medium transition-all duration-500 hover:bg-red-700 hover:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 focus:ring-offset-transparent"
                       whileHover="hover"
                       whileTap="tap"
                       variants={buttonVariants}

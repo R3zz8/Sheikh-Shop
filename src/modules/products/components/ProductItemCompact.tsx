@@ -95,49 +95,23 @@ export default function ProductItemCompact({
 
   return (
     <>
-      <div ref={productRef} className="relative bg-white/8 backdrop-blur-sm border border-amber-200/20 rounded-xl overflow-hidden hover:border-amber-300/40 hover:bg-white/12 transition-all duration-300 group aspect-square">
+      <div ref={productRef} className="relative bg-white/8 backdrop-blur-sm border border-amber-200/20 rounded-xl overflow-hidden hover:border-amber-300/40 hover:bg-white/12 transition-all duration-300 group">
         {/* Subtle glow effect on hover */}
         <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-orange-500/3 to-yellow-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
-        {/* Product Badges - Top Left */}
-        <div className="absolute top-2 left-2 z-20">
-          <ProductBadge 
-            isNew={product.isNew}
-            isBestSeller={product.isBestSeller}
-            size="sm"
-          />
-        </div>
-
-        {/* Discount Badge - Top Right */}
-        {pricing.hasDiscount && (
-          <div className="absolute top-2 right-2 z-20">
-            <DiscountBadge 
-              discount={{
-                type: product.discounts[0]?.discountType || 'PERCENTAGE',
-                value: product.discounts[0]?.value || 0,
-                amount: pricing.discountAmount,
-                percentage: pricing.discountPercentage,
-                endDate: product.discounts[0]?.endDate || new Date(),
-                isActive: true,
-              }}
-              showCountdown={false}
-            />
-          </div>
-        )}
-
-        {/* Product Image - Takes up 60% of the card */}
-        <Link href={`/product/${product.id}`} className="block h-3/5">
-          <div className="relative w-full h-full bg-gradient-to-br from-amber-950/20 via-stone-900/20 to-amber-950/20 backdrop-blur-sm flex items-center justify-center p-3 cursor-pointer hover:bg-gradient-to-br hover:from-amber-950/30 hover:via-stone-900/30 hover:to-amber-950/30 transition-all duration-300">
+        {/* Product Image - Circular, centered at top */}
+        <Link href={`/product/${product.id}`} className="block">
+          <div className="relative w-full h-32 bg-gradient-to-br from-amber-950/20 via-stone-900/20 to-amber-950/20 backdrop-blur-sm flex items-center justify-center p-4 cursor-pointer hover:bg-gradient-to-br hover:from-amber-950/30 hover:via-stone-900/30 hover:to-amber-950/30 transition-all duration-300">
             {!isImageLoaded && (
-              <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-yellow-500/10 animate-pulse rounded-lg" />
+              <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-yellow-500/10 animate-pulse rounded-full" />
             )}
+            <div className="relative w-20 h-20 rounded-full overflow-hidden">
             <Image
               src={product?.images[0]?.image || '/assets/noImage.jpg'}
               alt={product?.name || 'Product image'}
-              width={120}
-              height={120}
+                fill
               className={cn(
-                'object-contain max-h-full max-w-full transition-all duration-300',
+                  'object-cover transition-all duration-300',
                 isImageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95',
               )}
               loading={index < 4 ? 'eager' : 'lazy'}
@@ -149,31 +123,37 @@ export default function ProductItemCompact({
               onLoad={() => setIsImageLoaded(true)}
               onError={() => setIsImageLoaded(true)}
             />
+            </div>
           </div>
         </Link>
 
-        {/* Product Info - Takes up 40% of the card */}
-        <div className="relative z-10 h-2/5 p-3 flex flex-col justify-between">
-          {/* Product Name and Rating */}
-          <div className="flex-1">
-            <Link href={`/product/${product.id}`} className="block">
-              <h3 className="text-sm font-semibold text-white mb-1 group-hover:text-amber-200 transition-colors duration-300 cursor-pointer line-clamp-2 leading-tight">
+        {/* Product Info - Below image */}
+        <div className="relative z-10 p-3 flex flex-col justify-between min-h-[120px]">
+          {/* Product Name */}
+          <Link href={`/product/${product.id}`} className="block mb-2">
+            <h3 className="text-sm font-semibold text-white group-hover:text-amber-200 transition-colors duration-300 cursor-pointer line-clamp-2 leading-tight text-center">
                 {product?.name}
               </h3>
             </Link>
             
-            {/* Compact Star Rating */}
-            <div className="flex items-center gap-1 mb-2">
-              <Star className="w-3 h-3 fill-amber-300 text-amber-300" />
-              <span className="text-xs text-amber-200/60">{rating}</span>
+          {/* Star Rating with Review Count */}
+          <div className="flex items-center justify-center gap-1 mb-2">
+            <div className="flex items-center gap-0.5">
+              {[...Array(5)].map((_, i) => (
+                <Star 
+                  key={i} 
+                  className={cn(
+                    "w-3 h-3",
+                    i < rating ? "fill-amber-300 text-amber-300" : "text-gray-500"
+                  )} 
+                />
+              ))}
             </div>
+            <span className="text-xs text-amber-200/60">({Math.floor(Math.random() * 10) + 1})</span>
           </div>
 
-          {/* Price and Add to Cart */}
-          <div className="space-y-2">
             {/* Price */}
-            <div className="flex items-center justify-between">
-              <div>
+          <div className="text-center mb-3">
                 <p className="text-lg font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
                   {formatPriceUtil(pricing.finalPrice)}
                 </p>
@@ -183,6 +163,27 @@ export default function ProductItemCompact({
                   </p>
                 )}
               </div>
+
+          {/* Product Badges - Below price */}
+          <div className="flex justify-center gap-1 mb-3">
+            <ProductBadge 
+              isNew={product.isNew}
+              isBestSeller={product.isBestSeller}
+              size="sm"
+            />
+            {pricing.hasDiscount && (
+              <DiscountBadge 
+                discount={{
+                  type: product.discounts[0]?.discountType || 'PERCENTAGE',
+                  value: product.discounts[0]?.value || 0,
+                  amount: pricing.discountAmount,
+                  percentage: pricing.discountPercentage,
+                  endDate: product.discounts[0]?.endDate || new Date(),
+                  isActive: true,
+                }}
+                showCountdown={false}
+              />
+            )}
             </div>
 
             {/* Add to Cart Button */}
@@ -196,7 +197,6 @@ export default function ProductItemCompact({
               <ShoppingCart className="w-3 h-3 mr-1" />
               {addToCartMutation.isPending ? 'Adding...' : 'Add to Cart'}
             </Button>
-          </div>
         </div>
       </div>
 

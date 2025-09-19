@@ -1,267 +1,456 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
-import type { Easing } from 'framer-motion';
-import { Lock, Database, User, Mail } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { Lock, Shield, Eye, Database, Clock, Share2, Users, Cookie, Key, UserCheck, AlertCircle, Mail } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Card, CardContent } from '@/components/ui/card';
 
 export default function PrivacyPolicyPage() {
-  const [progress, setProgress] = useState(0);
+  const [mounted, setMounted] = useState(false);
+  const { scrollYProgress } = useScroll();
+  const progressWidth = useTransform(scrollYProgress, [0, 1], ['0%', '100%']);
 
   useEffect(() => {
-    const onScroll = () => {
-      const scrollTop = window.scrollY;
-      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-      const pct = docHeight > 0 ? Math.min(100, Math.max(0, (scrollTop / docHeight) * 100)) : 0;
-      setProgress(pct);
-    };
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    setMounted(true);
   }, []);
 
-  const easeOut: Easing = [0, 0, 0.2, 1];
-  const fadeIn = {
-  	initial: { opacity: 0, y: 12 },
-  	animate: { opacity: 1, y: 0 },
-  	transition: { duration: 0.4, ease: easeOut },
-  } as const;
+  if (!mounted) {
+    return null;
+  }
+
+  const privacySections = [
+    {
+      id: 'information-collection',
+      title: 'Information We Collect',
+      icon: Database,
+      content: `We collect information you provide directly to us, such as when you create an account, make a purchase, or contact us for support.
+
+**Personal Information:**
+- Name, email address, phone number, and billing address
+- Payment information (processed securely through our payment partners)
+- Account credentials and preferences
+- Communication history with our support team
+
+**Usage Information:**
+- Website usage patterns and preferences
+- Device information and browser type
+- IP address and location data
+- Cookies and similar tracking technologies
+
+**Content Information:**
+- Product reviews and ratings
+- Customer service communications
+- Survey responses and feedback
+
+We collect this information to provide, maintain, and improve our services, process transactions, and communicate with you about your account and our services.`
+    },
+    {
+      id: 'how-we-use',
+      title: 'How We Use Your Information',
+      icon: Eye,
+      content: `We use the information we collect for various business purposes, including:
+
+**Service Provision:**
+- Processing and fulfilling your orders
+- Managing your account and preferences
+- Providing customer support and technical assistance
+- Personalizing your shopping experience
+
+**Communication:**
+- Sending order confirmations and shipping updates
+- Responding to your inquiries and support requests
+- Sending marketing communications (with your consent)
+- Notifying you about important changes to our services
+
+**Business Operations:**
+- Analyzing website usage and customer behavior
+- Improving our products and services
+- Conducting research and analytics
+- Preventing fraud and ensuring security
+
+**Legal Compliance:**
+- Complying with applicable laws and regulations
+- Responding to legal requests and court orders
+- Protecting our rights and interests
+
+We will only use your personal information for the purposes described in this policy or as otherwise disclosed to you at the time of collection.`
+    },
+    {
+      id: 'data-retention',
+      title: 'Data Retention',
+      icon: Clock,
+      content: `We retain your personal information for as long as necessary to fulfill the purposes outlined in this Privacy Policy, unless a longer retention period is required or permitted by law.
+
+**Retention Periods:**
+- Account information: Until you delete your account or request deletion
+- Order information: 7 years for tax and accounting purposes
+- Marketing communications: Until you unsubscribe or opt out
+- Customer support records: 3 years after the last interaction
+- Website analytics: 2 years from collection
+
+**Deletion Process:**
+- You may request deletion of your personal information at any time
+- We will delete your information within 30 days of receiving your request
+- Some information may be retained for legal or business purposes
+- Anonymized data may be retained for analytics and research
+
+**Secure Disposal:**
+- All personal information is securely deleted using industry-standard methods
+- Physical records are shredded and disposed of securely
+- Electronic data is permanently erased from all systems
+
+We will notify you if we need to retain your information for longer than the standard retention period.`
+    },
+    {
+      id: 'information-sharing',
+      title: 'Information Sharing',
+      icon: Share2,
+      content: `We do not sell, trade, or rent your personal information to third parties. We may share your information in the following limited circumstances:
+
+**Service Providers:**
+- Payment processors for transaction processing
+- Shipping companies for order fulfillment
+- Email service providers for communications
+- Analytics providers for website improvement
+- Cloud storage providers for data hosting
+
+**Business Transfers:**
+- In connection with a merger, acquisition, or sale of assets
+- As part of a corporate restructuring
+- With your explicit consent
+
+**Legal Requirements:**
+- To comply with applicable laws and regulations
+- To respond to legal requests and court orders
+- To protect our rights and interests
+- To prevent fraud or illegal activities
+
+**Protection of Rights:**
+- To protect the safety and security of our users
+- To investigate potential violations of our terms
+- To defend against legal claims
+
+All third parties with whom we share information are required to maintain the confidentiality and security of your personal information and use it only for the purposes for which it was shared.`
+    },
+    {
+      id: 'minors-privacy',
+      title: 'Privacy of Minors',
+      icon: Users,
+      content: `Our services are not intended for children under 13 years of age. We do not knowingly collect personal information from children under 13.
+
+**Age Verification:**
+- We require users to be at least 13 years old to create an account
+- We do not knowingly collect information from children under 13
+- If we learn we have collected information from a child under 13, we will delete it immediately
+
+**Parental Rights:**
+- Parents may review, update, or delete their child's information
+- Parents may refuse to permit further collection of their child's information
+- Parents may contact us to exercise these rights
+
+**Teen Privacy (13-17):**
+- We may collect limited information from users aged 13-17
+- We require parental consent for certain activities
+- We provide additional protections for teen users
+
+**Reporting Concerns:**
+- If you believe we have collected information from a child under 13, please contact us immediately
+- We will investigate and take appropriate action
+- We will notify parents if we discover we have collected information from their child
+
+We are committed to protecting the privacy of children and complying with applicable laws regarding children's privacy.`
+    },
+    {
+      id: 'cookies-tracking',
+      title: 'Cookies and Tracking Technologies',
+      icon: Cookie,
+      content: `We use cookies and similar tracking technologies to enhance your experience on our website.
+
+**Types of Cookies:**
+- Essential cookies: Required for basic website functionality
+- Performance cookies: Help us understand how visitors use our website
+- Functionality cookies: Remember your preferences and settings
+- Marketing cookies: Used to deliver relevant advertisements
+
+**Cookie Management:**
+- You can control cookies through your browser settings
+- You can opt out of non-essential cookies
+- Disabling cookies may affect website functionality
+- We provide clear information about our cookie usage
+
+**Third-Party Tracking:**
+- We use Google Analytics to understand website usage
+- We may use social media pixels for advertising
+- We work with advertising partners to show relevant ads
+- You can opt out of personalized advertising
+
+**Data Collection:**
+- We collect information about your browsing behavior
+- We track which pages you visit and how long you stay
+- We monitor your interactions with our website
+- We use this information to improve our services
+
+We are transparent about our use of cookies and provide you with control over your privacy preferences.`
+    },
+    {
+      id: 'data-security',
+      title: 'Data Security',
+      icon: Shield,
+      content: `We implement appropriate technical and organizational measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction.
+
+**Security Measures:**
+- Encryption of data in transit and at rest
+- Regular security assessments and updates
+- Access controls and authentication systems
+- Secure data centers and infrastructure
+
+**Employee Training:**
+- Regular privacy and security training for all employees
+- Strict confidentiality agreements
+- Limited access to personal information on a need-to-know basis
+- Regular audits of data handling practices
+
+**Incident Response:**
+- We have procedures in place to respond to security incidents
+- We will notify affected users of any data breaches
+- We work with law enforcement when necessary
+- We continuously monitor for potential security threats
+
+**Third-Party Security:**
+- We carefully vet all third-party service providers
+- We require security certifications from our partners
+- We regularly review third-party security practices
+- We have contracts in place to ensure data protection
+
+While we strive to protect your personal information, no method of transmission over the internet or electronic storage is 100% secure. We cannot guarantee absolute security but are committed to maintaining the highest standards of data protection.`
+    },
+    {
+      id: 'your-rights',
+      title: 'Your Rights',
+      icon: UserCheck,
+      content: `You have certain rights regarding your personal information, which may vary depending on your location.
+
+**Access Rights:**
+- Request access to your personal information
+- Receive a copy of the data we hold about you
+- Understand how we use your information
+- Verify the accuracy of your data
+
+**Correction Rights:**
+- Request correction of inaccurate information
+- Update your personal details
+- Complete incomplete information
+- Ensure data accuracy and completeness
+
+**Deletion Rights:**
+- Request deletion of your personal information
+- Right to be forgotten (where applicable)
+- Withdraw consent for data processing
+- Object to certain types of processing
+
+**Portability Rights:**
+- Receive your data in a structured format
+- Transfer your data to another service provider
+- Export your account information
+- Maintain control over your data
+
+**Objection Rights:**
+- Object to processing for marketing purposes
+- Opt out of automated decision-making
+- Withdraw consent at any time
+- Request restriction of processing
+
+To exercise these rights, please contact us using the information provided in the Contact Us section. We will respond to your request within 30 days.`
+    },
+    {
+      id: 'policy-changes',
+      title: 'Changes to This Policy',
+      icon: AlertCircle,
+      content: `We may update this Privacy Policy from time to time to reflect changes in our practices or applicable laws.
+
+**Notification of Changes:**
+- We will notify you of material changes via email
+- We will post the updated policy on our website
+- We will update the "Last Updated" date at the top of this policy
+- We will provide a summary of significant changes
+
+**Your Continued Use:**
+- Your continued use of our services after changes constitutes acceptance
+- You may withdraw consent if you disagree with changes
+- You may contact us with questions about changes
+- We will honor your previous consent until you update your preferences
+
+**Version Control:**
+- We maintain a history of policy changes
+- Previous versions are available upon request
+- We track when and why changes were made
+- We document the impact of changes on your rights
+
+**Effective Date:**
+- Changes become effective immediately upon posting
+- We will provide reasonable notice for material changes
+- We will give you time to review changes before they take effect
+- We will respect your right to opt out of new practices
+
+We encourage you to review this Privacy Policy periodically to stay informed about how we protect your information.`
+    },
+    {
+      id: 'contact-us',
+      title: 'Contact Us',
+      icon: Mail,
+      content: `If you have any questions about this Privacy Policy or our data practices, please contact us:
+
+**Privacy Officer:**
+Sheikh Shop Privacy Team
+Email: privacy@sheikhshops.com
+Phone: +1 (555) 123-4567
+Address: 123 Luxury Lane, Premium District, CA 90210
+
+**Data Protection Officer:**
+For EU residents and GDPR-related inquiries
+Email: dpo@sheikhshops.com
+Phone: +1 (555) 123-4568
+
+**Response Times:**
+- General inquiries: Within 48 hours
+- Privacy requests: Within 30 days
+- Security incidents: Within 24 hours
+- Legal requests: As required by law
+
+**Languages:**
+- English (primary)
+- Arabic (available upon request)
+- Spanish (available upon request)
+- French (available upon request)
+
+**Office Hours:**
+Monday - Friday: 9:00 AM - 6:00 PM PST
+Saturday: 10:00 AM - 4:00 PM PST
+Sunday: Closed
+
+We are committed to addressing your privacy concerns promptly and professionally.`
+    }
+  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0b0b0b] via-[#0f0a07] to-black text-amber-50 relative overflow-x-hidden">
-      {/* Reading progress bar */}
-      <div className="sticky top-0 z-50 h-1 w-full bg-black/40 backdrop-blur">
-        <div
-          className="h-1 bg-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.7)] transition-[width] duration-150"
-          style={{ width: `${progress}%` }}
-        />
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-amber-950 via-stone-900 to-black relative overflow-hidden">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 bg-[url('/public/assets/pattern.png')] opacity-5"></div>
+      
+      {/* Reading Progress Bar */}
+      <motion.div
+        className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 z-50"
+        style={{ width: progressWidth }}
+      />
 
-      <motion.header
-        {...fadeIn}
-        className="container mx-auto px-6 pt-12 pb-6 max-w-3xl"
-      >
-        <div className="flex items-center gap-3">
-          <div className="rounded-full p-2 bg-gradient-to-br from-amber-600 to-amber-500 text-black shadow-md shadow-amber-800/40">
-            <Lock className="h-6 w-6" />
-          </div>
-          <h1 className="text-3xl md:text-4xl font-serif tracking-tight text-amber-300">
+      <div className="relative z-10">
+        {/* Header Section */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="pt-20 pb-12"
+        >
+          <div className="container mx-auto px-4 text-center">
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+              className="flex items-center justify-center gap-4 mb-6"
+            >
+              <Lock className="w-12 h-12 text-amber-400" />
+              <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
             Privacy Policy
           </h1>
-        </div>
-        <p className="mt-4 text-sm text-amber-200/80">
-          Effective date: January 2025 — www.sheikhshops.com
-        </p>
-      </motion.header>
-
-      <main className="container mx-auto px-6 pb-20 max-w-3xl">
-        <motion.div {...fadeIn} className="rounded-2xl border border-amber-900/30 bg-neutral-900/50 backdrop-blur-md p-4 md:p-6 shadow-xl shadow-black/40">
-          <Accordion type="multiple" className="w-full">
-            <AccordionItem value="collect">
-              <AccordionTrigger className="text-left">
-                <div className="inline-flex items-center gap-2 text-amber-300">
-                  <Database className="h-5 w-5" />
-                  <span>Information We Collect</span>
+            </motion.div>
+            
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
+              className="text-gray-300 text-lg max-w-3xl mx-auto"
+            >
+              Your privacy is important to us. This policy explains how we collect, use, and protect your personal information.
+            </motion.p>
+            
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
+              className="mt-6 text-sm text-gray-400"
+            >
+              Last Updated: January 1, 2025
+            </motion.div>
                 </div>
-              </AccordionTrigger>
-              <AccordionContent>
-                <div className="prose prose-invert max-w-none text-amber-100/90">
-                  <p>We may collect the following types of information when you use our website:</p>
-                  <ul className="list-disc pl-6 space-y-1">
-                    <li>
-                      <span className="font-medium">Personal Information:</span> Name, email address, phone number, and shipping address.
-                    </li>
-                    <li>
-                      <span className="font-medium">Order & Payment Information:</span> Details necessary to process your purchases. Payment information is handled securely by third-party payment providers and is not stored on our servers.
-                    </li>
-                    <li>
-                      <span className="font-medium">Technical Data:</span> IP address, browser type, device information, and cookies to enhance user experience.
-                    </li>
-                  </ul>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="use">
-              <AccordionTrigger className="text-left">
-                <div className="inline-flex items-center gap-2 text-amber-300">
-                  <Lock className="h-5 w-5" />
-                  <span>How We Use Your Information</span>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent>
-                <div className="prose prose-invert max-w-none text-amber-100/90">
-                  <p>We use the information collected for purposes such as:</p>
-                  <ul className="list-disc pl-6 space-y-1">
-                    <li>Processing and fulfilling your orders.</li>
-                    <li>Providing customer support and responding to inquiries.</li>
-                    <li>Improving our website, products, and overall shopping experience.</li>
-                    <li>Sending promotional offers, newsletters, or updates (only if you opt-in).</li>
-                  </ul>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="retention">
-              <AccordionTrigger className="text-left">
-                <div className="inline-flex items-center gap-2 text-amber-300">
-                  <Database className="h-5 w-5" />
-                  <span>Data Retention</span>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent>
-                <div className="prose prose-invert max-w-none text-amber-100/90">
-                  <p>
-                    When you place an order through our website, we will maintain your order information in our records unless and until you
-                    request that we delete it.
-                  </p>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="sharing">
-              <AccordionTrigger className="text-left">
-                <div className="inline-flex items-center gap-2 text-amber-300">
-                  <Lock className="h-5 w-5" />
-                  <span>Sharing of Information</span>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent>
-                <div className="prose prose-invert max-w-none text-amber-100/90">
-                  <p>We do not sell or rent your personal data to third parties. Information may only be shared with:</p>
-                  <ul className="list-disc pl-6 space-y-1">
-                    <li>Service providers such as shipping companies and payment processors, solely for completing your order.</li>
-                    <li>Legal authorities, if required to comply with applicable laws and regulations.</li>
-                  </ul>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="minors">
-              <AccordionTrigger className="text-left">
-                <div className="inline-flex items-center gap-2 text-amber-300">
-                  <User className="h-5 w-5" />
-                  <span>Minors</span>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent>
-                <div className="prose prose-invert max-w-none text-amber-100/90">
-                  <p>
-                    Our website is not intended for individuals under the age of 18. If we discover that we have collected personal information
-                    from a minor, we will take steps to delete it immediately.
-                  </p>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="cookies">
-              <AccordionTrigger className="text-left">
-                <div className="inline-flex items-center gap-2 text-amber-300">
-                  <Lock className="h-5 w-5" />
-                  <span>Cookies and Tracking Technologies</span>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent>
-                <div className="prose prose-invert max-w-none text-amber-100/90">
-                  <p>Sheikh Shop uses cookies and similar technologies to:</p>
-                  <ul className="list-disc pl-6 space-y-1">
-                    <li>Improve website functionality and user experience.</li>
-                    <li>Analyze traffic and usage trends.</li>
-                    <li>Provide personalized content and promotions.</li>
-                  </ul>
-                  <p>
-                    You may disable cookies in your browser settings, but some parts of the site may not function properly as a result.
-                  </p>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="security">
-              <AccordionTrigger className="text-left">
-                <div className="inline-flex items-center gap-2 text-amber-300">
-                  <Lock className="h-5 w-5" />
-                  <span>Security of Your Data</span>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent>
-                <div className="prose prose-invert max-w-none text-amber-100/90">
-                  <p>
-                    We implement strict technical and organizational measures to protect your personal information against unauthorized access,
-                    alteration, disclosure, or destruction. While we take all reasonable precautions, please note that no method of transmission
-                    over the internet is 100% secure.
-                  </p>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="rights">
-              <AccordionTrigger className="text-left">
-                <div className="inline-flex items-center gap-2 text-amber-300">
-                  <Lock className="h-5 w-5" />
-                  <span>Your Rights</span>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent>
-                <div className="prose prose-invert max-w-none text-amber-100/90">
-                  <p>As a user, you have the right to:</p>
-                  <ul className="list-disc pl-6 space-y-1">
-                    <li>Access and request a copy of the personal data we hold about you.</li>
-                    <li>Request correction or deletion of your personal information.</li>
-                    <li>
-                      Opt out of receiving promotional emails at any time by following the unsubscribe link provided.
-                    </li>
-                  </ul>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="changes">
-              <AccordionTrigger className="text-left">
-                <div className="inline-flex items-center gap-2 text-amber-300">
-                  <Lock className="h-5 w-5" />
-                  <span>Changes to This Policy</span>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent>
-                <div className="prose prose-invert max-w-none text-amber-100/90">
-                  <p>
-                    We may update this Privacy Policy from time to time to reflect changes in our practices, operational requirements, or for
-                    legal and regulatory reasons. Updates will be posted on this page with the “last updated” date revised.
-                  </p>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="contact">
-              <AccordionTrigger className="text-left">
-                <div className="inline-flex items-center gap-2 text-amber-300">
-                  <Mail className="h-5 w-5" />
-                  <span>Contact Us</span>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent>
-                <div className="prose prose-invert max-w-none text-amber-100/90">
-                  <p>For more information about our privacy practices, questions, or complaints, please contact us at:</p>
-                  <ul className="list-none pl-0 space-y-1">
-                    <li>📧 Email: sheikhshops.com@gmail.com</li>
-                    <li>🌐 Website: www.sheikhshops.com</li>
-                  </ul>
-                  <p className="mt-2">📌 Last Updated: January 2025</p>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
         </motion.div>
-      </main>
 
-      <footer className="mt-auto">
-        <div className="bg-amber-400 text-black text-center py-6 font-medium tracking-wide">
+        {/* Main Content */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.8, ease: "easeOut" }}
+          className="container mx-auto px-4 pb-20"
+        >
+          <Card className="bg-white/5 backdrop-blur-sm border border-amber-200/20 rounded-2xl overflow-hidden">
+            <CardContent className="p-6 md:p-8">
+              <Accordion type="single" collapsible className="space-y-4">
+                {privacySections.map((section, index) => {
+                  const Icon = section.icon;
+                  return (
+                    <motion.div
+                      key={section.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.6, delay: 0.1 * index, ease: "easeOut" }}
+                    >
+                      <AccordionItem
+                        value={section.id}
+                        className="border border-amber-200/20 rounded-xl overflow-hidden bg-white/5 backdrop-blur-sm"
+                      >
+                        <AccordionTrigger className="px-6 py-4 hover:bg-white/10 transition-colors duration-300">
+                          <div className="flex items-center gap-4 text-left">
+                            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center flex-shrink-0">
+                              <Icon className="w-5 h-5 text-white" />
+                </div>
+                            <span className="text-lg font-semibold text-white">
+                              {section.title}
+                            </span>
+                </div>
+              </AccordionTrigger>
+                        <AccordionContent className="px-6 pb-6">
+                          <div className="prose prose-invert max-w-none">
+                            <div className="text-gray-300 leading-relaxed whitespace-pre-line">
+                              {section.content}
+                </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+                    </motion.div>
+                  );
+                })}
+          </Accordion>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Footer */}
+        <motion.footer
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 1.2, ease: "easeOut" }}
+          className="bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 py-8"
+        >
+          <div className="container mx-auto px-4 text-center">
+            <p className="text-black font-semibold text-lg">
           Sheikh Shop © 2025 | All Rights Reserved
+            </p>
+            <p className="text-black/80 text-sm mt-2">
+              Protecting your privacy is our commitment
+            </p>
+          </div>
+        </motion.footer>
         </div>
-      </footer>
     </div>
   );
 }
-
-
