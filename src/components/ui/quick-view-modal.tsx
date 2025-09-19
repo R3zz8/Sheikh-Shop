@@ -8,6 +8,8 @@ import Image from 'next/image';
 import type { ProductsWithImages } from '@/types';
 import { useCart } from '@/hooks/useCart';
 import { cn } from '@/lib/utils';
+import { formatPrice, convertCurrency } from '@/lib/currency';
+import { useCurrencySafe } from '@/providers/CurrencyProvider';
 
 interface QuickViewModalProps {
   product: ProductsWithImages;
@@ -16,6 +18,7 @@ interface QuickViewModalProps {
 
 export const QuickViewModal = ({ product, children }: QuickViewModalProps) => {
   const [open, setOpen] = useState(false);
+  const { currency } = useCurrencySafe();
   const [mounted, setMounted] = useState(false);
   const { addToCartMutation } = useCart();
 
@@ -104,7 +107,7 @@ export const QuickViewModal = ({ product, children }: QuickViewModalProps) => {
                   {product?.name}
                 </h2>
                 <p className="text-4xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent tracking-tight">
-                  ${(product?.basePrice || 0).toFixed(2)}
+                  {formatPrice(convertCurrency(product?.basePrice || 0, 'EUR', currency), currency)}
                 </p>
 
                 {/* Rating */}

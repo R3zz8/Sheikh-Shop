@@ -1,4 +1,5 @@
 import type { Product, Article, User } from '@prisma/client';
+import { getMultiCurrencyPrices } from './currency';
 
 // Base URL configuration
 const getBaseUrl = () => {
@@ -70,6 +71,23 @@ export function generateProductSchema(product: Product & { images?: any[] }) {
   const baseUrl = getBaseUrl();
   const productUrl = `${baseUrl}/products/${product.id}`;
   
+  // Get multi-currency prices (assuming basePrice is in EUR)
+  const multiCurrencyPrices = getMultiCurrencyPrices(product.basePrice);
+  
+  // Create multiple offers for different currencies
+  const offers = Object.entries(multiCurrencyPrices).map(([currencyCode, price]) => ({
+    '@type': 'Offer',
+    url: productUrl,
+    price: price.toFixed(2),
+    priceCurrency: currencyCode,
+    availability: product.status === 'ACTIVE' ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+    seller: {
+      '@type': 'Organization',
+      name: 'Sheikh Shop',
+    },
+    priceValidUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+  }));
+  
   return {
     '@context': 'https://schema.org',
     '@type': 'Product',
@@ -83,18 +101,7 @@ export function generateProductSchema(product: Product & { images?: any[] }) {
       name: 'Sheikh Shop',
     },
     category: product.category,
-    offers: {
-      '@type': 'Offer',
-      url: productUrl,
-      priceCurrency: 'USD',
-      price: product.basePrice,
-      availability: product.status === 'ACTIVE' ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-      seller: {
-        '@type': 'Organization',
-        name: 'Sheikh Shop',
-      },
-      priceValidUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    },
+    offers: offers,
     aggregateRating: product.isBestSeller ? {
       '@type': 'AggregateRating',
       ratingValue: '4.8',
@@ -204,5 +211,5 @@ export const localBusinessSchema = {
   openingHours: 'Mo-Su 09:00-18:00',
   priceRange: '$$$',
   paymentAccepted: 'Cash, Credit Card, PayPal',
-  currenciesAccepted: 'USD, AED, SAR',
+  currenciesAccepted: 'EUR, USD, AED',
 };

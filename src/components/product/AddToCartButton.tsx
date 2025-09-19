@@ -6,6 +6,8 @@ import { ShoppingCart, Check, Loader2 } from 'lucide-react';
 import type { ProductsWithImages, Unit, ProductPricing } from '@/types';
 import { useCart } from '@/hooks/useCart';
 import { motion, AnimatePresence } from 'framer-motion';
+import { formatPrice, convertCurrency } from '@/lib/currency';
+import { useCurrencySafe } from '@/providers/CurrencyProvider';
 
 interface AddToCartButtonProps {
     product: ProductsWithImages;
@@ -20,6 +22,7 @@ export default function AddToCartButton({
     selectedQuantity, 
     pricing 
 }: AddToCartButtonProps) {
+    const { currency } = useCurrencySafe();
     const { addToCartMutation } = useCart();
     const [showSuccess, setShowSuccess] = useState(false);
 
@@ -105,7 +108,7 @@ export default function AddToCartButton({
                         <span className="text-gray-300">Unit Price:</span>
                         <span className="text-white">
                             {pricing.finalPrice / selectedQuantity > 0 
-                                ? `$${(pricing.finalPrice / selectedQuantity).toFixed(2)}`
+                                ? formatPrice(convertCurrency(pricing.finalPrice / selectedQuantity, 'EUR', currency), currency)
                                 : 'Free'
                             }
                         </span>
@@ -115,7 +118,7 @@ export default function AddToCartButton({
                         <>
                             <div className="flex justify-between text-green-400">
                                 <span>Discount:</span>
-                                <span>-${pricing.discountAmount.toFixed(2)}</span>
+                                <span>-{formatPrice(convertCurrency(pricing.discountAmount, 'EUR', currency), currency)}</span>
                             </div>
                             <div className="flex justify-between text-green-400">
                                 <span>You Save:</span>
@@ -128,7 +131,7 @@ export default function AddToCartButton({
                         <div className="flex justify-between">
                             <span className="text-white font-semibold">Total:</span>
                             <span className="text-xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
-                                ${pricing.finalPrice.toFixed(2)}
+                                {formatPrice(convertCurrency(pricing.finalPrice, 'EUR', currency), currency)}
                             </span>
                         </div>
                     </div>

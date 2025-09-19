@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
+import { getUserPreferredCurrency, parseCurrency, type CurrencyCode, type Locale } from '@/lib/currency';
 
 // Security: Accessor to read JWT secret on demand to avoid build-time/runtime init throws
 function getJwtSecret(): string | null {
@@ -18,18 +19,23 @@ function detectCountryCode(request: NextRequest): string | null {
   );
 }
 
-function detectLocaleFromPathname(pathname: string): 'en' | 'ar' {
+function detectLocaleFromPathname(pathname: string): Locale {
   const first = pathname.split('/').filter(Boolean)[0];
   return first === 'ar' ? 'ar' : 'en';
 }
 
-function chooseCurrency(locale: 'en' | 'ar', country: string | null): 'USD' | 'AED' | 'SAR' {
-  if (locale === 'en') return 'USD';
-  if (!country) return 'AED';
-  const code = country.toUpperCase();
-  if (code === 'AE' || code === 'ARE' || code === 'UAE') return 'AED';
-  if (code === 'SA' || code === 'SAU' || code === 'KSA') return 'SAR';
-  return 'AED';
+function chooseCurrency(locale: Locale, country: string | null, userPreference?: string): CurrencyCode {
+  // 1. Check user's manual preference first
+  const parsedPreference = parseCurrency(userPreference);
+  if (parsedPreference) {
+    return parsedPreference;
+  }
+  
+  // 2. Use locale-based mapping
+  const localeCurrency = getUserPreferredCurrency(locale);
+  
+  // 3. Fallback to EUR (default)
+  return localeCurrency;
 }
 
 function setCurrencyCookieIfNeeded(request: NextRequest, response: NextResponse) {
@@ -37,10 +43,11 @@ function setCurrencyCookieIfNeeded(request: NextRequest, response: NextResponse)
     const pathname = request.nextUrl.pathname;
     const locale = detectLocaleFromPathname(pathname);
     const country = detectCountryCode(request);
-    const desired = chooseCurrency(locale, country);
+    const existingPreference = request.cookies.get('preferred-currency')?.value;
+    const desired = chooseCurrency(locale, country, existingPreference);
 
-    const existing = request.cookies.get('preferred-currency')?.value;
-    if (existing !== desired) {
+    // Only set cookie if it's different from existing or doesn't exist
+    if (existingPreference !== desired) {
       response.cookies.set('preferred-currency', desired, {
         httpOnly: false,
         sameSite: 'lax',
@@ -49,7 +56,9 @@ function setCurrencyCookieIfNeeded(request: NextRequest, response: NextResponse)
         maxAge: 60 * 60 * 24 * 30, // 30 days
       });
     }
-  } catch {}
+  } catch {
+    // Silently handle errors to avoid breaking the middleware
+  }
 }
 
 // Security: Define allowed roles for restricted app areas

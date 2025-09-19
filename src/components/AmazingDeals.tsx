@@ -5,7 +5,8 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Clock, Star, Zap, ArrowRight } from 'lucide-react';
-import { formatPrice } from '@/lib/pricing';
+import { formatPrice, convertCurrency } from '@/lib/currency';
+import { useCurrencySafe } from '@/providers/CurrencyProvider';
 import { useAmazingDeals } from '@/hooks/useAmazingDeals';
 
 
@@ -21,6 +22,7 @@ interface Product {
 
 export default function AmazingDeals() {
   const [isClient, setIsClient] = useState(false);
+  const { currency } = useCurrencySafe();
   const { products, loading, error } = useAmazingDeals();
   
   useEffect(() => {
@@ -259,6 +261,10 @@ export default function AmazingDeals() {
             const finalPrice = hasDiscount 
               ? product.basePrice * (1 - discountPercentage / 100)
               : product.basePrice;
+            
+            // Convert prices to current currency (basePrice is in EUR)
+            const convertedFinalPrice = convertCurrency(finalPrice, 'EUR', currency);
+            const convertedBasePrice = convertCurrency(product.basePrice, 'EUR', currency);
 
             return (
               <motion.div
@@ -307,11 +313,11 @@ export default function AmazingDeals() {
                       <div className="space-y-1">
                         <div className="flex items-baseline gap-2">
                           <span className="text-lg font-bold text-amber-200">
-                            {formatPrice(finalPrice)}
+                            {formatPrice(convertedFinalPrice, currency)}
                           </span>
                           {hasDiscount && (
                             <span className="text-sm text-gray-400 line-through">
-                              {formatPrice(product.basePrice)}
+                              {formatPrice(convertedBasePrice, currency)}
                             </span>
                           )}
                         </div>

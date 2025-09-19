@@ -1,7 +1,7 @@
 'use client';
 
 import Script from 'next/script';
-import { getDefaultCurrency } from '@/lib/currency';
+import { getDefaultCurrency, getMultiCurrencyPrices, type CurrencyCode } from '@/lib/currency';
 
 interface JsonLdProps {
   data: any;
@@ -24,11 +24,26 @@ export function ProductOfferJsonLd({
   rating,
 }: {
   product: { id: string; name: string; description?: string | null; category: string; basePrice: number; status: string; images?: { image: string }[] };
-  currency?: 'USD' | 'AED' | 'SAR';
+  currency?: CurrencyCode;
   rating?: { ratingValue: number; reviewCount: number };
 }) {
   const code = currency || getDefaultCurrency();
   const image = product.images?.[0]?.image || '/og-image.jpg';
+  
+  // Get multi-currency prices (assuming basePrice is in EUR)
+  const multiCurrencyPrices = getMultiCurrencyPrices(product.basePrice);
+  
+  // Create multiple offers for different currencies
+  const offers = Object.entries(multiCurrencyPrices).map(([currencyCode, price]) => ({
+    '@type': 'Offer',
+    url: `/products/${product.id}`,
+    price: price.toFixed(2),
+    priceCurrency: currencyCode,
+    availability: product.status === 'ACTIVE' ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+    seller: { '@type': 'Organization', name: 'Sheikh Shop' },
+    priceValidUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+  }));
+  
   const data = {
     '@context': 'https://schema.org',
     '@type': 'Product',
@@ -38,14 +53,7 @@ export function ProductOfferJsonLd({
     sku: product.id,
     category: product.category,
     brand: { '@type': 'Brand', name: 'Sheikh Shop' },
-    offers: {
-      '@type': 'Offer',
-      url: `/products/${product.id}`,
-      price: product.basePrice,
-      priceCurrency: code,
-      availability: product.status === 'ACTIVE' ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-      seller: { '@type': 'Organization', name: 'Sheikh Shop' },
-    },
+    offers: offers,
     aggregateRating: rating
       ? {
           '@type': 'AggregateRating',

@@ -17,6 +17,7 @@ import { useUser } from '@/hooks/useUser';
 import { cn } from '@/lib/utils';
 import UserBadge from '@/components/UserBadge';
 import PremiumMobileMenu from '@/components/PremiumMobileMenu';
+import CurrencySwitcher from '@/components/CurrencySwitcher';
 
 export default function ClientHeader() {
   const { data: user, refetch } = useUser();
@@ -120,6 +121,12 @@ export default function ClientHeader() {
 
           {/* Right Side Actions */}
           <div className="flex items-center gap-4">
+            {/* Currency Switcher */}
+            <CurrencySwitcher 
+              variant="dropdown"
+              className="hidden md:flex"
+            />
+
             {/* User Badge */}
             {user && (
               <UserBadge 

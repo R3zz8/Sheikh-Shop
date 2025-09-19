@@ -7,7 +7,9 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Calculator, Package } from 'lucide-react';
 import type { Unit } from '@/types';
-import { calculateProductPrice, formatPrice, formatUnit } from '@/lib/pricing';
+import { calculateProductPrice, formatUnit } from '@/lib/pricing';
+import { formatPrice, convertCurrency } from '@/lib/currency';
+import { useCurrencySafe } from '@/providers/CurrencyProvider';
 
 interface UnitSelectorProps {
   units: Unit[];
@@ -32,6 +34,7 @@ export default function UnitSelector({
   className = '',
   showPriceCalculation = true,
 }: UnitSelectorProps) {
+  const { currency } = useCurrencySafe();
   const [localQuantity, setLocalQuantity] = useState(selectedQuantity.toString());
 
   useEffect(() => {
@@ -123,13 +126,13 @@ export default function UnitSelector({
           <div className="flex items-center justify-between text-sm">
             <span className="text-gray-300">Base Price:</span>
             <span className="text-amber-200">
-              {formatPrice(basePrice)} per {baseUnit.symbol}
+              {formatPrice(convertCurrency(basePrice, 'EUR', currency), currency)} per {baseUnit.symbol}
             </span>
           </div>
           <div className="flex items-center justify-between text-sm">
             <span className="text-gray-300">Unit Price:</span>
             <span className="text-amber-200">
-              {formatPrice(baseUnitPrice)} per {selectedUnit.symbol}
+              {formatPrice(convertCurrency(baseUnitPrice, 'EUR', currency), currency)} per {selectedUnit.symbol}
             </span>
           </div>
           <div className="flex items-center justify-between text-sm">
@@ -142,7 +145,7 @@ export default function UnitSelector({
             <div className="flex items-center justify-between">
               <span className="text-white font-medium">Total Price:</span>
               <span className="text-xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
-                {formatPrice(currentPrice)}
+                {formatPrice(convertCurrency(currentPrice, 'EUR', currency), currency)}
               </span>
             </div>
           </div>

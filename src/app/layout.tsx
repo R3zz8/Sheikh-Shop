@@ -6,6 +6,7 @@ import MobileFooter from '@/components/MobileFooter';
 import { Toaster } from '@/components/ui';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import ReactQueryProvider from '@/providers/ReactQuery';
+import { CurrencyProvider } from '@/providers/CurrencyProvider';
 import { OrganizationJsonLd, WebsiteJsonLd } from '@/components/seo/JsonLd';
 import { generateMetadata as generateSEOMetadata } from '@/lib/seo/metadata';
 import AccessibilityEnhancements from '@/components/accessibility/AccessibilityEnhancements';
@@ -42,15 +43,17 @@ export default function RootLayout({
         <AccessibilityEnhancements />
         <ErrorBoundary>
           <ReactQueryProvider>
-            <div className="flex flex-col min-h-screen">
-              <ClientHeader />
-              <main id="main-content" className="flex-1 pt-20 pb-20 md:pb-0">
-                {children}
-              </main>
-              <Footer />
-              <MobileFooter />
-            </div>
-            <Toaster />
+            <CurrencyProvider>
+              <div className="flex flex-col min-h-screen">
+                <ClientHeader />
+                <main id="main-content" className="flex-1 pt-20 pb-20 md:pb-0">
+                  {children}
+                </main>
+                <Footer />
+                <MobileFooter />
+              </div>
+              <Toaster />
+            </CurrencyProvider>
           </ReactQueryProvider>
         </ErrorBoundary>
       </body>

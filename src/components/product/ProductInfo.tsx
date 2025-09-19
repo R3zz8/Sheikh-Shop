@@ -7,7 +7,11 @@ import AddToCartButton from './AddToCartButton';
 import UnitSelector from '@/components/ui/UnitSelector';
 import DiscountBadge from '@/components/ui/DiscountBadge';
 import ProductBadge from '@/components/ui/ProductBadge';
-import { calculateFinalPricing, formatPrice } from '@/lib/pricing';
+import { calculateFinalPricing } from '@/lib/pricing';
+import { formatPrice } from '@/lib/currency';
+import { useCurrencySafe } from '@/providers/CurrencyProvider';
+import { convertCurrency } from '@/lib/currency';
+import { useUnits } from '@/hooks/useUnits';
 import { useState } from 'react';
 
 interface ProductInfoProps {
@@ -16,22 +20,31 @@ interface ProductInfoProps {
 
 export default function ProductInfo({ product }: ProductInfoProps) {
     const [selectedUnit, setSelectedUnit] = useState<Unit>(product.baseUnit);
+    const { currency } = useCurrencySafe();
     const [selectedQuantity, setSelectedQuantity] = useState(1);
+    const { units: availableUnits, loading: unitsLoading, error: unitsError } = useUnits();
 
-    // Get available units (you might want to fetch this from an API)
-    const availableUnits: Unit[] = [
-        { id: '1', name: 'Gram', symbol: 'g', multiplier: 0.001, isActive: true, sortOrder: 1, createdAt: new Date(), updatedAt: new Date() },
-        { id: '2', name: 'Kilogram', symbol: 'kg', multiplier: 1.0, isActive: true, sortOrder: 2, createdAt: new Date(), updatedAt: new Date() },
-        { id: '3', name: 'Package', symbol: 'pkg', multiplier: 1.0, isActive: true, sortOrder: 3, createdAt: new Date(), updatedAt: new Date() },
-    ];
-
-    // Calculate pricing with discounts
+    // Calculate pricing with discounts (basePrice is in EUR)
     const pricing = calculateFinalPricing(
         product.basePrice,
         selectedUnit,
         selectedQuantity,
         product.discounts
     );
+
+    // Convert prices to current currency (with error handling)
+    let convertedFinalPrice = pricing.finalPrice;
+    let convertedOriginalPrice = pricing.originalPrice;
+    let convertedDiscountAmount = pricing.discountAmount;
+    
+    try {
+        convertedFinalPrice = convertCurrency(pricing.finalPrice, 'EUR', currency);
+        convertedOriginalPrice = convertCurrency(pricing.originalPrice, 'EUR', currency);
+        convertedDiscountAmount = convertCurrency(pricing.discountAmount, 'EUR', currency);
+    } catch (error) {
+        console.error('Currency conversion error:', error);
+        // Fallback to EUR prices if conversion fails
+    }
 
     // Simulate rating data (in real app, this would come from database)
     const rating = 4.8;
@@ -83,13 +96,13 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                     <div className="flex items-baseline gap-3">
                         {/* Final Price */}
                         <span className="text-5xl lg:text-6xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
-                            {formatPrice(pricing.finalPrice)}
+                            {formatPrice(convertedFinalPrice, currency)}
                         </span>
                         
                         {/* Original Price with line-through if discounted */}
                         {pricing.hasDiscount && (
                             <span className="text-lg text-gray-400 line-through">
-                                {formatPrice(pricing.originalPrice)}
+                                {formatPrice(convertedOriginalPrice, currency)}
                             </span>
                         )}
                     </div>
@@ -106,7 +119,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                         discount={{
                             type: product.discounts[0]?.discountType || 'PERCENTAGE',
                             value: product.discounts[0]?.value || 0,
-                            amount: pricing.discountAmount,
+                            amount: convertedDiscountAmount,
                             percentage: pricing.discountPercentage,
                             endDate: product.discounts[0]?.endDate || new Date(),
                             isActive: true,
@@ -177,16 +190,32 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.55 }}
             >
-                <UnitSelector
-                    units={availableUnits}
-                    basePrice={product.basePrice}
-                    baseUnit={product.baseUnit}
-                    selectedUnit={selectedUnit}
-                    selectedQuantity={selectedQuantity}
-                    onUnitChange={setSelectedUnit}
-                    onQuantityChange={setSelectedQuantity}
-                    showPriceCalculation={true}
-                />
+                {unitsLoading ? (
+                    <div className="bg-white/5 backdrop-blur-sm border border-amber-200/20 rounded-lg p-6">
+                        <div className="animate-pulse">
+                            <div className="h-4 bg-amber-200/20 rounded w-1/4 mb-4"></div>
+                            <div className="h-8 bg-amber-200/20 rounded w-1/2 mb-2"></div>
+                            <div className="h-4 bg-amber-200/20 rounded w-3/4"></div>
+                        </div>
+                    </div>
+                ) : unitsError ? (
+                    <div className="bg-red-500/10 backdrop-blur-sm border border-red-500/20 rounded-lg p-4">
+                        <p className="text-red-300 text-sm">
+                            Error loading units: {unitsError}. Using default units.
+                        </p>
+                    </div>
+                ) : (
+                    <UnitSelector
+                        units={availableUnits}
+                        basePrice={product.basePrice}
+                        baseUnit={product.baseUnit}
+                        selectedUnit={selectedUnit}
+                        selectedQuantity={selectedQuantity}
+                        onUnitChange={setSelectedUnit}
+                        onQuantityChange={setSelectedQuantity}
+                        showPriceCalculation={true}
+                    />
+                )}
             </motion.div>
 
             {/* Description */}

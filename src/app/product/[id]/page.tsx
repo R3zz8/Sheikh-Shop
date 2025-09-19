@@ -39,6 +39,12 @@ export async function generateMetadata({
 
 async function getProduct(id: string) {
     try {
+        // Validate ID format
+        if (!id || typeof id !== 'string' || id.length === 0) {
+            console.error('Invalid product ID:', id);
+            return null;
+        }
+
         const product = await prisma.product.findUnique({
             where: { id },
             include: { 
@@ -47,6 +53,17 @@ async function getProduct(id: string) {
                 discounts: true,
             },
         });
+
+        if (!product) {
+            console.error('Product not found:', id);
+            return null;
+        }
+
+        // Validate required fields
+        if (!product.baseUnit) {
+            console.error('Product missing baseUnit:', id);
+            return null;
+        }
 
         return product;
     } catch (error) {
