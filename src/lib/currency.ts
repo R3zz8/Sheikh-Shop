@@ -1,6 +1,6 @@
 import { 
-  CurrencyCode, 
-  Locale, 
+  type CurrencyCode, 
+  type Locale, 
   CURRENCY_MAP, 
   CURRENCY_DISPLAY, 
   EXCHANGE_RATES,

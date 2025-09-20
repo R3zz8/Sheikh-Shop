@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { 
-  CurrencyCode, 
+  type CurrencyCode, 
   CURRENCY_DISPLAY, 
   getSupportedCurrencies,
   type Locale 

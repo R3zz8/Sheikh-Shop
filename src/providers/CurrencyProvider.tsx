@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { CurrencyCode, type Locale } from '@/lib/currencyConfig';
+import { type CurrencyCode, type Locale } from '@/lib/currencyConfig';
 import { getUserPreferredCurrency, parseCurrency } from '@/lib/currency';
 
 interface CurrencyContextType {

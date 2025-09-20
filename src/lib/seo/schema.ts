@@ -1,5 +1,6 @@
 import type { Product, Article, User } from '@prisma/client';
-import { getMultiCurrencyPrices } from './currency';
+import { getMultiCurrencyPrices } from '../currency';
+import type { CurrencyCode } from '../currencyConfig';
 
 // Base URL configuration
 const getBaseUrl = () => {
@@ -75,7 +76,7 @@ export function generateProductSchema(product: Product & { images?: any[] }) {
   const multiCurrencyPrices = getMultiCurrencyPrices(product.basePrice);
   
   // Create multiple offers for different currencies
-  const offers = Object.entries(multiCurrencyPrices).map(([currencyCode, price]) => ({
+  const offers = (Object.entries(multiCurrencyPrices) as [CurrencyCode, number][]).map(([currencyCode, price]) => ({
     '@type': 'Offer',
     url: productUrl,
     price: price.toFixed(2),

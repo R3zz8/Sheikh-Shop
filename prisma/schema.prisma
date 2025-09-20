@@ -131,8 +131,8 @@ model User {
   createdAt                     DateTime            @default(now())
   updatedAt                     DateTime            @updatedAt
   articles                      Article[]
-  comments                      Comment[]
   auditLogs                     AuditLog[]
+  comments                      Comment[]
   emailVerifications            EmailVerification[]
   recoveryCodes                 RecoveryCode[]
   sessions                      Session[]
@@ -223,11 +223,11 @@ model Article {
   summary   String        @db.VarChar(500)
   content   String
   status    ArticleStatus @default(DRAFT)
-  category  String?       @db.VarChar(100)
-  tags      String[]      @default([])
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
   authorId  String
+  category  String?       @db.VarChar(100)
+  tags      String[]      @default([])
   author    User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
   comments  Comment[]
 
@@ -235,6 +235,23 @@ model Article {
   @@index([authorId])
   @@index([createdAt])
   @@index([title])
+  @@index([status])
+}
+
+model Comment {
+  id        String        @id @default(cuid())
+  content   String
+  status    CommentStatus @default(PENDING)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  articleId String
+  authorId  String?
+  article   Article       @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  author    User?         @relation(fields: [authorId], references: [id])
+
+  @@index([articleId])
+  @@index([authorId])
+  @@index([createdAt])
   @@index([status])
 }
 
@@ -282,22 +299,3 @@ enum CommentStatus {
   APPROVED
   REJECTED
 }
-
-model Comment {
-  id        String         @id @default(cuid())
-  content   String
-  status    CommentStatus  @default(PENDING)
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
-  articleId String
-  authorId  String?
-
-  article   Article        @relation(fields: [articleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  author    User?          @relation(fields: [authorId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-
-  @@index([articleId])
-  @@index([authorId])
-  @@index([createdAt])
-  @@index([status])
-}
-
