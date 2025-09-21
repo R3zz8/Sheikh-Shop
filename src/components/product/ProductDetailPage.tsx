@@ -36,8 +36,8 @@ export default function ProductDetailPage({ product }: ProductDetailPageProps) {
                             <div className="absolute -inset-1 bg-gradient-to-r from-amber-200/15 via-yellow-200/15 to-orange-200/15 rounded-3xl opacity-0 group-hover:opacity-100 transition-all duration-700" />
 
                             {/* Main card */}
-                            <div className="relative bg-white/8 backdrop-blur-xl border border-white/15 rounded-3xl p-8 shadow-xl">
-                                <div className="grid lg:grid-cols-2 gap-12 items-start">
+                            <div className="relative bg-white/8 backdrop-blur-xl border border-white/15 rounded-3xl p-4 md:p-8 shadow-xl">
+                                <div className="grid lg:grid-cols-2 gap-6 lg:gap-12 items-start">
                                     {/* Left side - Image Gallery */}
                                     <ErrorBoundary fallback={
                                         <div className="bg-white/5 rounded-lg p-8 text-center">

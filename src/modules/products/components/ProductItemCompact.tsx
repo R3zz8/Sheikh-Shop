@@ -95,7 +95,7 @@ export default function ProductItemCompact({
 
   return (
     <>
-      <div ref={productRef} className="relative bg-white/8 backdrop-blur-sm border border-amber-200/20 rounded-xl overflow-hidden hover:border-amber-300/40 hover:bg-white/12 transition-all duration-300 group">
+      <div ref={productRef} className="relative bg-white/8 backdrop-blur-sm border border-amber-200/20 rounded-xl overflow-hidden hover:border-amber-300/40 hover:bg-white/12 transition-all duration-300 group flex flex-col h-full">
         {/* Subtle glow effect on hover */}
         <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-orange-500/3 to-yellow-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
@@ -127,8 +127,8 @@ export default function ProductItemCompact({
           </div>
         </Link>
 
-        {/* Product Info - Below image */}
-        <div className="relative z-10 p-3 flex flex-col justify-between min-h-[120px]">
+        {/* Product Content - Flexible content area */}
+        <div className="relative z-10 p-3 flex flex-col flex-grow">
           {/* Product Name */}
           <Link href={`/product/${product.id}`} className="block mb-2">
             <h3 className="text-sm font-semibold text-white group-hover:text-amber-200 transition-colors duration-300 cursor-pointer line-clamp-2 leading-tight text-center">
@@ -185,18 +185,20 @@ export default function ProductItemCompact({
               />
             )}
             </div>
+        </div>
 
-            {/* Add to Cart Button */}
-            <Button
-              ref={cartButtonRef}
-              onClick={handleAddToCart}
-              disabled={addToCartMutation.isPending}
-              size="sm"
-              className="w-full bg-gradient-to-r from-amber-600 via-yellow-600 to-orange-600 hover:from-amber-700 hover:via-yellow-700 hover:to-orange-700 text-white font-semibold border border-amber-500/30 shadow-lg hover:shadow-xl hover:shadow-amber-900/30 transition-all duration-300 transform hover:-translate-y-0.5 text-xs py-2"
-            >
-              <ShoppingCart className="w-3 h-3 mr-1" />
-              {addToCartMutation.isPending ? 'Adding...' : 'Add to Cart'}
-            </Button>
+        {/* Button Container - Fixed at bottom */}
+        <div className="p-3 pt-0 mt-auto">
+          <Button
+            ref={cartButtonRef}
+            onClick={handleAddToCart}
+            disabled={addToCartMutation.isPending}
+            size="sm"
+            className="w-full bg-gradient-to-r from-amber-600 via-yellow-600 to-orange-600 hover:from-amber-700 hover:via-yellow-700 hover:to-orange-700 text-white font-semibold border border-amber-500/30 shadow-lg hover:shadow-xl hover:shadow-amber-900/30 transition-all duration-300 transform hover:-translate-y-0.5 text-xs py-2"
+          >
+            <ShoppingCart className="w-3 h-3 mr-1" />
+            {addToCartMutation.isPending ? 'Adding...' : 'Add to Cart'}
+          </Button>
         </div>
       </div>
 

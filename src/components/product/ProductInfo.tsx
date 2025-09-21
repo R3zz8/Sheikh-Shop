@@ -60,14 +60,14 @@ export default function ProductInfo({ product }: ProductInfoProps) {
     const stockStatus = getStockStatus(product.quantity);
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-4 md:space-y-8">
             {/* Product Title */}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.1 }}
             >
-                <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent leading-tight">
+                <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent leading-tight">
                     {product.name}
                 </h1>
             </motion.div>
@@ -81,7 +81,8 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                 <ProductBadge 
                     isNew={product.isNew}
                     isBestSeller={product.isBestSeller}
-                    size="lg"
+                    size="md"
+                    className="md:scale-100 scale-90"
                 />
             </motion.div>
 
@@ -95,7 +96,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                 <div className="space-y-2">
                     <div className="flex items-baseline gap-3">
                         {/* Final Price */}
-                        <span className="text-5xl lg:text-6xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
+                        <span className="text-3xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
                             {formatPrice(convertedFinalPrice, currency)}
                         </span>
                         
@@ -108,7 +109,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                     </div>
                     
                     {/* Unit Display */}
-                    <p className="text-lg text-amber-200/80">
+                    <p className="text-sm md:text-lg text-amber-200/80">
                         per {selectedUnit.symbol}
                     </p>
                 </div>
