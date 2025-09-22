@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
 import { getUserPreferredCurrency, parseCurrency, type CurrencyCode, type Locale } from '@/lib/currency';
+import { getCachedSession } from '@/lib/redis';
 
 // Security: Accessor to read JWT secret on demand to avoid build-time/runtime init throws
 function getJwtSecret(): string | null {
@@ -207,7 +208,7 @@ export async function middleware(request: NextRequest) {
     if (!hasJwtSecret) {
       throw new Error('Missing JWT secret');
     }
-    // Security: Verify access token first
+    // Verify access token first
     if (accessToken) {
       const JWT_SECRET = getJwtSecret();
       if (!JWT_SECRET) throw new Error('Missing JWT secret');
@@ -220,10 +221,12 @@ export async function middleware(request: NextRequest) {
           audience: 'sheikh-shop-users',
         },
       );
-      user = payload as { id: string; email: string; role: string; sessionId: string };
+      // Fast path: resolve user from cache using sessionId
+      const cached = payload.sessionId ? await getCachedSession(String(payload.sessionId)) : null;
+      user = cached || (payload as { id: string; email: string; role: string; sessionId: string });
     }
   } catch {
-    // Access token invalid/expired, try refresh token
+    // Access token invalid/expired, try refresh token (validate only, avoid DB when possible)
     if (refreshToken) {
       try {
         const JWT_SECRET = getJwtSecret();
@@ -237,31 +240,12 @@ export async function middleware(request: NextRequest) {
             audience: 'sheikh-shop-refresh',
           },
         );
-
-        // Security: Validate session from DB
-        const { PrismaClient } = await import('@prisma/client');
-        const prisma = new PrismaClient();
-        const session = await prisma.session.findUnique({
-          where: {
-            id: payload.sessionId as string,
-            refreshToken: payload.tokenId as string,
-          },
-          include: { user: true },
-        });
-
-        if (session && session.expiresAt > new Date()) {
-          user = {
-            id: session.userId,
-            email: session.user.email,
-            role: session.user.role,
-            sessionId: session.id,
-          };
-          await prisma.session.update({ where: { id: session.id }, data: { lastUsedAt: new Date() } });
+        const cached = payload.sessionId ? await getCachedSession(String(payload.sessionId)) : null;
+        if (cached && cached.sessionId && cached.id) {
+          user = cached;
         }
-
-        await prisma.$disconnect();
       } catch {
-        // Both tokens invalid
+        // ignore
       }
     }
   }

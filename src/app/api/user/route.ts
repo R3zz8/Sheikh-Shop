@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyJwtToken } from '@/lib/auth/jwt';
+import { getCachedSession } from '@/lib/redis';
 import { prisma } from '@/lib/prisma';
 
 // Security: Input validation schema
@@ -26,6 +27,17 @@ export async function GET(req: NextRequest) {
         { error: 'Invalid or expired token' },
         { status: 401 },
       );
+    }
+
+    // Try cache first for user basics
+    const cached = user.sessionId ? await getCachedSession(user.sessionId) : null;
+    if (cached) {
+      return NextResponse.json({
+        id: cached.id,
+        email: cached.email,
+        role: cached.role,
+        emailVerified: true,
+      });
     }
 
     // Security: Fetch user from database with proper error handling

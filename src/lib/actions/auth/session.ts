@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { cookies } from 'next/headers';
 import { verifyAccessToken, verifyRefreshToken, signAccessToken, signRefreshToken, generateSessionId, generateTokenId, blacklistToken } from '@/lib/auth/jwt';
 import { logAudit } from './audit';
+import { cacheSession, deleteCachedSession } from '@/lib/redis';
 import { SESSION_CONFIG } from '@/lib/config/auth';
 import type { DeviceFingerprint } from '@/lib/config/auth';
 import crypto from 'crypto';
@@ -115,6 +116,9 @@ export async function createSession(
     tokenId,
   });
 
+  // Cache lightweight session for fast middleware checks (TTL aligns with access token ~15m)
+  await cacheSession({ id: userId, email: user.email, role: user.role, sessionId }, 15 * 60);
+
   return { session, accessToken, refreshToken };
 }
 
@@ -223,6 +227,7 @@ export async function invalidateSession(sessionId: string, userId: string) {
       await prisma.session.delete({
         where: { id: sessionId },
       });
+    await deleteCachedSession(sessionId);
     }
 
     await logAudit(userId, 'session_invalidated', { sessionId });

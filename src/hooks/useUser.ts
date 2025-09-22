@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { User as PrismaUser } from '@prisma/client';
 
 export type User = {
@@ -12,6 +12,7 @@ export type User = {
 };
 
 export function useUser() {
+  const queryClient = useQueryClient();
   return useQuery<User | null>({
     queryKey: ['user'],
     queryFn: async () => {
@@ -30,7 +31,9 @@ export function useUser() {
         return null;
       }
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    // For login UX, keep very short stale time so UI reflects changes fast
+    staleTime: 5 * 1000,
+    gcTime: 5 * 60 * 1000,
     retry: (failureCount, error) => {
       // Don't retry on 401 (unauthorized) errors
       if (error instanceof Error && error.message.includes('401')) {
@@ -39,4 +42,9 @@ export function useUser() {
       return failureCount < 3;
     },
   });
+}
+
+// Helper to immediately set user after login for optimistic UI
+export function setUserOptimistic(user: User | null, queryClient: ReturnType<typeof useQueryClient> extends never ? any : any) {
+  queryClient.setQueryData(['user'], user);
 }

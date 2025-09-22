@@ -10,6 +10,7 @@ import PasswordField from '@/components/auth/PasswordField';
 import SocialAuthButtons from '@/components/auth/SocialAuthButtons';
 import AnimatedBackground from '@/components/auth/AnimatedBackground';
 import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
 
 function validateEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -22,6 +23,7 @@ export default function LoginPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const isEmailValid = useMemo(() => (email ? validateEmail(email) : true), [email]);
   const isPasswordValid = useMemo(() => (password ? password.length >= 1 : true), [password]);
@@ -41,6 +43,8 @@ export default function LoginPage() {
         const data = await res.json().catch(() => ({}));
 
         if (res.ok && data?.success) {
+          // Optimistically set user cache for instant UI update
+          queryClient.setQueryData(['user'], data.user ?? null);
           toast.success('Welcome back!');
           router.push('/');
           return;

@@ -107,14 +107,11 @@ export function isTokenExpired(token: string): boolean {
 // Security: Token blacklisting functions
 export async function isTokenBlacklisted(token: string): Promise<boolean> {
   try {
-    const { PrismaClient } = await import('@prisma/client');
-    const prisma = new PrismaClient();
-    
+    // Reuse shared prisma instance to avoid per-call clients
+    const { prisma } = await import('@/lib/prisma');
     const blacklistedToken = await prisma.blacklistedToken.findUnique({
       where: { token },
     });
-    
-    await prisma.$disconnect();
     return !!blacklistedToken;
   } catch (error) {
     // If blacklist check fails, assume token is valid (fail open for availability)
@@ -125,8 +122,7 @@ export async function isTokenBlacklisted(token: string): Promise<boolean> {
 
 export async function blacklistToken(token: string, expiresAt?: Date): Promise<void> {
   try {
-    const { PrismaClient } = await import('@prisma/client');
-    const prisma = new PrismaClient();
+    const { prisma } = await import('@/lib/prisma');
     
     // Decode token to get expiration
     const decoded = decodeJwtToken(token);
@@ -138,8 +134,6 @@ export async function blacklistToken(token: string, expiresAt?: Date): Promise<v
         expiresAt: tokenExpiresAt,
       },
     });
-    
-    await prisma.$disconnect();
   } catch (error) {
     console.error('Failed to blacklist token:', error);
   }
@@ -148,9 +142,7 @@ export async function blacklistToken(token: string, expiresAt?: Date): Promise<v
 // Security: Clean up expired blacklisted tokens
 export async function cleanupExpiredBlacklistedTokens(): Promise<void> {
   try {
-    const { PrismaClient } = await import('@prisma/client');
-    const prisma = new PrismaClient();
-    
+    const { prisma } = await import('@/lib/prisma');
     await prisma.blacklistedToken.deleteMany({
       where: {
         expiresAt: {
@@ -158,8 +150,6 @@ export async function cleanupExpiredBlacklistedTokens(): Promise<void> {
         },
       },
     });
-    
-    await prisma.$disconnect();
   } catch (error) {
     console.error('Failed to cleanup expired blacklisted tokens:', error);
   }
