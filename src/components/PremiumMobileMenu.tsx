@@ -167,7 +167,7 @@ export default function PremiumMobileMenu({
           transition={{ duration: 0.3, ease: "easeOut" }}
         >
           {/* Solid Background Base - Immediately visible, no transparency */}
-          <div className="absolute inset-0 bg-black z-20" />
+          <div className="absolute inset-0 bg-black z-20 " />
 
           {/* Solid Opaque Gradient Overlay - No transparency */}
           <motion.div

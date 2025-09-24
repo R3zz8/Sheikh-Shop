@@ -68,7 +68,7 @@ export default function MobileCarousel({
   images = mockImages, 
   autoPlayInterval = 5000,
   showPagination = true,
-  showNavigation = true
+  showNavigation = false
 }: MobileCarouselProps) {
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
   const [activeIndex, setActiveIndex] = useState(0);
@@ -91,9 +91,10 @@ export default function MobileCarousel({
   }, []);
 
   return (
-    <div className="w-full block md:hidden">
+    // Strictly mobile-only visibility
+    <div className="w-full block md:hidden" aria-hidden={false}>
       {/* Carousel Container - Mobile-only with IranYadak style design */}
-      <div className="relative overflow-hidden rounded-2xl shadow-2xl bg-gradient-to-br from-amber-950 to-stone-900">
+      <div className="relative overflow-hidden rounded-2xl shadow-2xl bg-black mx-auto max-w-sm sm:max-w-md">
         <Swiper
           modules={[Navigation, Pagination, Autoplay, EffectFade]}
           spaceBetween={0}
@@ -119,63 +120,62 @@ export default function MobileCarousel({
             bulletActiveClass: 'swiper-pagination-bullet-active-custom',
           } : false}
           onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
-          className="h-[280px]"
+          className="h-[220px] sm:h-[280px]"
         >
           {images.map((img, index) => (
             <SwiperSlide key={img.id || index}>
-              <div className="relative h-full w-full">
-                {/* Background Image */}
-                <Image
-                  src={getImageSource(img.url)}
-                  alt={img.alt}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 100vw"
-                  priority={index === 0}
-                  onError={() => handleImageError(img.url)}
-                />
-                
-                {/* Dark overlay for better text readability */}
-                <div className="absolute inset-0 bg-black/40" />
-                
-                {/* Gradient overlay for premium look */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-                
-                {/* Content overlay - IranYadak style centered layout */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-8 z-10">
-                  {/* Sheikh Shop Brand - Enhanced */}
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-orange-400 rounded-lg flex items-center justify-center shadow-lg">
-                      <span className="text-white text-lg font-bold">👑</span>
+              {/* Card container */}
+              <div className="h-full p-3">
+                <div className="relative h-full w-full rounded-2xl overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.5)] bg-black border border-white/10">
+                  {/* Content row: left text, right image */}
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="flex-1 px-5 py-4 flex flex-col h-full">
+                      {/* Shop name */}
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-6 h-6 rounded-md bg-amber-500/90 flex items-center justify-center shadow">
+                          <span className="text-[12px] leading-none">👑</span>
+                        </div>
+                        <span className="text-amber-300 text-sm font-semibold tracking-wide">Sheikh Shop</span>
+                      </div>
+                      {/* Title */}
+                      <motion.h2
+                        className="text-3xl sm:text-4xl font-extrabold text-amber-50 leading-tight mb-4 text-left"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, delay: 0.1 }}
+                      >
+                        {img.title}
+                      </motion.h2>
+                      {/* CTA at bottom-left */}
+                      <div className="mt-auto">
+                        {img.ctaText && (
+                          <motion.button
+                            onClick={() => handleCTAClick(img.ctaLink)}
+                            className="px-6 py-3 rounded-full bg-amber-50 text-stone-900 font-bold text-sm shadow-lg active:scale-95 transition-all"
+                            whileHover={{ scale: 1.03 }}
+                            whileTap={{ scale: 0.97 }}
+                            aria-label={`${img.ctaText} for ${img.title}`}
+                          >
+                            {img.ctaText}
+                          </motion.button>
+                        )}
+                      </div>
                     </div>
-                    <span className="text-amber-200 font-bold text-lg tracking-wider">Sheikh Shop</span>
+                    {/* Right-aligned product image */}
+                    <div className="w-1/2 h-full relative">
+                      <Image
+                        src={getImageSource(img.url)}
+                        alt={img.alt}
+                        fill
+                        className="object-contain p-4"
+                        sizes="(max-width: 768px) 50vw, 50vw"
+                        priority={index === 0}
+                        onError={() => handleImageError(img.url)}
+                      />
+                    </div>
                   </div>
-                  
-                  {/* Title - Enhanced typography */}
-                  <motion.h2 
-                    className="text-4xl font-black text-white drop-shadow-2xl mb-8 leading-tight tracking-tight"
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, delay: 0.2 }}
-                  >
-                    {img.title}
-                  </motion.h2>
-                  
-                  {/* CTA Button - IranYadak style */}
-                  {img.ctaText && (
-                    <motion.button
-                      onClick={() => handleCTAClick(img.ctaLink)}
-                      className="px-10 py-4 bg-white text-gray-900 rounded-full shadow-2xl font-bold text-lg hover:bg-gray-50 hover:scale-105 hover:shadow-3xl transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-white/40 focus:ring-offset-2 focus:ring-offset-transparent border-2 border-white/20"
-                      whileHover={{ scale: 1.05, y: -2 }}
-                      whileTap={{ scale: 0.95 }}
-                      initial={{ opacity: 0, y: 30 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.8, delay: 0.4 }}
-                      aria-label={`${img.ctaText} for ${img.title}`}
-                    >
-                      {img.ctaText}
-                    </motion.button>
-                  )}
+                  {/* Cream highlight bottom section */}
+                  <div className="absolute bottom-0 left-0 right-0 h-6 bg-amber-50/90" />
                 </div>
               </div>
             </SwiperSlide>
@@ -203,15 +203,15 @@ export default function MobileCarousel({
 
         {/* Custom Pagination - IranYadak Raised Pill Style */}
         {showPagination && images.length > 1 && (
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20">
-            <div className="swiper-pagination-custom flex items-center justify-center gap-3 px-6 py-3 bg-white/15 backdrop-blur-lg rounded-full shadow-2xl border border-white/30">
+          <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 z-20">
+            <div className="swiper-pagination-custom flex items-center justify-center gap-3 px-6 py-2 bg-amber-50 rounded-full shadow-xl ring-1 ring-stone-200">
               {images.map((_, index) => (
                 <motion.button
                   key={index}
-                  className={`swiper-pagination-bullet-custom transition-all duration-500 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-transparent ${
+                  className={`swiper-pagination-bullet-custom transition-all duration-500 focus:outline-none ${
                     index === activeIndex 
-                      ? 'w-10 h-4 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 rounded-full shadow-lg' 
-                      : 'w-2.5 h-2.5 bg-gray-400/60 rounded-full hover:bg-gray-300/80 hover:scale-110'
+                      ? 'w-2.5 h-2.5 bg-stone-900 rounded-full shadow' 
+                      : 'w-2.5 h-2.5 bg-stone-400/60 rounded-full hover:bg-stone-500/80'
                   }`}
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}

@@ -896,20 +896,24 @@
 .responsive-grid {
   display: grid;
   grid-template-columns: repeat(1, minmax(0, 1fr));
+  align-items: start; /* Allow natural heights on mobile */
 }
 @media (min-width: 480px) {
   .responsive-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start; /* Allow natural heights on mobile */
   }
 }
 @media (min-width: 768px) {
   .responsive-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: stretch; /* Force equal heights on desktop */
   }
 }
 @media (min-width: 1024px) {
   .responsive-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-items: stretch; /* Force equal heights on desktop */
   }
 }
 
