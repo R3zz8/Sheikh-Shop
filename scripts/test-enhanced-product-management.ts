@@ -90,9 +90,10 @@ async function testEnhancedProductManagement() {
         console.log('   ✅ Responsive design');
         console.log('   ✅ Loading states and feedback');
 
+        const superadminEmail = process.env.SUPERADMIN_EMAIL || 'rezadhu615@gmail.com';
         console.log('\n⚠️  Login with superadmin to test:');
-        console.log('   Email: rezadhu615@gmail.com');
-        console.log('   Password: Temp#1234');
+        console.log(`   Email: ${superadminEmail}`);
+        console.log('   Password: [Check your environment variables]');
 
     } catch (error) {
         console.error('❌ Test failed:', error);

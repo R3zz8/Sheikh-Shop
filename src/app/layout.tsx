@@ -6,68 +6,20 @@ import MobileFooter from '@/components/MobileFooter';
 import { Toaster } from '@/components/ui';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import ReactQueryProvider from '@/providers/ReactQuery';
-import JsonLd from '@/components/seo/JsonLd';
-import { generateOrganizationSchema, generateWebSiteSchema } from '@/lib/seo';
+import { CurrencyProvider } from '@/providers/CurrencyProvider';
+import { OrganizationJsonLd, WebsiteJsonLd } from '@/components/seo/JsonLd';
+import { generateMetadata as generateSEOMetadata } from '@/lib/seo/metadata';
+import AccessibilityEnhancements from '@/components/accessibility/AccessibilityEnhancements';
 
 // Font variables with fallbacks
 const fontVariables = '--font-inter --font-poppins --font-jetbrains-mono';
 
-export const metadata: Metadata = {
-  title: {
-    default: 'Sheikh Shop - Premium Luxury Products',
-    template: '%s | Sheikh Shop',
-  },
+export const metadata: Metadata = generateSEOMetadata({
+  title: 'Sheikh Shop - Premium Luxury Products',
   description: 'Discover our curated collection of premium luxury products. Experience exceptional quality and craftsmanship with Sheikh Shop.',
   keywords: ['luxury', 'premium', 'products', 'sheikh shop', 'quality', 'craftsmanship'],
-  authors: [{ name: 'Sheikh Shop Team' }],
-  creator: 'Sheikh Shop',
-  publisher: 'Sheikh Shop',
-  formatDetection: {
-    email: false,
-    address: false,
-    telephone: false,
-  },
-  metadataBase: new URL('https://sheikhshop.com'),
-  alternates: {
-    canonical: '/',
-  },
-  openGraph: {
-    type: 'website',
-    locale: 'en_US',
-    url: 'https://sheikhshop.com',
-    title: 'Sheikh Shop - Premium Luxury Products',
-    description: 'Discover our curated collection of premium luxury products. Experience exceptional quality and craftsmanship.',
-    siteName: 'Sheikh Shop',
-    images: [
-      {
-        url: '/og-image.jpg',
-        width: 1200,
-        height: 630,
-        alt: 'Sheikh Shop - Premium Luxury Products',
-      },
-    ],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Sheikh Shop - Premium Luxury Products',
-    description: 'Discover our curated collection of premium luxury products.',
-    images: ['/og-image.jpg'],
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
-    },
-  },
-  verification: {
-    google: 'your-google-verification-code',
-  },
-};
+  canonical: '/',
+});
 
 export default function RootLayout({
   children,
@@ -84,21 +36,24 @@ export default function RootLayout({
         <link rel="manifest" href="/site.webmanifest" />
         <meta name="theme-color" content="#451a03" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+        <OrganizationJsonLd />
+        <WebsiteJsonLd />
       </head>
       <body className="antialiased">
-        <JsonLd data={generateOrganizationSchema()} />
-        <JsonLd data={generateWebSiteSchema()} />
+        <AccessibilityEnhancements />
         <ErrorBoundary>
           <ReactQueryProvider>
-            <div className="flex flex-col min-h-screen">
-              <ClientHeader />
-              <main className="flex-1 pt-20 pb-20 md:pb-0">
-                {children}
-              </main>
-              <Footer />
-              <MobileFooter />
-            </div>
-            <Toaster />
+            <CurrencyProvider>
+              <div className="flex flex-col min-h-screen">
+                <ClientHeader />
+                <main id="main-content" className="flex-1 pt-20 pb-20 md:pb-0">
+                  {children}
+                </main>
+                <Footer />
+                <MobileFooter />
+              </div>
+              <Toaster />
+            </CurrencyProvider>
           </ReactQueryProvider>
         </ErrorBoundary>
       </body>

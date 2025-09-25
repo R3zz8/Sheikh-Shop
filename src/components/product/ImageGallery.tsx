@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface ImageGalleryProps {
-    images: Array<{ id: string; image: string; productId: string | null }>;
+    images: Array<{ id: string; image: string; productId: string | null | undefined }>;
     productName: string;
 }
 
@@ -46,9 +46,9 @@ export default function ImageGallery({ images, productName }: ImageGalleryProps)
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6">
             {/* Main Image */}
-            <div className="relative bg-white/8 backdrop-blur-sm rounded-2xl p-6 border border-white/15 overflow-hidden">
+            <div className="relative bg-white/8 backdrop-blur-sm rounded-2xl p-3 md:p-6 border border-white/15 overflow-hidden">
                 {/* Navigation arrows for multiple images */}
                 {images.length > 1 && (
                     <>
@@ -105,14 +105,14 @@ export default function ImageGallery({ images, productName }: ImageGalleryProps)
 
             {/* Thumbnails */}
             {images.length > 1 && (
-                <div className="flex gap-3 justify-center lg:justify-start">
+                <div className="flex gap-2 md:gap-3 justify-start overflow-x-auto pb-2 md:pb-0 md:justify-center lg:justify-start scrollbar-hide">
                     {images.map((image, index) => (
                         <motion.button
                             key={image.id}
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => handleImageChange(index)}
-                            className={`relative w-20 h-20 rounded-xl overflow-hidden border-2 transition-all duration-300 ${index === selectedImageIndex
+                            className={`relative w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden border-2 transition-all duration-300 flex-shrink-0 ${index === selectedImageIndex
                                 ? 'border-amber-300 shadow-lg shadow-amber-300/25'
                                 : 'border-white/20 hover:border-white/40'
                                 }`}

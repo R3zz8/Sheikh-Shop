@@ -2,25 +2,54 @@
 
 import { motion } from 'framer-motion';
 import { Star, Package, Tag } from 'lucide-react';
-import type { ProductsWithImages } from '@/types';
+import type { ProductsWithImages, Unit } from '@/types';
 import AddToCartButton from './AddToCartButton';
+import UnitSelector from '@/components/ui/UnitSelector';
+import DiscountBadge from '@/components/ui/DiscountBadge';
+import ProductBadge from '@/components/ui/ProductBadge';
+import { calculateFinalPricing } from '@/lib/pricing';
+import { formatPrice } from '@/lib/currency';
+import { useCurrencySafe } from '@/providers/CurrencyProvider';
+import { convertCurrency } from '@/lib/currency';
+import { useUnits } from '@/hooks/useUnits';
+import { useState } from 'react';
 
 interface ProductInfoProps {
     product: ProductsWithImages;
 }
 
 export default function ProductInfo({ product }: ProductInfoProps) {
+    const [selectedUnit, setSelectedUnit] = useState<Unit>(product.baseUnit);
+    const { currency } = useCurrencySafe();
+    const [selectedQuantity, setSelectedQuantity] = useState(1);
+    const { units: availableUnits, loading: unitsLoading, error: unitsError } = useUnits();
+
+    // Calculate pricing with discounts (basePrice is in EUR)
+    const pricing = calculateFinalPricing(
+        product.basePrice,
+        selectedUnit,
+        selectedQuantity,
+        product.discounts
+    );
+
+    // Convert prices to current currency (with error handling)
+    let convertedFinalPrice = pricing.finalPrice;
+    let convertedOriginalPrice = pricing.originalPrice;
+    let convertedDiscountAmount = pricing.discountAmount;
+    
+    try {
+        convertedFinalPrice = convertCurrency(pricing.finalPrice, 'EUR', currency);
+        convertedOriginalPrice = convertCurrency(pricing.originalPrice, 'EUR', currency);
+        convertedDiscountAmount = convertCurrency(pricing.discountAmount, 'EUR', currency);
+    } catch (error) {
+        console.error('Currency conversion error:', error);
+        // Fallback to EUR prices if conversion fails
+    }
+
     // Simulate rating data (in real app, this would come from database)
     const rating = 4.8;
     const reviewCount = 124;
     const stars = Array.from({ length: 5 }, (_, i) => i + 1);
-
-    const formatPrice = (price: number) => {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD',
-        }).format(price);
-    };
 
     const getStockStatus = (quantity: number) => {
         if (quantity === 0) return { text: 'Out of Stock', color: 'text-red-400' };
@@ -31,39 +60,74 @@ export default function ProductInfo({ product }: ProductInfoProps) {
     const stockStatus = getStockStatus(product.quantity);
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-4 md:space-y-8">
             {/* Product Title */}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.1 }}
             >
-                <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent leading-tight">
+                <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent leading-tight">
                     {product.name}
                 </h1>
             </motion.div>
 
-            {/* Price */}
+            {/* Product Badges */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.15 }}
+            >
+                <ProductBadge 
+                    isNew={product.isNew}
+                    isBestSeller={product.isBestSeller}
+                    size="md"
+                    className="md:scale-100 scale-90"
+                />
+            </motion.div>
+
+            {/* Price Section */}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
-                className="space-y-2"
+                className="space-y-4"
             >
-                <div className="flex items-baseline gap-3">
-                    <span className="text-5xl lg:text-6xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
-                        {formatPrice(product.price)}
-                    </span>
-                    {product.price > 100 && (
-                        <span className="text-lg text-gray-400 line-through">
-                            {formatPrice(product.price * 1.2)}
+                <div className="space-y-2">
+                    <div className="flex items-baseline gap-3">
+                        {/* Final Price */}
+                        <span className="text-3xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
+                            {formatPrice(convertedFinalPrice, currency)}
                         </span>
-                    )}
+                        
+                        {/* Original Price with line-through if discounted */}
+                        {pricing.hasDiscount && (
+                            <span className="text-lg text-gray-400 line-through">
+                                {formatPrice(convertedOriginalPrice, currency)}
+                            </span>
+                        )}
+                    </div>
+                    
+                    {/* Unit Display */}
+                    <p className="text-sm md:text-lg text-amber-200/80">
+                        per {selectedUnit.symbol}
+                    </p>
                 </div>
-                {product.price > 100 && (
-                    <span className="inline-block bg-gradient-to-r from-green-500 to-emerald-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                        Save 20%
-                    </span>
+
+                {/* Discount Badge */}
+                {pricing.hasDiscount && (
+                    <DiscountBadge 
+                        discount={{
+                            type: product.discounts[0]?.discountType || 'PERCENTAGE',
+                            value: product.discounts[0]?.value || 0,
+                            amount: convertedDiscountAmount,
+                            percentage: pricing.discountPercentage,
+                            endDate: product.discounts[0]?.endDate || new Date(),
+                            isActive: true,
+                        }}
+                        showCountdown={true}
+                        className="text-base"
+                    />
                 )}
             </motion.div>
 
@@ -121,6 +185,40 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                 </span>
             </motion.div>
 
+            {/* Unit Selection */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.55 }}
+            >
+                {unitsLoading ? (
+                    <div className="bg-white/5 backdrop-blur-sm border border-amber-200/20 rounded-lg p-6">
+                        <div className="animate-pulse">
+                            <div className="h-4 bg-amber-200/20 rounded w-1/4 mb-4"></div>
+                            <div className="h-8 bg-amber-200/20 rounded w-1/2 mb-2"></div>
+                            <div className="h-4 bg-amber-200/20 rounded w-3/4"></div>
+                        </div>
+                    </div>
+                ) : unitsError ? (
+                    <div className="bg-red-500/10 backdrop-blur-sm border border-red-500/20 rounded-lg p-4">
+                        <p className="text-red-300 text-sm">
+                            Error loading units: {unitsError}. Using default units.
+                        </p>
+                    </div>
+                ) : (
+                    <UnitSelector
+                        units={availableUnits}
+                        basePrice={product.basePrice}
+                        baseUnit={product.baseUnit}
+                        selectedUnit={selectedUnit}
+                        selectedQuantity={selectedQuantity}
+                        onUnitChange={setSelectedUnit}
+                        onQuantityChange={setSelectedQuantity}
+                        showPriceCalculation={true}
+                    />
+                )}
+            </motion.div>
+
             {/* Description */}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -169,7 +267,12 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                 transition={{ duration: 0.6, delay: 0.8 }}
                 className="pt-4"
             >
-                <AddToCartButton product={product} />
+                <AddToCartButton 
+                    product={product} 
+                    selectedUnit={selectedUnit}
+                    selectedQuantity={selectedQuantity}
+                    pricing={pricing}
+                />
             </motion.div>
 
             {/* Additional Info */}

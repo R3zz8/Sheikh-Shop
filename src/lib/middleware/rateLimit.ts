@@ -20,7 +20,7 @@ export const RATE_LIMIT_CONFIGS = {
   // Login attempts
   login: {
     windowMs: 15 * 60 * 1000, // 15 minutes
-    maxRequests: 5,
+    maxRequests: 10, // Increased from 5
   },
   // Token refresh
   refresh: {
@@ -35,12 +35,12 @@ export const RATE_LIMIT_CONFIGS = {
   // Password reset
   passwordReset: {
     windowMs: 60 * 60 * 1000, // 1 hour
-    maxRequests: 3,
+    maxRequests: 5, // Increased from 3
   },
-  // Registration
+  // Registration - More lenient for development
   registration: {
     windowMs: 60 * 60 * 1000, // 1 hour
-    maxRequests: 3,
+    maxRequests: 10, // Increased from 3 for development
   },
 } as const;
 

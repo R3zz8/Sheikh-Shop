@@ -26,7 +26,7 @@ async function testCartIntegration() {
             console.log(`   Product ${index + 1}:`);
             console.log(`     - Name: ${product.name}`);
             console.log(`     - ID: ${product.id}`);
-            console.log(`     - Price: $${product.price}`);
+            console.log(`     - Price: $${product.basePrice || 'N/A'}`);
             console.log(`     - Stock: ${product.quantity}`);
             console.log(`     - Status: ${product.status}`);
             console.log(`     - Images: ${product.images.length}`);
@@ -118,9 +118,10 @@ async function testCartIntegration() {
         console.log('   7. Test quantity controls and remove buttons');
         console.log('   8. Test cart persistence across page reloads');
 
+        const superadminEmail = process.env.SUPERADMIN_EMAIL || 'rezadhu615@gmail.com';
         console.log('\n⚠️  Login Credentials:');
-        console.log('   Email: rezadhu615@gmail.com');
-        console.log('   Password: Temp#1234');
+        console.log(`   Email: ${superadminEmail}`);
+        console.log('   Password: [Check your environment variables]');
 
         console.log('\n🔍 Debugging Steps:');
         console.log('   1. Check browser network tab for API calls');

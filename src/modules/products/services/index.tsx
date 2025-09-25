@@ -33,16 +33,38 @@ export const getProductsAPI = async (params?: {
 };
 
 export const getProductById = async (id: string) => {
-  // throw new Error('some errors from server please try again');
-  // await new Promise((resolve) => setTimeout(resolve, 4000));
-  const result = await prisma.product.findFirst({
-    where: { id },
-    include: { images: true },
-  });
-  if (!result) {
+  try {
+    // Validate ID format
+    if (!id || typeof id !== 'string' || id.length === 0) {
+      console.error('Invalid product ID:', id);
+      return null;
+    }
+
+    const result = await prisma.product.findFirst({
+      where: { id },
+      include: { 
+        images: true,
+        baseUnit: true,
+        discounts: true,
+      },
+    });
+
+    if (!result) {
+      console.error('Product not found:', id);
+      return null;
+    }
+
+    // Validate required fields
+    if (!result.baseUnit) {
+      console.error('Product missing baseUnit:', id);
+      return null;
+    }
+
+    return result;
+  } catch (error) {
+    console.error('Error fetching product by ID:', id, error);
     return null;
   }
-  return result;
 };
 
 export const upsertProduct = async (product: Product) => {

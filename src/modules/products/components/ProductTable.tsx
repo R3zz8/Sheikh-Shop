@@ -65,8 +65,8 @@ const ProductTable = (props: {
 
     // Sort products
     filtered.sort((a, b) => {
-      let aValue = a[sortField];
-      let bValue = b[sortField];
+      let aValue = sortField === 'price' ? a.basePrice : a[sortField];
+      let bValue = sortField === 'price' ? b.basePrice : b[sortField];
 
       if (sortField === 'createdAt') {
         aValue = new Date(a.createdAt).getTime();
@@ -418,7 +418,7 @@ const ProductTable = (props: {
                     </span>
                   </TableCell>
                   <TableCell className="text-center font-medium">
-                    {formatPrice(product.price)}
+                    {formatPrice(product.basePrice)}
                   </TableCell>
                   <TableCell className="text-center">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${product.quantity > 10
@@ -431,7 +431,7 @@ const ProductTable = (props: {
                     </span>
                   </TableCell>
                   <TableCell className="text-center">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(product.status)}`}>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(product.status as any)}`}>
                       {product.status}
                     </span>
                   </TableCell>

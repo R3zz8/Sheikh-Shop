@@ -6,9 +6,11 @@ async function cleanupSuperadmin() {
   try {
     console.log('🧹 Cleaning up superadmin setup...\n');
 
+    const superadminEmail = process.env.SUPERADMIN_EMAIL || 'rezadhu615@gmail.com';
+    
     // Remove superadmin user
     const deletedUser = await prisma.user.deleteMany({
-      where: { email: 'rezadhu615@gmail.com' }
+      where: { email: superadminEmail }
     });
 
     if (deletedUser.count > 0) {

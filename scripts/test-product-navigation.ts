@@ -22,7 +22,7 @@ async function testProductNavigation() {
             console.log(`   Product ${index + 1}:`);
             console.log(`     - Name: ${product.name}`);
             console.log(`     - ID: ${product.id}`);
-            console.log(`     - Price: $${product.price}`);
+            console.log(`     - Price: $${product.basePrice || 'N/A'}`);
             console.log(`     - Category: ${product.category}`);
             console.log(`     - Images: ${product.images.length}`);
             console.log(`     - Navigation URL: /product/${product.id}`);
@@ -89,9 +89,10 @@ async function testProductNavigation() {
         console.log('   ✅ Responsive design');
         console.log('   ✅ SEO optimization');
 
+        const superadminEmail = process.env.SUPERADMIN_EMAIL || 'rezadhu615@gmail.com';
         console.log('\n⚠️  Login with superadmin to test:');
-        console.log('   Email: rezadhu615@gmail.com');
-        console.log('   Password: Temp#1234');
+        console.log(`   Email: ${superadminEmail}`);
+        console.log('   Password: [Check your environment variables]');
 
         console.log('\n📊 Testing Instructions:');
         console.log('   1. Go to /products to see the product listing');

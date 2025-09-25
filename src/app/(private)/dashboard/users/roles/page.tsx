@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent, Table, TableHead, TableRow, T
 import { toast } from 'sonner';
 
 const PAGE_SIZE = 20;
-const ROLES = ['user', 'editor', 'moderator', 'admin', 'superadmin'];
+const ROLES = ['user', 'author', 'editor', 'moderator', 'admin', 'superadmin'];
 
 export default function UserRolesPage() {
   useRequireRole('SUPERADMIN');

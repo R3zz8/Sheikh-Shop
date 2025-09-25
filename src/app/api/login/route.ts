@@ -1,24 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import bcrypt from 'bcrypt';
+import { verifyPassword } from '@/lib/auth/password';
 import { signAccessToken, signRefreshToken, generateSessionId, generateTokenId } from '@/lib/auth/jwt';
 import { createSession } from '@/lib/actions/auth/session';
-import { logLogin, logFailedAttempt, logAudit } from '@/lib/actions/auth/audit';
+import { logAudit, logFailedAttempt } from '@/lib/actions/auth/audit';
 import { z } from 'zod';
 
 // Security: Input validation schema
 const loginSchema = z.object({
   email: z.string().email('Invalid email format'),
   password: z.string().min(1, 'Password is required'),
+  remember: z.boolean().optional(),
 });
 
-// Security: Rate limiting for login attempts
+// Simplified rate limiting for development
 const loginAttempts = new Map<string, { count: number; resetTime: number }>();
 
 function isLoginRateLimited(email: string): boolean {
   const now = Date.now();
   const windowMs = 15 * 60 * 1000; // 15 minutes
-  const maxAttempts = 5; // Max login attempts per window
+  const maxAttempts = 20; // Increased for development
 
   const record = loginAttempts.get(email);
   if (!record || now > record.resetTime) {
@@ -73,10 +74,13 @@ export async function POST(req: NextRequest) {
         disabled: true,
         emailVerified: true,
         twoFactorEnabled: true,
+        loginAttempts: true,
+        lockedUntil: true,
       },
     });
 
     if (!user) {
+      await logFailedAttempt(null, 'login_failed', req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || undefined, req.headers.get('user-agent') || undefined);
       return NextResponse.json(
         { success: false, message: 'Invalid credentials' },
         { status: 401 },
@@ -85,9 +89,33 @@ export async function POST(req: NextRequest) {
 
     // Security: Check if user can login
     if (!user.canLogin || user.disabled) {
+      await logFailedAttempt(user.id, 'login_blocked', req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || undefined, req.headers.get('user-agent') || undefined);
       return NextResponse.json(
         { success: false, message: 'Account is disabled' },
         { status: 403 },
+      );
+    }
+
+    // Security: Check if email is verified
+    if (!user.emailVerified) {
+      await logFailedAttempt(user.id, 'login_unverified_email', req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || undefined, req.headers.get('user-agent') || undefined);
+      return NextResponse.json(
+        { 
+          success: false, 
+          message: 'Please verify your email before logging in.',
+          requiresEmailVerification: true,
+          email: user.email 
+        },
+        { status: 403 },
+      );
+    }
+
+    // Security: Check if account is locked
+    if (user.lockedUntil && user.lockedUntil > new Date()) {
+      await logFailedAttempt(user.id, 'login_blocked_locked', req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || undefined, req.headers.get('user-agent') || undefined);
+      return NextResponse.json(
+        { success: false, message: 'Account is temporarily locked due to too many failed attempts.' },
+        { status: 423 },
       );
     }
 
@@ -98,13 +126,37 @@ export async function POST(req: NextRequest) {
       'Unknown';
 
     // Security: Verify password with timing attack protection
-    const validPassword = await bcrypt.compare(password, user.password);
+    const validPassword = await verifyPassword(password, user.password);
     if (!validPassword) {
+      // Security: Update failed attempts in database
+      const newAttempts = (user.loginAttempts || 0) + 1;
+      const shouldLock = newAttempts >= 5;
+      
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          loginAttempts: newAttempts,
+          lockedUntil: shouldLock ? new Date(Date.now() + 15 * 60 * 1000) : null,
+        },
+      });
+      
       await logFailedAttempt(user.id, 'login_failed', ip, userAgent);
       return NextResponse.json(
         { success: false, message: 'Invalid credentials' },
         { status: 401 },
       );
+    }
+
+    // Security: Reset failed attempts on success
+    if (user.loginAttempts > 0) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          loginAttempts: 0,
+          lockedUntil: null,
+          lastLoginAt: new Date(),
+        },
+      });
     }
 
     // Security: Create session with refresh token rotation
@@ -114,20 +166,12 @@ export async function POST(req: NextRequest) {
       ip
     );
 
-    // Security: Update user's last login
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        lastLoginAt: new Date(),
-        loginAttempts: 0, // Reset failed attempts on successful login
-      },
-    });
-
     // Security: Log successful login
     await logAudit(user.id, 'login_success', {
       sessionId: session.id,
       userAgent,
       ip,
+      twoFactorEnabled: user.twoFactorEnabled,
     });
 
     // Security: Set secure cookies
@@ -143,20 +187,20 @@ export async function POST(req: NextRequest) {
       requires2FA: user.twoFactorEnabled,
     });
 
-    // Set access token (short-lived)
+    // Security: Set access token (short-lived)
     response.cookies.set('access-token', accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'strict',
       path: '/',
       maxAge: 15 * 60, // 15 minutes
     });
 
-    // Set refresh token (longer-lived)
+    // Security: Set refresh token (longer-lived)
     response.cookies.set('refresh-token', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'strict',
       path: '/',
       maxAge: 7 * 24 * 60 * 60, // 7 days
     });

@@ -295,7 +295,7 @@ export const useCart = () => {
   // Calculate cart totals
   const cartTotals = cart ? {
     itemCount: cart.reduce((total: number, item: any) => total + item.quantity, 0),
-    subtotal: cart.reduce((total: number, item: any) => total + (item.product.price * item.quantity), 0),
+    subtotal: cart.reduce((total: number, item: any) => total + (item.product.basePrice * item.quantity), 0),
     uniqueItems: cart.length,
   } : {
     itemCount: 0,

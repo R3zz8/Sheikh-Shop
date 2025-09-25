@@ -1,0 +1,480 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import Image from 'next/image';
+import Link from 'next/link';
+import { Clock, Star, Zap, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { formatPrice, convertCurrency } from '@/lib/currency';
+import { useCurrencySafe } from '@/providers/CurrencyProvider';
+import { useAmazingDeals } from '@/hooks/useAmazingDeals';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Autoplay, Keyboard } from 'swiper/modules';
+
+// Import Swiper styles
+import 'swiper/css';
+import 'swiper/css/navigation';
+
+
+interface Product {
+  id: string;
+  name: string;
+  basePrice: number;
+  images: { id: string; image: string }[];
+  baseUnit: { id: string; name: string; symbol: string };
+  discounts: { id: string; value: number; discountType: string; endDate: string }[];
+  isAmazing: boolean;
+}
+
+export default function AmazingDeals() {
+  const [isClient, setIsClient] = useState(false);
+  const { currency } = useCurrencySafe();
+  const { products, loading, error } = useAmazingDeals();
+  
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+  
+
+  const [timeLeft, setTimeLeft] = useState({
+    hours: 23,
+    minutes: 59,
+    seconds: 59,
+  });
+
+  // Countdown timer effect
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev.seconds > 0) {
+          return { ...prev, seconds: prev.seconds - 1 };
+        } else if (prev.minutes > 0) {
+          return { ...prev, minutes: prev.minutes - 1, seconds: 59 };
+        } else if (prev.hours > 0) {
+          return { hours: prev.hours - 1, minutes: 59, seconds: 59 };
+        }
+        return { hours: 23, minutes: 59, seconds: 59 }; // Reset to 24 hours
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20, scale: 0.95 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        duration: 0.5,
+        ease: "easeOut" as const,
+      },
+    },
+  };
+
+  const cardVariants = {
+    hover: {
+      y: -8,
+      scale: 1.02,
+      transition: {
+        duration: 0.3,
+        ease: "easeOut" as const,
+      },
+    },
+  };
+
+  // Don't render anything until client-side hydration is complete
+  if (!isClient) {
+    return (
+      <section className="container-fluid section-padding">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center">
+            <div className="animate-pulse">
+              <div className="h-8 bg-gray-700 rounded w-64 mx-auto mb-4"></div>
+              <div className="h-4 bg-gray-700 rounded w-96 mx-auto mb-8"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Show loading state
+  if (loading) {
+    return (
+      <section className="container-fluid section-padding">
+        <div className="max-w-6xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center"
+          >
+            <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent mb-4">
+              Amazing Deals
+            </h2>
+            <p className="text-gray-300 text-lg max-w-2xl mx-auto mb-8">
+              Loading amazing deals...
+            </p>
+            <div className="flex justify-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-400"></div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <section className="container-fluid section-padding">
+        <div className="max-w-6xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center"
+          >
+            <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent mb-4">
+              Amazing Deals
+            </h2>
+            <p className="text-gray-300 text-lg max-w-2xl mx-auto mb-8">
+              Unable to load amazing deals
+            </p>
+            <div className="bg-gradient-to-br from-red-900/20 via-stone-800/20 to-red-800/20 rounded-2xl border border-red-500/20 p-12 max-w-md mx-auto">
+              <div className="text-red-400/60 mb-4">
+                <Zap size={48} className="mx-auto" />
+              </div>
+              <h3 className="text-xl font-semibold text-red-200 mb-2">
+                Error Loading Deals
+              </h3>
+              <p className="text-gray-400 text-sm">
+                {error}
+              </p>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+    );
+  }
+
+  // If no products, show empty state
+  if (products.length === 0) {
+    return (
+      <section className="container-fluid section-padding">
+        <div className="max-w-6xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center"
+          >
+            <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent mb-4">
+              Amazing Deals
+            </h2>
+            <p className="text-gray-300 text-lg max-w-2xl mx-auto mb-8">
+              Discover incredible offers on our premium products
+            </p>
+            
+            {/* Empty State Card */}
+            <div className="bg-gradient-to-br from-amber-900/20 via-stone-800/20 to-amber-800/20 rounded-2xl border border-amber-500/20 p-12 max-w-md mx-auto">
+              <div className="text-amber-400/60 mb-4">
+                <Zap size={48} className="mx-auto" />
+              </div>
+              <h3 className="text-xl font-semibold text-amber-200 mb-2">
+                No Deals Available
+              </h3>
+              <p className="text-gray-400 text-sm">
+                Check back soon for amazing offers!
+              </p>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="container-fluid section-padding">
+      <div className="max-w-6xl mx-auto">
+        {/* Section Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-12"
+        >
+          <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent mb-4">
+            Amazing Deals
+          </h2>
+          <p className="text-gray-300 text-lg max-w-2xl mx-auto mb-6">
+            Limited time offers on our premium collection
+          </p>
+          
+          {/* Countdown Timer */}
+          <div className="flex justify-center items-center gap-4 mb-6">
+            <Clock className="text-amber-400 w-5 h-5" />
+            <span className="text-amber-200 text-sm font-medium">Deals end in:</span>
+            <div className="flex gap-2">
+              <div className="bg-gradient-to-br from-amber-600/80 to-amber-800/80 rounded-lg px-3 py-2 min-w-[3rem] text-center">
+                <span className="text-amber-100 font-bold text-lg">
+                  {timeLeft.hours.toString().padStart(2, '0')}
+                </span>
+              </div>
+              <span className="text-amber-400 text-lg font-bold">:</span>
+              <div className="bg-gradient-to-br from-amber-600/80 to-amber-800/80 rounded-lg px-3 py-2 min-w-[3rem] text-center">
+                <span className="text-amber-100 font-bold text-lg">
+                  {timeLeft.minutes.toString().padStart(2, '0')}
+                </span>
+              </div>
+              <span className="text-amber-400 text-lg font-bold">:</span>
+              <div className="bg-gradient-to-br from-amber-600/80 to-amber-800/80 rounded-lg px-3 py-2 min-w-[3rem] text-center">
+                <span className="text-amber-100 font-bold text-lg">
+                  {timeLeft.seconds.toString().padStart(2, '0')}
+                </span>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Products Carousel */}
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="relative"
+        >
+          <Swiper
+            modules={[Navigation, Autoplay, Keyboard]}
+            spaceBetween={16}
+            slidesPerView={2}
+            centeredSlides={false}
+            grabCursor={true}
+            loop={true}
+            autoplay={{
+              delay: 4500,
+              disableOnInteraction: false,
+              pauseOnMouseEnter: true,
+            }}
+            navigation={{
+              nextEl: '.swiper-button-next-amazing',
+              prevEl: '.swiper-button-prev-amazing',
+            }}
+            keyboard={{
+              enabled: true,
+              onlyInViewport: true,
+            }}
+            breakpoints={{
+              // ≤360px → 1 column; >360px and ≤768px → 2 columns
+              0: { slidesPerView: 1, spaceBetween: 12 },
+              361: { slidesPerView: 2, spaceBetween: 12 },
+              769: { slidesPerView: 3, spaceBetween: 20 },
+              1024: { slidesPerView: 4, spaceBetween: 24 },
+            }}
+            className="amazing-deals-swiper"
+          >
+            {products.map((product, index) => {
+              const mainImage = product.images[0]?.image || '/placeholder-product.jpg';
+              const hasDiscount = product.discounts && product.discounts.length > 0;
+              const discount = hasDiscount ? product.discounts[0] : null;
+              const discountPercentage = discount ? discount.value : 0;
+              const finalPrice = hasDiscount 
+                ? product.basePrice * (1 - discountPercentage / 100)
+                : product.basePrice;
+              
+              // Convert prices to current currency (basePrice is in EUR)
+              const convertedFinalPrice = convertCurrency(finalPrice, 'EUR', currency);
+              const convertedBasePrice = convertCurrency(product.basePrice, 'EUR', currency);
+
+              return (
+                <SwiperSlide key={product.id}>
+                  <motion.div
+                    variants={itemVariants}
+                    whileHover="hover"
+                    className="group h-full"
+                  >
+                    <Link href={`/product/${product.id}`} className="block h-full">
+                      <div className="bg-gradient-to-br from-amber-900/40 via-stone-800/40 to-amber-800/40 rounded-xl border border-amber-500/20 shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden h-full flex flex-col">
+                        {/* Product Image */}
+                        <div className="relative aspect-square overflow-hidden">
+                          <Image
+                            src={mainImage}
+                            alt={product.name}
+                            fill
+                            className="object-cover transition-transform duration-300 group-hover:scale-110"
+                            sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                            quality={85}
+                            placeholder="blur"
+                            blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
+                          />
+                          
+                          {/* Discount Badge */}
+                          {hasDiscount && (
+                            <div className="absolute top-3 left-3 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg">
+                              -{discountPercentage}%
+                            </div>
+                          )}
+                          
+                          {/* Amazing Deals Badge */}
+                          <div className="absolute top-3 right-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg flex items-center gap-1">
+                            <Zap size={12} />
+                            DEAL
+                          </div>
+                        </div>
+
+                        {/* Product Info */}
+                        <div className="p-3 md:p-4 space-y-2 md:space-y-3 flex-grow flex flex-col">
+                          {/* Product Name */}
+                          <h3 className="text-xs md:text-sm font-semibold text-white group-hover:text-amber-200 transition-colors duration-300 leading-tight truncate md:line-clamp-2">
+                            {product.name}
+                          </h3>
+
+                          {/* Price Section */}
+                          <div className="space-y-1">
+                            <div className="flex items-baseline gap-2">
+                              <span className="text-base md:text-lg font-bold text-amber-200">
+                                {formatPrice(convertedFinalPrice, currency)}
+                              </span>
+                              {hasDiscount && (
+                                <span className="text-xs md:text-sm text-gray-400 line-through">
+                                  {formatPrice(convertedBasePrice, currency)}
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[10px] md:text-xs text-amber-300/80">
+                              per {product.baseUnit.symbol}
+                            </p>
+                          </div>
+
+                          {/* Rating */}
+                          <div className="flex items-center gap-1">
+                            <div className="flex items-center">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <Star
+                                  key={star}
+                                  size={12}
+                                  className={`${
+                                    star <= 4 ? 'text-amber-400 fill-current' : 'text-gray-600'
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                            <span className="text-[10px] md:text-xs text-gray-400 ml-1">(4.8)</span>
+                          </div>
+
+                          {/* View Details Button */}
+                          <div className="pt-1 md:pt-2 mt-auto">
+                            <div className="flex items-center justify-between text-amber-400 group-hover:text-amber-300 transition-colors duration-300">
+                              <span className="text-[11px] md:text-xs font-medium">View Details</span>
+                              <ArrowRight size={12} className="md:size-[14px] group-hover:translate-x-1 transition-transform duration-300" />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+                  </motion.div>
+                </SwiperSlide>
+              );
+            })}
+          </Swiper>
+
+          {/* Custom Navigation Arrows */}
+          <button
+            className="swiper-button-prev-amazing absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 w-12 h-12 bg-gradient-to-r from-amber-600/90 to-orange-600/90 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:from-amber-700 hover:to-orange-700 hover:scale-110 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-amber-400/30 z-10 shadow-lg border border-amber-400/20"
+            aria-label="Previous deals"
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </button>
+          
+          <button
+            className="swiper-button-next-amazing absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 w-12 h-12 bg-gradient-to-r from-amber-600/90 to-orange-600/90 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:from-amber-700 hover:to-orange-700 hover:scale-110 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-amber-400/30 z-10 shadow-lg border border-amber-400/20"
+            aria-label="Next deals"
+          >
+            <ChevronRight className="w-6 h-6" />
+          </button>
+        </motion.div>
+
+        {/* View All Deals Button */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="text-center mt-12"
+        >
+          <Link
+            href="/deals"
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white font-semibold px-8 py-3 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/25 hover:scale-105"
+          >
+            View All Deals
+            <ArrowRight size={20} />
+          </Link>
+        </motion.div>
+      </div>
+
+      {/* Custom Swiper Styles */}
+      <style jsx global>{`
+        .amazing-deals-swiper {
+          padding: 0 60px !important;
+        }
+        
+        .swiper-button-prev-amazing:after,
+        .swiper-button-next-amazing:after {
+          display: none;
+        }
+        
+        .swiper-button-prev-amazing,
+        .swiper-button-next-amazing {
+          position: absolute !important;
+          margin-top: 0 !important;
+        }
+        
+        .swiper-button-prev-amazing.swiper-button-disabled,
+        .swiper-button-next-amazing.swiper-button-disabled {
+          opacity: 0.3 !important;
+          cursor: not-allowed !important;
+        }
+        
+        /* Hide navigation arrows on mobile */
+        @media (max-width: 767px) {
+          .swiper-button-prev-amazing,
+          .swiper-button-next-amazing {
+            display: none !important;
+          }
+          
+          .amazing-deals-swiper {
+            padding: 0 20px !important;
+          }
+          /* Slightly reduce outer spacing on small screens */
+          .amazing-deals-swiper .swiper-slide .p-4 { padding: 0.75rem !important; }
+          .amazing-deals-swiper .swiper-slide h3 { font-size: 0.875rem; }
+          .amazing-deals-swiper .swiper-slide .text-lg { font-size: 1rem; }
+          .amazing-deals-swiper .swiper-slide .text-sm { font-size: 0.75rem; }
+        }
+        
+        /* Ensure equal height cards */
+        .amazing-deals-swiper .swiper-slide {
+          height: auto !important;
+        }
+        
+        .amazing-deals-swiper .swiper-slide > div {
+          height: 100% !important;
+        }
+      `}</style>
+    </section>
+  );
+}

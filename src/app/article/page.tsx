@@ -1,31 +1,27 @@
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
-import { prisma } from '@/lib/prisma';
+import { getArticles } from '@/lib/actions/articles';
 import ArticlesList from './_components/ArticlesList';
+import type { ArticleWithAuthor } from '@/types';
 import ArticlesSkeleton from './_components/ArticlesSkeleton';
+
+// Force dynamic rendering to prevent build-time database queries
+export const dynamic = 'force-dynamic';
 
 export const metadata = {
     title: 'Articles - Sheikh Shop',
     description: 'Discover insightful articles about premium products, health benefits, and culinary excellence.',
 };
 
-async function getArticles() {
+async function fetchArticles() {
     try {
-        const articles = await prisma.article.findMany({
-            include: {
-                author: {
-                    select: {
-                        id: true,
-                        email: true,
-                    },
-                },
-            },
-            orderBy: {
-                createdAt: 'desc',
-            },
-        });
-
-        return articles;
+        const result = await getArticles();
+        if (result.success) {
+            return result.data;
+        } else {
+            console.error('Error fetching articles:', result.error);
+            return [];
+        }
     } catch (error) {
         console.error('Error fetching articles:', error);
         return [];
@@ -33,7 +29,7 @@ async function getArticles() {
 }
 
 export default async function ArticlesPage() {
-    const articles = await getArticles();
+    const articles = (await fetchArticles()) as ArticleWithAuthor[];
 
     if (!articles || articles.length === 0) {
         return (

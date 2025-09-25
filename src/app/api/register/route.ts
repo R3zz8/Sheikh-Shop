@@ -1,15 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { hashPassword, validatePassword } from '@/lib/auth/password';
+import { hashPassword } from '@/lib/auth/password';
 import { createSession } from '@/lib/actions/auth/session';
 import { logAudit } from '@/lib/actions/auth/audit';
-import { registrationRateLimit } from '@/lib/middleware/rateLimit';
 import { z } from 'zod';
 
-// Security: Registration validation schema
+// Simplified registration validation schema for development
 const registrationSchema = z.object({
     email: z.string().email('Invalid email format'),
-    password: z.string().min(12, 'Password must be at least 12 characters'),
+    password: z.string().min(6, 'Password must be at least 6 characters'), // Further reduced for testing
     firstName: z.string().min(1, 'First name is required').max(100),
     lastName: z.string().min(1, 'Last name is required').max(100),
     username: z.string().min(3, 'Username must be at least 3 characters').max(50).optional(),
@@ -17,12 +16,6 @@ const registrationSchema = z.object({
 
 export async function POST(req: NextRequest) {
     try {
-        // Security: Rate limiting for registration
-        const rateLimitResult = await registrationRateLimit(req);
-        if (rateLimitResult) {
-            return rateLimitResult;
-        }
-
         // Security: Parse and validate request body
         const body = await req.json();
         const validationResult = registrationSchema.safeParse(body);
@@ -40,20 +33,6 @@ export async function POST(req: NextRequest) {
 
         const { email, password, firstName, lastName, username } = validationResult.data;
 
-        // Security: Enhanced password validation
-        const passwordValidation = validatePassword(password);
-        if (!passwordValidation.isValid) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    message: 'Password does not meet security requirements',
-                    errors: passwordValidation.errors,
-                    warnings: passwordValidation.warnings,
-                },
-                { status: 400 },
-            );
-        }
-
         // Security: Check if user already exists
         const existingUser = await prisma.user.findUnique({
             where: { email: email.toLowerCase() },
@@ -69,7 +48,7 @@ export async function POST(req: NextRequest) {
 
         // Security: Check username availability if provided
         if (username) {
-            const existingUsername = await prisma.user.findFirst({
+            const existingUsername = await prisma.user.findUnique({
                 where: { username },
                 select: { id: true },
             });
@@ -82,16 +61,10 @@ export async function POST(req: NextRequest) {
             }
         }
 
-        // Security: Hash password with strong settings
+        // Security: Hash password
         const hashedPassword = await hashPassword(password);
 
-        // Security: Get client information
-        const userAgent = req.headers.get('user-agent') || 'Unknown';
-        const ip = req.headers.get('x-forwarded-for') ||
-            req.headers.get('x-real-ip') ||
-            'Unknown';
-
-        // Security: Create user with secure defaults
+        // Security: Create user with all required fields
         const user = await prisma.user.create({
             data: {
                 email: email.toLowerCase(),
@@ -99,8 +72,8 @@ export async function POST(req: NextRequest) {
                 firstName,
                 lastName,
                 username: username || null,
-                role: 'USER', // Default role
-                emailVerified: false, // Require email verification
+                role: 'USER',
+                emailVerified: false,
                 canLogin: true,
                 disabled: false,
                 loginAttempts: 0,
@@ -113,8 +86,15 @@ export async function POST(req: NextRequest) {
                 username: true,
                 role: true,
                 emailVerified: true,
+                createdAt: true,
             },
         });
+
+        // Security: Get client information
+        const userAgent = req.headers.get('user-agent') || 'Unknown';
+        const ip = req.headers.get('x-forwarded-for') ||
+            req.headers.get('x-real-ip') ||
+            'Unknown';
 
         // Security: Create session for immediate login
         const { session, accessToken, refreshToken } = await createSession(
@@ -125,14 +105,50 @@ export async function POST(req: NextRequest) {
 
         // Security: Log successful registration
         await logAudit(user.id, 'registration_success', {
-            sessionId: session.id,
-            userAgent,
             ip,
-            passwordStrength: passwordValidation.score,
-            passwordEntropy: passwordValidation.entropy,
+            userAgent,
+            sessionId: session.id,
         });
 
-        // Security: Set secure cookies
+        // Security: Send verification email automatically
+        try {
+            const { sendVerificationEmail, generateVerificationCode, hashVerificationCode, EMAIL_CONFIG } = await import('@/lib/email/sendEmail');
+            
+            const verificationCode = generateVerificationCode();
+            const codeHash = hashVerificationCode(verificationCode);
+            const expiresAt = new Date(Date.now() + EMAIL_CONFIG.VERIFICATION_CODE_EXPIRY);
+
+            // Create verification record
+            await prisma.emailVerification.create({
+                data: {
+                    userId: user.id,
+                    email: user.email,
+                    codeHash,
+                    expiresAt,
+                    attempts: 0,
+                },
+            });
+
+            // Send verification email
+            await sendVerificationEmail(
+                user.email,
+                user.firstName || 'User',
+                verificationCode,
+                15
+            );
+
+            await logAudit(user.id, 'verification_code_sent', {
+                email: user.email,
+                ip,
+                userAgent,
+                autoSent: true,
+            });
+        } catch (emailError) {
+            console.error('Failed to send verification email:', emailError);
+            // Don't fail registration if email fails
+        }
+
+        // Security: Set cookies for immediate login
         const response = NextResponse.json({
             success: true,
             message: 'Registration successful',
@@ -148,34 +164,41 @@ export async function POST(req: NextRequest) {
             requiresEmailVerification: !user.emailVerified,
         });
 
-        // Set access token (short-lived)
+        // Set secure cookies
         response.cookies.set('access-token', accessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
-            path: '/',
             maxAge: 15 * 60, // 15 minutes
+            path: '/',
         });
 
-        // Set refresh token (longer-lived)
         response.cookies.set('refresh-token', refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
-            path: '/',
             maxAge: 7 * 24 * 60 * 60, // 7 days
+            path: '/',
         });
 
         return response;
-
     } catch (error) {
-        // Security: Log errors in development
-        if (process.env.NODE_ENV === 'development') {
-            console.error('Registration error:', error);
+        console.error('Registration error:', error);
+
+        // Provide user-friendly error messages
+        let errorMessage = 'Registration failed';
+        if (error instanceof Error) {
+            if (error.message.includes('Unique constraint')) {
+                errorMessage = 'Email or username already exists';
+            } else if (error.message.includes('Database')) {
+                errorMessage = 'Database error. Please try again later.';
+            } else {
+                errorMessage = error.message;
+            }
         }
 
         return NextResponse.json(
-            { success: false, message: 'Registration failed' },
+            { success: false, message: errorMessage },
             { status: 500 },
         );
     }

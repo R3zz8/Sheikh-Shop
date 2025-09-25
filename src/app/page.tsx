@@ -1,45 +1,37 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import LazyPalmTree from '@/components/3d/LazyPalmTree';
+import OptimizedPalmTree from '@/components/3d/OptimizedPalmTree';
 import Categories from '@/components/Categories';
-import MobileCarousel from '@/components/MobileCarousel';
-import JsonLd from '@/components/seo/JsonLd';
-import { generateBreadcrumbSchema, generateFAQSchema } from '@/lib/seo';
+import AmazingDeals from '@/components/AmazingDeals';
+import FAQSchema from '@/components/seo/FAQSchema';
+import CarouselMobile from '@/components/CarouselMobile';
 
 export default function Home() {
-  // FAQ data for homepage
-  const homepageFAQs = [
-    {
-      question: "What makes Sheikh Shop products premium?",
-      answer: "Our products are carefully selected from the finest sources, ensuring exceptional quality and authentic Arabian heritage. Each item undergoes rigorous quality checks to meet our premium standards."
-    },
-    {
-      question: "Do you offer international shipping?",
-      answer: "Yes, we provide secure and fast delivery worldwide. Our premium packaging ensures your luxury products arrive in perfect condition."
-    },
-    {
-      question: "What payment methods do you accept?",
-      answer: "We accept all major credit cards, PayPal, and bank transfers. All transactions are secure and encrypted for your protection."
-    }
-  ];
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-950 via-stone-900 to-amber-950 relative">
-      <JsonLd data={generateBreadcrumbSchema([
-        { name: 'Home', url: '/' }
-      ])} />
-      <JsonLd data={generateFAQSchema(homepageFAQs)} />
       {/* Background effects */}
       <div className="absolute inset-0 bg-gradient-radial from-amber-500/3 via-orange-500/2 to-yellow-500/3 pointer-events-none animate-pulse" />
       <div className="absolute inset-0 bg-gradient-to-b from-amber-500/2 via-transparent to-orange-500/2 pointer-events-none" />
       
-      {/* Mobile Carousel - Above the fold */}
-      <div className="relative z-20 px-4 pt-6 pb-4">
-        <MobileCarousel />
-      </div>
-      
       {/* Categories Section */}
       <Categories />
+      
+      {/* Mobile Carousel - Below Categories */}
+      <div className="relative z-20 px-4 py-6">
+        <CarouselMobile />
+      </div>
+
+      {/* Amazing Deals Section */}
+      <AmazingDeals />
+
+      {/* Inject FAQ JSON-LD for common homepage questions */}
+      <FAQSchema
+        faqs={[
+          { question: 'Do you ship internationally?', answer: 'Yes, we ship worldwide with tracked delivery options.' },
+          { question: 'What payment methods are accepted?', answer: 'We accept major credit cards and secure third-party payments.' },
+          { question: 'How long does delivery take?', answer: 'Standard delivery is 3–7 business days depending on your region.' },
+        ]}
+      />
 
       <div className="relative z-10">
         {/* Hero Section with 3D Palm Tree */}
@@ -69,17 +61,16 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Optimized 3D Palm Tree with Lazy Loading */}
+              {/* Optimized 3D Palm Tree */}
               <div className="relative">
-                <div className="w-full h-[500px] rounded-2xl overflow-hidden shadow-2xl">
-                  <LazyPalmTree
-                    height="500px"
-                    enableControls={true}
-                    autoRotate={true}
-                    intensity={1.2}
-                    className="rounded-2xl"
-                  />
-                </div>
+                <OptimizedPalmTree
+                  height="500px"
+                  enableControls={true}
+                  autoRotate={true}
+                  intensity={1.2}
+                  className="rounded-2xl"
+                  posterImage="/palm-tree-poster.jpg"
+                />
               </div>
             </div>
           </div>

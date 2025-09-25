@@ -17,7 +17,7 @@ export default function ArticlesPageClient({ initialArticles = [] }: ArticlesPag
     const fetchArticles = async () => {
         setLoading(true);
         try {
-            const response = await fetch('/api/articles');
+            const response = await fetch('/api/articles?admin=true');
             const result = await response.json();
 
             if (result.success && result.data) {

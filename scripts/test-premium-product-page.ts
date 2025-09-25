@@ -21,7 +21,7 @@ async function testPremiumProductPage() {
         productsWithImages.forEach((product, index) => {
             console.log(`   Product ${index + 1}:`);
             console.log(`     - Name: ${product.name}`);
-            console.log(`     - Price: $${product.price}`);
+            console.log(`     - Price: $${product.basePrice || 'N/A'}`);
             console.log(`     - Category: ${product.category}`);
             console.log(`     - Status: ${product.status}`);
             console.log(`     - Quantity: ${product.quantity}`);
@@ -103,9 +103,10 @@ async function testPremiumProductPage() {
         console.log('   ✅ SEO optimized');
         console.log('   ✅ Error handling and feedback');
 
+        const superadminEmail = process.env.SUPERADMIN_EMAIL || 'rezadhu615@gmail.com';
         console.log('\n⚠️  Login with superadmin to test:');
-        console.log('   Email: rezadhu615@gmail.com');
-        console.log('   Password: Temp#1234');
+        console.log(`   Email: ${superadminEmail}`);
+        console.log('   Password: [Check your environment variables]');
 
     } catch (error) {
         console.error('❌ Test failed:', error);

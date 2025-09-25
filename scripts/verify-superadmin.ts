@@ -4,8 +4,10 @@ const prisma = new PrismaClient();
 
 async function verifySuperadmin() {
     try {
+        const superadminEmail = process.env.SUPERADMIN_EMAIL || 'rezadhu615@gmail.com';
+        
         const superadmin = await prisma.user.findUnique({
-            where: { email: 'rezadhu615@gmail.com' },
+            where: { email: superadminEmail },
             select: {
                 id: true,
                 email: true,
@@ -34,8 +36,8 @@ async function verifySuperadmin() {
         if (superadmin.role === 'SUPERADMIN' && superadmin.emailVerified && superadmin.canLogin && !superadmin.disabled) {
             console.log('\n🎉 Superadmin user is properly configured and ready to use!');
             console.log('You can now login with:');
-            console.log('Email: rezadhu615@gmail.com');
-            console.log('Password: Temp#1234');
+            console.log(`Email: ${superadminEmail}`);
+            console.log('Password: [Check your environment variables]');
             console.log('\n⚠️  Remember to change the password after first login!');
         } else {
             console.error('❌ Superadmin user configuration is incorrect!');

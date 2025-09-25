@@ -1,12 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client-js"
-  // Performance: Enable preview features for better performance
+  provider        = "prisma-client-js"
   previewFeatures = ["postgresqlExtensions"]
 }
 
@@ -15,42 +8,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Security: Define role enum for better type safety
-enum UserRole {
-  USER
-  ADMIN
-  EDITOR
-  MODERATOR
-  SUPERADMIN
-  SYSTEM
-  AUTHOR
-}
-
-enum ProductCategory {
-  HONEY
-  SAFFRON
-  DATES
-  OTHERS
-}
-
-enum ProductStatus {
-  ACTIVE
-  INACTIVE
-  DRAFT
-}
-
-enum ArticleStatus {
-  DRAFT
-  PUBLISHED
-}
-
-enum Gender {
-  MALE
-  FEMALE
-  OTHER
-}
-
-// Performance: Product model with optimized fields
 model Product {
   id           String          @id @default(uuid())
   name         String          @unique @db.VarChar(255)
@@ -119,24 +76,17 @@ model Discount {
   @@index([discountType])
 }
 
-enum DiscountType {
-  PERCENTAGE
-  FIXED
-}
-
-// Security: Image model with validation
 model Image {
   id        String   @id @default(uuid())
-  image     String   @db.VarChar(500) // Limit URL length
+  image     String   @db.VarChar(500)
   productId String?
-  product   Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
-  
-  // Performance: Add index for product queries
+  product   Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+
   @@index([productId])
+  @@index([id])
 }
 
-// Security: Cart item model with validation
 model CartItem {
   id        Int      @id @default(autoincrement())
   userId    String
@@ -155,48 +105,54 @@ model CartItem {
   @@index([createdAt])
 }
 
-// Security: Enhanced User model with better validation
 model User {
-  id                             String    @id @default(cuid())
-  email                          String    @unique @db.VarChar(255)
-  username                       String?   @db.VarChar(100) // Display name for better UX
-  firstName                      String?   @db.VarChar(100)
-  lastName                       String?   @db.VarChar(100)
-  gender                         Gender?   // For personalized UI
-  profilePicture                 String?   @db.VarChar(500) // URL to profile image
-  password                       String    @db.VarChar(255)
-  emailVerified                  Boolean   @default(false)
-  emailVerificationToken         String?   @unique @db.VarChar(255)
-  emailVerificationTokenExpires  DateTime?
-  twoFactorEnabled               Boolean   @default(false)
-  twoFactorSecret                String?   @db.VarChar(255)
-  refreshToken                   String?   @unique @db.VarChar(255)
-  passwordResetToken             String?   @unique @db.VarChar(255)
-  passwordResetTokenExpires      DateTime?
-  role                           UserRole  @default(USER)
-  canLogin                       Boolean   @default(true)
-  disabled                       Boolean   @default(false)
-  lastLoginAt                    DateTime?
-  loginAttempts                  Int       @default(0)
-  lockedUntil                    DateTime?
-  createdAt                      DateTime  @default(now())
-  updatedAt                      DateTime  @updatedAt
-  
-  // Relations
-  sessions       Session[]
-  auditLogs      AuditLog[]
-  recoveryCodes  RecoveryCode[]
-  articles       Article[]
-  comments       Comment[]
-  
-  // Performance: Add indexes for common queries
+  id                            String              @id @default(cuid())
+  email                         String              @unique @db.VarChar(255)
+  username                      String?             @unique @db.VarChar(100)
+  firstName                     String?             @db.VarChar(100)
+  lastName                      String?             @db.VarChar(100)
+  gender                        Gender?
+  profilePicture                String?             @db.VarChar(500)
+  password                      String              @db.VarChar(255)
+  emailVerified                 Boolean             @default(false)
+  emailVerificationToken        String?             @unique @db.VarChar(255)
+  emailVerificationTokenExpires DateTime?
+  twoFactorEnabled              Boolean             @default(false)
+  twoFactorSecret               String?             @db.VarChar(255)
+  refreshToken                  String?             @unique @db.VarChar(255)
+  passwordResetToken            String?             @unique @db.VarChar(255)
+  passwordResetTokenExpires     DateTime?
+  role                          UserRole            @default(USER)
+  canLogin                      Boolean             @default(true)
+  disabled                      Boolean             @default(false)
+  lastLoginAt                   DateTime?
+  loginAttempts                 Int                 @default(0)
+  lockedUntil                   DateTime?
+  createdAt                     DateTime            @default(now())
+  updatedAt                     DateTime            @updatedAt
+  articles                      Article[]
+  auditLogs                     AuditLog[]
+  comments                      Comment[]
+  emailVerifications            EmailVerification[]
+  recoveryCodes                 RecoveryCode[]
+  sessions                      Session[]
+
   @@index([email])
   @@index([role])
   @@index([createdAt])
   @@index([lastLoginAt])
 }
 
-// Security: Recovery codes model
+model BlacklistedToken {
+  id        String   @id @default(cuid())
+  token     String   @unique @db.VarChar(500)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([expiresAt])
+  @@index([token])
+}
+
 model RecoveryCode {
   id        String   @id @default(cuid())
   userId    String
@@ -204,31 +160,45 @@ model RecoveryCode {
   used      Boolean  @default(false)
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  // Performance: Add indexes
+
   @@index([userId])
   @@index([createdAt])
 }
 
-// Security: Session model with better tracking
-model Session {
-  id           String   @id @default(cuid())
-  userId       String
-  refreshToken String   @unique @db.VarChar(255)
-  userAgent    String?  @db.VarChar(500)
-  ip           String?  @db.VarChar(45) // IPv6 compatible
-  createdAt    DateTime @default(now())
-  expiresAt    DateTime
-  lastUsedAt   DateTime @default(now())
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  // Performance: Add indexes
+model EmailVerification {
+  id        String   @id @default(cuid())
+  userId    String
+  email     String   @db.VarChar(255)
+  codeHash  String   @db.VarChar(255)
+  attempts  Int      @default(0)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId])
+  @@index([email])
   @@index([expiresAt])
   @@index([createdAt])
 }
 
-// Security: Audit log model with better structure
+model Session {
+  id                String   @id @default(cuid())
+  userId            String
+  refreshToken      String   @unique @db.VarChar(255)
+  userAgent         String?  @db.VarChar(500)
+  ip                String?  @db.VarChar(45)
+  deviceFingerprint String?  @db.VarChar(64)
+  createdAt         DateTime @default(now())
+  expiresAt         DateTime
+  lastUsedAt        DateTime @default(now())
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([createdAt])
+  @@index([deviceFingerprint])
+}
+
 model AuditLog {
   id        String   @id @default(cuid())
   userId    String?
@@ -237,29 +207,27 @@ model AuditLog {
   userAgent String?  @db.VarChar(500)
   metadata  Json?
   createdAt DateTime @default(now())
-  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  
-  // Performance: Add indexes for common queries
+  user      User?    @relation(fields: [userId], references: [id])
+
   @@index([userId])
   @@index([action])
   @@index([createdAt])
   @@index([ip])
 }
 
-// Security: Article model with proper validation and relations
 model Article {
   id        String        @id @default(uuid())
   title     String        @db.VarChar(255)
   slug      String        @unique @db.VarChar(255)
   imageUrl  String?       @db.VarChar(500)
   summary   String        @db.VarChar(500)
-  content   String        @db.Text
+  content   String
   status    ArticleStatus @default(DRAFT)
-  category  String?       @db.VarChar(100)
-  tags      String[]      @default([])
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
   authorId  String
+  category  String?       @db.VarChar(100)
+  tags      String[]      @default([])
   author    User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
   comments  Comment[]
 
@@ -268,25 +236,62 @@ model Article {
   @@index([createdAt])
   @@index([title])
   @@index([status])
-  @@index([category])
 }
 
 model Comment {
-  id        String         @id @default(cuid())
+  id        String        @id @default(cuid())
   content   String
-  status    CommentStatus  @default(PENDING)
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
+  status    CommentStatus @default(PENDING)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
   articleId String
   authorId  String?
-
-  article   Article        @relation(fields: [articleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  author    User?          @relation(fields: [authorId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  article   Article       @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  author    User?         @relation(fields: [authorId], references: [id])
 
   @@index([articleId])
   @@index([authorId])
   @@index([createdAt])
   @@index([status])
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  EDITOR
+  MODERATOR
+  SUPERADMIN
+  SYSTEM
+  AUTHOR
+}
+
+enum ProductCategory {
+  HONEY
+  SAFFRON
+  DATES
+  OTHERS
+}
+
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+  DRAFT
+}
+
+enum ArticleStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED
 }
 
 enum CommentStatus {

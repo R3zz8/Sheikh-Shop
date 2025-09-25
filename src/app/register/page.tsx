@@ -51,21 +51,26 @@ export default function RegisterPage() {
     startTransition(async () => {
       try {
         const [firstName, ...rest] = fullName.trim().split(' ');
-        const lastName = rest.join(' ');
+        const lastName = rest.join(' ') || 'User'; // Fallback if no last name
+        const safeFirstName = firstName || 'User'; // Fallback if no first name
         const res = await fetch('/api/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({ email, password, firstName, lastName }),
+          body: JSON.stringify({ 
+            email, 
+            password, 
+            firstName: safeFirstName, 
+            lastName,
+            username: `${safeFirstName.toLowerCase()}${Date.now()}` // Auto-generate username with safe fallback
+          }),
         });
         const data = await res.json().catch(() => ({}));
         if (res.ok && data?.success) {
           toast.success('Account created successfully!');
-          if (data?.requiresEmailVerification) {
-            router.push('/verify-email-sent');
-          } else {
-            router.push('/');
-          }
+          // Store email for verification page
+          localStorage.setItem('pendingVerificationEmail', email);
+          router.push('/verify-email');
           return;
         }
         if (res.status === 409) {
@@ -85,9 +90,20 @@ export default function RegisterPage() {
         title="Create your account"
         subtitle="Join our premium experience"
         footer={(
-          <div className="text-center text-sm text-slate-600 dark:text-slate-300">
-            Already have an account?{' '}
-            <Link href="/login" className="text-blue-700 hover:underline dark:text-blue-400">Login here</Link>
+          <div className="space-y-4">
+            {/* Main footer link */}
+            <div className="text-center text-sm text-slate-600">
+              Already have an account?{' '}
+              <Link href="/login" className="text-slate-600 hover:text-amber-600 transition-colors">Login here</Link>
+            </div>
+            
+            {/* Terms and Privacy links */}
+            <div className="text-center text-xs text-slate-500">
+              By creating an account, you agree to our{' '}
+              <Link href="/terms" className="hover:text-amber-600 transition-colors">Terms of Service</Link>
+              {' '}and{' '}
+              <Link href="/privacy" className="hover:text-amber-600 transition-colors">Privacy Policy</Link>
+            </div>
           </div>
         )}
       >
@@ -137,7 +153,7 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={!formValid || isPending}
-            className="group relative inline-flex w-full items-center justify-center rounded-xl bg-blue-600/90 text-white font-medium px-4 py-2.5 shadow-md hover:shadow-lg transition-all disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="group relative inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-medium px-4 py-2.5 shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2"
             aria-busy={isPending}
           >
             <span className="mr-2">{isPending ? 'Creating account...' : 'Create account'}</span>
@@ -149,9 +165,9 @@ export default function RegisterPage() {
           )}
 
           <div className="relative my-2">
-            <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-slate-200 dark:border-slate-700" /></div>
+            <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-slate-200" /></div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white/80 dark:bg-slate-900/50 px-2 text-slate-500 dark:text-slate-400">Or continue with</span>
+              <span className="bg-white px-2 text-slate-500">Or continue with</span>
             </div>
           </div>
           <SocialAuthButtons showGoogle={false} showGithub={false} />

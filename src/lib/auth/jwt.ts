@@ -2,15 +2,26 @@ import jwt from 'jsonwebtoken';
 import type { StringValue } from 'ms';
 import { randomBytes } from 'crypto';
 
-// Security: Validate JWT secret
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key-for-build-only';
-if (!JWT_SECRET || JWT_SECRET === 'dev-secret-key' || JWT_SECRET === 'changeme') {
-  // Only throw error in production or when actually using the functions
-  if (process.env.NODE_ENV === 'production') {
-    throw new Error('JWT_SECRET environment variable must be set to a secure value');
+// TEMP DEBUG LOG (remove after diagnosis)
+if (process.env.NODE_ENV !== 'production') {
+  // Do NOT print the actual secret
+  // eslint-disable-next-line no-console
+  console.log('[debug] JWT_SECRET present:', Boolean(process.env.JWT_SECRET), 'length:', (process.env.JWT_SECRET || '').length);
+}
+
+// Security: Accessor to read and validate JWT secret on demand (avoid top-level throws during build)
+function getJwtSecret(): string {
+  const secret = process.env.JWT_SECRET || '';
+  if (!secret) {
+    throw new Error('JWT_SECRET environment variable is not set');
   }
-  // In development/build, use a fallback
-  console.warn('JWT_SECRET not set, using fallback for development');
+  if (secret.length < 32) {
+    throw new Error('JWT_SECRET must be at least 32 characters long');
+  }
+  if (secret === 'dev-secret-key' || secret === 'changeme' || secret.includes('dev-secret')) {
+    throw new Error('JWT_SECRET cannot use development or default values');
+  }
+  return secret;
 }
 
 // Security: Define JWT payload interface
@@ -34,13 +45,14 @@ const JWT_OPTIONS: jwt.SignOptions = {
   expiresIn: '7d',
 };
 
-// Security: Enhanced JWT signing with proper typing
+// Security: Enhanced JWT signing with proper typing and error handling
 export function signJwtToken(
   payload: Omit<JWTPayload, 'iat' | 'exp' | 'iss' | 'aud'>,
   expiresIn: StringValue | number = '7d',
 ): string {
   try {
-    return jwt.sign(payload, JWT_SECRET!, {
+    const JWT_SECRET = getJwtSecret();
+    return jwt.sign(payload, JWT_SECRET, {
       ...JWT_OPTIONS,
       expiresIn,
     });
@@ -49,10 +61,17 @@ export function signJwtToken(
   }
 }
 
-// Security: Enhanced JWT verification with proper error handling
-export function verifyJwtToken(token: string): JWTPayload | null {
+// Security: Enhanced JWT verification with proper error handling and blacklist check
+export async function verifyJwtToken(token: string): Promise<JWTPayload | null> {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET!, {
+    const JWT_SECRET = getJwtSecret();
+    
+    // Security: Check if token is blacklisted
+    if (await isTokenBlacklisted(token)) {
+      return null;
+    }
+
+    const decoded = jwt.verify(token, JWT_SECRET, {
       algorithms: ['HS256'],
       issuer: 'sheikh-shop',
       audience: 'sheikh-shop-users',
@@ -92,6 +111,57 @@ export function isTokenExpired(token: string): boolean {
   return Date.now() >= decoded.exp * 1000;
 }
 
+// Security: Token blacklisting functions
+export async function isTokenBlacklisted(token: string): Promise<boolean> {
+  try {
+    // Reuse shared prisma instance to avoid per-call clients
+    const { prisma } = await import('@/lib/prisma');
+    const blacklistedToken = await prisma.blacklistedToken.findUnique({
+      where: { token },
+    });
+    return !!blacklistedToken;
+  } catch (error) {
+    // If blacklist check fails, assume token is valid (fail open for availability)
+    console.error('Token blacklist check failed:', error);
+    return false;
+  }
+}
+
+export async function blacklistToken(token: string, expiresAt?: Date): Promise<void> {
+  try {
+    const { prisma } = await import('@/lib/prisma');
+    
+    // Decode token to get expiration
+    const decoded = decodeJwtToken(token);
+    const tokenExpiresAt = expiresAt || (decoded?.exp ? new Date(decoded.exp * 1000) : new Date(Date.now() + 24 * 60 * 60 * 1000));
+    
+    await prisma.blacklistedToken.create({
+      data: {
+        token,
+        expiresAt: tokenExpiresAt,
+      },
+    });
+  } catch (error) {
+    console.error('Failed to blacklist token:', error);
+  }
+}
+
+// Security: Clean up expired blacklisted tokens
+export async function cleanupExpiredBlacklistedTokens(): Promise<void> {
+  try {
+    const { prisma } = await import('@/lib/prisma');
+    await prisma.blacklistedToken.deleteMany({
+      where: {
+        expiresAt: {
+          lt: new Date(),
+        },
+      },
+    });
+  } catch (error) {
+    console.error('Failed to cleanup expired blacklisted tokens:', error);
+  }
+}
+
 // Add missing functions that are being imported
 export function signAccessToken(payload: Omit<JWTPayload, 'iat' | 'exp' | 'iss' | 'aud'>, expiresIn: StringValue | number = '15m'): string {
   return signJwtToken(payload, expiresIn);
@@ -101,11 +171,11 @@ export function signRefreshToken(payload: Omit<JWTPayload, 'iat' | 'exp' | 'iss'
   return signJwtToken(payload, expiresIn);
 }
 
-export function verifyAccessToken(token: string): JWTPayload | null {
+export function verifyAccessToken(token: string): Promise<JWTPayload | null> {
   return verifyJwtToken(token);
 }
 
-export function verifyRefreshToken(token: string): JWTPayload | null {
+export function verifyRefreshToken(token: string): Promise<JWTPayload | null> {
   return verifyJwtToken(token);
 }
 

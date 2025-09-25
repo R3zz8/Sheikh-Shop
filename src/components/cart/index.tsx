@@ -141,7 +141,7 @@ export default function CartDropdown() {
                       {item.product.name}
                     </p>
                     <p className="text-xs text-amber-300 font-medium">
-                      {formatPrice(item.product.price)}
+                                              {formatPrice(item.product.basePrice)}
                     </p>
                   </div>
 
@@ -150,7 +150,7 @@ export default function CartDropdown() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                      onClick={() => handleQuantityChange(Number(item.id), Number(item.quantity) - 1)}
                       disabled={updateCartItemMutation.isPending || removeCartItemMutation.isPending}
                       className="w-6 h-6 p-0 rounded-md bg-white/8 backdrop-blur-sm border border-white/20 text-gray-400 hover:text-white hover:bg-white/12"
                     >
@@ -164,7 +164,7 @@ export default function CartDropdown() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                      onClick={() => handleQuantityChange(Number(item.id), Number(item.quantity) + 1)}
                       disabled={updateCartItemMutation.isPending}
                       className="w-6 h-6 p-0 rounded-md bg-white/8 backdrop-blur-sm border border-white/20 text-gray-400 hover:text-white hover:bg-white/12"
                     >
@@ -175,7 +175,7 @@ export default function CartDropdown() {
                   {/* Item Total */}
                   <div className="text-right min-w-0">
                     <p className="text-sm font-semibold text-amber-300">
-                      {formatPrice(item.product.price * item.quantity)}
+                                              {formatPrice(item.product.basePrice * item.quantity)}
                     </p>
                   </div>
 
@@ -183,7 +183,7 @@ export default function CartDropdown() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleRemoveItem(item.id)}
+                    onClick={() => handleRemoveItem(Number(item.id))}
                     disabled={removeCartItemMutation.isPending}
                     className={cn(
                       'w-6 h-6 p-0 rounded-md bg-white/8 backdrop-blur-sm',

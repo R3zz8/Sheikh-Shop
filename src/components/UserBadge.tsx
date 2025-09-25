@@ -28,7 +28,7 @@ interface User {
   lastName?: string | null;
   gender?: 'MALE' | 'FEMALE' | 'OTHER' | null;
   profilePicture?: string | null;
-  role: 'USER' | 'ADMIN' | 'EDITOR' | 'MODERATOR' | 'SUPERADMIN' | 'SYSTEM';
+  role: 'USER' | 'AUTHOR' | 'EDITOR' | 'MODERATOR' | 'ADMIN' | 'SUPERADMIN' | 'SYSTEM';
 }
 
 interface UserBadgeProps {

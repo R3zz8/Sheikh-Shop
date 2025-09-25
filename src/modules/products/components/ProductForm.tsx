@@ -31,15 +31,15 @@ const ProductForm = (props: { product: Product | null }) => {
   const [uploading, setUploading] = useState(false);
   const [tempImageUrl, setTempImageUrl] = useState<string | null>(null);
 
-  const onSubmitForm = (data: Product) => {
+  const onSubmitForm = (data: any) => {
     const _product = {
       ...data,
       id: product?.id,
-      price: parseFloat(data?.price?.toString() || '0'),
-      quantity: parseFloat(data?.quantity?.toString() || '0'),
+      basePrice: parseFloat(data?.basePrice?.toString() || '0'),
+      quantity: parseInt(data?.quantity?.toString() || '0'),
       // imageUrl is set via handleUpload if provided
-    } as Product & { imageUrl?: string };
-    upsertProduct(_product as Product);
+    } as any;
+    upsertProduct(_product);
   };
 
   async function handleUpload(file: File) {
@@ -110,11 +110,11 @@ const ProductForm = (props: { product: Product | null }) => {
           <div className="my-2">
             <Label htmlFor="price">Price</Label>
             <Input
-              {...register('price')}
+              {...register('basePrice' as any)}
               type="number"
               id="price"
               step="0.01"
-              defaultValue={product?.price || ''}
+              defaultValue={product?.basePrice || ''}
             />
           </div>
           <div className="my-2">

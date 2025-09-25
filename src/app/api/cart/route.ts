@@ -14,7 +14,7 @@ async function getUserIdFromToken(request: NextRequest) {
             return null;
         }
 
-        const user = verifyJwtToken(token);
+        const user = await verifyJwtToken(token);
         return user?.id || null;
     } catch (error) {
         return null;
@@ -73,6 +73,9 @@ export async function POST(request: NextRequest) {
         // Check if product exists and is active
         const product = await prisma.product.findUnique({
             where: { id: productId },
+            include: {
+                baseUnit: true,
+            },
         });
 
         if (!product) {
@@ -126,6 +129,9 @@ export async function POST(request: NextRequest) {
                     userId,
                     productId,
                     quantity,
+                    unitPrice: product.basePrice,
+                    product: { connect: { id: productId } },
+                    unit: { connect: { id: product.baseUnitId } }
                 },
                 include: {
                     product: {

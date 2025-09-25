@@ -1,6 +1,9 @@
 import { prisma } from '@/lib/prisma';
 import UserBadge from '@/components/UserBadge';
 
+// Force dynamic rendering to prevent build-time database queries
+export const dynamic = 'force-dynamic';
+
 export default async function TestUserBadgePage() {
     // Get a few sample users for testing
     const users = await prisma.user.findMany({

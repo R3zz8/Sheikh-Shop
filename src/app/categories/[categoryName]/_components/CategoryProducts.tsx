@@ -55,7 +55,7 @@ export default function CategoryProducts({ products, categoryName, categorySlug 
 
                 {/* Products Grid */}
                 {products.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+                    <div className="responsive-grid gap-6 md:gap-8">
                         {products.map((product) => (
                             <Link
                                 key={product.id}

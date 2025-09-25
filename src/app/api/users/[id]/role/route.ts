@@ -6,7 +6,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const token = req.cookies.get('session-token')?.value;
   if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const user = verifyJwtToken(token);
+  const user = await verifyJwtToken(token);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const dbUser = await prisma.user.findUnique({ where: { id: user.id } });

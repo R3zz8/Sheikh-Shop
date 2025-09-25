@@ -6,9 +6,11 @@ async function verifySuperadminProductAccess() {
     try {
         console.log('🔐 Verifying Superadmin Product Management Access...\n');
 
+        const superadminEmail = process.env.SUPERADMIN_EMAIL || 'rezadhu615@gmail.com';
+        
         // 1. Check superadmin user exists
         const superadmin = await prisma.user.findUnique({
-            where: { email: 'rezadhu615@gmail.com' },
+            where: { email: superadminEmail },
             select: { id: true, email: true, role: true }
         });
 
@@ -43,7 +45,7 @@ async function verifySuperadminProductAccess() {
         if (products.length > 0) {
             console.log('   Sample products:');
             products.forEach((product, index) => {
-                console.log(`   ${index + 1}. ${product.name} (${product.category}) - $${product.price}`);
+                console.log(`   ${index + 1}. ${product.name} (${product.category}) - $${product.basePrice || 'N/A'}`);
             });
         }
 
@@ -71,8 +73,8 @@ async function verifySuperadminProductAccess() {
         console.log('   ✅ Set product prices and quantities');
 
         console.log('\n⚠️  Login with superadmin to access:');
-        console.log('   Email: rezadhu615@gmail.com');
-        console.log('   Password: Temp#1234');
+        console.log(`   Email: ${superadminEmail}`);
+        console.log('   Password: [Check your environment variables]');
 
     } catch (error) {
         console.error('❌ Verification failed:', error);

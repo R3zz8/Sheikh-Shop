@@ -1,8 +1,10 @@
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
-import JsonLd from '@/components/seo/JsonLd';
-import { generateCategoryMetadata, generateFAQSchema } from '@/lib/seo';
 import CategoryProducts from './_components/CategoryProducts';
+import { generateCategoryMetadata } from '@/lib/seo/metadata';
+
+// Force dynamic rendering to prevent build-time database queries
+export const dynamic = 'force-dynamic';
 
 interface CategoryPageProps {
     params: {
@@ -29,7 +31,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: CategoryPageProps) {
     const data = await params;
-    const categoryName = data.categoryName.toUpperCase();
+    const categoryName = data.categoryName;
     return generateCategoryMetadata(categoryName);
 }
 
@@ -61,14 +63,8 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
         const categoryDisplayName = categoryName.charAt(0).toUpperCase() + categoryName.slice(1);
 
-        const faqData = [
-            { question: `Why choose Sheikh Shop for ${categoryDisplayName}?`, answer: `We source the best ${categoryDisplayName.toLowerCase()} for exceptional quality and authentic taste.` },
-            { question: `Do you ship ${categoryDisplayName.toLowerCase()} internationally?`, answer: 'Yes, we deliver worldwide with premium packaging.' },
-        ];
-
         return (
             <div className="min-h-screen bg-gradient-to-br from-amber-950 via-stone-900 to-amber-950 relative">
-                <JsonLd data={generateFAQSchema(faqData)} />
                 {/* Background effects */}
                 <div className="absolute inset-0 bg-gradient-radial from-amber-500/3 via-orange-500/2 to-yellow-500/3 pointer-events-none animate-pulse" />
                 <div className="absolute inset-0 bg-gradient-to-b from-amber-500/2 via-transparent to-orange-500/2 pointer-events-none" />

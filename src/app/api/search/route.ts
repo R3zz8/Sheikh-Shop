@@ -11,6 +11,14 @@ export async function GET(request: NextRequest) {
     }
 
     const searchTerm = query.trim().toLowerCase();
+    const results: Array<{
+      id: string;
+      title: string;
+      type: 'product' | 'article' | 'category';
+      url: string;
+      description?: string;
+      image?: string;
+    }> = [];
 
     // Search products
     const products = await prisma.product.findMany({
@@ -21,24 +29,30 @@ export async function GET(request: NextRequest) {
             OR: [
               { name: { contains: searchTerm, mode: 'insensitive' } },
               { description: { contains: searchTerm, mode: 'insensitive' } },
-              { category: { contains: searchTerm, mode: 'insensitive' } },
+              { category: { equals: searchTerm.toUpperCase() as any } },
             ],
           },
         ],
       },
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        category: true,
+      include: {
         images: {
-          select: {
-            image: true,
-          },
           take: 1,
+          select: { image: true },
         },
       },
       take: 5,
+    });
+
+    // Add products to results
+    products.forEach(product => {
+      results.push({
+        id: product.id,
+        title: product.name,
+        type: 'product',
+        url: `/products/${product.id}`,
+        description: product.description || `Premium ${product.category.toLowerCase()} from Sheikh Shop`,
+        image: (product as any).images?.[0]?.image || '/noImage.jpg',
+      });
     });
 
     // Search articles
@@ -51,6 +65,7 @@ export async function GET(request: NextRequest) {
               { title: { contains: searchTerm, mode: 'insensitive' } },
               { summary: { contains: searchTerm, mode: 'insensitive' } },
               { content: { contains: searchTerm, mode: 'insensitive' } },
+              { tags: { has: searchTerm } },
             ],
           },
         ],
@@ -61,57 +76,55 @@ export async function GET(request: NextRequest) {
         summary: true,
         slug: true,
         imageUrl: true,
-        category: true,
       },
       take: 3,
     });
 
-    // Format results
-    const results = [
-      ...products.map(product => ({
-        id: product.id,
-        type: 'product' as const,
-        title: product.name,
-        description: product.description,
-        image: product.images[0]?.image,
-        url: `/products/${product.id}`,
-        category: product.category,
-      })),
-      ...articles.map(article => ({
+    // Add articles to results
+    articles.forEach(article => {
+      results.push({
         id: article.id,
-        type: 'article' as const,
         title: article.title,
-        description: article.summary,
-        image: article.imageUrl,
+        type: 'article',
         url: `/article/${article.slug}`,
-        category: article.category,
-      })),
-    ];
-
-    // Sort by relevance (exact matches first, then partial matches)
-    results.sort((a, b) => {
-      const aTitle = a.title.toLowerCase();
-      const bTitle = b.title.toLowerCase();
-      
-      if (aTitle === searchTerm && bTitle !== searchTerm) return -1;
-      if (aTitle !== searchTerm && bTitle === searchTerm) return 1;
-      if (aTitle.startsWith(searchTerm) && !bTitle.startsWith(searchTerm)) return -1;
-      if (!aTitle.startsWith(searchTerm) && bTitle.startsWith(searchTerm)) return 1;
-      
-      return 0;
+        description: article.summary,
+        image: article.imageUrl || '/og-image.jpg',
+      });
     });
 
-    return NextResponse.json({ results });
+    // Add category suggestions
+    const categories = ['HONEY', 'SAFFRON', 'DATES', 'OTHERS'];
+    const matchingCategories = categories.filter(category => 
+      category.toLowerCase().includes(searchTerm)
+    );
+
+    matchingCategories.forEach(category => {
+      results.push({
+        id: category,
+        title: `${category.charAt(0).toUpperCase() + category.slice(1).toLowerCase()} Collection`,
+        type: 'category',
+        url: `/categories/${category.toLowerCase()}`,
+        description: `Browse our premium ${category.toLowerCase()} collection`,
+        image: `/${category.toLowerCase()}.jpg`,
+      });
+    });
+
+    // Sort results by relevance (products first, then articles, then categories)
+    const sortedResults = results.sort((a, b) => {
+      const typeOrder: Record<string, number> = { product: 0, article: 1, category: 2 };
+      return (typeOrder[a.type] || 0) - (typeOrder[b.type] || 0);
+    });
+
+    return NextResponse.json({ 
+      results: sortedResults.slice(0, 8), // Limit to 8 results
+      total: sortedResults.length,
+    });
+
   } catch (error) {
     console.error('Search API error:', error);
     return NextResponse.json(
-      { error: 'Search failed' },
+      { error: 'Search failed', results: [] },
       { status: 500 }
     );
   }
 }
-
-
-
-
-
