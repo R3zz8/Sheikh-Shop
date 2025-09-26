@@ -202,7 +202,8 @@ export const generateMetadata = ({
       canonical: canonicalUrl,
     },
     openGraph: {
-      type,
+      // Map 'product' type to 'website' since Next.js OpenGraph doesn't support 'product'
+      type: type === 'product' ? 'website' : type,
       title,
       description,
       url: canonicalUrl,

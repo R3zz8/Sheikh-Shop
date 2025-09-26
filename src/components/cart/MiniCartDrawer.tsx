@@ -8,6 +8,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useCart } from '@/hooks/useCart';
 import { motion, AnimatePresence } from 'framer-motion';
+import type { CartWithProduct } from '@/types';
 
 interface MiniCartDrawerProps {
   isOpen: boolean;
@@ -125,7 +126,7 @@ export default function MiniCartDrawer({ isOpen, onClose }: MiniCartDrawerProps)
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {cart.map((item) => (
+                  {cart.map((item: CartWithProduct) => (
                     <div key={`${item.productId}-${item.unitId}`} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg">
                       <div className="relative w-16 h-16 flex-shrink-0">
                         <Image

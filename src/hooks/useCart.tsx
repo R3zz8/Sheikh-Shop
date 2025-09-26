@@ -308,6 +308,23 @@ export const useCart = () => {
       console.log('🛒 Cart state:', { cart, cartTotals, isLoading, error });
     }
 
+  // Wrapper functions for easier usage in components
+  const updateCartItem = async (productId: string, unitId: string, quantity: number) => {
+    // Find the cart item by productId and unitId
+    const cartItem = cart?.find((item: any) => item.productId === productId && item.unitId === unitId);
+    if (cartItem) {
+      updateCartItemMutation.mutate({ cartItemId: cartItem.id, quantity });
+    }
+  };
+
+  const removeFromCart = async (productId: string, unitId: string) => {
+    // Find the cart item by productId and unitId
+    const cartItem = cart?.find((item: any) => item.productId === productId && item.unitId === unitId);
+    if (cartItem) {
+      removeCartItemMutation.mutate({ cartItemId: cartItem.id });
+    }
+  };
+
   return {
     cart,
     isLoading,
@@ -318,5 +335,8 @@ export const useCart = () => {
     removeCartItemMutation,
     clearCartMutation,
     cartTotals,
+    // Wrapper functions for easier usage
+    updateCartItem,
+    removeFromCart,
   };
 };
