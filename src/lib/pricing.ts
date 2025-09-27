@@ -1,4 +1,4 @@
-import type { Unit, Discount, ProductPricing, DiscountInfo } from '@/types';
+import type { Unit, Discount, ProductPricing, DiscountInfo, ProductUnit, ProductUnitResponse } from '@/types';
 
 /**
  * Calculate the final price for a product based on unit and quantity
@@ -141,4 +141,95 @@ export function isDiscountExpiringSoon(endDate: Date): boolean {
   const hoursRemaining = diff / (1000 * 60 * 60);
   
   return hoursRemaining <= 24 && hoursRemaining > 0;
+}
+
+// New ProductUnit pricing functions
+
+/**
+ * Calculate price for a ProductUnit with quantity
+ */
+export function calculateProductUnitPrice(
+  unitPrice: number,
+  quantity: number = 1
+): number {
+  return unitPrice * quantity;
+}
+
+/**
+ * Check if ProductUnit has sufficient stock
+ */
+export function hasSufficientStock(
+  unitStock: number,
+  requestedQuantity: number
+): boolean {
+  return unitStock >= requestedQuantity;
+}
+
+/**
+ * Get the cheapest available ProductUnit
+ */
+export function getCheapestAvailableUnit(units: ProductUnit[]): ProductUnit | null {
+  const activeUnits = units.filter(unit => unit.isActive && unit.stock > 0);
+  
+  if (activeUnits.length === 0) return null;
+  
+  return activeUnits.reduce((cheapest, current) => 
+    current.price < cheapest.price ? current : cheapest
+  );
+}
+
+/**
+ * Get the most expensive available ProductUnit
+ */
+export function getMostExpensiveAvailableUnit(units: ProductUnit[]): ProductUnit | null {
+  const activeUnits = units.filter(unit => unit.isActive && unit.stock > 0);
+  
+  if (activeUnits.length === 0) return null;
+  
+  return activeUnits.reduce((mostExpensive, current) => 
+    current.price > mostExpensive.price ? current : mostExpensive
+  );
+}
+
+/**
+ * Calculate total cart value using ProductUnits
+ */
+export function calculateCartTotalWithUnits(cartItems: Array<{
+  unitPrice: number;
+  quantity: number;
+}>): number {
+  return cartItems.reduce((total, item) => 
+    total + calculateProductUnitPrice(item.unitPrice, item.quantity), 0
+  );
+}
+
+/**
+ * Format ProductUnit for API response
+ */
+export function formatProductUnitResponse(unit: ProductUnit): ProductUnitResponse {
+  return {
+    id: unit.id,
+    name: unit.name,
+    price: Number(unit.price), // Convert Decimal to number
+    stock: unit.stock,
+    isActive: unit.isActive,
+  };
+}
+
+/**
+ * Get stock status for ProductUnit
+ */
+export function getProductUnitStockStatus(stock: number, threshold: number = 10): {
+  status: 'in-stock' | 'low-stock' | 'out-of-stock';
+  message: string;
+} {
+  if (stock === 0) {
+    return { status: 'out-of-stock', message: 'Out of Stock' };
+  }
+  
+  if (stock <= threshold) {
+    return { status: 'low-stock', message: 'Low Stock' };
+  }
+  
+  return { status: 'in-stock', message: 'In Stock' };
 }

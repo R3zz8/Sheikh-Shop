@@ -6,10 +6,12 @@ export type Product = Prisma.ProductGetPayload<{
     images: true;
     baseUnit: true;
     discounts: true;
+    units: true; // Include ProductUnits
   };
 }>;
 
 export type Unit = Prisma.UnitGetPayload<{}>;
+export type ProductUnit = Prisma.ProductUnitGetPayload<{}>;
 export type Discount = Prisma.DiscountGetPayload<{}>;
 export type Image = Prisma.ImageGetPayload<{}>;
 export type User = Prisma.UserGetPayload<{}>;
@@ -49,6 +51,28 @@ export interface CartWithProduct {
   updatedAt: Date;
   product: Product;
   unit: Unit;
+}
+
+// New types for ProductUnit integration
+export interface CartItemUnit {
+  unitId: string;
+  quantity: number;
+  subtotal: number;
+}
+
+export interface ProductUnitResponse {
+  id: string;
+  name: string;
+  price: number;
+  stock: number;
+  isActive: boolean;
+}
+
+export interface ProductWithUnits {
+  id: string;
+  name: string;
+  basePrice: number;
+  units: ProductUnitResponse[];
 }
 
 export interface ArticleWithAuthor {

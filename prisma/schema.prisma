@@ -26,6 +26,7 @@ model Product {
   discounts    Discount[]
   images       Image[]
   baseUnit     Unit            @relation(fields: [baseUnitId], references: [id])
+  units        ProductUnit[]   // New relation to ProductUnit
 
   @@index([category])
   @@index([basePrice])
@@ -54,6 +55,26 @@ model Unit {
   @@index([name])
   @@index([isActive])
   @@index([sortOrder])
+}
+
+model ProductUnit {
+  id        String   @id @default(cuid())
+  productId String
+  name      String   @db.VarChar(100) // e.g., "1g", "5g", "10g", "box"
+  price     Decimal  @db.Decimal(10, 2) // Unit price with 2 decimal places
+  stock     Int      @default(0) // Per unit stock quantity
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  // Indexes for performance
+  @@index([productId])
+  @@index([isActive])
+  @@index([stock])
+  @@index([createdAt])
 }
 
 model Discount {

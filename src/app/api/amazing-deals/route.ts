@@ -1,5 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
+import { formatProductUnitResponse } from '@/lib/pricing';
+import type { ProductWithUnits } from '@/types';
 
 // Force dynamic rendering for this API route
 export const dynamic = 'force-dynamic';
@@ -15,6 +17,7 @@ export async function GET(req: NextRequest) {
       include: {
         images: true,
         baseUnit: true, // This is correct - it's the relation name in the schema
+        units: true, // Include ProductUnits
         discounts: {
           where: {
             isActive: true,
@@ -28,10 +31,20 @@ export async function GET(req: NextRequest) {
       orderBy: { createdAt: 'desc' },
     });
 
+    // Transform products to include formatted units
+    const amazingDealsWithUnits: ProductWithUnits[] = amazingDeals.map(product => ({
+      id: product.id,
+      name: product.name,
+      basePrice: product.basePrice,
+      units: product.units.map(unit => formatProductUnitResponse(unit)),
+      // Keep backward compatibility - include original product data
+      ...product
+    }));
+
     return NextResponse.json({
       success: true,
-      data: amazingDeals,
-      count: amazingDeals.length,
+      data: amazingDealsWithUnits,
+      count: amazingDealsWithUnits.length,
     });
   } catch (error) {
     console.error('Amazing Deals API error:', error);

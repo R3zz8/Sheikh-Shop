@@ -1,5 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
+import { formatProductUnitResponse } from '@/lib/pricing';
+import type { ProductWithUnits } from '@/types';
 
 // Force dynamic rendering for this API route
 export const dynamic = 'force-dynamic';
@@ -38,7 +40,10 @@ export async function GET(req: NextRequest) {
     const [products, total] = await Promise.all([
       prisma.product.findMany({
         where,
-        include: { images: true },
+        include: { 
+          images: true,
+          units: true // Include ProductUnits
+        },
         orderBy: { [sortBy]: sortOrder },
         skip: (page - 1) * limit,
         take: limit,
@@ -48,8 +53,18 @@ export async function GET(req: NextRequest) {
 
     const totalPages = Math.ceil(total / limit);
 
+    // Transform products to include formatted units
+    const productsWithUnits: ProductWithUnits[] = products.map(product => ({
+      id: product.id,
+      name: product.name,
+      basePrice: product.basePrice,
+      units: product.units.map(unit => formatProductUnitResponse(unit)),
+      // Keep backward compatibility - include original product data
+      ...product
+    }));
+
     return NextResponse.json({
-      data: products,
+      data: productsWithUnits,
       pagination: {
         page,
         limit,

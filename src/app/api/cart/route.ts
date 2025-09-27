@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyJwtToken } from '@/lib/auth/jwt';
+import { hasSufficientStock, calculateProductUnitPrice } from '@/lib/pricing';
 
 // Cache cart data for 1 minute (cart data changes frequently)
 export const revalidate = 60;
@@ -36,8 +37,10 @@ export async function GET(request: NextRequest) {
                 product: {
                     include: {
                         images: true,
+                        units: true, // Include ProductUnits for display
                     },
                 },
+                unit: true, // Include Unit information
             },
             orderBy: { createdAt: 'desc' },
         });
@@ -61,7 +64,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const { productId, quantity = 1 } = await request.json();
+        const { productId, unitId, quantity = 1 } = await request.json();
 
         if (!productId) {
             return NextResponse.json(
@@ -75,6 +78,7 @@ export async function POST(request: NextRequest) {
             where: { id: productId },
             include: {
                 baseUnit: true,
+                units: true, // Include ProductUnits
             },
         });
 
@@ -92,18 +96,44 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        if (product.quantity < quantity) {
-            return NextResponse.json(
-                { error: 'Insufficient stock' },
-                { status: 400 }
-            );
+        // Determine which unit to use
+        let selectedUnitId = unitId || product.baseUnitId;
+        let unitPrice = product.basePrice;
+
+        // If unitId is provided, validate it and get its price
+        if (unitId) {
+            const productUnit = product.units.find(unit => unit.id === unitId);
+            if (!productUnit || !productUnit.isActive) {
+                return NextResponse.json(
+                    { error: 'Invalid or inactive product unit' },
+                    { status: 400 }
+                );
+            }
+            unitPrice = Number(productUnit.price);
+            
+            // Check ProductUnit stock
+            if (!hasSufficientStock(productUnit.stock, quantity)) {
+                return NextResponse.json(
+                    { error: 'Insufficient stock for selected unit' },
+                    { status: 400 }
+                );
+            }
+        } else {
+            // Use legacy stock check for backward compatibility
+            if (product.quantity < quantity) {
+                return NextResponse.json(
+                    { error: 'Insufficient stock' },
+                    { status: 400 }
+                );
+            }
         }
 
-        // Check if item already exists in cart
+        // Check if item already exists in cart (same product + unit combination)
         const existingItem = await prisma.cartItem.findFirst({
             where: {
                 userId,
                 productId,
+                unitId: selectedUnitId,
             },
         });
 
@@ -118,8 +148,10 @@ export async function POST(request: NextRequest) {
                     product: {
                         include: {
                             images: true,
+                            units: true,
                         },
                     },
+                    unit: true,
                 },
             });
         } else {
@@ -129,16 +161,17 @@ export async function POST(request: NextRequest) {
                     userId,
                     productId,
                     quantity,
-                    unitPrice: product.basePrice,
-                    product: { connect: { id: productId } },
-                    unit: { connect: { id: product.baseUnitId } }
+                    unitId: selectedUnitId,
+                    unitPrice,
                 },
                 include: {
                     product: {
                         include: {
                             images: true,
+                            units: true,
                         },
                     },
+                    unit: true,
                 },
             });
         }
@@ -185,7 +218,11 @@ export async function PUT(request: NextRequest) {
                 userId,
             },
             include: {
-                product: true,
+                product: {
+                    include: {
+                        units: true,
+                    },
+                },
             },
         });
 
@@ -196,8 +233,21 @@ export async function PUT(request: NextRequest) {
             );
         }
 
-        // Check stock availability
-        if (cartItem.product.quantity < quantity) {
+        // Check stock availability - support both ProductUnit and legacy stock
+        let hasStock = false;
+        
+        if (cartItem.unitId) {
+            // Check ProductUnit stock
+            const productUnit = cartItem.product.units.find(unit => unit.id === cartItem.unitId);
+            if (productUnit) {
+                hasStock = hasSufficientStock(productUnit.stock, quantity);
+            }
+        } else {
+            // Legacy stock check
+            hasStock = cartItem.product.quantity >= quantity;
+        }
+
+        if (!hasStock) {
             return NextResponse.json(
                 { error: 'Insufficient stock' },
                 { status: 400 }
@@ -211,8 +261,10 @@ export async function PUT(request: NextRequest) {
                 product: {
                     include: {
                         images: true,
+                        units: true,
                     },
                 },
+                unit: true,
             },
         });
 
