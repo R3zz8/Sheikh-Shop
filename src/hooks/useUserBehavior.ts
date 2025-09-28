@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useSession } from 'next-auth/react';
 
 export interface UserBehaviorEvent {
   id: string;
@@ -181,6 +180,7 @@ export function useUserBehavior() {
       productId,
       categoryId,
       unitId,
+      pageUrl: window.location.href,
     });
   }, [trackEvent]);
 
@@ -190,6 +190,7 @@ export function useUserBehavior() {
       productId,
       categoryId,
       unitId,
+      pageUrl: window.location.href,
     });
   }, [trackEvent]);
 
@@ -200,6 +201,7 @@ export function useUserBehavior() {
       unitId,
       quantity,
       price,
+      pageUrl: window.location.href,
     });
   }, [trackEvent]);
 
@@ -209,6 +211,7 @@ export function useUserBehavior() {
       productId,
       unitId,
       quantity,
+      pageUrl: window.location.href,
     });
   }, [trackEvent]);
 
@@ -219,6 +222,7 @@ export function useUserBehavior() {
       unitId,
       quantity,
       price,
+      pageUrl: window.location.href,
     });
   }, [trackEvent]);
 
@@ -226,6 +230,7 @@ export function useUserBehavior() {
     trackEvent({
       eventType: 'search',
       searchQuery: query,
+      pageUrl: window.location.href,
     });
   }, [trackEvent]);
 

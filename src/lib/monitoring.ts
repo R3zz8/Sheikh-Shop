@@ -45,6 +45,8 @@ export interface AnomalyDetection {
   confidence: number;
   status: 'active' | 'investigating' | 'resolved' | 'false_positive';
   metadata: Record<string, any>;
+  resolvedAt?: Date;
+  resolvedBy?: string;
 }
 
 export interface SystemHealth {
@@ -551,8 +553,8 @@ export function withMonitoring(handler: (req: NextRequest) => Promise<Response>)
           url: req.url,
           statusCode: response.status,
           responseTime,
-          userAgent: req.headers.get('user-agent'),
-          ip: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip'),
+          userAgent: req.headers.get('user-agent') || undefined,
+          ip: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || undefined,
         },
       });
       

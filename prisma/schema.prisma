@@ -27,7 +27,9 @@ model Product {
   images       Image[]
   baseUnit     Unit            @relation(fields: [baseUnitId], references: [id])
   units        ProductUnit[]
-  analytics    ProductAnalytics?
+  arSessions   ARSession[]
+  product3DModel Product3DModel?
+  socialShares SocialShare[]
 
   @@index([category])
   @@index([basePrice])
@@ -155,6 +157,10 @@ model User {
   emailVerifications            EmailVerification[]
   recoveryCodes                 RecoveryCode[]
   sessions                      Session[]
+  userProfile                   UserProfile?
+  arSessions                    ARSession[]
+  vrStoreVisits                 VRStoreVisit[]
+  socialShares                  SocialShare[]
 
   @@index([email])
   @@index([role])
@@ -319,74 +325,299 @@ enum CommentStatus {
   REJECTED
 }
 
-model AnalyticsEvent {
-  id          String   @id
-  userId      String?
-  sessionId   String
-  eventType   String   @db.VarChar(50)
-  productId   String?
-  categoryId  String?
-  unitId      String?
-  quantity    Int?
-  price       Float?
-  searchQuery String?
-  pageUrl     String
-  timestamp   DateTime
-  metadata    Json     @default("{}")
+// Gamification Models
+model UserProfile {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  level             Int      @default(1)
+  experiencePoints  Int      @default(0)
+  totalSpent        Float    @default(0.0)
+  totalOrders       Int      @default(0)
+  loginStreak       Int      @default(0)
+  lastLoginDate     DateTime?
+  achievements      String[] @default([])
+  badges            String[] @default([])
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rewards           Reward[]
+  leaderboardEntries LeaderboardEntry[]
+
+  @@index([level])
+  @@index([experiencePoints])
+  @@index([totalSpent])
+  @@index([loginStreak])
+}
+
+model Reward {
+  id          String      @id @default(cuid())
+  userId      String
+  type        RewardType
+  title       String      @db.VarChar(255)
+  description String?
+  value       Float?
+  code        String?     @unique @db.VarChar(50)
+  isRedeemed  Boolean     @default(false)
+  expiresAt   DateTime?
+  createdAt   DateTime    @default(now())
+  userProfile UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
-  @@index([sessionId])
-  @@index([eventType])
+  @@index([type])
+  @@index([isRedeemed])
+  @@index([expiresAt])
+}
+
+model LeaderboardEntry {
+  id          String      @id @default(cuid())
+  userId      String
+  category    LeaderboardCategory
+  score       Float
+  rank        Int?
+  period      LeaderboardPeriod @default(ALL_TIME)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  userProfile UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, category, period])
+  @@index([category])
+  @@index([score])
+  @@index([period])
+  @@index([rank])
+}
+
+// AR/VR Models
+model ARSession {
+  id          String   @id @default(cuid())
+  userId      String?
+  productId   String?
+  sessionType ARSessionType
+  duration    Int      @default(0) // in seconds
+  interactions Int     @default(0)
+  deviceType  String?  @db.VarChar(50)
+  userAgent   String?  @db.VarChar(500)
+  ipAddress   String?  @db.VarChar(45)
+  createdAt   DateTime @default(now())
+  endedAt     DateTime?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  product     Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
   @@index([productId])
+  @@index([sessionType])
+  @@index([createdAt])
+}
+
+model VRStoreVisit {
+  id          String   @id @default(cuid())
+  userId      String?
+  duration    Int      @default(0) // in seconds
+  categoriesVisited String[] @default([])
+  productsViewed String[] @default([])
+  interactions Int     @default(0)
+  deviceType  String?  @db.VarChar(50)
+  userAgent   String?  @db.VarChar(500)
+  ipAddress   String?  @db.VarChar(45)
+  createdAt   DateTime @default(now())
+  endedAt     DateTime?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Product3DModel {
+  id          String   @id @default(cuid())
+  productId   String   @unique
+  modelUrl    String   @db.VarChar(500)
+  modelType   ModelType
+  fileSize    Int?     // in bytes
+  isOptimized Boolean  @default(false)
+  isARReady   Boolean  @default(false)
+  isVRReady   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@index([modelType])
+  @@index([isARReady])
+  @@index([isVRReady])
+}
+
+// Social & Engagement Models
+model WishlistCompetition {
+  id          String   @id @default(cuid())
+  title       String   @db.VarChar(255)
+  description String?
+  startDate   DateTime
+  endDate     DateTime
+  isActive    Boolean  @default(true)
+  rewardValue Float    @default(0.0)
+  participants String[] @default([])
+  winnerId    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([startDate])
+  @@index([endDate])
+  @@index([isActive])
+}
+
+model SocialShare {
+  id        String   @id @default(cuid())
+  userId    String?
+  productId String?
+  platform  String   @db.VarChar(50) // facebook, twitter, instagram, etc.
+  shareUrl  String   @db.VarChar(500)
+  clicks    Int      @default(0)
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([productId])
+  @@index([platform])
+  @@index([createdAt])
+}
+
+model LiveEvent {
+  id                String      @id @default(cuid())
+  title             String      @db.VarChar(255)
+  description       String
+  eventType         LiveEventType
+  startTime         DateTime
+  endTime           DateTime
+  maxParticipants   Int         @default(100)
+  currentParticipants Int       @default(0)
+  isActive          Boolean     @default(true)
+  meetingUrl        String?     @db.VarChar(500)
+  vrEnvironmentId   String?     @db.VarChar(100)
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  @@index([eventType])
+  @@index([startTime])
+  @@index([endTime])
+  @@index([isActive])
+}
+
+enum LiveEventType {
+  VR_TASTING
+  AR_DEMO
+  LIVE_STREAM
+  Q_AND_A
+}
+
+// Analytics Models
+model AnalyticsEvent {
+  id        String   @id @default(cuid())
+  userId    String?
+  eventType String   @db.VarChar(100)
+  eventData Json?
+  timestamp DateTime @default(now())
+  sessionId String?
+  pageUrl   String?  @db.VarChar(500)
+  userAgent String?  @db.VarChar(500)
+  ipAddress String?  @db.VarChar(45)
+
+  @@index([userId])
+  @@index([eventType])
   @@index([timestamp])
-  @@index([userId, eventType])
-  @@index([productId, eventType])
+  @@index([sessionId])
 }
 
 model ProductAnalytics {
-  id              String  @id @default(cuid())
-  productId       String  @unique
-  viewCount       Int     @default(0)
-  clickCount      Int     @default(0)
-  addToCartCount  Int     @default(0)
-  purchaseCount   Int     @default(0)
-  totalRevenue    Float   @default(0.0)
-  lastUpdated     DateTime @default(now()) @updatedAt
+  id          String   @id @default(cuid())
+  productId   String
+  views       Int      @default(0)
+  clicks      Int      @default(0)
+  addToCart   Int      @default(0)
+  purchases   Int      @default(0)
+  revenue     Float    @default(0.0)
+  lastViewed  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-
-  @@index([viewCount])
-  @@index([purchaseCount])
-  @@index([totalRevenue])
+  @@unique([productId])
+  @@index([productId])
+  @@index([views])
+  @@index([revenue])
 }
 
 model UserAnalytics {
-  id            String   @id @default(cuid())
-  userId        String   @unique
-  totalViews    Int      @default(0)
-  totalClicks   Int      @default(0)
-  totalAddToCart Int     @default(0)
-  totalPurchases Int     @default(0)
-  totalSpent    Float    @default(0.0)
-  lastActivity  DateTime @default(now())
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  totalSessions   Int      @default(0)
+  totalPageViews  Int      @default(0)
+  totalTimeSpent  Int      @default(0) // in seconds
+  lastActive      DateTime?
+  favoriteCategory String? @db.VarChar(100)
+  totalSpent      Float    @default(0.0)
+  totalOrders     Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
+  @@index([userId])
+  @@index([lastActive])
   @@index([totalSpent])
-  @@index([lastActivity])
 }
 
 model ChatMessage {
-  id          String   @id
-  userId      String?
-  sessionId   String
-  type        String   @db.VarChar(20) // 'user', 'assistant', 'system'
-  content     String   @db.Text
-  timestamp   DateTime
-  metadata    Json     @default("{}")
+  id        String   @id @default(cuid())
+  userId    String?
+  sessionId String
+  message   String
+  isBot     Boolean  @default(false)
+  timestamp DateTime @default(now())
+  metadata  Json?
 
   @@index([userId])
   @@index([sessionId])
   @@index([timestamp])
-  @@index([userId, sessionId])
 }
+
+// Enums for new models
+enum RewardType {
+  DISCOUNT_COUPON
+  FREE_SHIPPING
+  POINTS_BONUS
+  EXCLUSIVE_ACCESS
+  BADGE
+  ACHIEVEMENT
+}
+
+enum LeaderboardCategory {
+  TOTAL_SPENT
+  ORDERS_COUNT
+  REVIEWS_COUNT
+  LOGIN_STREAK
+  AR_SESSIONS
+  VR_VISITS
+  SOCIAL_SHARES
+}
+
+enum LeaderboardPeriod {
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+  ALL_TIME
+}
+
+enum ARSessionType {
+  PRODUCT_PREVIEW
+  TRY_ON
+  ROOM_PLACEMENT
+  QUICK_LOOK
+}
+
+enum ModelType {
+  GLTF
+  GLB
+  OBJ
+  FBX
+  USDZ
+}
+
+// Update existing Product model

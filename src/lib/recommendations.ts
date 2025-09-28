@@ -1,6 +1,8 @@
 import type { ProductsWithImages, ProductUnit } from '@/types';
 import type { UserPreferences, RecommendationContext } from '@/hooks/useUserBehavior';
 
+export type { RecommendationContext };
+
 export interface RecommendationResult {
   product: ProductsWithImages;
   score: number;
@@ -193,10 +195,10 @@ export class RecommendationEngine {
     // This would typically come from analytics data
     // For now, we'll use a simple heuristic based on product features
     const trendingProducts = this.products
-      .filter(p => p.isAmazingDeal || p.discounts?.length > 0)
+      .filter(p => p.isAmazing || p.discounts?.length > 0)
       .sort((a, b) => {
-        const aScore = (a.isAmazingDeal ? 1 : 0) + (a.discounts?.length || 0);
-        const bScore = (b.isAmazingDeal ? 1 : 0) + (b.discounts?.length || 0);
+        const aScore = (a.isAmazing ? 1 : 0) + (a.discounts?.length || 0);
+        const bScore = (b.isAmazing ? 1 : 0) + (b.discounts?.length || 0);
         return bScore - aScore;
       })
       .slice(0, limit);

@@ -1,3 +1,5 @@
+import { NextRequest } from 'next/server';
+
 export type Locale = 'en' | 'ar';
 
 export interface Translation {

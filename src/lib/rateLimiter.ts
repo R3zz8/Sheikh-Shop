@@ -88,7 +88,7 @@ export function createRateLimiter(config: RateLimitConfig) {
 
 function getDefaultKey(req: NextRequest): string {
   // Use IP address as default key
-  const ip = req.ip || req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
+  const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
   return `rate_limit:${ip}`;
 }
 
@@ -97,7 +97,7 @@ export const authRateLimiter = createRateLimiter({
   windowMs: 15 * 60 * 1000, // 15 minutes
   maxRequests: 5, // 5 attempts per 15 minutes
   keyGenerator: (req) => {
-    const ip = req.ip || req.headers.get('x-forwarded-for') || 'unknown';
+    const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
     return `auth:${ip}`;
   },
 });
@@ -111,7 +111,7 @@ export const cartRateLimiter = createRateLimiter({
   windowMs: 60 * 1000, // 1 minute
   maxRequests: 20, // 20 cart operations per minute
   keyGenerator: (req) => {
-    const ip = req.ip || req.headers.get('x-forwarded-for') || 'unknown';
+    const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
     return `cart:${ip}`;
   },
 });
@@ -120,7 +120,7 @@ export const analyticsRateLimiter = createRateLimiter({
   windowMs: 60 * 1000, // 1 minute
   maxRequests: 200, // 200 analytics events per minute
   keyGenerator: (req) => {
-    const ip = req.ip || req.headers.get('x-forwarded-for') || 'unknown';
+    const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
     return `analytics:${ip}`;
   },
 });
