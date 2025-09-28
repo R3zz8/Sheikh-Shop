@@ -50,10 +50,10 @@ export class SocialManager {
   ): Promise<SocialShare> {
     return await prisma.socialShare.create({
       data: {
-        userId,
-        productId,
+        userId: userId || undefined,
+        productId: productId || undefined,
         platform,
-        shareUrl,
+        shareUrl: shareUrl || null,
         clicks: 0,
       },
     });
@@ -99,7 +99,7 @@ export class SocialManager {
         startDate,
         endDate,
         rewardValue,
-        participants: [],
+        participants: 0,
         isActive: true,
       },
     });
@@ -117,15 +117,15 @@ export class SocialManager {
       return false;
     }
 
-    if (competition.participants.includes(userId)) {
-      return false; // Already joined
+    if (competition.participants > 0) {
+      return false; // Already has participants
     }
 
     await prisma.wishlistCompetition.update({
       where: { id: competitionId },
       data: {
         participants: {
-          push: userId,
+          increment: 1,
         },
       },
     });
@@ -148,7 +148,7 @@ export class SocialManager {
     return await prisma.wishlistCompetition.findMany({
       where: {
         participants: {
-          has: userId,
+          gt: 0,
         },
       },
       orderBy: { createdAt: 'desc' },
@@ -169,7 +169,7 @@ export class SocialManager {
     return await prisma.liveEvent.create({
       data: {
         title,
-        description,
+        description: description || null,
         eventType,
         startTime,
         endTime,
@@ -199,7 +199,7 @@ export class SocialManager {
       return false; // Event hasn't started yet
     }
 
-    if (event.endTime < new Date()) {
+    if (event.endTime && event.endTime < new Date()) {
       return false; // Event has ended
     }
 

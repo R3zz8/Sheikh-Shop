@@ -111,7 +111,7 @@ export default function Rewards({ userId, className = '' }: RewardsProps) {
     }
   };
 
-  const isExpired = (expiresAt?: Date) => {
+  const isExpired = (expiresAt?: Date | null) => {
     if (!expiresAt) return false;
     return new Date() > expiresAt;
   };

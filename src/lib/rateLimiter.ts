@@ -22,7 +22,7 @@ const store: RateLimitStore = {};
 setInterval(() => {
   const now = Date.now();
   Object.keys(store).forEach(key => {
-    if (store[key].resetTime < now) {
+    if (store[key] && store[key].resetTime < now) {
       delete store[key];
     }
   });

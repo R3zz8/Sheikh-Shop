@@ -52,7 +52,7 @@ export default function AISearch({
   const { currency } = useCurrencySafe();
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const debounceRef = useRef<NodeJS.Timeout>();
+  const debounceRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   // Debounced search
   const performSearch = useCallback(async (searchQuery: string) => {
@@ -349,7 +349,7 @@ export default function AISearch({
                         <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                           {result.product.images && result.product.images.length > 0 ? (
                             <img
-                              src={result.product.images[0].image}
+                              src={result.product.images[0]?.image || '/noImage.jpg'}
                               alt={result.product.name}
                               className="w-full h-full object-cover"
                             />

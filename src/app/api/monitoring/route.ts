@@ -50,11 +50,11 @@ export async function GET(request: NextRequest) {
 
       case 'metrics':
         const metricName = searchParams.get('metricName');
-        const startTime = new Date(Date.now() - this.getTimeRangeMs(timeRange));
+        const startTime = new Date(Date.now() - getTimeRangeMs(timeRange));
         const endTime = new Date();
         
         responseData = {
-          metrics: monitoringSystem.getPerformanceMetrics(metricName, {
+          metrics: monitoringSystem.getPerformanceMetrics(metricName || undefined, {
             start: startTime,
             end: endTime,
           }),

@@ -230,11 +230,11 @@ export class VRManager {
       categories.push({
         id: `category_${categoryName.toLowerCase()}`,
         name: categoryName,
-        position,
+        position: position || { x: 0, y: 0, z: 0 },
         rotation: { x: 0, y: 0, z: 0 },
         scale: { x: 1, y: 1, z: 1 },
         hotspot: {
-          position: { x: position.x, y: 1.5, z: position.z },
+          position: { x: position?.x || 0, y: 1.5, z: position?.z || 0 },
           radius: 2,
         },
         products: categoryProducts.map(p => p.id),

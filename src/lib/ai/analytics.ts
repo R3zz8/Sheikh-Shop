@@ -397,7 +397,7 @@ export class SmartAnalytics {
       id: 'product_performance',
       type: 'opportunity',
       title: 'Product Performance Opportunity',
-      description: `${topProduct.name} is performing ${((topPerformance - avgPerformance) / avgPerformance * 100).toFixed(0)}% above average`,
+      description: `${topProduct?.name || 'Product'} is performing ${((topPerformance - avgPerformance) / avgPerformance * 100).toFixed(0)}% above average`,
       impact: 'medium',
       confidence: 0.75,
       actionable: true,
@@ -418,7 +418,7 @@ export class SmartAnalytics {
 
   private analyzeSeasonalOpportunities(): MarketInsight | null {
     const currentMonth = new Date().getMonth();
-    const seasonalImpact = [0.8, 0.9, 1.1, 1.2, 1.3, 1.2, 1.1, 1.0, 1.2, 1.3, 1.4, 1.3][currentMonth];
+    const seasonalImpact = [0.8, 0.9, 1.1, 1.2, 1.3, 1.2, 1.1, 1.0, 1.2, 1.3, 1.4, 1.3][currentMonth] || 1.0;
 
     return {
       id: 'seasonal_opportunity',
@@ -526,7 +526,7 @@ export class SmartAnalytics {
       previous,
       change,
       changePercentage,
-      trend,
+      trend: trend as 'up' | 'down' | 'stable',
     };
   }
 }

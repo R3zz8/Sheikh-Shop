@@ -131,6 +131,11 @@
     "weaviate-ts-client": "^2.2.0",
     "zod": "^3.24.2"
   },
+  "overrides": {
+    "got": "^14.4.9",
+    "nice-color-palettes": "^4.0.0",
+    "three-bmfont-text": "^3.0.1"
+  },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@types/bcrypt": "^6.0.0",

@@ -298,7 +298,7 @@ export default function Chatbot({ onProductClick, className = "" }: ChatbotProps
                         <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100">
                           {product.images && product.images.length > 0 ? (
                             <img
-                              src={product.images[0].image}
+                              src={product.images[0]?.image || '/noImage.jpg'}
                               alt={product.name}
                               className="w-full h-full object-cover"
                             />

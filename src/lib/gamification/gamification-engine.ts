@@ -31,12 +31,17 @@ export interface Reward {
 export interface LeaderboardEntry {
   id: string;
   userId: string;
-  category: 'TOTAL_SPENT' | 'ORDERS_COUNT' | 'REVIEWS_COUNT' | 'LOGIN_STREAK' | 'AR_SESSIONS' | 'VR_VISITS' | 'SOCIAL_SHARES';
+  category: string;
   score: number;
   rank?: number;
-  period: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY' | 'ALL_TIME';
+  period: string;
   createdAt: Date;
   updatedAt: Date;
+  user?: {
+    firstName: string | null;
+    lastName: string | null;
+    username: string | null;
+  };
 }
 
 export interface Achievement {
@@ -347,7 +352,7 @@ export class GamificationEngine {
         type,
         title,
         description,
-        value,
+        value: value || 0,
         code,
         expiresAt,
       },
@@ -430,15 +435,11 @@ export class GamificationEngine {
       orderBy: { score: 'desc' },
       take: limit,
       include: {
-        userProfile: {
-          include: {
-            user: {
-              select: {
-                firstName: true,
-                lastName: true,
-                username: true,
-              },
-            },
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+            username: true,
           },
         },
       },

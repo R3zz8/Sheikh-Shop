@@ -136,7 +136,7 @@ export class ShoppingAssistant {
       message: {
         id: this.generateMessageId(),
         type: 'assistant',
-        content: randomGreeting,
+        content: randomGreeting || 'Hello! How can I help you today?',
         timestamp: new Date(),
         metadata: { action: 'help' },
       },
@@ -374,7 +374,7 @@ export class ShoppingAssistant {
       message: {
         id: this.generateMessageId(),
         type: 'assistant',
-        content: randomGoodbye,
+        content: randomGoodbye || 'Goodbye! Have a great day!',
         timestamp: new Date(),
         metadata: { action: 'help' },
       },
@@ -485,7 +485,7 @@ export class ShoppingAssistant {
     }
     
     if (prices.length === 1) {
-      return { min: 0, max: prices[0] };
+      return { min: 0, max: prices[0] || 0 };
     }
     
     return { min: Math.min(...prices), max: Math.max(...prices) };

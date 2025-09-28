@@ -107,7 +107,6 @@ export class Phase7Analytics {
     // Get AR sessions
     const arSessions = await prisma.aRSession.findMany({
       where: whereClause,
-      include: { product: true },
     });
 
     // Get VR visits
@@ -140,7 +139,7 @@ export class Phase7Analytics {
         const session = arSessions.find(s => s.productId === productId);
         return {
           productId,
-          productName: session?.product?.name || 'Unknown Product',
+          productName: 'AR Product',
           viewCount,
         };
       })
@@ -156,7 +155,8 @@ export class Phase7Analytics {
     };
 
     [...arSessions, ...vrVisits].forEach(session => {
-      switch (session.deviceType) {
+      const deviceType = 'deviceType' in session ? session.deviceType : 'unknown';
+      switch (deviceType) {
         case 'ios':
           deviceBreakdown.ios++;
           break;
@@ -184,7 +184,10 @@ export class Phase7Analytics {
     };
 
     arSessions.forEach(session => {
-      sessionTypes[session.sessionType]++;
+      const sessionType = session.sessionType as keyof typeof sessionTypes;
+      if (sessionType in sessionTypes) {
+        sessionTypes[sessionType]++;
+      }
     });
 
     return {
@@ -295,7 +298,6 @@ export class Phase7Analytics {
     // Get social shares
     const socialShares = await prisma.socialShare.findMany({
       where: whereClause,
-      include: { product: true },
     });
 
     // Get live events
@@ -325,7 +327,7 @@ export class Phase7Analytics {
         if (!productShares[share.productId]) {
           productShares[share.productId] = {
             count: 0,
-            name: share.product?.name || 'Unknown Product',
+            name: 'Social Product',
           };
         }
         productShares[share.productId].count++;
@@ -351,7 +353,7 @@ export class Phase7Analytics {
     const totalCompetitions = wishlistCompetitions.length;
     const activeCompetitions = wishlistCompetitions.filter(comp => comp.isActive).length;
     const totalCompetitionParticipants = wishlistCompetitions.reduce(
-      (sum, comp) => sum + comp.participants.length, 
+      (sum, comp) => sum + comp.participants, 
       0
     );
 

@@ -47,10 +47,10 @@ export class EnhancedAISearchEngine {
   private embeddings: Map<string, number[]> = new Map();
   private synonyms: Map<string, string[]> = new Map();
   private typoCorrections: Map<string, string> = new Map();
-  private fuse: Fuse<ProductsWithImages>;
+  private fuse!: Fuse<ProductsWithImages>;
   private model: tf.LayersModel | null = null;
   private tokenizer: natural.WordTokenizer;
-  private stemmer: natural.PorterStemmer;
+  private stemmer: any;
 
   constructor(products: ProductsWithImages[]) {
     this.products = products;
@@ -263,9 +263,9 @@ export class EnhancedAISearchEngine {
     let normB = 0;
     
     for (let i = 0; i < a.length; i++) {
-      dotProduct += a[i] * b[i];
-      normA += a[i] * a[i];
-      normB += b[i] * b[i];
+      dotProduct += (a[i] || 0) * (b[i] || 0);
+      normA += (a[i] || 0) * (a[i] || 0);
+      normB += (b[i] || 0) * (b[i] || 0);
     }
     
     if (normA === 0 || normB === 0) return 0;
@@ -275,7 +275,7 @@ export class EnhancedAISearchEngine {
 
   // Calculate Levenshtein distance for typo tolerance
   private calculateTypoTolerance(query: string, target: string): number {
-    const distance = levenshtein(query.toLowerCase(), target.toLowerCase());
+    const distance = new levenshtein(query.toLowerCase(), target.toLowerCase()).distance;
     const maxLength = Math.max(query.length, target.length);
     return maxLength > 0 ? 1 - (distance / maxLength) : 0;
   }
@@ -457,8 +457,8 @@ export class EnhancedAISearchEngine {
     return fuseResults.map(result => ({
       product: result.item,
       score: 1 - (result.score || 0), // Convert Fuse score to similarity
-      highlights: result.matches?.map(match => match.value) || [],
-      matchedFields: result.matches?.map(match => match.key) || [],
+      highlights: result.matches?.map(match => match.value).filter(Boolean) || [],
+      matchedFields: result.matches?.map(match => match.key).filter(Boolean) || [],
       semanticScore: 0,
       keywordScore: 1 - (result.score || 0),
       typoTolerance: 1.0,
@@ -568,7 +568,7 @@ export class EnhancedAISearchEngine {
       
       // Brand filter
       if (filters.brand) {
-        const brand = product.name.split(' ')[0].toLowerCase();
+        const brand = (product.name || '').split(' ')[0].toLowerCase();
         if (!brand.includes(filters.brand.toLowerCase())) {
           return false;
         }
@@ -652,7 +652,7 @@ export class EnhancedAISearchEngine {
     // Product name suggestions
     this.products.forEach(product => {
       const productTokens = this.tokenize(product.name);
-      if (productTokens.some(token => token.startsWith(lastToken))) {
+      if (productTokens.some(token => token?.startsWith(lastToken || ''))) {
         suggestions.push({
           text: product.name,
           type: 'product',
@@ -665,7 +665,7 @@ export class EnhancedAISearchEngine {
     // Category suggestions
     const categories = [...new Set(this.products.map(p => p.category))];
     categories.forEach(category => {
-      if (category.toLowerCase().includes(lastToken)) {
+      if (category.toLowerCase().includes(lastToken || '')) {
         suggestions.push({
           text: category,
           type: 'category',
@@ -676,7 +676,7 @@ export class EnhancedAISearchEngine {
     });
     
     // Typo correction suggestions
-    if (this.typoCorrections.has(lastToken)) {
+    if (lastToken && this.typoCorrections.has(lastToken)) {
       const correction = this.typoCorrections.get(lastToken)!;
       suggestions.push({
         text: correction,

@@ -46,28 +46,28 @@ async function testProductAPI(): Promise<TestResult[]> {
 
     // Test 2: Verify unit structure
     const firstProduct = products[0];
-    const firstUnit = firstProduct.units[0];
+    const firstUnit = firstProduct?.units[0];
     
     results.push({
       testName: 'ProductUnit has correct structure',
-      passed: !!(firstUnit.id && firstUnit.name && firstUnit.price && typeof firstUnit.stock === 'number'),
+      passed: !!(firstUnit?.id && firstUnit?.name && firstUnit?.price && typeof firstUnit?.stock === 'number'),
       details: {
-        unitId: firstUnit.id,
-        name: firstUnit.name,
-        price: firstUnit.price,
-        stock: firstUnit.stock,
-        isActive: firstUnit.isActive,
+        unitId: firstUnit?.id,
+        name: firstUnit?.name,
+        price: firstUnit?.price,
+        stock: firstUnit?.stock,
+        isActive: firstUnit?.isActive,
       },
     });
 
     // Test 3: Backward compatibility
     results.push({
       testName: 'Backward compatibility maintained',
-      passed: !!(firstProduct.basePrice && firstProduct.quantity && firstProduct.baseUnitId),
+      passed: !!(firstProduct?.basePrice && firstProduct?.quantity && firstProduct?.baseUnitId),
       details: {
-        basePrice: firstProduct.basePrice,
-        quantity: firstProduct.quantity,
-        baseUnitId: firstProduct.baseUnitId,
+        basePrice: firstProduct?.basePrice,
+        quantity: firstProduct?.quantity,
+        baseUnitId: firstProduct?.baseUnitId,
       },
     });
 
@@ -113,11 +113,11 @@ async function testCartAPI(): Promise<TestResult[]> {
       const firstItem = cartItems[0];
       results.push({
         testName: 'Cart item has correct structure',
-        passed: !!(firstItem.unitId && firstItem.unitPrice && firstItem.product.units.length > 0),
+        passed: !!(firstItem?.unitId && firstItem?.unitPrice && firstItem?.product?.units?.length > 0),
         details: {
-          unitId: firstItem.unitId,
-          unitPrice: firstItem.unitPrice,
-          productUnits: firstItem.product.units.length,
+          unitId: firstItem?.unitId,
+          unitPrice: firstItem?.unitPrice,
+          productUnits: firstItem?.product?.units?.length,
         },
       });
     }
@@ -130,14 +130,14 @@ async function testCartAPI(): Promise<TestResult[]> {
 
     if (products.length > 0) {
       const product = products[0];
-      const unit = product.units[0];
+      const unit = product?.units?.[0];
       
       results.push({
         testName: 'Stock validation logic',
-        passed: typeof unit.stock === 'number' && unit.stock >= 0,
+        passed: typeof unit?.stock === 'number' && unit?.stock >= 0,
         details: {
-          unitStock: unit.stock,
-          legacyStock: product.quantity,
+          unitStock: unit?.stock,
+          legacyStock: product?.quantity,
         },
       });
     }
@@ -167,16 +167,16 @@ async function testAdminAPI(): Promise<TestResult[]> {
 
     if (products.length > 0) {
       const product = products[0];
-      const unit = product.units[0];
+      const unit = product?.units?.[0];
       
       results.push({
         testName: 'ProductUnit CRUD structure',
-        passed: !!(unit.id && unit.productId && unit.name && unit.price),
+        passed: !!(unit?.id && unit?.productId && unit?.name && unit?.price),
         details: {
-          unitId: unit.id,
-          productId: unit.productId,
-          name: unit.name,
-          price: unit.price,
+          unitId: unit?.id,
+          productId: unit?.productId,
+          name: unit?.name,
+          price: unit?.price,
         },
       });
     }
@@ -213,13 +213,13 @@ async function testPricingUtilities(): Promise<TestResult[]> {
     if (units.length > 0) {
       const unit = units[0];
       const testQuantity = 2;
-      const expectedPrice = Number(unit.price) * testQuantity;
+      const expectedPrice = Number(unit?.price) * testQuantity;
       
       results.push({
         testName: 'ProductUnit price calculation',
-        passed: expectedPrice === Number(unit.price) * testQuantity,
+        passed: expectedPrice === Number(unit?.price) * testQuantity,
         details: {
-          unitPrice: Number(unit.price),
+          unitPrice: Number(unit?.price),
           quantity: testQuantity,
           totalPrice: expectedPrice,
         },
@@ -228,13 +228,13 @@ async function testPricingUtilities(): Promise<TestResult[]> {
 
     // Test 2: Test stock validation
     const unit = units[0];
-    const hasStock = unit.stock > 0;
+    const hasStock = (unit?.stock ?? 0) > 0;
     
     results.push({
       testName: 'Stock validation',
       passed: typeof hasStock === 'boolean',
       details: {
-        unitStock: unit.stock,
+        unitStock: unit?.stock,
         hasStock,
       },
     });

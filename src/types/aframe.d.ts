@@ -13,6 +13,7 @@ declare global {
       'a-text': any;
       'a-ring': any;
       'a-gltf-model': any;
+      'model-viewer': any;
     }
   }
 

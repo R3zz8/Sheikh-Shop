@@ -11,7 +11,7 @@ interface ProductCardProps {
 
 export default function ProductCard({ product, className = '', onClick }: ProductCardProps) {
   const imageUrl = product.images && product.images.length > 0 
-    ? product.images[0].image 
+    ? product.images[0]?.image || '/noImage.jpg'
     : '/noImage.jpg';
 
   return (

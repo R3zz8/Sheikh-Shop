@@ -93,12 +93,12 @@ export class SEOContentGenerator {
     const primaryKeyword = keywords[0];
     
     return {
-      title: this.generateTitle(product, primaryKeyword),
-      metaDescription: this.generateMetaDescription(product, primaryKeyword, keywords),
+      title: this.generateTitle(product, primaryKeyword || 'Product'),
+      metaDescription: this.generateMetaDescription(product, primaryKeyword || 'Product', keywords),
       keywords: keywords,
       structuredData: this.generateStructuredData(product),
       altText: this.generateAltText(product),
-      h1: this.generateH1(product, primaryKeyword),
+      h1: this.generateH1(product, primaryKeyword || 'Product'),
       h2: this.generateH2s(product, keywords),
       content: this.generateContent(product, keywords)
     };
@@ -134,7 +134,7 @@ export class SEOContentGenerator {
     ];
     
     const description = templates[Math.floor(Math.random() * templates.length)];
-    return description.length > 160 ? description.substring(0, 157) + '...' : description;
+    return (description || '').length > 160 ? (description || '').substring(0, 157) + '...' : (description || '');
   }
 
   private generateKeywords(product: ProductsWithImages): string[] {
@@ -148,7 +148,7 @@ export class SEOContentGenerator {
     keywords.add(product.category.toLowerCase());
     
     // Add brand
-    const brand = product.name.split(' ')[0].toLowerCase();
+    const brand = (product.name || '').split(' ')[0].toLowerCase();
     keywords.add(brand);
     
     // Add price-related keywords
@@ -362,7 +362,7 @@ export class SEOContentGenerator {
     const metaMatch = content.match(/<meta name="description" content="(.*?)"/i);
     if (metaMatch) {
       const description = metaMatch[1];
-      if (description.length < 120) {
+      if ((description || '').length < 120) {
         suggestions.push({
           type: 'description',
           original: description,
@@ -397,7 +397,7 @@ export class SEOContentGenerator {
 
   // Generate sitemap data
   generateSitemapData(): any[] {
-    const urls = [];
+    const urls: any[] = [];
     
     // Add product pages
     this.products.forEach(product => {

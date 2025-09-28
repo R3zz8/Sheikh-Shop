@@ -171,7 +171,7 @@ export class MultilingualShoppingAssistant {
       response.message.content = this.translateResponse(response.message.content, language);
       
       if (response.suggestions) {
-        response.suggestions = response.suggestions.map(suggestion => 
+        response.suggestions = response.suggestions.map((suggestion: any) => 
           this.translateSuggestion(suggestion, language)
         );
       }

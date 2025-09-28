@@ -162,9 +162,9 @@ export class AISearchEngine {
     let normB = 0;
     
     for (let i = 0; i < a.length; i++) {
-      dotProduct += a[i] * b[i];
-      normA += a[i] * a[i];
-      normB += b[i] * b[i];
+      dotProduct += (a[i] || 0) * (b[i] || 0);
+      normA += (a[i] || 0) * (a[i] || 0);
+      normB += (b[i] || 0) * (b[i] || 0);
     }
     
     if (normA === 0 || normB === 0) return 0;
@@ -377,7 +377,7 @@ export class AISearchEngine {
     // Product name suggestions
     this.products.forEach(product => {
       const productTokens = this.tokenize(product.name);
-      if (productTokens.some(token => token.startsWith(lastToken))) {
+      if (productTokens.some(token => token?.startsWith(lastToken || ''))) {
         suggestions.push({
           text: product.name,
           type: 'product',
@@ -389,7 +389,7 @@ export class AISearchEngine {
     // Category suggestions
     const categories = [...new Set(this.products.map(p => p.category))];
     categories.forEach(category => {
-      if (category.toLowerCase().includes(lastToken)) {
+      if (category.toLowerCase().includes(lastToken || '')) {
         suggestions.push({
           text: category,
           type: 'category',

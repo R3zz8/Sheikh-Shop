@@ -29,6 +29,12 @@ export class Validator {
     return this;
   }
 
+  // Optional field validation (no error if missing)
+  optional(field: string): this {
+    // Optional fields don't add errors if missing
+    return this;
+  }
+
   // String validation
   string(field: string, message?: string): this {
     const value = this.data[field];

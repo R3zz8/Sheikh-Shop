@@ -181,7 +181,7 @@ export class MonitoringSystem {
     const history = this.metrics.get(metricId) || [];
     if (history.length < 2) return 'stable';
     
-    const previousValue = history[history.length - 1].value;
+    const previousValue = history[history.length - 1]?.value || 0;
     const change = ((currentValue - previousValue) / previousValue) * 100;
     
     if (change > 5) return 'up';
@@ -300,7 +300,7 @@ export class MonitoringSystem {
   getLatestMetrics(): PerformanceMetric[] {
     return Array.from(this.metrics.values())
       .map(history => history[history.length - 1])
-      .filter(Boolean);
+      .filter((metric): metric is PerformanceMetric => Boolean(metric));
   }
 
   getErrors(): ErrorLog[] {

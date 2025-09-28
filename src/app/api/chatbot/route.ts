@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
     // Extract price range from message
     const priceMatch = message.match(/\$?(\d+)/g);
     if (priceMatch) {
-      const prices = priceMatch.map(p => parseInt(p.replace('$', '')));
+      const prices = priceMatch.map((p: string) => parseInt(p.replace('$', '')));
       if (prices.length === 1) {
         updatedPreferences.priceRange = { min: 0, max: prices[0] };
       } else if (prices.length >= 2) {

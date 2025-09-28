@@ -52,7 +52,7 @@ export class JWTManager {
       expiresIn: JWT_EXPIRES_IN,
       issuer: 'sheikh-shop',
       audience: 'sheikh-shop-users',
-    });
+    } as jwt.SignOptions);
   }
 
   // Generate refresh token
@@ -66,7 +66,7 @@ export class JWTManager {
       expiresIn: JWT_REFRESH_EXPIRES_IN,
       issuer: 'sheikh-shop',
       audience: 'sheikh-shop-refresh',
-    });
+    } as jwt.SignOptions);
   }
 
   // Verify access token

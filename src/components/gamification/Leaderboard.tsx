@@ -105,7 +105,7 @@ export default function Leaderboard({ className = '' }: LeaderboardProps) {
   };
 
   const getUserDisplayName = (entry: LeaderboardEntry) => {
-    const user = entry.userProfile?.user;
+    const user = entry.user;
     if (user?.firstName && user?.lastName) {
       return `${user.firstName} ${user.lastName}`;
     }
@@ -231,7 +231,7 @@ export default function Leaderboard({ className = '' }: LeaderboardProps) {
                       {getUserDisplayName(entry)}
                     </h3>
                     <p className="text-sm opacity-75">
-                      Level {entry.userProfile?.level || 1}
+                      Level 1
                     </p>
                   </div>
                 </div>
@@ -240,7 +240,7 @@ export default function Leaderboard({ className = '' }: LeaderboardProps) {
               {/* Score */}
               <div className="text-right">
                 <div className="text-xl font-bold">
-                  {formatScore(entry.score, entry.category)}
+                  {formatScore(entry.score, entry.category as any)}
                 </div>
                 <div className="text-sm opacity-75">
                   {entry.period.toLowerCase()}
