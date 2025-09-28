@@ -5,6 +5,7 @@ import { ProductOfferJsonLd } from '@/components/seo/JsonLd';
 import FAQSchema from '@/components/seo/FAQSchema';
 import Breadcrumbs from '@/components/seo/Breadcrumbs';
 import ProductDetailPage from '@/components/product/ProductDetailPage';
+import ProductStructuredData from '@/components/seo/ProductStructuredData';
 import type { ProductsWithImages } from '@/types';
 import { getDefaultCurrency } from '@/lib/currency';
 
@@ -50,6 +51,7 @@ async function getProduct(id: string) {
             include: { 
                 images: true,
                 baseUnit: true,
+                units: true, // Include ProductUnits
                 discounts: true,
             },
         });
@@ -72,12 +74,35 @@ async function getProduct(id: string) {
     }
 }
 
+async function getAllProducts() {
+    try {
+        const products = await prisma.product.findMany({
+            where: { status: 'ACTIVE' },
+            include: { 
+                images: true,
+                baseUnit: true,
+                units: true,
+                discounts: true,
+            },
+            take: 50, // Limit for performance
+        });
+
+        return products;
+    } catch (error) {
+        console.error('Error fetching products:', error);
+        return [];
+    }
+}
+
 async function page({ params }: { params: Promise<{ id: string }> }) {
     try {
         const data = await params;
         const { id } = data;
 
-        const product = await getProduct(id);
+        const [product, allProducts] = await Promise.all([
+            getProduct(id),
+            getAllProducts()
+        ]);
 
         if (!product) {
             notFound();
@@ -97,6 +122,7 @@ async function page({ params }: { params: Promise<{ id: string }> }) {
         return (
             <>
                 <ProductOfferJsonLd product={product} currency={currency} rating={rating} />
+                <ProductStructuredData product={product} />
                 <FAQSchema
                     faqs={[
                         { question: 'What is the origin of this product?', answer: 'We source directly from trusted farms with strict quality standards.' },
@@ -107,7 +133,7 @@ async function page({ params }: { params: Promise<{ id: string }> }) {
                 <div className="container mx-auto px-4 py-6">
                     <Breadcrumbs items={breadcrumbs} className="mb-6" />
                 </div>
-                <ProductDetailPage product={product} />
+                <ProductDetailPage product={product} allProducts={allProducts} />
             </>
         );
     } catch (error) {

@@ -5,13 +5,16 @@ import type { ProductsWithImages } from '@/types';
 import ImageGallery from './ImageGallery';
 import ProductInfo from './ProductInfo';
 import AddToCartButton from './AddToCartButton';
+import ProductRecommendations from '@/components/recommendations/ProductRecommendations';
+import BundleRecommendations from '@/components/recommendations/BundleRecommendations';
 import ErrorBoundary from '@/components/ErrorBoundary';
 
 interface ProductDetailPageProps {
     product: ProductsWithImages;
+    allProducts?: ProductsWithImages[];
 }
 
-export default function ProductDetailPage({ product }: ProductDetailPageProps) {
+export default function ProductDetailPage({ product, allProducts = [] }: ProductDetailPageProps) {
     return (
         <ErrorBoundary>
             <div className="min-h-screen bg-gradient-to-br from-amber-950/95 via-stone-900/95 to-amber-950/95 relative overflow-hidden">
@@ -59,6 +62,61 @@ export default function ProductDetailPage({ product }: ProductDetailPageProps) {
                             </div>
                         </div>
                     </motion.div>
+
+                    {/* Recommendations Section */}
+                    {allProducts.length > 0 && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 50 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.8, delay: 0.4 }}
+                            className="container mx-auto px-4 py-12"
+                        >
+                            <div className="space-y-12">
+                                {/* Bundle Recommendations */}
+                                <ErrorBoundary fallback={
+                                    <div className="bg-white/5 rounded-lg p-8 text-center">
+                                        <p className="text-gray-300">Failed to load bundle recommendations</p>
+                                    </div>
+                                }>
+                                    <BundleRecommendations
+                                        currentProduct={product}
+                                        products={allProducts}
+                                        limit={2}
+                                    />
+                                </ErrorBoundary>
+
+                                {/* Cross-sell Recommendations */}
+                                <ErrorBoundary fallback={
+                                    <div className="bg-white/5 rounded-lg p-8 text-center">
+                                        <p className="text-gray-300">Failed to load recommendations</p>
+                                    </div>
+                                }>
+                                    <ProductRecommendations
+                                        currentProduct={product}
+                                        products={allProducts}
+                                        type="cross_sell"
+                                        limit={4}
+                                        title="You Might Also Like"
+                                    />
+                                </ErrorBoundary>
+
+                                {/* Personalized Recommendations */}
+                                <ErrorBoundary fallback={
+                                    <div className="bg-white/5 rounded-lg p-8 text-center">
+                                        <p className="text-gray-300">Failed to load personalized recommendations</p>
+                                    </div>
+                                }>
+                                    <ProductRecommendations
+                                        currentProduct={product}
+                                        products={allProducts}
+                                        type="personalized"
+                                        limit={6}
+                                        title="Recommended for You"
+                                    />
+                                </ErrorBoundary>
+                            </div>
+                        </motion.div>
+                    )}
                 </div>
             </div>
         </ErrorBoundary>

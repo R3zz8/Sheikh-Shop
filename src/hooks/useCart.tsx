@@ -7,6 +7,7 @@ import { useUser } from './useUser';
 // Types for cart operations
 interface AddToCartParams {
   productId: string;
+  unitId?: string;
   quantity?: number;
 }
 
@@ -69,13 +70,13 @@ export const useCart = () => {
 
   // Add to cart mutation with optimistic updates
   const addToCartMutation = useMutation({
-    mutationFn: async ({ productId, quantity = 1 }: AddToCartParams) => {
-      console.log('🛒 Adding to cart:', { productId, quantity });
+    mutationFn: async ({ productId, unitId, quantity = 1 }: AddToCartParams) => {
+      console.log('🛒 Adding to cart:', { productId, unitId, quantity });
 
       const res = await fetch('/api/cart', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId, quantity }),
+        body: JSON.stringify({ productId, unitId, quantity }),
       });
 
       console.log('📡 Add to cart API response status:', res.status);
@@ -90,8 +91,8 @@ export const useCart = () => {
       console.log('✅ Add to cart successful:', result);
       return result;
     },
-    onMutate: async ({ productId, quantity = 1 }) => {
-      console.log('🔄 Optimistic update for:', { productId, quantity });
+    onMutate: async ({ productId, unitId, quantity = 1 }) => {
+      console.log('🔄 Optimistic update for:', { productId, unitId, quantity });
 
       // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: ['cart'] });
@@ -103,8 +104,10 @@ export const useCart = () => {
       queryClient.setQueryData(['cart'], (old: any) => {
         if (!old) return old;
 
-        // Check if item already exists
-        const existingItemIndex = old.findIndex((item: any) => item.productId === productId);
+        // Check if item already exists (same product + unit combination)
+        const existingItemIndex = old.findIndex((item: any) => 
+          item.productId === productId && item.unitId === (unitId || item.unitId)
+        );
 
         if (existingItemIndex >= 0) {
           // Update existing item quantity
@@ -138,7 +141,9 @@ export const useCart = () => {
       queryClient.setQueryData(['cart'], (old: any) => {
         if (!old) return [data];
 
-        const existingItemIndex = old.findIndex((item: any) => item.productId === data.productId);
+        const existingItemIndex = old.findIndex((item: any) => 
+          item.productId === data.productId && item.unitId === data.unitId
+        );
 
         if (existingItemIndex >= 0) {
           // Replace existing item

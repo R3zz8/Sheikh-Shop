@@ -26,7 +26,8 @@ model Product {
   discounts    Discount[]
   images       Image[]
   baseUnit     Unit            @relation(fields: [baseUnitId], references: [id])
-  units        ProductUnit[]   // New relation to ProductUnit
+  units        ProductUnit[]
+  analytics    ProductAnalytics?
 
   @@index([category])
   @@index([basePrice])
@@ -60,17 +61,14 @@ model Unit {
 model ProductUnit {
   id        String   @id @default(cuid())
   productId String
-  name      String   @db.VarChar(100) // e.g., "1g", "5g", "10g", "box"
-  price     Decimal  @db.Decimal(10, 2) // Unit price with 2 decimal places
-  stock     Int      @default(0) // Per unit stock quantity
+  name      String   @db.VarChar(100)
+  price     Decimal  @db.Decimal(10, 2)
+  stock     Int      @default(0)
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
-  // Relations
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  
-  // Indexes for performance
+
   @@index([productId])
   @@index([isActive])
   @@index([stock])
@@ -319,4 +317,76 @@ enum CommentStatus {
   PENDING
   APPROVED
   REJECTED
+}
+
+model AnalyticsEvent {
+  id          String   @id
+  userId      String?
+  sessionId   String
+  eventType   String   @db.VarChar(50)
+  productId   String?
+  categoryId  String?
+  unitId      String?
+  quantity    Int?
+  price       Float?
+  searchQuery String?
+  pageUrl     String
+  timestamp   DateTime
+  metadata    Json     @default("{}")
+
+  @@index([userId])
+  @@index([sessionId])
+  @@index([eventType])
+  @@index([productId])
+  @@index([timestamp])
+  @@index([userId, eventType])
+  @@index([productId, eventType])
+}
+
+model ProductAnalytics {
+  id              String  @id @default(cuid())
+  productId       String  @unique
+  viewCount       Int     @default(0)
+  clickCount      Int     @default(0)
+  addToCartCount  Int     @default(0)
+  purchaseCount   Int     @default(0)
+  totalRevenue    Float   @default(0.0)
+  lastUpdated     DateTime @default(now()) @updatedAt
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([viewCount])
+  @@index([purchaseCount])
+  @@index([totalRevenue])
+}
+
+model UserAnalytics {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  totalViews    Int      @default(0)
+  totalClicks   Int      @default(0)
+  totalAddToCart Int     @default(0)
+  totalPurchases Int     @default(0)
+  totalSpent    Float    @default(0.0)
+  lastActivity  DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([totalSpent])
+  @@index([lastActivity])
+}
+
+model ChatMessage {
+  id          String   @id
+  userId      String?
+  sessionId   String
+  type        String   @db.VarChar(20) // 'user', 'assistant', 'system'
+  content     String   @db.Text
+  timestamp   DateTime
+  metadata    Json     @default("{}")
+
+  @@index([userId])
+  @@index([sessionId])
+  @@index([timestamp])
+  @@index([userId, sessionId])
 }

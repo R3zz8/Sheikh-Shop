@@ -24,6 +24,7 @@ export default async function Products() {
             },
           },
           baseUnit: true,
+          units: true, // Include ProductUnits
           discounts: {
             where: {
               isActive: true,

@@ -22,6 +22,7 @@ interface Product {
   basePrice: number;
   images: { id: string; image: string }[];
   baseUnit: { id: string; name: string; symbol: string };
+  units: { id: string; name: string; price: number; stock: number; isActive: boolean }[];
   discounts: { id: string; value: number; discountType: string; endDate: string }[];
   isAmazing: boolean;
 }
@@ -293,9 +294,26 @@ export default function AmazingDeals() {
               const hasDiscount = product.discounts && product.discounts.length > 0;
               const discount = hasDiscount ? product.discounts[0] : null;
               const discountPercentage = discount ? discount.value : 0;
-              const finalPrice = hasDiscount 
-                ? product.basePrice * (1 - discountPercentage / 100)
-                : product.basePrice;
+              
+              // Get the lowest available price (from ProductUnits or basePrice)
+              const getLowestPrice = () => {
+                if (product.units && product.units.length > 0) {
+                  const activeUnits = product.units.filter(unit => unit.isActive && unit.stock > 0);
+                  if (activeUnits.length > 0) {
+                    const lowestUnitPrice = Math.min(...activeUnits.map(unit => Number(unit.price)));
+                    return hasDiscount 
+                      ? lowestUnitPrice * (1 - discountPercentage / 100)
+                      : lowestUnitPrice;
+                  }
+                }
+                // Fallback to basePrice
+                return hasDiscount 
+                  ? product.basePrice * (1 - discountPercentage / 100)
+                  : product.basePrice;
+              };
+              
+              const finalPrice = getLowestPrice();
+              const hasMultipleUnits = product.units && product.units.length > 1;
               
               // Convert prices to current currency (basePrice is in EUR)
               const convertedFinalPrice = convertCurrency(finalPrice, 'EUR', currency);
@@ -348,16 +366,16 @@ export default function AmazingDeals() {
                           <div className="space-y-1">
                             <div className="flex items-baseline gap-2">
                               <span className="text-base md:text-lg font-bold text-amber-200">
-                                {formatPrice(convertedFinalPrice, currency)}
+                                {hasMultipleUnits ? 'from ' : ''}{formatPrice(convertedFinalPrice, currency)}
                               </span>
                               {hasDiscount && (
                                 <span className="text-xs md:text-sm text-gray-400 line-through">
-                                  {formatPrice(convertedBasePrice, currency)}
+                                  {hasMultipleUnits ? 'from ' : ''}{formatPrice(convertedBasePrice, currency)}
                                 </span>
                               )}
                             </div>
                             <p className="text-[10px] md:text-xs text-amber-300/80">
-                              per {product.baseUnit.symbol}
+                              {hasMultipleUnits ? 'multiple units available' : `per ${product.baseUnit.symbol}`}
                             </p>
                           </div>
 

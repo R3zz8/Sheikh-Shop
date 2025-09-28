@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { Star, Package, Tag } from 'lucide-react';
-import type { ProductsWithImages, Unit } from '@/types';
+import type { ProductsWithImages, Unit, ProductUnit } from '@/types';
 import AddToCartButton from './AddToCartButton';
 import UnitSelector from '@/components/ui/UnitSelector';
 import DiscountBadge from '@/components/ui/DiscountBadge';
@@ -12,7 +12,8 @@ import { formatPrice } from '@/lib/currency';
 import { useCurrencySafe } from '@/providers/CurrencyProvider';
 import { convertCurrency } from '@/lib/currency';
 import { useUnits } from '@/hooks/useUnits';
-import { useState } from 'react';
+import { useUserBehavior } from '@/hooks/useUserBehavior';
+import { useState, useMemo, useEffect } from 'react';
 
 interface ProductInfoProps {
     product: ProductsWithImages;
@@ -20,13 +21,34 @@ interface ProductInfoProps {
 
 export default function ProductInfo({ product }: ProductInfoProps) {
     const [selectedUnit, setSelectedUnit] = useState<Unit>(product.baseUnit);
+    const [selectedProductUnit, setSelectedProductUnit] = useState<ProductUnit | null>(null);
     const { currency } = useCurrencySafe();
     const [selectedQuantity, setSelectedQuantity] = useState(1);
     const { units: availableUnits, loading: unitsLoading, error: unitsError } = useUnits();
+    const { trackProductView, trackProductClick } = useUserBehavior();
+
+    // Track product view on component mount
+    useEffect(() => {
+        trackProductView(product.id, product.category);
+    }, [product.id, product.category, trackProductView]);
+
+    // Get available product units (filtered by active status)
+    const availableProductUnits = useMemo(() => {
+        const units = product.units?.filter(unit => unit.isActive) || [];
+        // Sort by featured first, then by price
+        return units.sort((a, b) => {
+            if ((a as any).isFeatured && !(b as any).isFeatured) return -1;
+            if (!(a as any).isFeatured && (b as any).isFeatured) return 1;
+            return Number(a.price) - Number(b.price);
+        });
+    }, [product.units]);
+
+    // Determine if we should use ProductUnit system or legacy system
+    const useProductUnits = availableProductUnits.length > 0;
 
     // Calculate pricing with discounts (basePrice is in EUR)
     const pricing = calculateFinalPricing(
-        product.basePrice,
+        useProductUnits && selectedProductUnit ? Number(selectedProductUnit.price) : product.basePrice,
         selectedUnit,
         selectedQuantity,
         product.discounts
@@ -57,7 +79,16 @@ export default function ProductInfo({ product }: ProductInfoProps) {
         return { text: 'In Stock', color: 'text-green-400' };
     };
 
-    const stockStatus = getStockStatus(product.quantity);
+    // Get stock status based on selected unit
+    const getCurrentStock = () => {
+        if (useProductUnits && selectedProductUnit) {
+            return selectedProductUnit.stock;
+        }
+        return product.quantity;
+    };
+
+    const currentStock = getCurrentStock();
+    const stockStatus = getStockStatus(currentStock);
 
     return (
         <div className="space-y-4 md:space-y-8">
@@ -181,7 +212,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                 </span>
                 <span className="text-gray-400">•</span>
                 <span className="text-gray-300">
-                    {product.quantity} units available
+                    {currentStock} units available
                 </span>
             </motion.div>
 
@@ -191,31 +222,190 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.55 }}
             >
-                {unitsLoading ? (
-                    <div className="bg-white/5 backdrop-blur-sm border border-amber-200/20 rounded-lg p-6">
-                        <div className="animate-pulse">
-                            <div className="h-4 bg-amber-200/20 rounded w-1/4 mb-4"></div>
-                            <div className="h-8 bg-amber-200/20 rounded w-1/2 mb-2"></div>
-                            <div className="h-4 bg-amber-200/20 rounded w-3/4"></div>
+                {useProductUnits ? (
+                    // ProductUnit-based selection with enhanced UX
+                    <div className="space-y-4">
+                        <div className="bg-white/5 backdrop-blur-sm border border-amber-200/20 rounded-lg p-6">
+                            <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                                <Package className="w-5 h-5 text-amber-400" />
+                                Choose Your Size
+                            </h3>
+                            <div className="space-y-3">
+                                {availableProductUnits.map((productUnit, index) => {
+                                    const isSelected = selectedProductUnit?.id === productUnit.id;
+                                    const isOutOfStock = productUnit.stock === 0;
+                                    const isLowStock = productUnit.stock > 0 && productUnit.stock <= 5;
+                                    const isPopular = (productUnit as any).isFeatured || index === 0; // Featured unit or first unit is popular
+                                    
+                                    return (
+                                        <div
+                                            key={productUnit.id}
+                                            className={`relative p-4 rounded-xl border cursor-pointer transition-all duration-300 ${
+                                                isSelected
+                                                    ? 'border-amber-400 bg-amber-500/15 shadow-lg shadow-amber-500/20'
+                                                    : isOutOfStock
+                                                        ? 'border-red-200/20 bg-red-500/5 opacity-60 cursor-not-allowed'
+                                                        : 'border-amber-200/20 bg-white/5 hover:border-amber-300/40 hover:bg-white/8 hover:shadow-md'
+                                            }`}
+                                            onClick={() => {
+                                                if (!isOutOfStock) {
+                                                    setSelectedProductUnit(productUnit);
+                                                    trackProductClick(product.id, product.category, productUnit.id);
+                                                }
+                                            }}
+                                        >
+                                            {/* Popular Badge */}
+                                            {isPopular && (
+                                                <div className="absolute -top-2 -right-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg">
+                                                    POPULAR
+                                                </div>
+                                            )}
+                                            
+                                            {/* Radio Button */}
+                                            <div className="flex items-start gap-4">
+                                                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 ${
+                                                    isSelected 
+                                                        ? 'border-amber-400 bg-amber-400' 
+                                                        : 'border-amber-200/40'
+                                                }`}>
+                                                    {isSelected && (
+                                                        <div className="w-2 h-2 bg-white rounded-full"></div>
+                                                    )}
+                                                </div>
+                                                
+                                                <div className="flex-1">
+                                                    <div className="flex justify-between items-start">
+                                                        <div>
+                                                            <div className="font-semibold text-white text-lg">
+                                                                {productUnit.name}
+                                                            </div>
+                                                            <div className="text-amber-200 font-medium">
+                                                                {formatPrice(convertCurrency(Number(productUnit.price), 'EUR', currency), currency)}
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        {/* Stock Status Badge */}
+                                                        <div className="flex items-center gap-2">
+                                                            {isOutOfStock ? (
+                                                                <span className="flex items-center gap-1 text-red-400 text-sm font-medium">
+                                                                    <span className="w-2 h-2 bg-red-400 rounded-full"></span>
+                                                                    Out of Stock
+                                                                </span>
+                                                            ) : isLowStock ? (
+                                                                <span className="flex items-center gap-1 text-yellow-400 text-sm font-medium">
+                                                                    <span className="w-2 h-2 bg-yellow-400 rounded-full"></span>
+                                                                    Low Stock
+                                                                </span>
+                                                            ) : (
+                                                                <span className="flex items-center gap-1 text-green-400 text-sm font-medium">
+                                                                    <span className="w-2 h-2 bg-green-400 rounded-full"></span>
+                                                                    In Stock
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    {/* Stock Count */}
+                                                    {!isOutOfStock && (
+                                                        <div className="text-gray-400 text-sm mt-1">
+                                                            {productUnit.stock} units available
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         </div>
-                    </div>
-                ) : unitsError ? (
-                    <div className="bg-red-500/10 backdrop-blur-sm border border-red-500/20 rounded-lg p-4">
-                        <p className="text-red-300 text-sm">
-                            Error loading units: {unitsError}. Using default units.
-                        </p>
+                        
+                        {/* Enhanced Quantity selector for selected unit */}
+                        {selectedProductUnit && (
+                            <div className="bg-white/5 backdrop-blur-sm border border-amber-200/20 rounded-lg p-4">
+                                <div className="flex items-center justify-between mb-3">
+                                    <label className="text-sm font-medium text-gray-200">
+                                        Quantity
+                                    </label>
+                                    <span className="text-xs text-gray-400">
+                                        Max: {selectedProductUnit.stock} units
+                                    </span>
+                                </div>
+                                
+                                <div className="flex items-center gap-3">
+                                    <button
+                                        onClick={() => setSelectedQuantity(Math.max(1, selectedQuantity - 1))}
+                                        disabled={selectedQuantity <= 1}
+                                        className="w-10 h-10 rounded-lg border border-amber-200/20 bg-white/8 text-white hover:bg-white/12 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
+                                    >
+                                        −
+                                    </button>
+                                    
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        max={selectedProductUnit.stock}
+                                        value={selectedQuantity}
+                                        onChange={(e) => setSelectedQuantity(Math.max(1, Math.min(selectedProductUnit.stock, parseInt(e.target.value) || 1)))}
+                                        className="w-20 px-3 py-2 bg-white/8 border border-amber-200/20 rounded-lg text-white text-center focus:ring-2 focus:ring-amber-400 focus:border-amber-300/40"
+                                    />
+                                    
+                                    <button
+                                        onClick={() => setSelectedQuantity(Math.min(selectedProductUnit.stock, selectedQuantity + 1))}
+                                        disabled={selectedQuantity >= selectedProductUnit.stock}
+                                        className="w-10 h-10 rounded-lg border border-amber-200/20 bg-white/8 text-white hover:bg-white/12 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
+                                    >
+                                        +
+                                    </button>
+                                </div>
+                                
+                                {/* Quick quantity buttons */}
+                                <div className="flex gap-2 mt-3">
+                                    {[1, 3, 5].map(qty => (
+                                        <button
+                                            key={qty}
+                                            onClick={() => setSelectedQuantity(Math.min(selectedProductUnit.stock, qty))}
+                                            disabled={qty > selectedProductUnit.stock}
+                                            className={`px-3 py-1 text-xs rounded-full border transition-colors ${
+                                                selectedQuantity === qty
+                                                    ? 'border-amber-400 bg-amber-500/20 text-amber-200'
+                                                    : 'border-amber-200/20 bg-white/5 text-gray-300 hover:bg-white/8 disabled:opacity-50'
+                                            }`}
+                                        >
+                                            {qty}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 ) : (
-                    <UnitSelector
-                        units={availableUnits}
-                        basePrice={product.basePrice}
-                        baseUnit={product.baseUnit}
-                        selectedUnit={selectedUnit}
-                        selectedQuantity={selectedQuantity}
-                        onUnitChange={setSelectedUnit}
-                        onQuantityChange={setSelectedQuantity}
-                        showPriceCalculation={true}
-                    />
+                    // Legacy unit selection
+                    unitsLoading ? (
+                        <div className="bg-white/5 backdrop-blur-sm border border-amber-200/20 rounded-lg p-6">
+                            <div className="animate-pulse">
+                                <div className="h-4 bg-amber-200/20 rounded w-1/4 mb-4"></div>
+                                <div className="h-8 bg-amber-200/20 rounded w-1/2 mb-2"></div>
+                                <div className="h-4 bg-amber-200/20 rounded w-3/4"></div>
+                            </div>
+                        </div>
+                    ) : unitsError ? (
+                        <div className="bg-red-500/10 backdrop-blur-sm border border-red-500/20 rounded-lg p-4">
+                            <p className="text-red-300 text-sm">
+                                Error loading units: {unitsError}. Using default units.
+                            </p>
+                        </div>
+                    ) : (
+                        <UnitSelector
+                            units={availableUnits}
+                            basePrice={product.basePrice}
+                            baseUnit={product.baseUnit}
+                            selectedUnit={selectedUnit}
+                            selectedQuantity={selectedQuantity}
+                            onUnitChange={setSelectedUnit}
+                            onQuantityChange={setSelectedQuantity}
+                            showPriceCalculation={true}
+                        />
+                    )
                 )}
             </motion.div>
 
@@ -271,9 +461,38 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                     product={product} 
                     selectedUnit={selectedUnit}
                     selectedQuantity={selectedQuantity}
+                    selectedProductUnit={selectedProductUnit}
                     pricing={pricing}
                 />
             </motion.div>
+
+            {/* Stock Warning */}
+            {currentStock <= 5 && currentStock > 0 && (
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.85 }}
+                    className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3"
+                >
+                    <p className="text-yellow-200 text-sm text-center">
+                        ⚠️ Only {currentStock} units left in stock!
+                    </p>
+                </motion.div>
+            )}
+
+            {/* Out of Stock Message */}
+            {currentStock === 0 && (
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.85 }}
+                    className="bg-red-500/10 border border-red-500/20 rounded-lg p-3"
+                >
+                    <p className="text-red-200 text-sm text-center">
+                        ❌ This product is currently out of stock
+                    </p>
+                </motion.div>
+            )}
 
             {/* Additional Info */}
             <motion.div

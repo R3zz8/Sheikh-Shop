@@ -1,129 +1,179 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { createAISearchEngine, type SearchQuery } from '@/lib/ai/search';
+import { withRateLimit } from '@/lib/rateLimiter';
+import { apiRateLimiter } from '@/lib/rateLimiter';
+import { withCache } from '@/lib/cache';
+import { cacheConfigs } from '@/lib/cache';
+
+// Cache search results for 5 minutes
+const searchWithCache = withCache({
+  maxAge: 300,
+  staleWhileRevalidate: 600,
+  tags: ['search', 'products'],
+});
+
+// Rate limit search requests
+const rateLimitedSearch = withRateLimit(apiRateLimiter);
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const query = searchParams.get('q');
+    const query = searchParams.get('q') || '';
+    const category = searchParams.get('category') || undefined;
+    const minPrice = searchParams.get('minPrice') ? parseFloat(searchParams.get('minPrice')!) : undefined;
+    const maxPrice = searchParams.get('maxPrice') ? parseFloat(searchParams.get('maxPrice')!) : undefined;
+    const inStock = searchParams.get('inStock') === 'true' ? true : undefined;
+    const sortBy = (searchParams.get('sortBy') as any) || 'relevance';
+    const limit = parseInt(searchParams.get('limit') || '20');
+    const offset = parseInt(searchParams.get('offset') || '0');
 
-    if (!query || query.trim().length < 2) {
-      return NextResponse.json({ results: [] });
+    if (!query.trim()) {
+      return NextResponse.json(
+        { error: 'Search query is required' },
+        { status: 400 }
+      );
     }
 
-    const searchTerm = query.trim().toLowerCase();
-    const results: Array<{
-      id: string;
-      title: string;
-      type: 'product' | 'article' | 'category';
-      url: string;
-      description?: string;
-      image?: string;
-    }> = [];
+    // Apply rate limiting
+    const rateLimitResponse = apiRateLimiter(request);
+    if (rateLimitResponse && rateLimitResponse.status === 429) {
+      return rateLimitResponse;
+    }
 
-    // Search products
+    // Fetch products from database
     const products = await prisma.product.findMany({
-      where: {
-        AND: [
-          { status: 'ACTIVE' },
-          {
-            OR: [
-              { name: { contains: searchTerm, mode: 'insensitive' } },
-              { description: { contains: searchTerm, mode: 'insensitive' } },
-              { category: { equals: searchTerm.toUpperCase() as any } },
-            ],
-          },
-        ],
-      },
+      where: { status: 'ACTIVE' },
       include: {
-        images: {
-          take: 1,
-          select: { image: true },
-        },
+        images: true,
+        baseUnit: true,
+        units: true,
+        discounts: true,
       },
-      take: 5,
+      take: 1000, // Limit for performance
     });
 
-    // Add products to results
-    products.forEach(product => {
-      results.push({
-        id: product.id,
-        title: product.name,
-        type: 'product',
-        url: `/products/${product.id}`,
-        description: product.description || `Premium ${product.category.toLowerCase()} from Sheikh Shop`,
-        image: (product as any).images?.[0]?.image || '/noImage.jpg',
-      });
-    });
+    // Create search engine
+    const searchEngine = createAISearchEngine(products);
 
-    // Search articles
-    const articles = await prisma.article.findMany({
-      where: {
-        AND: [
-          { status: 'PUBLISHED' },
-          {
-            OR: [
-              { title: { contains: searchTerm, mode: 'insensitive' } },
-              { summary: { contains: searchTerm, mode: 'insensitive' } },
-              { content: { contains: searchTerm, mode: 'insensitive' } },
-              { tags: { has: searchTerm } },
-            ],
+    // Build search query
+    const searchQuery: SearchQuery = {
+      query: query.trim(),
+      filters: {
+        ...(category && { category }),
+        ...(minPrice !== undefined || maxPrice !== undefined) && {
+          priceRange: {
+            min: minPrice || 0,
+            max: maxPrice || 10000,
           },
-        ],
+        },
+        ...(inStock !== undefined && { inStock }),
       },
-      select: {
-        id: true,
-        title: true,
-        summary: true,
-        slug: true,
-        imageUrl: true,
-      },
-      take: 3,
-    });
+      sortBy,
+      limit,
+      offset,
+    };
 
-    // Add articles to results
-    articles.forEach(article => {
-      results.push({
-        id: article.id,
-        title: article.title,
-        type: 'article',
-        url: `/article/${article.slug}`,
-        description: article.summary,
-        image: article.imageUrl || '/og-image.jpg',
-      });
-    });
+    // Perform search
+    const results = searchEngine.search(searchQuery);
 
-    // Add category suggestions
-    const categories = ['HONEY', 'SAFFRON', 'DATES', 'OTHERS'];
-    const matchingCategories = categories.filter(category => 
-      category.toLowerCase().includes(searchTerm)
-    );
+    // Get suggestions
+    const suggestions = searchEngine.getSuggestions(query, 5);
 
-    matchingCategories.forEach(category => {
-      results.push({
-        id: category,
-        title: `${category.charAt(0).toUpperCase() + category.slice(1).toLowerCase()} Collection`,
-        type: 'category',
-        url: `/categories/${category.toLowerCase()}`,
-        description: `Browse our premium ${category.toLowerCase()} collection`,
-        image: `/${category.toLowerCase()}.jpg`,
-      });
-    });
-
-    // Sort results by relevance (products first, then articles, then categories)
-    const sortedResults = results.sort((a, b) => {
-      const typeOrder: Record<string, number> = { product: 0, article: 1, category: 2 };
-      return (typeOrder[a.type] || 0) - (typeOrder[b.type] || 0);
-    });
-
-    return NextResponse.json({ 
-      results: sortedResults.slice(0, 8), // Limit to 8 results
-      total: sortedResults.length,
+    return NextResponse.json({
+      query: query.trim(),
+      results: results.map(result => ({
+        product: result.product,
+        score: result.score,
+        highlights: result.highlights,
+        matchedFields: result.matchedFields,
+        semanticScore: result.semanticScore,
+        keywordScore: result.keywordScore,
+      })),
+      suggestions,
+      total: results.length,
+      limit,
+      offset,
     });
 
   } catch (error) {
-    console.error('Search API error:', error);
+    console.error('Search error:', error);
     return NextResponse.json(
-      { error: 'Search failed', results: [] },
+      { error: 'Search failed' },
+      { status: 500 }
+    );
+  }
+}
+
+// POST endpoint for advanced search
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { query, filters, sortBy, limit, offset } = body;
+
+    if (!query || !query.trim()) {
+      return NextResponse.json(
+        { error: 'Search query is required' },
+        { status: 400 }
+      );
+    }
+
+    // Apply rate limiting
+    const rateLimitResponse = apiRateLimiter(request);
+    if (rateLimitResponse && rateLimitResponse.status === 429) {
+      return rateLimitResponse;
+    }
+
+    // Fetch products from database
+    const products = await prisma.product.findMany({
+      where: { status: 'ACTIVE' },
+      include: {
+        images: true,
+        baseUnit: true,
+        units: true,
+        discounts: true,
+      },
+      take: 1000, // Limit for performance
+    });
+
+    // Create search engine
+    const searchEngine = createAISearchEngine(products);
+
+    // Build search query
+    const searchQuery: SearchQuery = {
+      query: query.trim(),
+      filters,
+      sortBy: sortBy || 'relevance',
+      limit: limit || 20,
+      offset: offset || 0,
+    };
+
+    // Perform search
+    const results = searchEngine.search(searchQuery);
+
+    // Get suggestions
+    const suggestions = searchEngine.getSuggestions(query, 5);
+
+    return NextResponse.json({
+      query: query.trim(),
+      results: results.map(result => ({
+        product: result.product,
+        score: result.score,
+        highlights: result.highlights,
+        matchedFields: result.matchedFields,
+        semanticScore: result.semanticScore,
+        keywordScore: result.keywordScore,
+      })),
+      suggestions,
+      total: results.length,
+      limit: limit || 20,
+      offset: offset || 0,
+    });
+
+  } catch (error) {
+    console.error('Advanced search error:', error);
+    return NextResponse.json(
+      { error: 'Advanced search failed' },
       { status: 500 }
     );
   }

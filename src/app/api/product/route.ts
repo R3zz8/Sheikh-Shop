@@ -54,13 +54,9 @@ export async function GET(req: NextRequest) {
     const totalPages = Math.ceil(total / limit);
 
     // Transform products to include formatted units
-    const productsWithUnits: ProductWithUnits[] = products.map(product => ({
-      id: product.id,
-      name: product.name,
-      basePrice: product.basePrice,
+    const productsWithUnits = products.map(product => ({
+      ...product,
       units: product.units.map(unit => formatProductUnitResponse(unit)),
-      // Keep backward compatibility - include original product data
-      ...product
     }));
 
     return NextResponse.json({

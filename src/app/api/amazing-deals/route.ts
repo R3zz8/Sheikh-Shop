@@ -32,13 +32,9 @@ export async function GET(req: NextRequest) {
     });
 
     // Transform products to include formatted units
-    const amazingDealsWithUnits: ProductWithUnits[] = amazingDeals.map(product => ({
-      id: product.id,
-      name: product.name,
-      basePrice: product.basePrice,
+    const amazingDealsWithUnits = amazingDeals.map(product => ({
+      ...product,
       units: product.units.map(unit => formatProductUnitResponse(unit)),
-      // Keep backward compatibility - include original product data
-      ...product
     }));
 
     return NextResponse.json({

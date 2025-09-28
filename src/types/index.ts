@@ -11,7 +11,12 @@ export type Product = Prisma.ProductGetPayload<{
 }>;
 
 export type Unit = Prisma.UnitGetPayload<{}>;
-export type ProductUnit = Prisma.ProductUnitGetPayload<{}>;
+export type ProductUnit = Prisma.ProductUnitGetPayload<{}> & {
+  isFeatured?: boolean;
+  discountPercentage?: number;
+  discountStartDate?: string;
+  discountEndDate?: string;
+};
 export type Discount = Prisma.DiscountGetPayload<{}>;
 export type Image = Prisma.ImageGetPayload<{}>;
 export type User = Prisma.UserGetPayload<{}>;

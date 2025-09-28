@@ -3,16 +3,19 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui';
 import { ShoppingCart, Check, Loader2 } from 'lucide-react';
-import type { ProductsWithImages, Unit, ProductPricing } from '@/types';
+import type { ProductsWithImages, Unit, ProductPricing, ProductUnit } from '@/types';
 import { useCart } from '@/hooks/useCart';
+import { useUserBehavior } from '@/hooks/useUserBehavior';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatPrice, convertCurrency } from '@/lib/currency';
 import { useCurrencySafe } from '@/providers/CurrencyProvider';
+import UpsellSuggestions from './UpsellSuggestions';
 
 interface AddToCartButtonProps {
     product: ProductsWithImages;
     selectedUnit: Unit;
     selectedQuantity: number;
+    selectedProductUnit?: ProductUnit | null;
     pricing: ProductPricing;
 }
 
@@ -20,18 +23,29 @@ export default function AddToCartButton({
     product, 
     selectedUnit, 
     selectedQuantity, 
+    selectedProductUnit,
     pricing 
 }: AddToCartButtonProps) {
     const { currency } = useCurrencySafe();
     const { addToCartMutation } = useCart();
+    const { trackAddToCart } = useUserBehavior();
     const [showSuccess, setShowSuccess] = useState(false);
 
     const handleAddToCart = async () => {
         try {
             await addToCartMutation.mutateAsync({
                 productId: product.id,
+                unitId: selectedProductUnit?.id || product.baseUnitId,
                 quantity: selectedQuantity
             });
+
+            // Track add to cart event
+            trackAddToCart(
+                product.id,
+                selectedProductUnit?.id || product.baseUnitId,
+                selectedQuantity,
+                selectedProductUnit ? Number(selectedProductUnit.price) : product.basePrice
+            );
 
             // Show success state
             setShowSuccess(true);
@@ -42,7 +56,16 @@ export default function AddToCartButton({
         }
     };
 
-    const isDisabled = addToCartMutation.isPending || product.quantity === 0;
+    // Determine if button should be disabled
+    const getCurrentStock = () => {
+        if (selectedProductUnit) {
+            return selectedProductUnit.stock;
+        }
+        return product.quantity;
+    };
+
+    const currentStock = getCurrentStock();
+    const isDisabled = addToCartMutation.isPending || currentStock === 0;
 
     return (
         <div className="space-y-4">
@@ -89,7 +112,7 @@ export default function AddToCartButton({
                 </AnimatePresence>
             </Button>
 
-            {/* Pricing Summary */}
+            {/* Enhanced Pricing Summary */}
             <div className="bg-white/5 backdrop-blur-sm border border-amber-200/20 rounded-lg p-4 space-y-3">
                 <h4 className="text-white font-semibold text-center">Order Summary</h4>
                 
@@ -100,16 +123,23 @@ export default function AddToCartButton({
                     </div>
                     
                     <div className="flex justify-between">
-                        <span className="text-gray-300">Unit:</span>
-                        <span className="text-white">{selectedQuantity} {selectedUnit.symbol}</span>
+                        <span className="text-gray-300">Size:</span>
+                        <span className="text-white font-medium">
+                            {selectedProductUnit?.name || selectedUnit.symbol}
+                        </span>
                     </div>
                     
                     <div className="flex justify-between">
-                        <span className="text-gray-300">Unit Price:</span>
-                        <span className="text-white">
-                            {pricing.finalPrice / selectedQuantity > 0 
-                                ? formatPrice(convertCurrency(pricing.finalPrice / selectedQuantity, 'EUR', currency), currency)
-                                : 'Free'
+                        <span className="text-gray-300">Quantity:</span>
+                        <span className="text-white">{selectedQuantity}</span>
+                    </div>
+                    
+                    <div className="flex justify-between">
+                        <span className="text-gray-300">Price per unit:</span>
+                        <span className="text-amber-200 font-medium">
+                            {selectedProductUnit 
+                                ? formatPrice(convertCurrency(Number(selectedProductUnit.price), 'EUR', currency), currency)
+                                : formatPrice(convertCurrency(pricing.finalPrice / selectedQuantity, 'EUR', currency), currency)
                             }
                         </span>
                     </div>
@@ -138,17 +168,26 @@ export default function AddToCartButton({
                 </div>
             </div>
 
+            {/* Upsell Suggestions */}
+            {selectedProductUnit && product.units && product.units.length > 1 && (
+                <UpsellSuggestions 
+                    product={product} 
+                    selectedUnit={selectedProductUnit} 
+                    currency={currency}
+                />
+            )}
+
             {/* Stock Warning */}
-            {product.quantity <= 5 && product.quantity > 0 && (
+            {currentStock <= 5 && currentStock > 0 && (
                 <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3">
                     <p className="text-yellow-200 text-sm text-center">
-                        ⚠️ Only {product.quantity} units left in stock!
+                        ⚠️ Only {currentStock} units left in stock!
                     </p>
                 </div>
             )}
 
             {/* Out of Stock Message */}
-            {product.quantity === 0 && (
+            {currentStock === 0 && (
                 <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
                     <p className="text-red-200 text-sm text-center">
                         ❌ This product is currently out of stock

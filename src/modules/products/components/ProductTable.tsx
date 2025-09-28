@@ -383,6 +383,7 @@ const ProductTable = (props: {
                   <ArrowUpDown className="w-4 h-4" />
                 </Button>
               </TableHead>
+              <TableHead className="font-semibold text-center">Units</TableHead>
               <TableHead className="font-semibold text-center">Status</TableHead>
               <TableHead className="font-semibold text-center">Image</TableHead>
               {canEdit && (
@@ -429,6 +430,36 @@ const ProductTable = (props: {
                       }`}>
                       {product.quantity} in stock
                     </span>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <div className="flex flex-col items-center space-y-1">
+                      <span className="text-sm font-medium text-gray-900">
+                        {product.units?.length || 0} units
+                      </span>
+                      {product.units && product.units.length > 0 && (
+                        <div className="flex flex-wrap gap-1 justify-center">
+                          {product.units.slice(0, 2).map((unit, index) => (
+                            <span
+                              key={unit.id}
+                              className={`px-2 py-1 rounded text-xs ${
+                                unit.isActive && unit.stock > 0
+                                  ? 'bg-green-100 text-green-800'
+                                  : unit.isActive
+                                    ? 'bg-yellow-100 text-yellow-800'
+                                    : 'bg-gray-100 text-gray-800'
+                              }`}
+                            >
+                              {unit.name}
+                            </span>
+                          ))}
+                          {product.units.length > 2 && (
+                            <span className="text-xs text-gray-500">
+                              +{product.units.length - 2} more
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell className="text-center">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(product.status as any)}`}>
@@ -479,7 +510,7 @@ const ProductTable = (props: {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={canEdit ? 8 : 7} className="text-center py-12">
+                <TableCell colSpan={canEdit ? 9 : 8} className="text-center py-12">
                   <div className="text-gray-500">
                     {searchTerm || selectedCategory !== 'all' || selectedStatus !== 'all' ? (
                       <>
