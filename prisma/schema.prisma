@@ -27,7 +27,7 @@ model Product {
   images       Image[]
   baseUnit     Unit            @relation(fields: [baseUnitId], references: [id])
   units        ProductUnit[]
-  analytics    ProductAnalytics?
+  Review       Review[]
 
   @@index([category])
   @@index([basePrice])
@@ -154,15 +154,15 @@ model User {
   comments                      Comment[]
   emailVerifications            EmailVerification[]
   recoveryCodes                 RecoveryCode[]
+  Review                        Review[]
   sessions                      Session[]
+  socialShares                  SocialShare[]
+  rewards                       Reward[]
   analyticsEvents               AnalyticsEvent[]
-  userAnalytics                 UserAnalytics?
+  userAnalytics                 UserAnalytics[]
   chatMessages                  ChatMessage[]
   userProfile                   UserProfile?
-  rewards                       Reward[]
-  leaderboardEntry              LeaderboardEntry?
-  socialShares                  SocialShare[]
-  wishlistCompetitions          WishlistCompetition[]
+  leaderboardEntries            LeaderboardEntry[]
   arSessions                    ARSession[]
   vrStoreVisits                 VRStoreVisit[]
 
@@ -284,6 +284,24 @@ model Comment {
   @@index([status])
 }
 
+model Review {
+  id        String   @id
+  productId String
+  userId    String
+  rating    Int      @default(5)
+  comment   String
+  userName  String   @db.VarChar(255)
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  Product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([createdAt])
+  @@index([productId])
+  @@index([rating])
+  @@index([userId])
+}
+
 enum UserRole {
   USER
   ADMIN
@@ -329,80 +347,131 @@ enum CommentStatus {
   REJECTED
 }
 
-model AnalyticsEvent {
-  id          String   @id @default(cuid())
-  userId      String?
-  sessionId   String   @db.VarChar(255)
-  eventType   String   @db.VarChar(50)
-  productId   String?
-  categoryId  String?
-  unitId      String?
-  quantity    Int?
-  price       Float?
-  searchQuery String?
-  pageUrl     String   @db.VarChar(500)
-  timestamp   DateTime @default(now())
-  metadata    Json?
-  user        User?    @relation(fields: [userId], references: [id])
+model SocialShare {
+  id        String   @id @default(cuid())
+  userId    String?
+  productId String?
+  platform  String   @db.VarChar(50)
+  shareUrl  String?  @db.VarChar(500)
+  content   String   @db.Text
+  clicks    Int      @default(0)
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
-  @@index([sessionId])
-  @@index([eventType])
   @@index([productId])
+  @@index([platform])
+  @@index([createdAt])
+}
+
+model WishlistCompetition {
+  id           String    @id @default(cuid())
+  title        String    @db.VarChar(255)
+  description  String?   @db.Text
+  startDate    DateTime
+  endDate      DateTime?
+  isActive     Boolean   @default(true)
+  rewardValue  Float     @default(0.0)
+  participants Int       @default(0)
+  winnerId     String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([isActive])
+  @@index([startDate])
+  @@index([endDate])
+  @@index([createdAt])
+}
+
+model LiveEvent {
+  id                 String    @id @default(cuid())
+  title              String    @db.VarChar(255)
+  description        String?   @db.Text
+  eventType          String    @db.VarChar(50)
+  startTime          DateTime
+  endTime            DateTime?
+  maxParticipants    Int       @default(100)
+  currentParticipants Int     @default(0)
+  isActive           Boolean   @default(true)
+  meetingUrl         String?   @db.VarChar(500)
+  vrEnvironmentId    String?   @db.VarChar(100)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@index([eventType])
+  @@index([startTime])
+  @@index([endTime])
+  @@index([isActive])
+  @@index([createdAt])
+}
+
+model Reward {
+  id          String    @id @default(cuid())
+  userId      String
+  type        String    @db.VarChar(50)
+  title       String    @db.VarChar(255)
+  description String?   @db.Text
+  value       Float?
+  code        String?   @db.VarChar(50)
+  isRedeemed  Boolean   @default(false)
+  expiresAt   DateTime?
+  createdAt   DateTime  @default(now())
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+  @@index([isRedeemed])
+  @@index([expiresAt])
+  @@index([createdAt])
+}
+
+model AnalyticsEvent {
+  id        String   @id @default(cuid())
+  userId    String?
+  eventType String   @db.VarChar(50)
+  eventData Json?
+  timestamp DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([eventType])
   @@index([timestamp])
 }
 
 model ProductAnalytics {
-  id          String   @id @default(cuid())
-  productId   String
-  viewCount   Int      @default(0)
-  clickCount  Int      @default(0)
-  addToCartCount Int   @default(0)
-  purchaseCount Int    @default(0)
-  revenue     Float    @default(0.0)
-  totalRevenue Float   @default(0.0)
-  lastViewed  DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  id        String   @id @default(cuid())
+  productId String
+  eventType String   @db.VarChar(50)
+  eventData Json?
+  timestamp DateTime @default(now())
 
-  @@unique([productId])
   @@index([productId])
-  @@index([viewCount])
-  @@index([revenue])
+  @@index([eventType])
+  @@index([timestamp])
 }
 
 model UserAnalytics {
-  id           String   @id @default(cuid())
-  userId       String
-  totalViews   Int      @default(0)
-  totalClicks  Int      @default(0)
-  totalPurchases Int    @default(0)
-  totalSpent   Float    @default(0.0)
-  totalAddToCart Int    @default(0)
-  lastActivity DateTime?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String   @id @default(cuid())
+  userId    String
+  eventType String   @db.VarChar(50)
+  eventData Json?
+  timestamp DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([userId])
   @@index([userId])
-  @@index([totalViews])
-  @@index([totalSpent])
+  @@index([eventType])
+  @@index([timestamp])
 }
 
 model ChatMessage {
   id        String   @id @default(cuid())
   userId    String?
-  sessionId String   @db.VarChar(255)
-  content   String
-  type      String   @db.VarChar(20) // 'user' or 'assistant'
+  message   String   @db.Text
+  response  String?  @db.Text
   timestamp DateTime @default(now())
-  metadata  Json?
-  user      User?    @relation(fields: [userId], references: [id])
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
-  @@index([sessionId])
   @@index([timestamp])
 }
 
@@ -412,160 +481,68 @@ model UserProfile {
   level            Int      @default(1)
   experience       Int      @default(0)
   experiencePoints Int      @default(0)
-  badges           String[] @default([])
-  achievements     String[] @default([])
   totalSpent       Float    @default(0.0)
-  totalOrders      Int      @default(0)
+  totalOrders       Int      @default(0)
   loginStreak      Int      @default(0)
   lastLoginDate    DateTime?
+  badges           String[] @default([])
+  achievements     String[] @default([])
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
   user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([level])
-  @@index([experience])
-}
-
-model Reward {
-  id          String     @id @default(cuid())
-  userId      String
-  type        RewardType
-  title       String     @db.VarChar(255)
-  value       Float
-  description String?
-  isRedeemed  Boolean    @default(false)
-  expiresAt   DateTime?
-  createdAt   DateTime   @default(now())
-  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([type])
-  @@index([isRedeemed])
-  @@index([expiresAt])
 }
 
 model LeaderboardEntry {
-  id           String   @id @default(cuid())
-  userId       String   @unique
-  score        Int      @default(0)
-  rank         Int?
-  category     String   @default("overall") @db.VarChar(50)
-  period       String   @default("all") @db.VarChar(20)
-  lastUpdated  DateTime @default(now())
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String   @id @default(cuid())
+  userId    String
+  category  String   @db.VarChar(50)
+  score     Int      @default(0)
+  rank      Int      @default(0)
+  period    String   @db.VarChar(20)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, category, period])
   @@index([userId])
   @@index([score])
   @@index([rank])
-  @@index([category])
   @@index([period])
-}
-
-model SocialShare {
-  id        String   @id @default(cuid())
-  userId    String?
-  platform  String   @db.VarChar(50)
-  content   String
-  url       String?  @db.VarChar(500)
-  shareUrl  String?  @db.VarChar(500)
-  productId String?
-  clicks    Int      @default(0)
-  metadata  Json?
-  createdAt DateTime @default(now())
-  user      User?    @relation(fields: [userId], references: [id])
-
-  @@index([userId])
-  @@index([platform])
-  @@index([productId])
-  @@index([createdAt])
-}
-
-model LiveEvent {
-  id                String   @id @default(cuid())
-  title             String   @db.VarChar(255)
-  description       String?
-  eventType         String   @default("live") @db.VarChar(50)
-  startTime         DateTime
-  endTime           DateTime?
-  maxParticipants   Int      @default(100)
-  currentParticipants Int    @default(0)
-  isActive          Boolean  @default(true)
-  meetingUrl        String?  @db.VarChar(500)
-  metadata          Json?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
-  @@index([startTime])
-  @@index([isActive])
-  @@index([eventType])
-  @@index([createdAt])
-}
-
-model WishlistCompetition {
-  id            String    @id @default(cuid())
-  title         String    @db.VarChar(255)
-  description   String?
-  userId        String?
-  productId     String?
-  score         Int       @default(0)
-  startDate     DateTime  @default(now())
-  endDate       DateTime?
-  isActive      Boolean   @default(true)
-  participants  Int       @default(0)
-  winnerId      String?
-  rewardValue   Float     @default(0.0)
-  metadata      Json?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  user          User?     @relation(fields: [userId], references: [id])
-
-  @@index([userId])
-  @@index([productId])
-  @@index([score])
-  @@index([isActive])
-  @@index([createdAt])
+  @@index([category])
 }
 
 model ARSession {
   id         String   @id @default(cuid())
   userId     String?
-  productId  String?
   duration   Int      @default(0)
-  sessionType String  @default("PRODUCT_PREVIEW") @db.VarChar(50)
-  deviceType String?  @db.VarChar(50)
-  endedAt    DateTime?
-  metadata   Json?
+  productId  String?
+  sessionType String? @db.VarChar(50)
   createdAt  DateTime @default(now())
-  user       User?    @relation(fields: [userId], references: [id])
+  timestamp  DateTime @default(now())
+  user       User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([productId])
-  @@index([sessionType])
+  @@index([timestamp])
   @@index([createdAt])
 }
 
 model VRStoreVisit {
-  id        String    @id @default(cuid())
-  userId    String?
-  duration  Int       @default(0)
-  endedAt   DateTime?
-  metadata  Json?
-  createdAt DateTime  @default(now())
-  user      User?     @relation(fields: [userId], references: [id])
+  id                String   @id @default(cuid())
+  userId            String?
+  duration          Int      @default(0)
+  categoriesVisited String[]
+  productsViewed    String[]
+  interactions      Int      @default(0)
+  deviceType        String?  @db.VarChar(50)
+  createdAt         DateTime @default(now())
+  timestamp         DateTime @default(now())
+  user              User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([timestamp])
   @@index([createdAt])
-}
-
-enum RewardType {
-  DISCOUNT_COUPON
-  FREE_SHIPPING
-  POINTS_BONUS
-  EXCLUSIVE_ACCESS
-  BADGE
-  ACHIEVEMENT
 }

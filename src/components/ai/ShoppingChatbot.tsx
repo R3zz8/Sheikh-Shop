@@ -371,8 +371,8 @@ export default function ShoppingChatbot({
                                   <div className="w-10 h-10 rounded overflow-hidden bg-gray-100 dark:bg-gray-600">
                                     {product.images && product.images.length > 0 ? (
                                       <img
-                                        src={product.images[0].image}
-                                        alt={product.name}
+                                        src={product.images[0]?.image || ''}
+                                        alt={product.name || 'Product'}
                                         className="w-full h-full object-cover"
                                       />
                                     ) : (

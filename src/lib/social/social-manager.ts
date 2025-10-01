@@ -5,7 +5,8 @@ export interface SocialShare {
   userId?: string | null;
   productId?: string | null;
   platform: string;
-  shareUrl: string;
+  shareUrl: string | null;
+  content: string;
   clicks: number;
   createdAt: Date;
 }
@@ -15,10 +16,10 @@ export interface WishlistCompetition {
   title: string;
   description?: string | null;
   startDate: Date;
-  endDate: Date;
+  endDate: Date | null;
   isActive: boolean;
   rewardValue: number;
-  participants: string[];
+  participants: number;
   winnerId?: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -27,10 +28,10 @@ export interface WishlistCompetition {
 export interface LiveEvent {
   id: string;
   title: string;
-  description: string;
-  eventType: 'VR_TASTING' | 'AR_DEMO' | 'LIVE_STREAM' | 'Q_AND_A';
+  description: string | null;
+  eventType: string;
   startTime: Date;
-  endTime: Date;
+  endTime: Date | null;
   maxParticipants: number;
   currentParticipants: number;
   isActive: boolean;
@@ -46,14 +47,16 @@ export class SocialManager {
     userId: string | undefined,
     productId: string | undefined,
     platform: string,
-    shareUrl: string
+    shareUrl: string,
+    content: string
   ): Promise<SocialShare> {
     return await prisma.socialShare.create({
       data: {
-        userId: userId || undefined,
-        productId: productId || undefined,
+        userId: userId || null,
+        productId: productId || null,
         platform,
         shareUrl: shareUrl || null,
+        content,
         clicks: 0,
       },
     });
@@ -159,12 +162,11 @@ export class SocialManager {
   async createLiveEvent(
     title: string,
     description: string,
-    eventType: LiveEvent['eventType'],
+    eventType: string,
     startTime: Date,
-    endTime: Date,
+    endTime: Date | null,
     maxParticipants: number,
-    meetingUrl?: string,
-    vrEnvironmentId?: string
+    meetingUrl?: string
   ): Promise<LiveEvent> {
     return await prisma.liveEvent.create({
       data: {
@@ -177,7 +179,6 @@ export class SocialManager {
         currentParticipants: 0,
         isActive: true,
         meetingUrl,
-        vrEnvironmentId,
       },
     });
   }
@@ -338,7 +339,7 @@ export class SocialManager {
     const activeCompetitions = await this.getActiveWishlistCompetitions();
     
     for (const competition of activeCompetitions) {
-      if (competition.participants.includes(userId)) {
+      if (competition.participants > 0) {
         // Check if the product is in user's wishlist and goes on discount
         // This would need to be implemented with actual wishlist and discount tracking
         return {

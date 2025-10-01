@@ -81,7 +81,7 @@ export default function SocialShare({
       const shareUrl = socialManager.generateShareUrl(product.id, platform);
       
       // Create social share record
-      await socialManager.createSocialShare(userId, product.id, platform, shareUrl);
+      await socialManager.createSocialShare(userId, product.id, platform, shareUrl, `Check out this amazing ${product.name}!`);
       
       // Open share URL
       window.open(shareUrl, '_blank', 'width=600,height=400');
@@ -165,8 +165,8 @@ export default function SocialShare({
               <div className="flex items-center gap-3 mb-6 p-3 bg-gray-50 rounded-lg">
                 {product.images && product.images.length > 0 ? (
                   <img
-                    src={product.images[0].image}
-                    alt={product.name}
+                    src={product.images[0]?.image || ''}
+                    alt={product.name || 'Product'}
                     className="w-12 h-12 object-cover rounded"
                   />
                 ) : (

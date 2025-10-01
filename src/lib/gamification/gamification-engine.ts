@@ -18,7 +18,7 @@ export interface UserProfile {
 export interface Reward {
   id: string;
   userId: string;
-  type: 'DISCOUNT_COUPON' | 'FREE_SHIPPING' | 'POINTS_BONUS' | 'EXCLUSIVE_ACCESS' | 'BADGE' | 'ACHIEVEMENT';
+  type: string;
   title: string;
   description?: string | null;
   value?: number | null;
@@ -346,16 +346,21 @@ export class GamificationEngine {
   ): Promise<Reward> {
     const code = type === 'DISCOUNT_COUPON' ? this.generateCouponCode() : undefined;
     
+    const createData: any = {
+      userId,
+      type,
+      title,
+      description,
+      value: value || 0,
+      expiresAt,
+    };
+    
+    if (code) {
+      createData.code = code;
+    }
+    
     return await prisma.reward.create({
-      data: {
-        userId,
-        type,
-        title,
-        description,
-        value: value || 0,
-        code,
-        expiresAt,
-      },
+      data: createData,
     });
   }
 

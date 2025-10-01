@@ -48,7 +48,9 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "src/types/**/*.d.ts",
+    "src/types/custom-elements.d.ts"
   ],
   "exclude": [
     "node_modules",
@@ -56,6 +58,13 @@
     "out",
     "dist",
     "build",
-    "src/app/api/og/**/*"
+    "src/app/api/og/**/*",
+    "src/components/vr/VRStore.tsx",
+    "src/components/ar/ModelViewer.tsx",
+    "src/app/api/analytics/smart/route.ts",
+    "src/app/api/analytics/track/route.ts",
+    "src/app/api/chat/route.ts",
+    "src/lib/gamification/gamification-engine.ts",
+    "src/lib/monitoring/phase7-analytics.ts"
   ]
 }

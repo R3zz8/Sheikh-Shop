@@ -105,8 +105,8 @@ export class SEOContentGenerator {
   }
 
   private generateTitle(product: ProductsWithImages, primaryKeyword: string): string {
-    const brand = product.name.split(' ')[0];
-    const productName = product.name;
+    const brand = (product.name || '').split(' ')[0] || 'Brand';
+    const productName = product.name || 'Product';
     const price = product.basePrice;
     
     const templates = [
@@ -117,11 +117,11 @@ export class SEOContentGenerator {
       `${productName} - ${primaryKeyword} | ${brand} Official Store`
     ];
     
-    return templates[Math.floor(Math.random() * templates.length)];
+    return templates[Math.floor(Math.random() * templates.length)] || `${productName} - ${primaryKeyword}`;
   }
 
   private generateMetaDescription(product: ProductsWithImages, primaryKeyword: string, keywords: string[]): string {
-    const productName = product.name;
+    const productName = product.name || 'Product';
     const price = product.basePrice;
     const category = product.category;
     const keyFeatures = keywords.slice(0, 3).join(', ');
@@ -148,8 +148,8 @@ export class SEOContentGenerator {
     keywords.add(product.category.toLowerCase());
     
     // Add brand
-    const brand = (product.name || '').split(' ')[0].toLowerCase();
-    keywords.add(brand);
+    const brand = (product.name || '').split(' ')[0]?.toLowerCase() || '';
+    if (brand) keywords.add(brand);
     
     // Add price-related keywords
     if (product.basePrice < 50) {
@@ -344,7 +344,7 @@ export class SEOContentGenerator {
     
     // Check title length
     const titleMatch = content.match(/<h1[^>]*>(.*?)<\/h1>/i);
-    if (titleMatch) {
+    if (titleMatch && titleMatch[1]) {
       const title = titleMatch[1];
       if (title.length < 30) {
         suggestions.push({
@@ -360,9 +360,9 @@ export class SEOContentGenerator {
     
     // Check meta description
     const metaMatch = content.match(/<meta name="description" content="(.*?)"/i);
-    if (metaMatch) {
+    if (metaMatch && metaMatch[1]) {
       const description = metaMatch[1];
-      if ((description || '').length < 120) {
+      if (description.length < 120) {
         suggestions.push({
           type: 'description',
           original: description,

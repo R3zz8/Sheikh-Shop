@@ -137,8 +137,8 @@ export default function BundleRecommendations({
                   <div className="w-12 h-12 rounded-lg overflow-hidden bg-white/10">
                     {product.images && product.images.length > 0 ? (
                       <img
-                        src={product.images[0].image}
-                        alt={product.name}
+                        src={product.images[0]?.image || ''}
+                        alt={product.name || 'Product'}
                         className="w-full h-full object-cover"
                         onClick={() => trackProductView(product.id, product.category)}
                       />

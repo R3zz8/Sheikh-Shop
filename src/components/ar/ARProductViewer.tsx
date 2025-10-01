@@ -66,8 +66,8 @@ function FallbackProductView({ product }: { product: ProductsWithImages }) {
         <div className="w-32 h-32 mx-auto mb-4 bg-gray-200 rounded-lg flex items-center justify-center">
           {product.images && product.images.length > 0 ? (
             <img
-              src={product.images[0].image}
-              alt={product.name}
+              src={product.images[0]?.image || ''}
+              alt={product.name || 'Product'}
               className="w-full h-full object-cover rounded-lg"
             />
           ) : (

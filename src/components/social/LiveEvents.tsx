@@ -112,11 +112,11 @@ export default function LiveEvents({ userId, className = '' }: LiveEventsProps) 
   const getEventStatus = (event: LiveEvent) => {
     const now = new Date();
     const startTime = new Date(event.startTime);
-    const endTime = new Date(event.endTime);
+    const endTime = event.endTime ? new Date(event.endTime) : null;
 
     if (now < startTime) {
       return { status: 'upcoming', text: 'Upcoming' };
-    } else if (now >= startTime && now <= endTime) {
+    } else if (now >= startTime && (!endTime || now <= endTime)) {
       return { status: 'live', text: 'Live Now' };
     } else {
       return { status: 'ended', text: 'Ended' };
@@ -133,8 +133,9 @@ export default function LiveEvents({ userId, className = '' }: LiveEventsProps) 
     });
   };
 
-  const formatEventDuration = (startTime: Date, endTime: Date) => {
+  const formatEventDuration = (startTime: Date, endTime: Date | null) => {
     const start = new Date(startTime);
+    if (!endTime) return 'Ongoing';
     const end = new Date(endTime);
     const durationMs = end.getTime() - start.getTime();
     const durationHours = Math.floor(durationMs / (1000 * 60 * 60));

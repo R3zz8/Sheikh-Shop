@@ -140,7 +140,7 @@ export class Phase7Analytics {
         return {
           productId,
           productName: 'AR Product',
-          viewCount,
+          viewCount: Number(viewCount),
         };
       })
       .sort((a, b) => b.viewCount - a.viewCount)
@@ -273,7 +273,9 @@ export class Phase7Analytics {
     };
 
     rewards.forEach(reward => {
-      rewardTypes[reward.type]++;
+      if (reward.type in rewardTypes) {
+        rewardTypes[reward.type as keyof typeof rewardTypes]++;
+      }
     });
 
     return {
@@ -330,7 +332,9 @@ export class Phase7Analytics {
             name: 'Social Product',
           };
         }
-        productShares[share.productId].count++;
+        if (share.productId && productShares[share.productId]) {
+          productShares[share.productId]!.count++;
+        }
       }
     });
 
@@ -476,13 +480,11 @@ export class Phase7Analytics {
       prisma.aRSession.count({
         where: {
           createdAt: { gte: oneHourAgo },
-          endedAt: null,
         },
       }),
       prisma.vRStoreVisit.count({
         where: {
           createdAt: { gte: oneHourAgo },
-          endedAt: null,
         },
       }),
       prisma.liveEvent.count({

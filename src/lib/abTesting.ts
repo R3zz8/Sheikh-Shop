@@ -177,7 +177,7 @@ export class ABTestingManager {
       }
     }
 
-    return experiment.variants[0].id; // Fallback to first variant
+    return experiment.variants[0]?.id || 'default'; // Fallback to first variant
   }
 
   // Get experiment configuration
@@ -229,13 +229,13 @@ export class ABTestingManager {
       .filter(result => result.experimentId === experimentId)
       .forEach(result => {
         if (variantResults[result.variantId]) {
-          variantResults[result.variantId].push(result);
+          variantResults[result.variantId]!.push(result);
         }
       });
 
     // Calculate metrics
     Object.keys(variantResults).forEach(variantId => {
-      const results = variantResults[variantId];
+      const results = variantResults[variantId] || [];
       const views = results.filter(r => r.eventType === 'view').length;
       const conversions = results.filter(r => r.eventType === 'conversion').length;
       const revenueValue = results

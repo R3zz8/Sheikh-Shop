@@ -457,8 +457,8 @@ export class EnhancedAISearchEngine {
     return fuseResults.map(result => ({
       product: result.item,
       score: 1 - (result.score || 0), // Convert Fuse score to similarity
-      highlights: result.matches?.map(match => match.value).filter(Boolean) || [],
-      matchedFields: result.matches?.map(match => match.key).filter(Boolean) || [],
+      highlights: result.matches?.map(match => match.value).filter((value): value is string => Boolean(value)) || [],
+      matchedFields: result.matches?.map(match => match.key).filter((key): key is string => Boolean(key)) || [],
       semanticScore: 0,
       keywordScore: 1 - (result.score || 0),
       typoTolerance: 1.0,
@@ -568,7 +568,7 @@ export class EnhancedAISearchEngine {
       
       // Brand filter
       if (filters.brand) {
-        const brand = (product.name || '').split(' ')[0].toLowerCase();
+        const brand = (product.name || '').split(' ')[0]?.toLowerCase() || '';
         if (!brand.includes(filters.brand.toLowerCase())) {
           return false;
         }
