@@ -14,6 +14,8 @@ import { convertCurrency } from '@/lib/currency';
 import { useUnits } from '@/hooks/useUnits';
 import { useUserBehavior } from '@/hooks/useUserBehavior';
 import { useState, useMemo, useEffect } from 'react';
+import ARProductViewer from '@/components/ar/ARProductViewer';
+import { Smartphone } from 'lucide-react';
 
 interface ProductInfoProps {
     product: ProductsWithImages;
@@ -26,11 +28,35 @@ export default function ProductInfo({ product }: ProductInfoProps) {
     const [selectedQuantity, setSelectedQuantity] = useState(1);
     const { units: availableUnits, loading: unitsLoading, error: unitsError } = useUnits();
     const { trackProductView, trackProductClick } = useUserBehavior();
+    const [arAvailable, setArAvailable] = useState(false);
+    const [showAR, setShowAR] = useState(false);
 
     // Track product view on component mount
     useEffect(() => {
         trackProductView(product.id, product.category);
     }, [product.id, product.category, trackProductView]);
+
+    // Detect if AR model exists (product-specific or category fallback)
+    useEffect(() => {
+        let isMounted = true;
+        const checkModels = async () => {
+            try {
+                const productModel = `/models/${product.id}.gltf`;
+                const categoryModel = `/models/${String(product.category || '').toLowerCase()}.glb`;
+                const [res1, res2] = await Promise.allSettled([
+                    fetch(productModel, { method: 'HEAD' }),
+                    fetch(categoryModel, { method: 'HEAD' }),
+                ]);
+                const ok1 = res1.status === 'fulfilled' && (res1 as PromiseFulfilledResult<Response>).value.ok;
+                const ok2 = res2.status === 'fulfilled' && (res2 as PromiseFulfilledResult<Response>).value.ok;
+                if (isMounted) setArAvailable(Boolean(ok1 || ok2));
+            } catch {
+                if (isMounted) setArAvailable(false);
+            }
+        };
+        checkModels();
+        return () => { isMounted = false; };
+    }, [product.id, product.category]);
 
     // Get available product units (filtered by active status)
     const availableProductUnits = useMemo(() => {
@@ -186,6 +212,23 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                     {rating} ({reviewCount} reviews)
                 </span>
             </motion.div>
+
+            {/* AR Button (conditional) */}
+            {arAvailable && (
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.35 }}
+                >
+                    <button
+                        onClick={() => setShowAR(true)}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-amber-200/30 bg-white/10 text-white hover:bg-white/15 transition-colors"
+                    >
+                        <Smartphone className="w-4 h-4" />
+                        View in AR
+                    </button>
+                </motion.div>
+            )}
 
             {/* Category Badge */}
             <motion.div
@@ -510,6 +553,15 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                     <div className="text-sm text-gray-400">Returns</div>
                 </div>
             </motion.div>
+
+            {/* AR Modal */}
+            {showAR && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+                    <div className="relative w-full max-w-4xl mx-4">
+                        <ARProductViewer product={product} onClose={() => setShowAR(false)} />
+                    </div>
+                </div>
+            )}
         </div>
     );
 } 

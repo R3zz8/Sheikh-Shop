@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import { getAllArticlesForAdmin } from '@/lib/actions/articles';
 import ArticlesDashboard from './_components/ArticlesDashboard';
 import { Skeleton } from '@/components/ui/skeleton';
+export const dynamic = 'force-dynamic';
 
 // Loading skeleton for the dashboard
 function ArticlesDashboardSkeleton() {

@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button, Input, Label } from '@/components/ui';
 import Image from 'next/image';
+import { createGamificationEngine } from '@/lib/gamification/gamification-engine';
+import Link from 'next/link';
 
 interface UserInfo {
     id: string;
@@ -23,6 +25,9 @@ export default function UserProfilePage() {
   const [recoveryCodes, setRecoveryCodes] = useState<string[] | null>(null);
   const [regenLoading, setRegenLoading] = useState(false);
   const [logoutAllLoading, setLogoutAllLoading] = useState(false);
+  const [gamLevel, setGamLevel] = useState<number | null>(null);
+  const [gamXp, setGamXp] = useState<number | null>(null);
+  const [achievements, setAchievements] = useState<{ id: string; name: string; description: string }[]>([]);
 
   useEffect(() => {
     (async () => {
@@ -52,6 +57,24 @@ export default function UserProfilePage() {
       }
     })();
   }, []);
+
+  // Load gamification summary
+  useEffect(() => {
+    (async () => {
+      try {
+        if (!userInfo) return;
+        const engine = createGamificationEngine();
+        const profile = await engine.getUserProfile(userInfo.id);
+        setGamLevel(profile.level ?? 1);
+        setGamXp(profile.experiencePoints ?? 0);
+        const available = await engine.getAvailableAchievements();
+        setAchievements(available as any);
+      } catch {
+        setGamLevel(null);
+        setGamXp(null);
+      }
+    })();
+  }, [userInfo]);
 
   async function handleRevoke(id: string) {
     setRevoking(id);
@@ -174,6 +197,41 @@ export default function UserProfilePage() {
   return (
     <div className="max-w-4xl mx-auto py-10 px-4">
       <h1 className="text-3xl font-bold mb-8">Account Settings</h1>
+
+      {/* Gamification Summary */}
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle>Gamification</CardTitle>
+          <CardDescription>Your current level, XP and achievements</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-4 border rounded-lg">
+              <div className="text-sm text-gray-500">Level</div>
+              <div className="text-2xl font-semibold">{gamLevel ?? '--'}</div>
+            </div>
+            <div className="p-4 border rounded-lg">
+              <div className="text-sm text-gray-500">XP</div>
+              <div className="text-2xl font-semibold">{gamXp ?? '--'}</div>
+            </div>
+            <div className="p-4 border rounded-lg">
+              <div className="text-sm text-gray-500">Leaderboard</div>
+              <Link href="/leaderboard" className="text-amber-600 hover:underline">View Leaderboard</Link>
+            </div>
+          </div>
+          <div className="mt-6">
+            <div className="text-sm text-gray-500 mb-2">Available Achievements</div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {achievements.map(a => (
+                <div key={a.id} className="p-3 border rounded">
+                  <div className="font-medium">{a.name}</div>
+                  <div className="text-sm text-gray-500">{a.description}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* User Info Card */}
       <Card className="mb-8">

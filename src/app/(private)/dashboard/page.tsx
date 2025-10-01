@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import DashboardClient from './_components/DashboardClient';
 import React from 'react';
 

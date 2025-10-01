@@ -2,6 +2,9 @@
 
 import { useState } from 'react';
 import { UserCircle2, User2, Smile, Crown, Shield, Settings, LogOut } from 'lucide-react';
+import Link from 'next/link';
+import { useEffect } from 'react';
+import { createGamificationEngine } from '@/lib/gamification/gamification-engine';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -45,6 +48,8 @@ export default function UserBadge({
   variant = 'default'
 }: UserBadgeProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [xp, setXp] = useState<number | null>(null);
+  const [level, setLevel] = useState<number | null>(null);
 
   // Get display name (username, full name, or email fallback)
   const getDisplayName = () => {
@@ -102,6 +107,29 @@ export default function UserBadge({
   const GenderIcon = getGenderIcon();
   const displayName = getDisplayName();
   const initials = getInitials();
+
+  // Load gamification summary lazily when dropdown opens
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      if (!isOpen) return;
+      try {
+        const engine = createGamificationEngine();
+        // Using profile ensures we don't break if backend tables are missing; guarded by try/catch
+        const profile = await engine.getUserProfile(user.id);
+        if (mounted && profile) {
+          setXp(profile.experiencePoints ?? 0);
+          setLevel(profile.level ?? 1);
+        }
+      } catch {
+        if (mounted) {
+          setXp(null);
+          setLevel(null);
+        }
+      }
+    })();
+    return () => { mounted = false; };
+  }, [isOpen, user.id]);
 
   if (variant === 'compact') {
     return (
@@ -228,6 +256,21 @@ export default function UserBadge({
             </div>
           </div>
         </DropdownMenuLabel>
+
+        <DropdownMenuSeparator className="bg-amber-200/20" />
+
+        {/* Gamification summary */}
+        <div className="px-4 py-3 text-sm text-gray-300">
+          <div className="flex items-center justify-between mb-2">
+            <span>Level</span>
+            <span className="font-semibold text-white" id="gam-level">--</span>
+          </div>
+          <div className="flex items-center justify-between mb-2">
+            <span>XP</span>
+            <span className="font-semibold text-white" id="gam-xp">--</span>
+          </div>
+          <Link href="/leaderboard" className="text-amber-300 hover:text-amber-200">View Leaderboard</Link>
+        </div>
 
         <DropdownMenuSeparator className="bg-amber-200/20" />
 

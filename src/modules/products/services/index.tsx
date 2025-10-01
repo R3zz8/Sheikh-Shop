@@ -60,7 +60,7 @@ export const getProductById = async (id: string) => {
       return null;
     }
 
-    return result;
+    return serializeProduct(result);
   } catch (error) {
     console.error('Error fetching product by ID:', id, error);
     return null;
@@ -90,3 +90,42 @@ export const deleteProduct = async (id: string) => {
   await prisma.product.delete({ where: { id } });
   redirect('/dashboard/products');
 };
+
+// Helper: convert Prisma Decimal/Date fields to JSON-serializable primitives
+function serializeProduct(product: any) {
+  if (!product) return product;
+  return {
+    ...product,
+    createdAt: product.createdAt ? product.createdAt.toISOString() : null,
+    updatedAt: product.updatedAt ? product.updatedAt.toISOString() : null,
+    basePrice: typeof product.basePrice === 'object' && product.basePrice !== null && 'toNumber' in product.basePrice
+      ? (product.basePrice as any).toNumber()
+      : product.basePrice,
+    images: Array.isArray(product.images)
+      ? product.images.map((img: any) => ({
+          ...img,
+          createdAt: img.createdAt ? img.createdAt.toISOString() : null,
+        }))
+      : [],
+    baseUnit: product.baseUnit ? { ...product.baseUnit } : null,
+    units: Array.isArray(product.units)
+      ? product.units.map((u: any) => ({
+          ...u,
+          price: typeof u.price === 'object' && u.price !== null && 'toNumber' in u.price
+            ? (u.price as any).toNumber()
+            : Number(u.price),
+          createdAt: u.createdAt ? u.createdAt.toISOString() : null,
+          updatedAt: u.updatedAt ? u.updatedAt.toISOString() : null,
+        }))
+      : [],
+    discounts: Array.isArray(product.discounts)
+      ? product.discounts.map((d: any) => ({
+          ...d,
+          startDate: d.startDate ? d.startDate.toISOString() : null,
+          endDate: d.endDate ? d.endDate.toISOString() : null,
+          createdAt: d.createdAt ? d.createdAt.toISOString() : null,
+          updatedAt: d.updatedAt ? d.updatedAt.toISOString() : null,
+        }))
+      : [],
+  };
+}

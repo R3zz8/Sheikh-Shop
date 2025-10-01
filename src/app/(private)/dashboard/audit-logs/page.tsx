@@ -1,4 +1,5 @@
 'use client';
+export const dynamic = 'force-dynamic';
 import React, { useEffect, useState } from 'react';
 import { useRequireRole } from '@/hooks/useRBAC';
 import { Card, CardHeader, CardTitle, CardContent, Table, TableHead, TableRow, TableHeader, TableBody, TableCell, Button, Input } from '@/components/ui';
