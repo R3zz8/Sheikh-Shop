@@ -5,13 +5,14 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui';
 import { Star, ShoppingCart, Zap, ChevronDown, ChevronUp } from 'lucide-react';
-import type { ProductsWithImages, Unit } from '@/types';
+import type { ProductsWithImages, Unit, ProductUnit } from '@/types';
 import { useCart } from '@/hooks/useCart';
 import { cn, formatPrice } from '@/lib/utils';
 import FlyToCartAnimation from '@/components/cart/FlyToCartAnimation';
 import UnitSelector from '@/components/ui/UnitSelector';
 import DiscountBadge from '@/components/ui/DiscountBadge';
 import ProductBadge from '@/components/ui/ProductBadge';
+import CompactProductUnitSelector from '@/components/ui/CompactProductUnitSelector';
 import { calculateFinalPricing, formatPrice as formatPriceUtil } from '@/lib/pricing';
 
 // ProductDescription component for read more/less functionality
@@ -78,15 +79,37 @@ export default function ProductItem({
   const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null);
   const [selectedQuantity, setSelectedQuantity] = useState(1);
   const [showUnitSelector, setShowUnitSelector] = useState(false);
+  const [selectedProductUnit, setSelectedProductUnit] = useState<ProductUnit | null>(null);
   const productRef = useRef<HTMLDivElement>(null);
   const cartButtonRef = useRef<HTMLButtonElement>(null);
 
+  // Get available product units (filtered by active status)
+  const availableProductUnits = React.useMemo(() => {
+    const units = product.units?.filter(unit => unit.isActive) || [];
+    // Sort by featured first, then by price
+    return units.sort((a, b) => {
+      if ((a as any).isFeatured && !(b as any).isFeatured) return -1;
+      if (!(a as any).isFeatured && (b as any).isFeatured) return 1;
+      return Number(a.price) - Number(b.price);
+    });
+  }, [product.units]);
+
+  // Determine if we should use ProductUnit system or legacy system
+  const useProductUnits = availableProductUnits.length > 0;
+
   // Set default unit when availableUnits are loaded
-    useEffect(() => {
+  useEffect(() => {
     if (availableUnits.length > 0 && !selectedUnit) {
       setSelectedUnit(availableUnits[0] || null);
     }
   }, [availableUnits]); // Removed selectedUnit from dependencies to prevent infinite loop
+
+  // Set default ProductUnit when available
+  useEffect(() => {
+    if (availableProductUnits.length > 0 && !selectedProductUnit) {
+      setSelectedProductUnit(availableProductUnits[0] || null);
+    }
+  }, [availableProductUnits]);
 
   // Fallback if no units are available - temporarily simplified to show products
   if (!selectedUnit || availableUnits.length === 0) {
@@ -104,7 +127,7 @@ export default function ProductItem({
 
   // Calculate pricing with discounts
   const pricing = calculateFinalPricing(
-    product.basePrice,
+    useProductUnits && selectedProductUnit ? Number(selectedProductUnit.price) : product.basePrice,
     selectedUnit,
     selectedQuantity,
     product.discounts
@@ -203,6 +226,7 @@ export default function ProductItem({
                     isActive: true,
                   }}
                   showCountdown={false}
+                  className="scale-90"
                 />
               </div>
             )}
@@ -240,16 +264,53 @@ export default function ProductItem({
           </div>
 
           {/* Price Section */}
-          <div className="mb-3">
+          <div className="mb-3 space-y-2">
             {pricing.hasDiscount && (
-              <p className="text-sm text-gray-400 line-through">
-                {formatPriceUtil(pricing.originalPrice)}
-              </p>
+              <div className="flex items-center gap-2">
+                <p className="text-sm text-gray-400 line-through font-medium">
+                  {formatPriceUtil(pricing.originalPrice)}
+                </p>
+                <span className="text-xs bg-red-500/20 text-red-300 px-2 py-0.5 rounded-full font-semibold">
+                  -{Math.round(pricing.discountPercentage)}%
+                </span>
+              </div>
             )}
-            <p className="text-2xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
-              {formatPriceUtil(pricing.finalPrice)}
-            </p>
-            <p className="text-xs text-amber-200/60">per {selectedUnit.symbol}</p>
+            
+            {/* Price and Unit Selector Row */}
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex flex-col flex-1">
+                <p className="text-2xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
+                  {formatPriceUtil(pricing.finalPrice)}
+                </p>
+                <p className="text-xs text-amber-200/60">
+                  per {useProductUnits && selectedProductUnit ? selectedProductUnit.name : selectedUnit.symbol}
+                </p>
+              </div>
+              
+              {/* Compact Unit Selector */}
+              {useProductUnits ? (
+                <CompactProductUnitSelector
+                  productUnits={availableProductUnits}
+                  selectedProductUnit={selectedProductUnit}
+                  onProductUnitChange={setSelectedProductUnit}
+                  variant="card"
+                  className="flex-shrink-0"
+                />
+              ) : null}
+            </div>
+            
+            {/* Stock Status for Selected Unit */}
+            {useProductUnits && selectedProductUnit && (
+              <div className="text-xs text-amber-200/60">
+                {selectedProductUnit.stock === 0 ? (
+                  <span className="text-red-400">Out of stock</span>
+                ) : selectedProductUnit.stock <= 5 ? (
+                  <span className="text-yellow-400">Low stock ({selectedProductUnit.stock} left)</span>
+                ) : (
+                  <span>{selectedProductUnit.stock} units available</span>
+                )}
+              </div>
+            )}
           </div>
         </div>
 

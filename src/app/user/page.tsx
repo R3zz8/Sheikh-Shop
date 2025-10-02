@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button, Input, Label } from '@/components/ui';
+import { Crown, Sparkles, Trophy, Award } from 'lucide-react';
 import Image from 'next/image';
 import { createGamificationEngine } from '@/lib/gamification/gamification-engine';
 import Link from 'next/link';
@@ -199,36 +200,97 @@ export default function UserProfilePage() {
       <h1 className="text-3xl font-bold mb-8">Account Settings</h1>
 
       {/* Gamification Summary */}
-      <Card className="mb-8">
+      <Card className="mb-8 bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200">
         <CardHeader>
-          <CardTitle>Gamification</CardTitle>
-          <CardDescription>Your current level, XP and achievements</CardDescription>
+          <CardTitle className="flex items-center gap-2 text-amber-800">
+            <Crown className="w-6 h-6 text-amber-600" />
+            Gamification Profile
+          </CardTitle>
+          <CardDescription className="text-amber-700">Your progress, achievements, and ranking</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 border rounded-lg">
-              <div className="text-sm text-gray-500">Level</div>
-              <div className="text-2xl font-semibold">{gamLevel ?? '--'}</div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="p-6 bg-white rounded-xl border border-amber-200 shadow-sm">
+              <div className="flex items-center gap-3 mb-2">
+                <Crown className="w-5 h-5 text-amber-500" />
+                <div className="text-sm font-medium text-gray-600">Level</div>
+              </div>
+              <div className="text-3xl font-bold text-amber-800">{gamLevel ?? '--'}</div>
+              <div className="text-sm text-gray-500 mt-1">
+                {gamLevel && gamLevel >= 50 ? 'Legend' : 
+                 gamLevel && gamLevel >= 25 ? 'Master' : 
+                 gamLevel && gamLevel >= 10 ? 'Expert' : 
+                 gamLevel && gamLevel >= 5 ? 'Advanced' : 'Beginner'}
+              </div>
             </div>
-            <div className="p-4 border rounded-lg">
-              <div className="text-sm text-gray-500">XP</div>
-              <div className="text-2xl font-semibold">{gamXp ?? '--'}</div>
+            <div className="p-6 bg-white rounded-xl border border-amber-200 shadow-sm">
+              <div className="flex items-center gap-3 mb-2">
+                <Sparkles className="w-5 h-5 text-amber-500" />
+                <div className="text-sm font-medium text-gray-600">Experience Points</div>
+              </div>
+              <div className="text-3xl font-bold text-amber-800">{gamXp?.toLocaleString() ?? '--'}</div>
+              <div className="text-sm text-gray-500 mt-1">Total XP earned</div>
             </div>
-            <div className="p-4 border rounded-lg">
-              <div className="text-sm text-gray-500">Leaderboard</div>
-              <Link href="/leaderboard" className="text-amber-600 hover:underline">View Leaderboard</Link>
+            <div className="p-6 bg-white rounded-xl border border-amber-200 shadow-sm">
+              <div className="flex items-center gap-3 mb-2">
+                <Trophy className="w-5 h-5 text-amber-500" />
+                <div className="text-sm font-medium text-gray-600">Ranking</div>
+              </div>
+              <Link href="/leaderboard" className="text-amber-600 hover:text-amber-700 font-semibold text-lg hover:underline">
+                View Leaderboard
+              </Link>
+              <div className="text-sm text-gray-500 mt-1">See your position</div>
             </div>
           </div>
-          <div className="mt-6">
-            <div className="text-sm text-gray-500 mb-2">Available Achievements</div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {achievements.map(a => (
-                <div key={a.id} className="p-3 border rounded">
-                  <div className="font-medium">{a.name}</div>
-                  <div className="text-sm text-gray-500">{a.description}</div>
-                </div>
-              ))}
+
+          {/* XP Progress Bar */}
+          {gamLevel && gamXp && (
+            <div className="mb-8">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-medium text-gray-700">Progress to Level {gamLevel + 1}</span>
+                <span className="text-sm text-gray-500">
+                  {gamXp} / {Math.floor(Math.sqrt((gamLevel + 1) * 100) + 1) * 100} XP
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-3">
+                <div 
+                  className="bg-gradient-to-r from-amber-400 to-orange-400 h-3 rounded-full transition-all duration-500"
+                  style={{ 
+                    width: `${Math.min(100, ((gamXp % 100) / 100) * 100)}%` 
+                  }}
+                />
+              </div>
             </div>
+          )}
+
+          {/* Achievements Section */}
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <Award className="w-5 h-5 text-amber-600" />
+              <h3 className="text-lg font-semibold text-gray-800">Available Achievements</h3>
+            </div>
+            {achievements.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {achievements.map(a => (
+                  <div key={a.id} className="p-4 bg-white rounded-lg border border-amber-200 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-400 rounded-full flex items-center justify-center">
+                        <Award className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-semibold text-gray-800 mb-1">{a.name}</div>
+                        <div className="text-sm text-gray-600">{a.description}</div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <Award className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                <p>No achievements available yet</p>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

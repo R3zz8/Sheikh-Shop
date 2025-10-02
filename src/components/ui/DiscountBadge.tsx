@@ -29,7 +29,7 @@ export default function DiscountBadge({
       const remaining = getDiscountTimeRemaining(discount.endDate);
       setTimeRemaining(remaining);
       setIsExpiringSoon(isDiscountExpiringSoon(discount.endDate));
-    }, 60000); // Update every minute
+    }, 1000); // Update every second for better accuracy
 
     return () => clearInterval(timer);
   }, [discount.endDate, showCountdown]);
@@ -40,7 +40,10 @@ export default function DiscountBadge({
     } else if (timeRemaining.hours > 0) {
       return `${timeRemaining.hours}h ${timeRemaining.minutes}m`;
     } else {
-      return `${timeRemaining.minutes}m`;
+      // Format as mm:ss for minutes and seconds
+      const minutes = timeRemaining.minutes.toString().padStart(2, '0');
+      const seconds = timeRemaining.seconds.toString().padStart(2, '0');
+      return `${minutes}:${seconds}`;
     }
   };
 
@@ -67,26 +70,22 @@ export default function DiscountBadge({
 
   return (
     <div className={`flex items-center gap-2 ${className}`}>
-      <Badge 
-        variant={getBadgeVariant()}
-        className={`font-semibold text-xs px-2 py-1 ${
-          isExpiringSoon ? 'animate-pulse' : ''
+      <div 
+        className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full font-bold text-xs text-white shadow-lg ${
+          isExpiringSoon 
+            ? 'bg-gradient-to-r from-red-500 to-red-600 animate-pulse' 
+            : 'bg-gradient-to-r from-red-500 to-red-600'
         }`}
       >
-        <div className="flex items-center gap-1">
-          {getIcon()}
-          {getBadgeContent()}
-        </div>
-      </Badge>
+        {getIcon()}
+        {getBadgeContent()}
+      </div>
       
       {showCountdown && (
-        <Badge 
-          variant="outline" 
-          className="text-xs px-2 py-1 border-amber-200/20 text-amber-200"
-        >
-          <Clock className="w-3 h-3 mr-1" />
+        <div className="inline-flex items-center gap-1 px-2 py-1 rounded-lg border border-red-200/30 bg-red-500/10 text-red-200 text-xs font-medium">
+          <Clock className="w-3 h-3" />
           {formatTimeRemaining()}
-        </Badge>
+        </div>
       )}
     </div>
   );

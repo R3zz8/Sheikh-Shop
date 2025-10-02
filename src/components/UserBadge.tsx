@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { UserCircle2, User2, Smile, Crown, Shield, Settings, LogOut } from 'lucide-react';
+import { UserCircle2, User2, Smile, Crown, Shield, Settings, LogOut, Sparkles, Trophy } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect } from 'react';
 import { createGamificationEngine } from '@/lib/gamification/gamification-engine';
@@ -262,14 +262,39 @@ export default function UserBadge({
         {/* Gamification summary */}
         <div className="px-4 py-3 text-sm text-gray-300">
           <div className="flex items-center justify-between mb-2">
-            <span>Level</span>
-            <span className="font-semibold text-white" id="gam-level">--</span>
+            <span className="flex items-center gap-2">
+              <Crown className="w-4 h-4 text-amber-400" />
+              Level
+            </span>
+            <span className="font-semibold text-white">{level ?? '--'}</span>
           </div>
           <div className="flex items-center justify-between mb-2">
-            <span>XP</span>
-            <span className="font-semibold text-white" id="gam-xp">--</span>
+            <span className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-amber-400" />
+              XP
+            </span>
+            <span className="font-semibold text-white">{xp?.toLocaleString() ?? '--'}</span>
           </div>
-          <Link href="/leaderboard" className="text-amber-300 hover:text-amber-200">View Leaderboard</Link>
+          {level && xp && (
+            <div className="mt-3 mb-3">
+              <div className="flex justify-between text-xs text-gray-400 mb-1">
+                <span>Progress to next level</span>
+                <span>{xp} / {Math.floor(Math.sqrt(level * 100) + 1) * 100} XP</span>
+              </div>
+              <div className="w-full bg-gray-700 rounded-full h-2">
+                <div 
+                  className="bg-gradient-to-r from-amber-400 to-orange-400 h-2 rounded-full transition-all duration-300"
+                  style={{ 
+                    width: `${Math.min(100, ((xp % 100) / 100) * 100)}%` 
+                  }}
+                />
+              </div>
+            </div>
+          )}
+          <Link href="/leaderboard" className="text-amber-300 hover:text-amber-200 flex items-center gap-2">
+            <Trophy className="w-4 h-4" />
+            View Leaderboard
+          </Link>
         </div>
 
         <DropdownMenuSeparator className="bg-amber-200/20" />

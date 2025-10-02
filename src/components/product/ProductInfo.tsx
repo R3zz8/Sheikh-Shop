@@ -7,6 +7,7 @@ import AddToCartButton from './AddToCartButton';
 import UnitSelector from '@/components/ui/UnitSelector';
 import DiscountBadge from '@/components/ui/DiscountBadge';
 import ProductBadge from '@/components/ui/ProductBadge';
+import CompactProductUnitSelector from '@/components/ui/CompactProductUnitSelector';
 import { calculateFinalPricing } from '@/lib/pricing';
 import { formatPrice } from '@/lib/currency';
 import { useCurrencySafe } from '@/providers/CurrencyProvider';
@@ -150,7 +151,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                 transition={{ duration: 0.6, delay: 0.2 }}
                 className="space-y-4"
             >
-                <div className="space-y-2">
+                <div className="space-y-3">
                     <div className="flex items-baseline gap-3">
                         {/* Final Price */}
                         <span className="text-3xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
@@ -165,10 +166,23 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                         )}
                     </div>
                     
-                    {/* Unit Display */}
-                    <p className="text-sm md:text-lg text-amber-200/80">
-                        per {selectedUnit.symbol}
-                    </p>
+                    {/* Unit Display and Selector Row */}
+                    <div className="flex items-center justify-between gap-4">
+                        <p className="text-sm md:text-lg text-amber-200/80">
+                            per {useProductUnits && selectedProductUnit ? selectedProductUnit.name : selectedUnit.symbol}
+                        </p>
+                        
+                        {/* Compact Unit Selector for ProductUnits */}
+                        {useProductUnits && (
+                            <CompactProductUnitSelector
+                                productUnits={availableProductUnits}
+                                selectedProductUnit={selectedProductUnit}
+                                onProductUnitChange={setSelectedProductUnit}
+                                variant="detail"
+                                className="flex-shrink-0"
+                            />
+                        )}
+                    </div>
                 </div>
 
                 {/* Discount Badge */}
