@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useSession } from 'next-auth/react';
 
 export interface UserBehaviorEvent {
   id: string;
@@ -159,19 +158,22 @@ class UserBehaviorTracker {
 const behaviorTracker = new UserBehaviorTracker();
 
 export function useUserBehavior() {
-  const { data: session, status } = useSession();
   const [isTracking, setIsTracking] = useState(false);
+  const [userId, setUserId] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     try {
-      console.log('useUserBehavior: Session status:', status, 'Session data:', session);
-      if (session?.user?.id) {
-        behaviorTracker.setUserId(session.user.id);
+      // Try to get user ID from localStorage or other sources
+      // This is a fallback approach that doesn't require next-auth
+      const storedUserId = typeof window !== 'undefined' ? localStorage.getItem('user-id') : null;
+      if (storedUserId) {
+        setUserId(storedUserId);
+        behaviorTracker.setUserId(storedUserId);
       }
     } catch (error) {
       console.error('Error setting user ID:', error);
     }
-  }, [session, status]);
+  }, []);
 
   const trackEvent = useCallback((event: Omit<UserBehaviorEvent, 'id' | 'sessionId' | 'userId' | 'timestamp'>) => {
     try {

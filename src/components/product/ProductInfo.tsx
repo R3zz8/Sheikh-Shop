@@ -22,25 +22,17 @@ interface ProductInfoProps {
 }
 
 export default function ProductInfo({ product }: ProductInfoProps) {
-    // Initialize hooks first, before any early returns
+    // Initialize hooks first (React rules)
     const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null);
     const [selectedProductUnit, setSelectedProductUnit] = useState<ProductUnit | null>(null);
-    const { currency } = useCurrencySafe();
     const [selectedQuantity, setSelectedQuantity] = useState(1);
-    const { units: availableUnits, loading: unitsLoading, error: unitsError } = useUnits();
-    const { trackProductView, trackProductClick } = useUserBehavior();
     const [arAvailable, setArAvailable] = useState(false);
     const [showAR, setShowAR] = useState(false);
 
-    // Safe default unit computation
-    const defaultUnit = product?.baseUnit ?? product?.units?.[0] ?? null;
-    
-    // Sync selectedUnit with defaultUnit when it changes
-    useEffect(() => {
-        if (defaultUnit && !selectedUnit) {
-            setSelectedUnit(defaultUnit);
-        }
-    }, [defaultUnit, selectedUnit]);
+    // Safe hook usage with fallbacks
+    const { currency = 'EUR' } = useCurrencySafe() || {};
+    const { units: availableUnits = [], loading: unitsLoading = false, error: unitsError = null } = useUnits() || {};
+    const { trackProductView = () => {}, trackProductClick = () => {} } = useUserBehavior() || {};
 
     // Add data validation and error handling
     if (!product) {
@@ -52,6 +44,17 @@ export default function ProductInfo({ product }: ProductInfoProps) {
         );
     }
 
+    // Safe default unit computation
+    const defaultUnit = product?.baseUnit ?? product?.units?.[0] ?? null;
+    
+    // Sync selectedUnit with defaultUnit when it changes
+    useEffect(() => {
+        if (defaultUnit && !selectedUnit) {
+            setSelectedUnit(defaultUnit);
+        }
+    }, [defaultUnit, selectedUnit]);
+
+    // Check if product has required data
     if (!product.baseUnit && (!product.units || product.units.length === 0)) {
         console.error('ProductInfo: Product has no baseUnit or units', product);
         return (

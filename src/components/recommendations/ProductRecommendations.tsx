@@ -31,8 +31,20 @@ export default function ProductRecommendations({
   const [recommendations, setRecommendations] = useState<RecommendationResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { getRecommendationContext, trackProductView } = useUserBehavior();
-  const { currency } = useCurrencySafe();
+  const { getRecommendationContext = () => ({
+    currentProductId: currentProduct?.id,
+    currentCategoryId: currentProduct?.category,
+    userPreferences: {
+      preferredCategories: [],
+      priceRange: { min: 0, max: 1000 },
+      preferredUnits: [],
+      browsingHistory: [],
+      cartHistory: [],
+      purchaseHistory: []
+    },
+    recentActivity: []
+  }), trackProductView = () => {} } = useUserBehavior() || {};
+  const { currency = 'EUR' } = useCurrencySafe() || {};
 
   useEffect(() => {
     const generateRecommendations = async () => {
