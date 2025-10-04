@@ -86,7 +86,7 @@ export const QuickViewModal = ({ product, children }: QuickViewModalProps) => {
                   alt={product?.name}
                   width={400}
                   height={400}
-                  quality={90}
+                  quality={85}
                   className="relative z-10 rounded-xl w-full h-full object-contain"
                   sizes="(max-width: 768px) 100vw, 50vw"
                 />

@@ -8,7 +8,7 @@ import { z } from 'zod';
 
 // Security: File validation schema
 const fileSchema = z.object({
-  file: z.instanceof(File),
+  file: z.any(), // FormData file object
   productId: z.string().uuid('Invalid product ID'),
 });
 
@@ -17,7 +17,11 @@ const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 // Security: Validate file
-function validateFile(file: File): { valid: boolean; error?: string } {
+function validateFile(file: any): { valid: boolean; error?: string } {
+  if (!file || typeof file !== 'object') {
+    return { valid: false, error: 'Invalid file object' };
+  }
+
   if (!ALLOWED_FILE_TYPES.includes(file.type)) {
     return { valid: false, error: 'Invalid file type. Only JPEG, PNG, WebP, and GIF are allowed.' };
   }

@@ -118,7 +118,7 @@ export default function ProductDetail(product: ProductsWithImages) {
                           alt={product?.name}
                           width={600}
                           height={600}
-                          quality={90}
+                          quality={85}
                           className="relative z-10 rounded-xl w-full h-auto object-contain"
                           sizes="(max-width: 768px) 100vw, 50vw"
                           priority

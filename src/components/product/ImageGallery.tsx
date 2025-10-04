@@ -89,7 +89,7 @@ export default function ImageGallery({ images, productName }: ImageGalleryProps)
                                 className="object-contain rounded-xl"
                                 sizes="(max-width: 768px) 100vw, 50vw"
                                 priority={selectedImageIndex === 0}
-                                quality={90}
+                                quality={85}
                             />
                         </motion.div>
                     </AnimatePresence>

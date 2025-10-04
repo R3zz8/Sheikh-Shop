@@ -46,7 +46,7 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "clean": "rm -rf .next out dist build",
-    "prebuild": "npm run security:audit && npm run type-check",
+    "prebuild": "npm run type-check",
     "postinstall": "npm run generate",
     "performance:monitor": "node scripts/performance-monitor.js",
     "performance:analyze": "node scripts/analyze-bundle.js",

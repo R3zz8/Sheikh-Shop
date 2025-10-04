@@ -9,9 +9,8 @@ import DiscountBadge from '@/components/ui/DiscountBadge';
 import ProductBadge from '@/components/ui/ProductBadge';
 import CompactProductUnitSelector from '@/components/ui/CompactProductUnitSelector';
 import { calculateFinalPricing } from '@/lib/pricing';
-import { formatPrice } from '@/lib/currency';
+import { formatPrice, convertCurrency } from '@/lib/currency';
 import { useCurrencySafe } from '@/providers/CurrencyProvider';
-import { convertCurrency } from '@/lib/currency';
 import { useUnits } from '@/hooks/useUnits';
 import { useUserBehavior } from '@/hooks/useUserBehavior';
 import { useState, useMemo, useEffect } from 'react';
@@ -23,7 +22,8 @@ interface ProductInfoProps {
 }
 
 export default function ProductInfo({ product }: ProductInfoProps) {
-    const [selectedUnit, setSelectedUnit] = useState<Unit>(product.baseUnit);
+    // Initialize hooks first, before any early returns
+    const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null);
     const [selectedProductUnit, setSelectedProductUnit] = useState<ProductUnit | null>(null);
     const { currency } = useCurrencySafe();
     const [selectedQuantity, setSelectedQuantity] = useState(1);
@@ -31,6 +31,35 @@ export default function ProductInfo({ product }: ProductInfoProps) {
     const { trackProductView, trackProductClick } = useUserBehavior();
     const [arAvailable, setArAvailable] = useState(false);
     const [showAR, setShowAR] = useState(false);
+
+    // Safe default unit computation
+    const defaultUnit = product?.baseUnit ?? product?.units?.[0] ?? null;
+    
+    // Sync selectedUnit with defaultUnit when it changes
+    useEffect(() => {
+        if (defaultUnit && !selectedUnit) {
+            setSelectedUnit(defaultUnit);
+        }
+    }, [defaultUnit, selectedUnit]);
+
+    // Add data validation and error handling
+    if (!product) {
+        console.error('ProductInfo: Product is null or undefined');
+        return (
+            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-6 text-center">
+                <p className="text-red-300">Product data is missing</p>
+            </div>
+        );
+    }
+
+    if (!product.baseUnit && (!product.units || product.units.length === 0)) {
+        console.error('ProductInfo: Product has no baseUnit or units', product);
+        return (
+            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-6 text-center">
+                <p className="text-red-300">Product has no available units</p>
+            </div>
+        );
+    }
 
     // Track product view on component mount
     useEffect(() => {
@@ -76,7 +105,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
     // Calculate pricing with discounts (basePrice is in EUR)
     const pricing = calculateFinalPricing(
         useProductUnits && selectedProductUnit ? Number(selectedProductUnit.price) : product.basePrice,
-        selectedUnit,
+        selectedUnit || defaultUnit,
         selectedQuantity,
         product.discounts
     );
@@ -169,7 +198,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                     {/* Unit Display and Selector Row */}
                     <div className="flex items-center justify-between gap-4">
                         <p className="text-sm md:text-lg text-amber-200/80">
-                            per {useProductUnits && selectedProductUnit ? selectedProductUnit.name : selectedUnit.symbol}
+                            per {useProductUnits && selectedProductUnit ? selectedProductUnit.name : (selectedUnit?.symbol || defaultUnit?.symbol || 'unit')}
                         </p>
                         
                         {/* Compact Unit Selector for ProductUnits */}
@@ -452,16 +481,22 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                             </p>
                         </div>
                     ) : (
-                        <UnitSelector
-                            units={availableUnits}
-                            basePrice={product.basePrice}
-                            baseUnit={product.baseUnit}
-                            selectedUnit={selectedUnit}
-                            selectedQuantity={selectedQuantity}
-                            onUnitChange={setSelectedUnit}
-                            onQuantityChange={setSelectedQuantity}
-                            showPriceCalculation={true}
-                        />
+                        defaultUnit ? (
+                            <UnitSelector
+                                units={availableUnits}
+                                basePrice={product.basePrice}
+                                baseUnit={defaultUnit}
+                                selectedUnit={selectedUnit || defaultUnit}
+                                selectedQuantity={selectedQuantity}
+                                onUnitChange={setSelectedUnit}
+                                onQuantityChange={setSelectedQuantity}
+                                showPriceCalculation={true}
+                            />
+                        ) : (
+                            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
+                                <p className="text-red-300 text-sm">No units available for this product</p>
+                            </div>
+                        )
                     )
                 )}
             </motion.div>
@@ -516,7 +551,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
             >
                 <AddToCartButton 
                     product={product} 
-                    selectedUnit={selectedUnit}
+                    selectedUnit={selectedUnit || defaultUnit}
                     selectedQuantity={selectedQuantity}
                     selectedProductUnit={selectedProductUnit}
                     pricing={pricing}

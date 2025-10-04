@@ -26,12 +26,14 @@ export default function BundleRecommendations({
 }: BundleRecommendationsProps) {
   const [bundles, setBundles] = useState<BundleRecommendation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { getRecommendationContext, trackProductView } = useUserBehavior();
   const { currency } = useCurrencySafe();
 
   useEffect(() => {
     const generateBundles = async () => {
       setLoading(true);
+      setError(null);
       
       try {
         if (!currentProduct) {
@@ -50,6 +52,7 @@ export default function BundleRecommendations({
         setBundles(bundleResults);
       } catch (error) {
         console.error('Failed to generate bundles:', error);
+        setError(error instanceof Error ? error.message : 'Failed to load bundle recommendations');
         setBundles([]);
       } finally {
         setLoading(false);
@@ -74,6 +77,14 @@ export default function BundleRecommendations({
             <div key={i} className="h-48 bg-gray-200 animate-pulse rounded-lg"></div>
           ))}
         </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
+        <p className="text-red-300 text-sm">{error}</p>
       </div>
     );
   }

@@ -30,12 +30,14 @@ export default function ProductRecommendations({
 }: ProductRecommendationsProps) {
   const [recommendations, setRecommendations] = useState<RecommendationResult[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { getRecommendationContext, trackProductView } = useUserBehavior();
   const { currency } = useCurrencySafe();
 
   useEffect(() => {
     const generateRecommendations = async () => {
       setLoading(true);
+      setError(null);
       
       try {
         const context = getRecommendationContext(
@@ -76,6 +78,7 @@ export default function ProductRecommendations({
         setRecommendations(results);
       } catch (error) {
         console.error('Failed to generate recommendations:', error);
+        setError(error instanceof Error ? error.message : 'Failed to load recommendations');
         setRecommendations([]);
       } finally {
         setLoading(false);
@@ -124,6 +127,14 @@ export default function ProductRecommendations({
             <div key={i} className="h-64 bg-gray-200 animate-pulse rounded-lg"></div>
           ))}
         </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
+        <p className="text-red-300 text-sm">{error}</p>
       </div>
     );
   }

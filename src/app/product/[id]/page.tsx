@@ -140,12 +140,24 @@ async function page({ params }: { params: Promise<{ id: string }> }) {
         const data = await params;
         const { id } = data;
 
+        console.log('Product page: Fetching product with ID:', id);
+
         const [product, allProducts] = await Promise.all([
             getProduct(id),
             getAllProducts()
         ]);
 
+        console.log('Product page: Product data received:', {
+            found: !!product,
+            id: product?.id,
+            name: product?.name,
+            baseUnit: !!product?.baseUnit,
+            units: product?.units?.length || 0,
+            images: product?.images?.length || 0
+        });
+
         if (!product) {
+            console.error('Product page: Product not found for ID:', id);
             notFound();
         }
 

@@ -159,30 +159,43 @@ class UserBehaviorTracker {
 const behaviorTracker = new UserBehaviorTracker();
 
 export function useUserBehavior() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [isTracking, setIsTracking] = useState(false);
 
   useEffect(() => {
-    if (session?.user?.id) {
-      behaviorTracker.setUserId(session.user.id);
+    try {
+      console.log('useUserBehavior: Session status:', status, 'Session data:', session);
+      if (session?.user?.id) {
+        behaviorTracker.setUserId(session.user.id);
+      }
+    } catch (error) {
+      console.error('Error setting user ID:', error);
     }
-  }, [session]);
+  }, [session, status]);
 
   const trackEvent = useCallback((event: Omit<UserBehaviorEvent, 'id' | 'sessionId' | 'userId' | 'timestamp'>) => {
-    behaviorTracker.track({
-      ...event,
-      pageUrl: window.location.href,
-    });
+    try {
+      behaviorTracker.track({
+        ...event,
+        pageUrl: window.location.href,
+      });
+    } catch (error) {
+      console.error('Error tracking event:', error);
+    }
   }, []);
 
   const trackProductView = useCallback((productId: string, categoryId?: string, unitId?: string) => {
-    trackEvent({
-      eventType: 'view',
-      productId,
-      categoryId,
-      unitId,
-      pageUrl: window.location.href,
-    });
+    try {
+      trackEvent({
+        eventType: 'view',
+        productId,
+        categoryId,
+        unitId,
+        pageUrl: window.location.href,
+      });
+    } catch (error) {
+      console.error('Error tracking product view:', error);
+    }
   }, [trackEvent]);
 
   const trackProductClick = useCallback((productId: string, categoryId?: string, unitId?: string) => {
@@ -240,7 +253,25 @@ export function useUserBehavior() {
   }, []);
 
   const getRecommendationContext = useCallback((currentProductId?: string, currentCategoryId?: string) => {
-    return behaviorTracker.getRecommendationContext(currentProductId, currentCategoryId);
+    try {
+      return behaviorTracker.getRecommendationContext(currentProductId, currentCategoryId);
+    } catch (error) {
+      console.error('Error getting recommendation context:', error);
+      // Return a default context if there's an error
+      return {
+        currentProductId,
+        currentCategoryId,
+        userPreferences: {
+          preferredCategories: [],
+          priceRange: { min: 0, max: 1000 },
+          preferredUnits: [],
+          browsingHistory: [],
+          cartHistory: [],
+          purchaseHistory: []
+        },
+        recentActivity: []
+      };
+    }
   }, []);
 
   return {

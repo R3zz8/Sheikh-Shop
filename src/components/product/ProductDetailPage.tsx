@@ -8,6 +8,7 @@ import AddToCartButton from './AddToCartButton';
 import ProductRecommendations from '@/components/recommendations/ProductRecommendations';
 import BundleRecommendations from '@/components/recommendations/BundleRecommendations';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import ProductDetailSkeleton from '@/components/ui/ProductDetailSkeleton';
 
 interface ProductDetailPageProps {
     product: ProductsWithImages;
@@ -15,6 +16,20 @@ interface ProductDetailPageProps {
 }
 
 export default function ProductDetailPage({ product, allProducts = [] }: ProductDetailPageProps) {
+    // Add data validation and logging
+    console.log('ProductDetailPage: Received product data:', {
+        id: product?.id,
+        name: product?.name,
+        baseUnit: product?.baseUnit,
+        units: product?.units?.length || 0,
+        images: product?.images?.length || 0
+    });
+
+    if (!product) {
+        console.error('ProductDetailPage: Product is null or undefined');
+        return <ProductDetailSkeleton />;
+    }
+
     return (
         <ErrorBoundary>
             <div className="min-h-screen bg-gradient-to-br from-amber-950/95 via-stone-900/95 to-amber-950/95 relative overflow-hidden">
@@ -53,7 +68,13 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
                                     {/* Right side - Product Info */}
                                     <ErrorBoundary fallback={
                                         <div className="bg-white/5 rounded-lg p-8 text-center">
-                                            <p className="text-gray-300">Failed to load product information</p>
+                                            <div className="animate-pulse">
+                                                <div className="h-8 bg-amber-200/20 rounded w-3/4 mb-4"></div>
+                                                <div className="h-6 bg-amber-200/20 rounded w-1/2 mb-4"></div>
+                                                <div className="h-4 bg-amber-200/20 rounded w-2/3 mb-4"></div>
+                                                <div className="h-4 bg-amber-200/20 rounded w-1/3"></div>
+                                            </div>
+                                            <p className="text-gray-300 mt-4">Failed to load product information</p>
                                         </div>
                                     }>
                                         <ProductInfo product={product} />
