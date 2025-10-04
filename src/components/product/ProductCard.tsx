@@ -52,16 +52,16 @@ export default function ProductCard({ product, className = '', onClick }: Produc
 
   return (
     <div 
-      className={`bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow ${className}`}
+      className={`bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow h-[420px] lg:h-[440px] flex flex-col overflow-hidden ${className}`}
       onClick={onClick}
     >
       <Link href={`/products/${product.id}`}>
-        <div className="aspect-square relative overflow-hidden rounded-t-lg">
+        <div className="relative overflow-hidden rounded-t-lg h-40 lg:h-44">
           <Image
             src={imageUrl}
             alt={product.name}
             fill
-            className="object-cover"
+            className="object-contain mx-auto"
           />
           
           {/* Discount Badge */}
@@ -82,11 +82,11 @@ export default function ProductCard({ product, className = '', onClick }: Produc
             </div>
           )}
         </div>
-        <div className="p-4">
-          <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
+        <div className="p-4 flex flex-col flex-grow min-h-0">
+          <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 text-base leading-tight">
             {product.name}
           </h3>
-          <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+          <p className="text-sm text-gray-600 mb-2 line-clamp-2 leading-relaxed">
             {product.description}
           </p>
           <div className="space-y-2">
@@ -98,7 +98,7 @@ export default function ProductCard({ product, className = '', onClick }: Produc
                     {formatPrice(pricing.originalPrice)}
                   </span>
                 )}
-                <span className="text-lg font-bold text-amber-600">
+                <span className="text-xl font-bold text-amber-600">
                   {formatPrice(pricing.finalPrice)}
                 </span>
               </div>

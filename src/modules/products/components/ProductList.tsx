@@ -158,7 +158,7 @@ export default function ProductList({
 
               {/* Desktop: Responsive Grid (min 3 cols) */}
               <div className="hidden md:block">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8 auto-rows-fr">
                   {filteredProducts.map((product, index) => (
                     <ProductItemResponsive 
                       key={product.id} 

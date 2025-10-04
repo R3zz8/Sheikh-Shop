@@ -179,10 +179,10 @@ export default function ProductItem({
 
   return (
     <>
-      <div ref={productRef} className="relative bg-white/8 backdrop-blur-sm rounded-xl shadow-md hover:shadow-xl transition-transform duration-300 hover:scale-[1.01] border border-amber-200/20 hover:border-amber-300/40 hover:bg-white/12 flex flex-col h-full md:h-[460px] group">
+      <div ref={productRef} className="relative bg-white/8 backdrop-blur-sm rounded-xl shadow-md hover:shadow-xl transition-transform duration-300 hover:scale-[1.01] border border-amber-200/20 hover:border-amber-300/40 hover:bg-white/12 flex flex-col h-[420px] lg:h-[440px] group overflow-hidden">
         {/* Product Image Container with Badges */}
         <Link href={`/product/${product.id}`} className="block relative">
-          <div className="relative w-full h-48 md:h-52 p-3 bg-gradient-to-br from-amber-950/20 via-stone-900/20 to-amber-950/20">
+          <div className="relative w-full h-40 lg:h-44 p-3 bg-gradient-to-br from-amber-950/20 via-stone-900/20 to-amber-950/20">
             {!isImageLoaded && (
               <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-yellow-500/10 animate-pulse rounded-xl" />
             )}
@@ -192,7 +192,7 @@ export default function ProductItem({
               width={200}
               height={200}
               className={cn(
-                'object-contain max-h-full max-w-full transition-all duration-300 rounded-xl shadow',
+                'object-contain max-h-full max-w-full transition-all duration-300 rounded-xl shadow mx-auto',
                 isImageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95',
               )}
               loading={index < 4 ? 'eager' : 'lazy'}
@@ -234,37 +234,37 @@ export default function ProductItem({
         </Link>
 
         {/* Product Content - Flexible content area */}
-        <div className="relative z-10 p-4 flex flex-col flex-grow">
+        <div className="relative z-10 p-4 flex flex-col flex-grow min-h-0">
           {/* Product Name */}
           <Link href={`/product/${product.id}`} className="block mb-2">
-            <h3 className="text-lg font-semibold text-white group-hover:text-amber-200 transition-colors duration-300 cursor-pointer">
+            <h3 className="text-base font-semibold text-white group-hover:text-amber-200 transition-colors duration-300 cursor-pointer line-clamp-2 leading-tight">
               {product?.name}
             </h3>
           </Link>
 
-          {/* Description - clamp to 3 lines on desktop */}
-          <p className="text-amber-200/80 text-sm mb-3 line-clamp-3">
+          {/* Description - clamp to 2 lines on desktop */}
+          <p className="text-amber-200/80 text-sm mb-3 line-clamp-2 leading-relaxed">
             {product?.description || 'Premium quality product with exceptional features.'}
           </p>
 
           {/* Star Rating */}
-          <div className="flex items-center gap-1 mb-3">
+          <div className="flex items-center gap-1 mb-2">
             {[1, 2, 3, 4, 5].map((star) => (
               <Star
                 key={`product-item-star-${star}`}
                 className={cn(
-                  'w-4 h-4',
+                  'w-3.5 h-3.5',
                   star <= rating ? 'fill-amber-300 text-amber-300' : 'text-amber-200/40',
                 )}
               />
             ))}
-            <span className="text-amber-200/60 text-sm ml-2">
+            <span className="text-amber-200/60 text-xs ml-1">
               ({reviewCount})
             </span>
           </div>
 
           {/* Price Section */}
-          <div className="mb-3 space-y-2">
+          <div className="mb-2 space-y-1">
             {pricing.hasDiscount && (
               <div className="flex items-center gap-2">
                 <p className="text-sm text-gray-400 line-through font-medium">
@@ -279,7 +279,7 @@ export default function ProductItem({
             {/* Price and Unit Selector Row */}
             <div className="flex items-center justify-between gap-2">
               <div className="flex flex-col flex-1">
-                <p className="text-2xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
+                <p className="text-xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
                   {formatPriceUtil(pricing.finalPrice)}
                 </p>
                 <p className="text-xs text-amber-200/60">
@@ -320,7 +320,7 @@ export default function ProductItem({
             ref={cartButtonRef}
             onClick={handleAddToCart}
             disabled={addToCartMutation.isPending}
-            className="w-full bg-gradient-to-r from-amber-600 via-yellow-600 to-orange-600 hover:from-amber-700 hover:via-yellow-700 hover:to-orange-700 text-white font-semibold border border-amber-500/30 shadow-lg hover:shadow-xl hover:shadow-amber-900/30 transition-all"
+            className="w-full py-2 px-3 bg-gradient-to-r from-amber-600 via-yellow-600 to-orange-600 hover:from-amber-700 hover:via-yellow-700 hover:to-orange-700 text-white text-sm font-semibold border border-amber-500/30 shadow-lg hover:shadow-xl hover:shadow-amber-900/30 transition-all"
           >
             <ShoppingCart className="w-4 h-4 mr-2" />
             {addToCartMutation.isPending ? 'Adding...' : 'Add to Cart'}
