@@ -25,17 +25,17 @@ const UploadImage: FC<{ productId: string }> = ({ productId }) => {
     }
   };
 
-  const updateImageList = (imageId: string) => {
-    setImages(
-      (preState) => preState?.filter((img) => img.id !== imageId) || null,
+  const updateImageList = (publicId: string) => {
+    setImages((preState) =>
+      preState?.filter((img) => (img as any).publicId !== publicId) || null,
     );
   };
 
-  const handleDelete = async (imageId: string) => {
+  const handleDelete = async (publicId: string) => {
     try {
       setLoading(true);
-      await deleteImage(imageId);
-      updateImageList(imageId);
+      await deleteImage(publicId);
+      updateImageList(publicId);
     } catch {
       alert('Failed to delete image');
     } finally {
@@ -64,7 +64,12 @@ const UploadImage: FC<{ productId: string }> = ({ productId }) => {
       }
 
       if (response?.data) {
-        setImages(response.data);
+        // If API returns single created image, append; if list, set
+        if (Array.isArray(response.data)) {
+          setImages(response.data);
+        } else {
+          setImages((prev) => ([response.data, ...(prev || [])] as any));
+        }
         setFile(null);
         // Clear the file input
         const fileInput = document.getElementById('picture') as HTMLInputElement;
@@ -132,13 +137,13 @@ const UploadImage: FC<{ productId: string }> = ({ productId }) => {
                 <div className="relative group" key={item.id}>
                   <CircleX
                     className="absolute top-1 right-1 text-red-500 p-1 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer z-10"
-                    onClick={() => handleDelete(item.id)}
+                    onClick={() => handleDelete((item as any).publicId)}
                   />
                   <Image
                     width={100}
                     height={100}
                     alt="product image"
-                    src={item.image}
+                    src={(item as any).secureUrl || item.image}
                     className="mt-4 mx-auto rounded-md"
                   />
                 </div>

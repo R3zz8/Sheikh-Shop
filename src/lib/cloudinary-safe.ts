@@ -1,12 +1,8 @@
 import 'server-only';
 import { v2 as cloudinary } from 'cloudinary';
 
-// Lazy initialization to avoid errors during import
-let isInitialized = false;
-
-function initializeCloudinary() {
-    if (isInitialized) return;
-    
+// Safe Cloudinary initialization that doesn't throw during import
+export function getCloudinary() {
     const {
         CLOUDINARY_CLOUD_NAME,
         CLOUDINARY_API_KEY,
@@ -17,27 +13,28 @@ function initializeCloudinary() {
         throw new Error('Cloudinary environment variables are required');
     }
 
+    // Configure Cloudinary
     cloudinary.config({
         cloud_name: CLOUDINARY_CLOUD_NAME,
         api_key: CLOUDINARY_API_KEY,
         api_secret: CLOUDINARY_API_SECRET,
         secure: true,
     });
-    
-    isInitialized = true;
+
+    return cloudinary;
 }
 
 // Lightweight helpers for common transformations
 export const cloudinaryHelpers = {
     urlOptimized(publicId: string): string {
-        initializeCloudinary();
+        const cloudinary = getCloudinary();
         return cloudinary.url(publicId, {
             fetch_format: 'auto',
             quality: 'auto',
         });
     },
     urlThumbnail(publicId: string, width = 300, height = 300): string {
-        initializeCloudinary();
+        const cloudinary = getCloudinary();
         return cloudinary.url(publicId, {
             width,
             height,
@@ -48,7 +45,7 @@ export const cloudinaryHelpers = {
         });
     },
     urlResponsive(publicId: string, width: number): string {
-        initializeCloudinary();
+        const cloudinary = getCloudinary();
         return cloudinary.url(publicId, {
             width,
             crop: 'scale',
@@ -58,4 +55,3 @@ export const cloudinaryHelpers = {
     },
 };
 
-export default cloudinary;

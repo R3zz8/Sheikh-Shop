@@ -19,6 +19,12 @@ export default async function Products() {
             select: {
               id: true,
               image: true,
+              secureUrl: true,
+              publicId: true,
+              width: true,
+              height: true,
+              format: true,
+              bytes: true,
               productId: true,
               createdAt: true,
             },

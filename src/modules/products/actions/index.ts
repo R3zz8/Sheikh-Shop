@@ -199,16 +199,18 @@ export const deleteProduct = async (productId: string) => {
       throw new Error('Product not found');
     }
 
-    // Delete associated images from filesystem
+    // Delete associated images from filesystem (only for local images)
     for (const image of existingProduct.images) {
-      try {
-        const fs = await import('fs/promises');
-        const path = await import('path');
-        const imagePath = path.join(process.cwd(), 'public', image.image);
-        await fs.unlink(imagePath);
-      } catch (fileError) {
-        // Continue even if file doesn't exist
-        console.warn('Could not delete image file:', image.image);
+      if (image.image && !image.image.startsWith('http')) {
+        try {
+          const fs = await import('fs/promises');
+          const path = await import('path');
+          const imagePath = path.join(process.cwd(), 'public', image.image);
+          await fs.unlink(imagePath);
+        } catch (fileError) {
+          // Continue even if file doesn't exist
+          console.warn('Could not delete image file:', image.image);
+        }
       }
     }
 
@@ -272,15 +274,17 @@ export const bulkProductOperation = async (formData: FormData) => {
             where: { productId: product.id }
           });
 
-          // Delete image files
+          // Delete image files (only for local images)
           for (const image of images) {
-            try {
-              const fs = await import('fs/promises');
-              const path = await import('path');
-              const imagePath = path.join(process.cwd(), 'public', image.image);
-              await fs.unlink(imagePath);
-            } catch (fileError) {
-              console.warn('Could not delete image file:', image.image);
+            if (image.image && !image.image.startsWith('http')) {
+              try {
+                const fs = await import('fs/promises');
+                const path = await import('path');
+                const imagePath = path.join(process.cwd(), 'public', image.image);
+                await fs.unlink(imagePath);
+              } catch (fileError) {
+                console.warn('Could not delete image file:', image.image);
+              }
             }
           }
         }

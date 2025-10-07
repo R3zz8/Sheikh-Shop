@@ -6,7 +6,13 @@ import Image from 'next/image';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface ImageGalleryProps {
-    images: Array<{ id: string; image: string; productId: string | null | undefined }>;
+    images: Array<{ 
+        id: string; 
+        image: string | null; 
+        secureUrl?: string | null;
+        publicId?: string | null;
+        productId: string | null | undefined 
+    }>;
     productName: string;
 }
 
@@ -83,7 +89,7 @@ export default function ImageGallery({ images, productName }: ImageGalleryProps)
                             className="w-full h-full"
                         >
                             <Image
-                                src={images[selectedImageIndex]?.image || ''}
+                                src={images[selectedImageIndex]?.secureUrl || images[selectedImageIndex]?.image || '/noImage.jpg'}
                                 alt={`${productName} - Image ${selectedImageIndex + 1}`}
                                 fill
                                 className="object-contain rounded-xl"
@@ -118,7 +124,7 @@ export default function ImageGallery({ images, productName }: ImageGalleryProps)
                                 }`}
                         >
                             <Image
-                                src={image.image}
+                                src={image.secureUrl || image.image || '/noImage.jpg'}
                                 alt={`${productName} thumbnail ${index + 1}`}
                                 fill
                                 className="object-cover"

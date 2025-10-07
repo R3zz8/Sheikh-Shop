@@ -109,7 +109,7 @@ export function generateProductMetadata(product: {
   description?: string;
   category: string;
   basePrice: number;
-  images?: Array<{ image: string }>;
+  images?: Array<{ image: string | null; secureUrl?: string | null }>;
   id: string;
 }) {
   const title = `${product.name} - Premium ${product.category} | Sheikh Shop`;
