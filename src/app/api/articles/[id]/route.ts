@@ -139,7 +139,16 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const user = await checkArticlePermissions(['SUPERADMIN', 'ADMIN', 'EDITOR', 'AUTHOR']);
+    const { checkAccess } = await import('@/lib/checkAccess');
+    const ok = await checkAccess(req, ['SUPERADMIN', 'ADMIN', 'EDITOR', 'AUTHOR']);
+    if (!ok) {
+      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+    }
+    // emulate user context shape required by canModifyArticle
+    const user = {
+      id: req.headers.get('x-user-id') || '',
+      role: (req.headers.get('x-user-role') || '').toUpperCase(),
+    } as any;
     
     // Check if user can modify this specific article
     const canModify = await canModifyArticle(id, user.id, user.role);

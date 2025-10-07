@@ -239,7 +239,15 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const user = await checkCommentModerationPermissions(['SUPERADMIN', 'ADMIN', 'EDITOR', 'MODERATOR', 'AUTHOR']);
+    const { checkAccess } = await import('@/lib/checkAccess');
+    const ok = await checkAccess(req, ['SUPERADMIN', 'ADMIN', 'EDITOR', 'MODERATOR', 'AUTHOR']);
+    if (!ok) {
+      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+    }
+    const user = {
+      id: req.headers.get('x-user-id') || '',
+      role: (req.headers.get('x-user-role') || '').toUpperCase(),
+    } as any;
     
     // Check if user can modify this specific comment
     const canModify = await canModifyComment(id, user.id, user.role);

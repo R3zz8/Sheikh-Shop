@@ -98,14 +98,14 @@ model Discount {
 model Image {
   id        String   @id @default(uuid())
   image     String?  @db.VarChar(500)
-  secureUrl String?  @db.VarChar(500)
-  publicId  String?  @db.VarChar(255)
-  width     Int?
-  height    Int?
-  format    String?  @db.VarChar(20)
-  bytes     Int?
   productId String?
   createdAt DateTime @default(now())
+  bytes     Int?
+  format    String?  @db.VarChar(20)
+  height    Int?
+  publicId  String?  @db.VarChar(255)
+  secureUrl String?  @db.VarChar(500)
+  width     Int?
   product   Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@index([productId])

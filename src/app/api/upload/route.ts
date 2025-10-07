@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCloudinary } from '@/lib/cloudinary-safe';
+import { getCloudinary, pingCloudinary } from '@/lib/cloudinary-safe';
+import { checkAccess } from '@/lib/checkAccess';
 import { prisma } from '@/lib/prisma';
 import { rateLimit } from '@/lib/rateLimit';
 import { getServerSession as getNextAuthServerSession } from 'next-auth';
@@ -11,10 +12,9 @@ const MAX_SIZE_BYTES = 2 * 1024 * 1024; // 2MB
 export async function POST(req: NextRequest) {
     // RBAC: Only SUPER_ADMIN, ADMIN, EDITOR
     // Get user role from middleware headers (middleware handles auth)
-    const userRole = req.headers.get('x-user-role');
-    const allowed = userRole === 'SUPERADMIN' || userRole === 'SUPER_ADMIN' || userRole === 'ADMIN' || userRole === 'EDITOR';
+    const allowed = await checkAccess(req, ['SUPERADMIN', 'ADMIN', 'EDITOR']);
     if (!allowed) {
-        console.warn('[UPLOAD RBAC] Unauthorized upload attempt, role:', userRole);
+        console.warn('[UPLOAD RBAC] Unauthorized upload attempt');
         return NextResponse.json({ error: 'You are not authorized to perform this action.' }, { status: 403 });
     }
 
@@ -62,6 +62,12 @@ export async function POST(req: NextRequest) {
         const buffer = Buffer.from(arrayBuffer);
         console.log('[UPLOAD] Buffer created, size:', buffer.length);
 
+        // Diagnostics: verify Cloudinary credentials via ping before upload
+        const ping = await pingCloudinary();
+        console.log('[UPLOAD] Cloudinary ping:', {
+            ok: ping.ok,
+            error: ping.ok ? undefined : (ping.error && (ping.error as any).message),
+        });
         console.log('[UPLOAD] Starting Cloudinary upload...');
         const cloudinary = getCloudinary();
         
@@ -127,11 +133,10 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
     // RBAC: Only SUPER_ADMIN, ADMIN, EDITOR can list product images
     // Get user role from middleware headers (middleware handles auth)
-    const userRole = req.headers.get('x-user-role');
-    const allowed = userRole === 'SUPERADMIN' || userRole === 'SUPER_ADMIN' || userRole === 'ADMIN' || userRole === 'EDITOR';
+    const allowed = await checkAccess(req, ['SUPERADMIN', 'ADMIN', 'EDITOR']);
     if (!allowed) {
         if (process.env.NODE_ENV !== 'production') {
-            console.warn('[UPLOAD LIST RBAC] Unauthorized list attempt, role:', userRole);
+            console.warn('[UPLOAD LIST RBAC] Unauthorized list attempt');
         }
         return NextResponse.json({ error: 'You are not authorized to perform this action.' }, { status: 403 });
     }

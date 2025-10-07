@@ -7,6 +7,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
+import { checkAccess } from '@/lib/checkAccess';
 
 // Enhanced validation schema with status
 const productSchema = z.object({
@@ -34,15 +35,31 @@ const bulkOperationSchema = z.object({
   action: z.enum(['delete', 'activate', 'deactivate', 'draft']),
 });
 
-// Security: Verify user has admin privileges
+// Security: Verify user has admin privileges using unified RBAC
 async function verifyAdminAccess() {
   const cookieStore = await cookies();
   const token = cookieStore.get('session-token')?.value;
-
+  
   if (!token) {
     throw new Error('Authentication required');
   }
 
+  // Create a mock request object for checkAccess
+  const mockRequest = {
+    headers: {
+      get: (name: string) => {
+        if (name === 'cookie') return `session-token=${token}`;
+        return null;
+      }
+    }
+  } as any;
+
+  const allowed = await checkAccess(mockRequest, ['SUPERADMIN', 'ADMIN', 'EDITOR']);
+  if (!allowed) {
+    throw new Error('Insufficient permissions');
+  }
+
+  // Get user ID from token for audit logging
   try {
     const { payload } = await jwtVerify(
       token,
@@ -53,13 +70,7 @@ async function verifyAdminAccess() {
         audience: 'sheikh-shop-users',
       },
     );
-
-    const userRole = payload.role as string;
-    if (!['ADMIN', 'SUPERADMIN'].includes(userRole)) {
-      throw new Error('Insufficient permissions');
-    }
-
-    return { userId: payload.id as string, userRole };
+    return { userId: payload.id as string, userRole: payload.role as string };
   } catch (error) {
     throw new Error('Authentication failed');
   }

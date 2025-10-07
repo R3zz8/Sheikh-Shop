@@ -66,12 +66,10 @@ export async function GET(req: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
   try {
-    // Get user info from middleware headers
-    const userId = req.headers.get('x-user-id');
-    const userRole = req.headers.get('x-user-role');
-    
-    // Check if user is authenticated and has required role
-    if (!userId || !userRole || !['SUPERADMIN', 'ADMIN', 'EDITOR'].includes(userRole)) {
+    // Get user info via unified access helper
+    const { checkAccess } = await import('@/lib/checkAccess');
+    const allowed = await checkAccess(req, ['SUPERADMIN', 'ADMIN', 'EDITOR']);
+    if (!allowed) {
       return NextResponse.json(
         { error: 'Unauthorized: Insufficient permissions' },
         { status: 403 }

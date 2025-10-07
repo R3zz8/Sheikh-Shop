@@ -1,22 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCloudinary } from '@/lib/cloudinary-safe';
 import { prisma } from '@/lib/prisma';
-import { getServerSession as getNextAuthServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { checkAccess } from '@/lib/checkAccess';
 
 export async function DELETE(
   req: NextRequest,
   { params }: { params: { publicId: string } }
 ) {
   try {
-    // RBAC: Only SUPER_ADMIN, ADMIN, EDITOR can delete
-    // Get user role from middleware headers (middleware handles auth)
-    const userRole = req.headers.get('x-user-role');
-    const allowed = userRole === 'SUPERADMIN' || userRole === 'SUPER_ADMIN' || userRole === 'ADMIN' || userRole === 'EDITOR';
+    // RBAC: Only SUPERADMIN, ADMIN, EDITOR can delete
+    const allowed = await checkAccess(req, ['SUPERADMIN', 'ADMIN', 'EDITOR']);
     if (!allowed) {
-      if (process.env.NODE_ENV !== 'production') {
-        console.warn('[UPLOAD DELETE RBAC] Unauthorized delete attempt, role:', userRole);
-      }
+      console.warn('[UPLOAD DELETE RBAC] Unauthorized delete attempt');
       return NextResponse.json({ error: 'You are not authorized to perform this action.' }, { status: 403 });
     }
 

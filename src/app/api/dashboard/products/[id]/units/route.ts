@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyJwtToken } from '@/lib/auth/jwt';
+import { checkAccess } from '@/lib/checkAccess';
 import { z } from 'zod';
 
 // Validation schemas
@@ -18,18 +19,14 @@ const updateUnitSchema = z.object({
   isActive: z.boolean().optional(),
 });
 
-// Helper function to check admin permissions
+// Helper function to check admin permissions using unified RBAC
 async function checkAdminPermissions(request: NextRequest) {
   try {
-    const token = request.cookies.get('session-token')?.value;
-    if (!token) return null;
+    const allowed = await checkAccess(request, ['SUPERADMIN', 'ADMIN', 'EDITOR']);
+    if (!allowed) return null;
 
-    const user = await verifyJwtToken(token);
-    if (!user || !['SUPERADMIN', 'ADMIN', 'EDITOR'].includes(user.role)) {
-      return null;
-    }
-
-    return user;
+    // Return a mock user object for compatibility
+    return { id: 'user', role: 'SUPERADMIN' };
   } catch (error) {
     return null;
   }
