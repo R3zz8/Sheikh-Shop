@@ -1,11 +1,16 @@
 import { getServerSession } from '@/lib/auth';
 
 export async function checkAccess(req: Request, allowedRoles: string[]) {
-    const headerRole = req.headers.get('x-user-role');
-    const session = await getServerSession(req as any);
-    const role = (headerRole || (session?.role as string | undefined) || '').toUpperCase();
-    const allowed = allowedRoles.map(r => r.toUpperCase());
-    return allowed.includes(role);
+    try {
+        const headerRole = req.headers.get('x-user-role');
+        const session = await getServerSession(req as any);
+        const role = (headerRole || (session?.role as string | undefined) || '').toUpperCase();
+        const allowed = allowedRoles.map(r => r.toUpperCase());
+        return allowed.includes(role);
+    } catch (error) {
+        console.warn('[checkAccess] Session validation failed:', error);
+        return false;
+    }
 }
 
 export async function requireAccess(req: Request, allowedRoles: string[]) {
@@ -14,6 +19,11 @@ export async function requireAccess(req: Request, allowedRoles: string[]) {
         throw new Error('Insufficient permissions');
     }
 }
+
+
+
+
+
 
 
 

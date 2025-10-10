@@ -244,8 +244,19 @@ export async function middleware(request: NextRequest) {
         if (cached && cached.sessionId && cached.id) {
           user = cached;
         }
-      } catch {
-        // ignore
+      } catch (refreshError) {
+        // If refresh token is also invalid, clear cookies and redirect to login
+        console.warn('[MIDDLEWARE] Refresh token invalid:', refreshError);
+        const response = isApiRoute
+          ? NextResponse.json({ error: 'Session expired. Please log in again.' }, { status: 401 })
+          : NextResponse.redirect(new URL('/login', request.url));
+        
+        // Clear invalid cookies
+        response.cookies.delete('access-token');
+        response.cookies.delete('refresh-token');
+        
+        setCurrencyCookieIfNeeded(request, response);
+        return addSecurityHeaders(response);
       }
     }
   }

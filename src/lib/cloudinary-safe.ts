@@ -1,41 +1,25 @@
 import 'server-only';
 import { v2 as cloudinary } from 'cloudinary';
 
-// Safe Cloudinary initialization with normalization and diagnostics
+// Safe Cloudinary initialization that doesn't throw during import
 export function getCloudinary() {
-    const rawCloudName = (process.env.CLOUDINARY_CLOUD_NAME || '').trim();
-    const rawApiKey = (process.env.CLOUDINARY_API_KEY || '').trim();
-    const rawApiSecret = (process.env.CLOUDINARY_API_SECRET || '').trim();
+    const {
+        CLOUDINARY_CLOUD_NAME,
+        CLOUDINARY_API_KEY,
+        CLOUDINARY_API_SECRET,
+    } = process.env as Record<string, string | undefined>;
 
-    if (!rawCloudName || !rawApiKey || !rawApiSecret) {
-        console.error('[Cloudinary] Missing environment variables', {
-            cloudNamePresent: !!rawCloudName,
-            apiKeyPresent: !!rawApiKey,
-            apiSecretPresent: !!rawApiSecret,
-        });
+    if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
         throw new Error('Cloudinary environment variables are required');
     }
 
-    const normalizedCloudName = rawCloudName.toLowerCase();
-    const normalizedApiKey = rawApiKey;
-    const normalizedApiSecret = rawApiSecret;
-
+    // Configure Cloudinary
     cloudinary.config({
-        cloud_name: normalizedCloudName,
-        api_key: normalizedApiKey,
-        api_secret: normalizedApiSecret,
+        cloud_name: CLOUDINARY_CLOUD_NAME,
+        api_key: CLOUDINARY_API_KEY,
+        api_secret: CLOUDINARY_API_SECRET,
         secure: true,
     });
-
-    if (process.env.NODE_ENV !== 'production') {
-        const maskedKey = normalizedApiKey.length >= 6
-            ? `${normalizedApiKey.slice(0,3)}***${normalizedApiKey.slice(-3)}`
-            : '***';
-        console.log('[Cloudinary] Config loaded', {
-            cloudName: normalizedCloudName,
-            apiKeyMasked: maskedKey,
-        });
-    }
 
     return cloudinary;
 }
@@ -43,15 +27,15 @@ export function getCloudinary() {
 // Lightweight helpers for common transformations
 export const cloudinaryHelpers = {
     urlOptimized(publicId: string): string {
-        const cloud = getCloudinary();
-        return cloud.url(publicId, {
+        const cloudinary = getCloudinary();
+        return cloudinary.url(publicId, {
             fetch_format: 'auto',
             quality: 'auto',
         });
     },
     urlThumbnail(publicId: string, width = 300, height = 300): string {
-        const cloud = getCloudinary();
-        return cloud.url(publicId, {
+        const cloudinary = getCloudinary();
+        return cloudinary.url(publicId, {
             width,
             height,
             crop: 'fill',
@@ -61,8 +45,8 @@ export const cloudinaryHelpers = {
         });
     },
     urlResponsive(publicId: string, width: number): string {
-        const cloud = getCloudinary();
-        return cloud.url(publicId, {
+        const cloudinary = getCloudinary();
+        return cloudinary.url(publicId, {
             width,
             crop: 'scale',
             fetch_format: 'auto',
@@ -70,14 +54,14 @@ export const cloudinaryHelpers = {
         });
     },
 };
-// Diagnostic: ping Cloudinary API to validate credentials
-export async function pingCloudinary(): Promise<{ ok: boolean; data?: unknown; error?: unknown }> {
+
+export async function pingCloudinary(): Promise<{ ok: boolean; error?: any }> {
     try {
-        const cloud = getCloudinary();
-        const res = await cloud.api.ping();
-        return { ok: true, data: res };
-    } catch (err) {
-        console.error('[Cloudinary] ping failed:', err);
-        return { ok: false, error: err };
+        const cld = getCloudinary();
+        const result = await cld.api.ping();
+        return { ok: result.status === 'ok' };
+    } catch (error) {
+        console.error('[Cloudinary] ping failed:', error);
+        return { ok: false, error };
     }
 }

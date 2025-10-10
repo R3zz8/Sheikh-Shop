@@ -1,0 +1,150 @@
+# SHEIKH SHOP - COMPLETE ENVIRONMENT CONFIGURATION
+
+This file contains ALL environment variables required for a fully functional, production-ready Next.js + Prisma + Neon + Cloudinary + NextAuth + Resend project.
+
+## Copy this content to your `.env.local` file:
+
+```bash
+# =============================================================================
+# SHEIKH SHOP - COMPLETE ENVIRONMENT CONFIGURATION
+# =============================================================================
+
+# =============================================================================
+# CORE APPLICATION CONFIGURATION
+# =============================================================================
+
+# Application Environment (development | production)
+NODE_ENV=production
+
+# Application URL (used for email links, OG images, etc.)
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+# =============================================================================
+# DATABASE CONFIGURATION (PRISMA + NEON POSTGRESQL)
+# =============================================================================
+
+# Primary Database Connection (REQUIRED)
+# Format: postgresql://username:password@host:port/database
+DATABASE_URL="postgresql://postgres:password@localhost:5432/sheikh_shop"
+
+# =============================================================================
+# AUTHENTICATION & SECURITY (JWT + NEXTAUTH)
+# =============================================================================
+
+# JWT Secret Key (REQUIRED - Must be at least 32 characters)
+# Used for signing and verifying JWT tokens
+JWT_SECRET="your-super-secure-32+character-jwt-secret-key-change-this-in-production"
+
+# NextAuth Configuration (REQUIRED)
+# Secret for NextAuth session encryption
+NEXTAUTH_SECRET="your-nextauth-secret-key-at-least-32-characters-long"
+
+# NextAuth URL (REQUIRED)
+# The canonical URL of your site for NextAuth callbacks
+NEXTAUTH_URL=http://localhost:3000
+
+# =============================================================================
+# SUPERADMIN CONFIGURATION
+# =============================================================================
+
+# SuperAdmin Account Credentials (REQUIRED)
+# These will be used to create the initial superadmin user during seeding
+SUPERADMIN_EMAIL="rezadhu615@gmail.com"
+SUPERADMIN_PASSWORD="Temp@1374"
+
+# =============================================================================
+# CLOUDINARY CONFIGURATION (IMAGE UPLOAD & MANAGEMENT)
+# =============================================================================
+
+# Cloudinary Credentials (REQUIRED for image uploads)
+# Get these from your Cloudinary dashboard
+CLOUDINARY_CLOUD_NAME="your-cloudinary-cloud-name"
+CLOUDINARY_API_KEY="your-cloudinary-api-key"
+CLOUDINARY_API_SECRET="your-cloudinary-api-secret"
+
+# =============================================================================
+# EMAIL SERVICE CONFIGURATION (RESEND)
+# =============================================================================
+
+# Resend API Configuration (REQUIRED for email verification)
+# Get your API key from resend.com
+RESEND_API_KEY="re_your_resend_api_key_here"
+
+# Email Configuration
+# The email address that will appear as the sender
+EMAIL_FROM="noreply@sheikhshop.com"
+
+# =============================================================================
+# REDIS CACHING (OPTIONAL - ENHANCES PERFORMANCE)
+# =============================================================================
+
+# Upstash Redis Configuration (OPTIONAL)
+# Used for session caching and performance optimization
+# If not provided, the app will work without caching (less optimal)
+UPSTASH_REDIS_REST_URL="https://your-redis-instance.upstash.io"
+UPSTASH_REDIS_REST_TOKEN="your-upstash-redis-token"
+
+# =============================================================================
+# SEO & VERIFICATION CONFIGURATION (OPTIONAL)
+# =============================================================================
+
+# Search Engine Verification Codes (OPTIONAL)
+# Used for search engine verification in meta tags
+GOOGLE_VERIFICATION_CODE="your-google-verification-code"
+YANDEX_VERIFICATION_CODE="your-yandex-verification-code"
+YAHOO_VERIFICATION_CODE="your-yahoo-verification-code"
+
+# =============================================================================
+# E-COMMERCE CONFIGURATION (OPTIONAL)
+# =============================================================================
+
+# Default Currency (OPTIONAL - defaults to USD)
+SHOP_DEFAULT_CURRENCY="USD"
+
+# =============================================================================
+# DEPLOYMENT CONFIGURATION (OPTIONAL)
+# =============================================================================
+
+# Vercel Configuration (OPTIONAL - auto-detected on Vercel)
+# Used as fallback for NEXT_PUBLIC_APP_URL
+VERCEL_URL=""
+
+# Custom Key (OPTIONAL - used in next.config.ts)
+CUSTOM_KEY="your-custom-key"
+```
+
+## Quick Setup Checklist
+
+### Required Variables (Must be configured):
+- ✅ `NODE_ENV` - Set to 'production' for production deployments
+- ✅ `DATABASE_URL` - Your Neon/PostgreSQL connection string
+- ✅ `JWT_SECRET` - Strong secret key (32+ characters)
+- ✅ `NEXTAUTH_SECRET` - Strong secret key (32+ characters)
+- ✅ `NEXTAUTH_URL` - Your domain URL (https://yourdomain.com)
+- ✅ `SUPERADMIN_EMAIL` - Admin email (rezadhu615@gmail.com)
+- ✅ `SUPERADMIN_PASSWORD` - Admin password (Temp@1374)
+- ✅ `CLOUDINARY_CLOUD_NAME` - Your Cloudinary cloud name
+- ✅ `CLOUDINARY_API_KEY` - Your Cloudinary API key
+- ✅ `CLOUDINARY_API_SECRET` - Your Cloudinary API secret
+- ✅ `RESEND_API_KEY` - Your Resend API key
+- ✅ `EMAIL_FROM` - Your sender email address
+
+### Optional Variables (Enhance functionality):
+- 🔧 `UPSTASH_REDIS_REST_URL` - For session caching
+- 🔧 `UPSTASH_REDIS_REST_TOKEN` - For session caching
+- 🔧 `GOOGLE_VERIFICATION_CODE` - For SEO
+- 🔧 `YANDEX_VERIFICATION_CODE` - For SEO
+- 🔧 `YAHOO_VERIFICATION_CODE` - For SEO
+- 🔧 `SHOP_DEFAULT_CURRENCY` - Default currency (defaults to USD)
+- 🔧 `NEXT_PUBLIC_APP_URL` - App URL (auto-detected)
+- 🔧 `VERCEL_URL` - Vercel URL (auto-detected)
+- 🔧 `CUSTOM_KEY` - Custom configuration key
+
+## Security Notes
+
+1. **NEVER commit this file with real values to version control**
+2. **Use strong, unique passwords and secrets**
+3. **Rotate secrets regularly in production**
+4. **Use environment-specific values for different deployments**
+5. **Keep JWT_SECRET and NEXTAUTH_SECRET at least 32 characters long**
+6. **Use HTTPS URLs in production (https://yourdomain.com)**
