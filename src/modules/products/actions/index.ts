@@ -18,9 +18,11 @@ const productSchema = z.object({
   description: z.string()
     .max(1000, 'Description must be less than 1000 characters')
     .optional(),
-  price: z.number()
+  basePrice: z.number()
     .min(0.01, 'Price must be at least $0.01')
     .max(999999.99, 'Price must be less than $1,000,000'),
+  baseUnitId: z.string()
+    .min(1, 'Base unit is required'),
   quantity: z.number()
     .int('Quantity must be a whole number')
     .min(0, 'Quantity cannot be negative')
@@ -38,39 +40,35 @@ const bulkOperationSchema = z.object({
 // Security: Verify user has admin privileges using unified RBAC
 async function verifyAdminAccess() {
   const cookieStore = await cookies();
-  const token = cookieStore.get('session-token')?.value;
-  
+  const accessToken = cookieStore.get('access-token')?.value || null;
+  const sessionToken = cookieStore.get('session-token')?.value || null;
+  const token = accessToken || sessionToken;
+
   if (!token) {
     throw new Error('Authentication required');
   }
 
-  // Create a mock request object for checkAccess
-  const mockRequest = {
-    headers: {
-      get: (name: string) => {
-        if (name === 'cookie') return `session-token=${token}`;
-        return null;
-      }
-    }
-  } as any;
-
-  const allowed = await checkAccess(mockRequest, ['SUPERADMIN', 'ADMIN', 'EDITOR']);
-  if (!allowed) {
-    throw new Error('Insufficient permissions');
-  }
-
-  // Get user ID from token for audit logging
+  // Verify JWT and extract role/id
   try {
+    const JWT_SECRET = process.env.JWT_SECRET || '';
+    if (!JWT_SECRET) throw new Error('Missing JWT secret');
     const { payload } = await jwtVerify(
       token,
-      new TextEncoder().encode(process.env.JWT_SECRET),
+      new TextEncoder().encode(JWT_SECRET),
       {
         algorithms: ['HS256'],
         issuer: 'sheikh-shop',
         audience: 'sheikh-shop-users',
       },
     );
-    return { userId: payload.id as string, userRole: payload.role as string };
+
+    const userRole = String(payload.role || '').toUpperCase();
+    const allowed = ['SUPERADMIN', 'ADMIN', 'EDITOR'];
+    if (!allowed.includes(userRole)) {
+      throw new Error('Insufficient permissions');
+    }
+
+    return { userId: String(payload.id || ''), userRole };
   } catch (error) {
     throw new Error('Authentication failed');
   }
@@ -100,11 +98,29 @@ export const upsertProduct = async (
     const { userId } = await verifyAdminAccess();
 
     const id = formData.get('id') as string | null;
+    // Get baseUnitId from form or use default (kg unit)
+    let baseUnitId = formData.get('baseUnitId') as string;
+    if (!baseUnitId) {
+      // Get the default kg unit
+      const defaultUnit = await prisma.unit.findFirst({
+        where: { symbol: 'kg' },
+        select: { id: true }
+      });
+      if (!defaultUnit) {
+        return {
+          data: prevData.data,
+          error: { general: 'Default unit not found. Please contact administrator.' }
+        };
+      }
+      baseUnitId = defaultUnit.id;
+    }
+
     const rawData = {
       name: formData.get('name') as string,
       category: formData.get('category') as string,
       description: formData.get('description') as string || '',
-      price: parseFloat(formData.get('price') as string),
+      basePrice: parseFloat(formData.get('price') as string),
+      baseUnitId,
       quantity: parseInt(formData.get('quantity') as string),
       status: (formData.get('status') as string) || 'ACTIVE',
     };

@@ -26,6 +26,15 @@ import { upsertProduct } from '../actions';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 
+interface Unit {
+  id: string;
+  name: string;
+  symbol: string;
+  multiplier: number;
+  sortOrder: number;
+  isActive: boolean;
+}
+
 const ProductForm = (props: { product: Product | null }) => {
   const { product } = props;
   const router = useRouter();
@@ -44,11 +53,34 @@ const ProductForm = (props: { product: Product | null }) => {
 
   const { error, data } = state;
   const [submitted, setSubmitted] = useState(false);
+  const [units, setUnits] = useState<Unit[]>([]);
+  const [loadingUnits, setLoadingUnits] = useState(true);
 
   const handleSubmit = async (formData: FormData) => {
     setSubmitted(true);
     action(formData);
   };
+
+  // Load units on component mount
+  useEffect(() => {
+    const fetchUnits = async () => {
+      try {
+        const response = await fetch('/api/units');
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success) {
+            setUnits(result.data);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch units:', error);
+      } finally {
+        setLoadingUnits(false);
+      }
+    };
+
+    fetchUnits();
+  }, []);
 
   useEffect(() => {
     if (!submitted) return;
@@ -125,6 +157,29 @@ const ProductForm = (props: { product: Product | null }) => {
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div>
+            <Label htmlFor="baseUnitId">Base Unit *</Label>
+            <Select
+              name="baseUnitId"
+              defaultValue={data?.baseUnitId || ''}
+              disabled={loadingUnits}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder={loadingUnits ? "Loading units..." : "Select a unit"} />
+              </SelectTrigger>
+              <SelectContent>
+                {units.map((unit) => (
+                  <SelectItem key={unit.id} value={unit.id}>
+                    {unit.name} ({unit.symbol})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {error?.baseUnitId && (
+              <span className="text-red-600 text-sm mt-1">{error.baseUnitId}</span>
+            )}
           </div>
 
           <div>

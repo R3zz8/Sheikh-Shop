@@ -1,75 +1,70 @@
 import { getProducts } from '@/modules/products/services';
 import { prisma } from '@/lib/prisma';
 import type { MetadataRoute } from 'next';
-
-const getBaseUrl = () => {
-  if (process.env.NODE_ENV === 'production') {
-    return 'https://sheikhshops.com';
-  }
-  return process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-};
-
-function withLocales(urlPath: string, lastModified: Date, priority: number, changeFrequency: MetadataRoute.Sitemap[number]['changeFrequency']) {
-  const base = getBaseUrl();
-  const clean = urlPath.startsWith('/') ? urlPath : `/${urlPath}`;
-  const en = `${base}${clean.replace(/^\/ar/, '') || '/'}`;
-  const ar = `${base}/ar${clean.replace(/^\/en/, '')}`;
-  
-  return [
-    { url: en, lastModified, changeFrequency, priority },
-    { url: ar, lastModified, changeFrequency, priority },
-  ] as MetadataRoute.Sitemap;
-}
+import {
+	buildLocalizedEntries,
+	dedupeKeepNewest,
+	enforceSitemapUrlLimit,
+	getBaseUrl,
+} from '@/lib/seo/sitemapUtils';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = getBaseUrl();
-  const now = new Date();
-  
-  try {
-    // Static pages (home handled via root entries)
-    const staticPages: MetadataRoute.Sitemap = [
-      ...withLocales('/', now, 1.0, 'daily'),
-      ...withLocales('/about', now, 0.8, 'monthly'),
-      ...withLocales('/contact', now, 0.8, 'monthly'),
-      ...withLocales('/privacy', now, 0.3, 'yearly'),
-      ...withLocales('/terms', now, 0.3, 'yearly'),
-      ...withLocales('/shipping', now, 0.6, 'monthly'),
-      ...withLocales('/returns', now, 0.6, 'monthly'),
-      ...withLocales('/article', now, 0.8, 'weekly'),
-    ];
+	const baseUrl = getBaseUrl().replace(/\/$/, '');
+	const now = new Date();
 
-    // Category pages
-    const categories = ['HONEY', 'SAFFRON', 'DATES', 'OTHERS'];
-    const categoryPages = categories.flatMap(category =>
-      withLocales(`/categories/${category.toLowerCase()}`, now, 0.9, 'weekly')
-    );
+	try {
+		const entries: MetadataRoute.Sitemap = [];
 
-    // Product pages
-    const products = await getProducts();
-    const productPages = products.flatMap((product) =>
-      withLocales(`/products/${product.id}`, product.updatedAt, 0.7, 'weekly')
-    );
+		// Static pages
+		entries.push(...buildLocalizedEntries('/', now, 1.0, 'daily'));
+		entries.push(...buildLocalizedEntries('/about-us', now, 0.8, 'monthly'));
+		entries.push(...buildLocalizedEntries('/contact', now, 0.8, 'monthly'));
+		entries.push(...buildLocalizedEntries('/privacy', now, 0.3, 'yearly'));
+		entries.push(...buildLocalizedEntries('/terms', now, 0.3, 'yearly'));
+		entries.push(...buildLocalizedEntries('/article', now, 0.8, 'weekly'));
 
-    // Article pages
-    const articles = await prisma.article.findMany({
-      where: { status: 'PUBLISHED' },
-      select: { slug: true, updatedAt: true },
-    });
-    const articlePages = articles.flatMap((article) =>
-      withLocales(`/article/${article.slug}`, article.updatedAt, 0.6, 'monthly')
-    );
+		// Category pages
+		const categories = ['HONEY', 'SAFFRON', 'DATES', 'OTHERS'];
+		for (const category of categories) {
+			entries.push(
+				...buildLocalizedEntries(`/categories/${category.toLowerCase()}`, now, 0.9, 'weekly'),
+			);
+		}
 
-    return [
-      ...staticPages,
-      ...categoryPages,
-      ...productPages,
-      ...articlePages,
-    ];
-  } catch (error) {
-    console.warn('Sitemap generation failed, returning basic sitemap:', error);
-    return [
-      { url: `${baseUrl}/`, lastModified: now, changeFrequency: 'daily', priority: 1.0 },
-      { url: `${baseUrl}/ar/`, lastModified: now, changeFrequency: 'daily', priority: 1.0 },
-    ];
-  }
+		// Product pages
+		const products = await getProducts();
+		if (Array.isArray(products)) {
+			for (const p of products) {
+				if (!p?.id) continue;
+				const updated = p.updatedAt ? new Date(p.updatedAt) : now;
+				entries.push(...buildLocalizedEntries(`/products/${p.id}`, updated, 0.7, 'weekly'));
+			}
+		}
+
+		// Article pages
+		const articles = await prisma.article.findMany({
+			where: { status: 'PUBLISHED' },
+			select: { slug: true, updatedAt: true },
+		});
+		if (Array.isArray(articles)) {
+			for (const a of articles) {
+				if (!a?.slug) continue;
+				const updated = a.updatedAt ? new Date(a.updatedAt) : now;
+				entries.push(...buildLocalizedEntries(`/article/${a.slug}`, updated, 0.6, 'monthly'));
+			}
+		}
+
+		// Dedupe and enforce limits
+		const deduped = dedupeKeepNewest(entries);
+		const limited = enforceSitemapUrlLimit(deduped);
+		return limited;
+	} catch (error) {
+		console.warn('Sitemap generation failed, returning fallback sitemap:', error);
+		return [
+			{ url: `${baseUrl}/`, lastModified: now, changeFrequency: 'daily', priority: 1.0 },
+			{ url: `${baseUrl}/ar`, lastModified: now, changeFrequency: 'daily', priority: 1.0 },
+		];
+	}
 }
+
+

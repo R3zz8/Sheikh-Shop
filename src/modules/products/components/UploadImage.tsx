@@ -25,19 +25,36 @@ const UploadImage: FC<{ productId: string }> = ({ productId }) => {
     }
   };
 
-  const updateImageList = (publicId: string) => {
+  const updateImageList = (identifier: string) => {
     setImages((preState) =>
-      preState?.filter((img) => (img as any).publicId !== publicId) || null,
+      preState?.filter((img) => 
+        (img as any).publicId !== identifier && img.id !== identifier
+      ) || null,
     );
   };
 
-  const handleDelete = async (publicId: string) => {
+  const handleDelete = async (imageId: string, publicId?: string) => {
     try {
       setLoading(true);
-      await deleteImage(publicId);
-      updateImageList(publicId);
-    } catch {
-      alert('Failed to delete image');
+      
+      if (publicId) {
+        // Delete from Cloudinary and database
+        await deleteImage(publicId);
+      } else {
+        // Delete only from database (local image)
+        const response = await fetch(`/api/upload/local/${imageId}`, {
+          method: 'DELETE',
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to delete image');
+        }
+      }
+      
+      updateImageList(publicId || imageId);
+    } catch (error) {
+      alert(`Failed to delete image: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setLoading(false);
     }
@@ -137,7 +154,7 @@ const UploadImage: FC<{ productId: string }> = ({ productId }) => {
                 <div className="relative group" key={item.id}>
                   <CircleX
                     className="absolute top-1 right-1 text-red-500 p-1 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer z-10"
-                    onClick={() => handleDelete((item as any).publicId)}
+                    onClick={() => handleDelete(item.id, (item as any).publicId)}
                   />
                   <Image
                     width={100}
