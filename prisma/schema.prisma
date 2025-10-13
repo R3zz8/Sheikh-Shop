@@ -242,26 +242,42 @@ model AuditLog {
 }
 
 model Article {
-  id        String        @id @default(uuid())
-  title     String        @db.VarChar(255)
-  slug      String        @unique @db.VarChar(255)
-  imageUrl  String?       @db.VarChar(500)
-  summary   String        @db.VarChar(500)
-  content   String
-  status    ArticleStatus @default(DRAFT)
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
-  authorId  String
-  category  String?       @db.VarChar(100)
-  tags      String[]      @default([])
-  author    User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  comments  Comment[]
+  id          String        @id @default(uuid())
+  title       String        @db.VarChar(255)
+  slug        String        @unique @db.VarChar(255)
+  imageUrl    String?       @db.VarChar(500)
+  summary     String        @db.VarChar(500)
+  content     String
+  status      ArticleStatus @default(DRAFT)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  publishedAt DateTime?
+  authorId    String
+  category    String?       @db.VarChar(100)
+  tags        String[]      @default([])
+
+  // SEO Enhancement Fields
+  metaTitle       String?  @db.VarChar(60)
+  metaDescription String?  @db.VarChar(155)
+  keywords        String[] @default([])
+  internalLinks   String[] @default([])
+  externalLinks   String[] @default([])
+  schemaMarkup    Json?
+  readTime        Int? // in minutes
+  excerpt         String?  @db.VarChar(300)
+
+  author   User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  comments Comment[]
 
   @@index([slug])
   @@index([authorId])
   @@index([createdAt])
+  @@index([publishedAt])
   @@index([title])
   @@index([status])
+  @@index([category])
+  @@index([metaTitle])
+  @@index([keywords])
 }
 
 model Comment {

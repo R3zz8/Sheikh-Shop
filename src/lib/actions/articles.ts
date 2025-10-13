@@ -6,21 +6,102 @@ import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { getCurrentUserId } from '@/lib/actions/auth/session';
 
-// Validation schemas
-const _createArticleSchema = z.object({
+// SEO Validation Constants
+const TRUSTED_DOMAINS = [
+    'wikipedia.org',
+    'fao.org',
+    'who.int',
+    'pubmed.ncbi.nlm.nih.gov',
+    'ncbi.nlm.nih.gov',
+    'mayoclinic.org',
+    'webmd.com',
+    'healthline.com',
+    'medicalnewstoday.com',
+    'nutrition.gov',
+    'usda.gov',
+    'cdc.gov',
+    'nih.gov'
+];
+
+// Enhanced validation schemas
+const createArticleSchema = z.object({
     title: z.string().min(1, 'Title is required').max(255, 'Title too long'),
+    slug: z.string().min(1, 'Slug is required').max(255, 'Slug too long'),
     summary: z.string().min(1, 'Summary is required').max(500, 'Summary too long'),
     content: z.string().min(1, 'Content is required'),
-    imageUrl: z.string().optional(),
+    imageUrl: z.string().url('Invalid image URL').optional().or(z.literal('')),
     status: z.enum(['DRAFT', 'PUBLISHED']).default('DRAFT'),
+    category: z.string().optional(),
+    tags: z.array(z.string()).default([]),
+    
+    // SEO Required Fields
+    metaTitle: z.string()
+        .min(1, 'Meta title is required')
+        .max(60, 'Meta title must be 60 characters or less'),
+    metaDescription: z.string()
+        .min(1, 'Meta description is required')
+        .max(155, 'Meta description must be 155 characters or less'),
+    keywords: z.array(z.string()).default([]),
+    
+    // Link Validation
+    internalLinks: z.array(z.string().url('Invalid internal URL'))
+        .min(2, 'At least 2 internal links are required')
+        .refine((links) => {
+            return links.every(link => {
+                try {
+                    const url = new URL(link);
+                    return url.hostname === 'sheikhshops.com' || url.hostname === 'localhost';
+                } catch {
+                    return false;
+                }
+            });
+        }, 'All internal links must be from sheikhshops.com domain'),
+    
+    externalLinks: z.array(z.string().url('Invalid external URL'))
+        .default([])
+        .refine((links) => {
+            return links.every(link => {
+                try {
+                    const url = new URL(link);
+                    return TRUSTED_DOMAINS.some(domain => url.hostname.endsWith(domain));
+                } catch {
+                    return false;
+                }
+            });
+        }, 'External links must be from trusted domains (Wikipedia, FAO, WHO, PubMed, etc.)'),
+    
+    excerpt: z.string().max(300, 'Excerpt must be 300 characters or less').optional(),
 });
 
+const updateArticleSchema = createArticleSchema.partial();
+
 // Helper function to generate slug from title
-function _generateSlug(title: string): string {
+function generateSlug(title: string): string {
     return title
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/(^-|-$)/g, '');
+}
+
+// Helper function to calculate reading time
+function calculateReadingTime(content: string): number {
+    const wordsPerMinute = 200;
+    const words = content.split(/\s+/).length;
+    return Math.ceil(words / wordsPerMinute);
+}
+
+// Helper function to validate internal links
+function validateInternalLinks(links: string[]): boolean {
+    return links.every(link => {
+        try {
+            const url = new URL(link);
+            return url.hostname === 'sheikhshops.com' || 
+                   url.hostname === 'localhost' ||
+                   url.pathname.startsWith('/');
+        } catch {
+            return false;
+        }
+    });
 }
 
 // Security: RBAC function to check user permissions for article operations
@@ -71,44 +152,59 @@ export async function createArticle(formData: FormData) {
     // Security: Check user permissions first
     const user = await checkArticlePermissions(['SUPERADMIN', 'ADMIN', 'EDITOR', 'AUTHOR']);
     
-    const schema = z.object({
-        title: z.string().min(1, 'Title is required'),
-        slug: z.string().min(1, 'Slug is required'),
-        summary: z.string().min(1, 'Summary is required'),
-        content: z.string().min(1, 'Content is required'),
-        status: z.enum(['DRAFT', 'PUBLISHED']),
-        imageUrl: z.string().optional(),
-        category: z.string().optional(),
-        tags: z.array(z.string()).optional(),
-    });
-
-    const validatedFields = schema.safeParse({
-        title: formData.get('title'),
-        slug: formData.get('slug'),
-        summary: formData.get('summary'),
-        content: formData.get('content'),
-        status: formData.get('status'),
-        imageUrl: formData.get('imageUrl'),
-        category: formData.get('category'),
+    // Parse form data with proper type handling
+    const rawData = {
+        title: formData.get('title') as string,
+        slug: formData.get('slug') as string || generateSlug(formData.get('title') as string),
+        summary: formData.get('summary') as string,
+        content: formData.get('content') as string,
+        status: formData.get('status') as string || 'DRAFT',
+        imageUrl: formData.get('imageUrl') as string || undefined,
+        category: formData.get('category') as string || undefined,
         tags: formData.get('tags') ? JSON.parse(formData.get('tags') as string) : [],
-    });
+        
+        // SEO Fields
+        metaTitle: formData.get('metaTitle') as string,
+        metaDescription: formData.get('metaDescription') as string,
+        keywords: formData.get('keywords') ? JSON.parse(formData.get('keywords') as string) : [],
+        internalLinks: formData.get('internalLinks') ? JSON.parse(formData.get('internalLinks') as string) : [],
+        externalLinks: formData.get('externalLinks') ? JSON.parse(formData.get('externalLinks') as string) : [],
+        excerpt: formData.get('excerpt') as string || undefined,
+    };
+
+    // Validate all fields including SEO requirements
+    const validatedFields = createArticleSchema.safeParse(rawData);
 
     if (!validatedFields.success) {
-        return { success: false, error: validatedFields.error.errors[0]?.message ?? 'Validation failed' };
+        const errorMessage = validatedFields.error.errors.map(err => `${err.path.join('.')}: ${err.message}`).join(', ');
+        return { success: false, error: `Validation failed: ${errorMessage}` };
     }
 
     try {
-        const _article = await prisma.article.create({
+        // Calculate reading time
+        const readTime = calculateReadingTime(validatedFields.data.content);
+        
+        // Set published date if status is PUBLISHED
+        const publishedAt = validatedFields.data.status === 'PUBLISHED' ? new Date() : null;
+
+        const article = await prisma.article.create({
             data: {
                 ...validatedFields.data,
-                authorId: user.id, // Use actual authenticated user ID
+                authorId: user.id,
+                readTime,
+                publishedAt,
+                imageUrl: validatedFields.data.imageUrl || null,
             },
         });
 
         revalidatePath('/dashboard/articles');
         redirect('/dashboard/articles');
     } catch (error: any) {
-        return { success: false, error: error.message ?? 'Failed to create article' };
+        console.error('Article creation error:', error);
+        return { 
+            success: false, 
+            error: error.message ?? 'Failed to create article' 
+        };
     }
 }
 
@@ -122,41 +218,64 @@ export async function updateArticle(id: string, formData: FormData) {
         return { success: false, error: 'You can only modify your own articles' };
     }
     
-    const schema = z.object({
-        title: z.string().min(1, 'Title is required'),
-        slug: z.string().min(1, 'Slug is required'),
-        summary: z.string().min(1, 'Summary is required'),
-        content: z.string().min(1, 'Content is required'),
-        status: z.enum(['DRAFT', 'PUBLISHED']),
-        imageUrl: z.string().optional(),
-        category: z.string().optional(),
-        tags: z.array(z.string()).optional(),
-    });
-
-    const validatedFields = schema.safeParse({
-        title: formData.get('title'),
-        slug: formData.get('slug'),
-        summary: formData.get('summary'),
-        content: formData.get('content'),
-        status: formData.get('status'),
-        imageUrl: formData.get('imageUrl'),
-        category: formData.get('category'),
+    // Parse form data with proper type handling
+    const rawData = {
+        title: formData.get('title') as string,
+        slug: formData.get('slug') as string,
+        summary: formData.get('summary') as string,
+        content: formData.get('content') as string,
+        status: formData.get('status') as string,
+        imageUrl: formData.get('imageUrl') as string || undefined,
+        category: formData.get('category') as string || undefined,
         tags: formData.get('tags') ? JSON.parse(formData.get('tags') as string) : [],
-    });
+        
+        // SEO Fields
+        metaTitle: formData.get('metaTitle') as string,
+        metaDescription: formData.get('metaDescription') as string,
+        keywords: formData.get('keywords') ? JSON.parse(formData.get('keywords') as string) : [],
+        internalLinks: formData.get('internalLinks') ? JSON.parse(formData.get('internalLinks') as string) : [],
+        externalLinks: formData.get('externalLinks') ? JSON.parse(formData.get('externalLinks') as string) : [],
+        excerpt: formData.get('excerpt') as string || undefined,
+    };
+
+    // Validate all fields including SEO requirements
+    const validatedFields = updateArticleSchema.safeParse(rawData);
 
     if (!validatedFields.success) {
-        return { success: false, error: validatedFields.error.errors[0]?.message ?? 'Validation failed' };
+        const errorMessage = validatedFields.error.errors.map(err => `${err.path.join('.')}: ${err.message}`).join(', ');
+        return { success: false, error: `Validation failed: ${errorMessage}` };
     }
 
     try {
-        const _article = await prisma.article.update({
+        // Calculate reading time if content is being updated
+        const updateData: any = { ...validatedFields.data };
+        if (validatedFields.data.content) {
+            updateData.readTime = calculateReadingTime(validatedFields.data.content);
+        }
+        
+        // Set published date if status is being changed to PUBLISHED
+        if (validatedFields.data.status === 'PUBLISHED') {
+            const currentArticle = await prisma.article.findUnique({
+                where: { id },
+                select: { publishedAt: true }
+            });
+            if (!currentArticle?.publishedAt) {
+                updateData.publishedAt = new Date();
+            }
+        }
+
+        const article = await prisma.article.update({
             where: { id },
-            data: validatedFields.data,
+            data: {
+                ...updateData,
+                imageUrl: updateData.imageUrl || null,
+            },
         });
 
         revalidatePath('/dashboard/articles');
         redirect('/dashboard/articles');
     } catch (error: any) {
+        console.error('Article update error:', error);
         return { success: false, error: error.message ?? 'Failed to update article' };
     }
 }
@@ -194,6 +313,9 @@ export async function getArticles() {
                         id: true,
                         username: true,
                         email: true,
+                        firstName: true,
+                        lastName: true,
+                        profilePicture: true,
                     },
                 },
             },

@@ -1,15 +1,18 @@
 import { notFound } from 'next/navigation';
 import { getArticleBySlug, getRelatedArticles } from '@/lib/actions/articles';
-import { Calendar, User, ArrowLeft, Clock, Share2, MessageCircle, Tag, ChevronRight } from 'lucide-react';
+import { Calendar, User, ArrowLeft, Clock, Share2, MessageCircle, Tag, ChevronRight, ExternalLink, Link as LinkIcon } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import type { ArticleWithAuthor } from '@/types';
 import { generateArticleMetadata } from '@/lib/seo/metadata';
+import { generateCompleteArticleSchema, extractFAQsFromContent } from '@/lib/seo/generateArticleSchema';
 import { Suspense } from 'react';
 import ArticleLoadingSkeleton from './_components/ArticleLoadingSkeleton';
 import RelatedArticles from './_components/RelatedArticles';
 import SocialSharing from './_components/SocialSharing';
 import Breadcrumbs from './_components/Breadcrumbs';
+import TableOfContents from './_components/TableOfContents';
+import JsonLd from '@/components/seo/JsonLd';
 
 interface ArticlePageProps {
     params: {
@@ -23,17 +26,59 @@ export async function generateMetadata({ params }: ArticlePageProps) {
     if (!result.success || !result.data) {
         return {
             title: 'Article Not Found - Sheikh Shop',
+            description: 'The requested article could not be found.',
         };
     }
 
-    return generateArticleMetadata({
-        title: result.data.title,
-        summary: result.data.summary,
-        slug: result.data.slug,
-        imageUrl: result.data.imageUrl || undefined,
-        category: result.data.category || undefined,
-        tags: result.data.tags || [],
-    });
+    const article = result.data;
+
+    // Use database SEO fields if available, fallback to generated metadata
+    const metaTitle = article.metaTitle || article.title;
+    const metaDescription = article.metaDescription || article.summary;
+    const keywords = article.keywords && article.keywords.length > 0 ? article.keywords : article.tags || [];
+
+    return {
+        title: metaTitle,
+        description: metaDescription,
+        keywords: keywords,
+        authors: [{ name: formatAuthorName(article.author) }],
+        openGraph: {
+            title: metaTitle,
+            description: metaDescription,
+            images: article.imageUrl ? [
+                {
+                    url: article.imageUrl,
+                    width: 1200,
+                    height: 630,
+                    alt: metaTitle,
+                }
+            ] : undefined,
+            type: 'article',
+            publishedTime: article.publishedAt?.toISOString(),
+            modifiedTime: article.updatedAt.toISOString(),
+            authors: [formatAuthorName(article.author)],
+            section: article.category,
+            tags: keywords,
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title: metaTitle,
+            description: metaDescription,
+            images: article.imageUrl ? [article.imageUrl] : undefined,
+            creator: '@sheikhshops',
+            site: '@sheikhshops',
+        },
+        alternates: {
+            canonical: `https://sheikhshops.com/article/${article.slug}`,
+        },
+        other: {
+            'article:author': formatAuthorName(article.author),
+            'article:published_time': article.publishedAt?.toISOString(),
+            'article:modified_time': article.updatedAt.toISOString(),
+            'article:section': article.category || '',
+            'article:tag': keywords.join(', '),
+        },
+    };
 }
 
 async function getArticle(slug: string): Promise<ArticleWithAuthor | null> {
@@ -82,16 +127,38 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         }).format(new Date(date));
     };
 
-    const readingTime = calculateReadingTime(article.content);
+    const readingTime = article.readTime || calculateReadingTime(article.content);
     const authorName = formatAuthorName(article.author);
 
+    // Generate structured data
+    const faqs = extractFAQsFromContent(article.content);
+    const breadcrumbs = [
+        { name: 'Home', url: '/' },
+        { name: 'Articles', url: '/article' },
+        { name: article.title, url: `/article/${article.slug}` }
+    ];
+
+    const structuredData = generateCompleteArticleSchema(article, {
+        faqs: faqs.length > 0 ? faqs : undefined,
+        breadcrumbs,
+        baseUrl: 'https://sheikhshops.com',
+        logoUrl: 'https://sheikhshops.com/logo.png',
+        organizationName: 'Sheikh Shop'
+    });
+
     return (
-        <div className="min-h-screen bg-gradient-to-br from-amber-950/95 via-stone-900/95 to-amber-950/95 relative overflow-hidden">
-            {/* Background effects */}
-            <div className="absolute inset-0">
-                <div className="absolute inset-0 bg-gradient-radial from-amber-500/3 via-orange-500/2 to-yellow-500/3 pointer-events-none" />
-                <div className="absolute inset-0 bg-gradient-to-b from-amber-500/2 via-transparent to-orange-500/2 pointer-events-none" />
-            </div>
+        <>
+            {/* JSON-LD Structured Data */}
+            {structuredData.map((schema, index) => (
+                <JsonLd key={index} data={schema} />
+            ))}
+            
+            <div className="min-h-screen bg-gradient-to-br from-amber-950/95 via-stone-900/95 to-amber-950/95 relative overflow-hidden">
+                {/* Background effects */}
+                <div className="absolute inset-0">
+                    <div className="absolute inset-0 bg-gradient-radial from-amber-500/3 via-orange-500/2 to-yellow-500/3 pointer-events-none" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-amber-500/2 via-transparent to-orange-500/2 pointer-events-none" />
+                </div>
 
             <div className="relative z-10">
                 {/* Breadcrumbs */}
@@ -128,74 +195,156 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                 )}
 
                 <div className="container mx-auto px-6 py-8">
-                    <div className="max-w-4xl mx-auto">
-                        {/* Article Meta Information */}
-                        <div className="bg-white/8 backdrop-blur-sm rounded-2xl p-6 border border-white/15 mb-8">
-                            <div className="flex flex-wrap items-center gap-6 text-gray-300 text-sm mb-4">
-                                <div className="flex items-center gap-2">
-                                    <User className="w-4 h-4 text-amber-400" />
-                                    <span>By {authorName}</span>
+                    <div className="max-w-6xl mx-auto">
+                        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                            {/* Main Content */}
+                            <div className="lg:col-span-3">
+                                {/* Article Meta Information */}
+                                <div className="bg-white/8 backdrop-blur-sm rounded-2xl p-6 border border-white/15 mb-8">
+                                    <div className="flex flex-wrap items-center gap-6 text-gray-300 text-sm mb-4">
+                                        <div className="flex items-center gap-2">
+                                            <User className="w-4 h-4 text-amber-400" />
+                                            <span>By {authorName}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <Calendar className="w-4 h-4 text-amber-400" />
+                                            <span>{formatDate(article.publishedAt || article.createdAt)}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <Clock className="w-4 h-4 text-amber-400" />
+                                            <span>{readingTime} min read</span>
+                                        </div>
+                                        {article.category && (
+                                            <div className="flex items-center gap-2">
+                                                <Tag className="w-4 h-4 text-amber-400" />
+                                                <span className="bg-amber-500/20 text-amber-300 px-2 py-1 rounded-full text-xs">
+                                                    {article.category}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Article Summary */}
+                                    <p className="text-lg text-gray-300 leading-relaxed mb-4">
+                                        {article.summary}
+                                    </p>
+
+                                    {/* Keywords */}
+                                    {article.keywords && article.keywords.length > 0 && (
+                                        <div className="mb-4">
+                                            <h4 className="text-sm font-medium text-amber-300 mb-2">Keywords:</h4>
+                                            <div className="flex flex-wrap gap-2">
+                                                {article.keywords.map((keyword, index) => (
+                                                    <span
+                                                        key={index}
+                                                        className="bg-amber-500/20 text-amber-300 px-3 py-1 rounded-full text-sm border border-amber-500/30"
+                                                    >
+                                                        {keyword}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Tags */}
+                                    {article.tags && article.tags.length > 0 && (
+                                        <div className="flex flex-wrap gap-2">
+                                            {article.tags.map((tag, index) => (
+                                                <span
+                                                    key={index}
+                                                    className="bg-white/10 text-gray-300 px-3 py-1 rounded-full text-sm border border-white/20"
+                                                >
+                                                    #{tag}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <Calendar className="w-4 h-4 text-amber-400" />
-                                    <span>{formatDate(article.createdAt)}</span>
+
+                                {/* Article Content */}
+                                <div className="bg-white/8 backdrop-blur-sm rounded-2xl p-8 border border-white/15 mb-8">
+                                    <div className="prose prose-invert prose-lg max-w-none">
+                                        <div
+                                            className="text-gray-300 leading-relaxed space-y-6"
+                                            dangerouslySetInnerHTML={{ __html: article.content }}
+                                        />
+                                    </div>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <Clock className="w-4 h-4 text-amber-400" />
-                                    <span>{readingTime} min read</span>
-                                </div>
-                                {article.category && (
-                                    <div className="flex items-center gap-2">
-                                        <Tag className="w-4 h-4 text-amber-400" />
-                                        <span className="bg-amber-500/20 text-amber-300 px-2 py-1 rounded-full text-xs">
-                                            {article.category}
-                                        </span>
+
+                                {/* Internal and External Links */}
+                                {(article.internalLinks.length > 0 || article.externalLinks.length > 0) && (
+                                    <div className="bg-white/8 backdrop-blur-sm rounded-2xl p-6 border border-white/15 mb-8">
+                                        <h3 className="text-xl font-semibold text-white mb-4">References</h3>
+                                        
+                                        {article.internalLinks.length > 0 && (
+                                            <div className="mb-6">
+                                                <h4 className="text-lg font-medium text-amber-300 mb-3 flex items-center gap-2">
+                                                    <LinkIcon className="w-5 h-5" />
+                                                    Internal Links
+                                                </h4>
+                                                <div className="space-y-2">
+                                                    {article.internalLinks.map((link, index) => (
+                                                        <a
+                                                            key={index}
+                                                            href={link}
+                                                            className="block text-blue-300 hover:text-blue-200 transition-colors"
+                                                        >
+                                                            {link}
+                                                        </a>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {article.externalLinks.length > 0 && (
+                                            <div>
+                                                <h4 className="text-lg font-medium text-amber-300 mb-3 flex items-center gap-2">
+                                                    <ExternalLink className="w-5 h-5" />
+                                                    External References
+                                                </h4>
+                                                <div className="space-y-2">
+                                                    {article.externalLinks.map((link, index) => (
+                                                        <a
+                                                            key={index}
+                                                            href={link}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="block text-blue-300 hover:text-blue-200 transition-colors"
+                                                        >
+                                                            {link}
+                                                            <ExternalLink className="w-3 h-3 inline ml-1" />
+                                                        </a>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>
 
-                            {/* Article Summary */}
-                            <p className="text-lg text-gray-300 leading-relaxed mb-4">
-                                {article.summary}
-                            </p>
+                            {/* Sidebar */}
+                            <div className="lg:col-span-1">
+                                <div className="sticky top-24">
+                                    {/* Table of Contents */}
+                                    <div className="bg-white/8 backdrop-blur-sm rounded-2xl p-6 border border-white/15 mb-6">
+                                        <Suspense fallback={<div className="h-32 bg-white/5 rounded animate-pulse" />}>
+                                            <TableOfContents content={article.content} />
+                                        </Suspense>
+                                    </div>
 
-                            {/* Tags */}
-                            {article.tags && article.tags.length > 0 && (
-                                <div className="flex flex-wrap gap-2">
-                                    {article.tags.map((tag, index) => (
-                                        <span
-                                            key={index}
-                                            className="bg-white/10 text-gray-300 px-3 py-1 rounded-full text-sm border border-white/20"
-                                        >
-                                            #{tag}
-                                        </span>
-                                    ))}
+                                    {/* Social Sharing */}
+                                    <div className="bg-white/8 backdrop-blur-sm rounded-2xl p-6 border border-white/15">
+                                        <div className="flex items-center gap-2 mb-4">
+                                            <Share2 className="w-5 h-5 text-amber-400" />
+                                            <span className="text-white font-medium">Share Article</span>
+                                        </div>
+                                        <SocialSharing 
+                                            title={article.title}
+                                            url={`https://sheikhshops.com/article/${article.slug}`}
+                                            summary={article.summary}
+                                        />
+                                    </div>
                                 </div>
-                            )}
-                        </div>
-
-                        {/* Article Content */}
-                        <div className="bg-white/8 backdrop-blur-sm rounded-2xl p-8 border border-white/15 mb-8">
-                            <div className="prose prose-invert prose-lg max-w-none">
-                                <div
-                                    className="text-gray-300 leading-relaxed space-y-6"
-                                    dangerouslySetInnerHTML={{ __html: article.content }}
-                                />
-                            </div>
-                        </div>
-
-                        {/* Social Sharing */}
-                        <div className="bg-white/8 backdrop-blur-sm rounded-2xl p-6 border border-white/15 mb-8">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <Share2 className="w-5 h-5 text-amber-400" />
-                                    <span className="text-white font-medium">Share this article</span>
-                                </div>
-                                <SocialSharing 
-                                    title={article.title}
-                                    url={`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/article/${article.slug}`}
-                                    summary={article.summary}
-                                />
                             </div>
                         </div>
 
@@ -249,5 +398,6 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                 </div>
             </div>
         </div>
+        </>
     );
 } 

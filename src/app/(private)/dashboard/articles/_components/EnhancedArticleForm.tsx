@@ -1,716 +1,481 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import { useRequireRole } from '@/hooks/useRBAC';
+import { useState } from 'react';
+import { createArticle } from '@/lib/actions/articles';
 import { Button } from '@/components/ui/button';
-import Image from 'next/image';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Skeleton } from '@/components/ui/skeleton';
-import { 
-  Upload, 
-  X, 
-  Save, 
-  ArrowLeft, 
-  Eye, 
-  EyeOff, 
-  Calendar,
-  Clock,
-  User,
-  FileText,
-  Image as ImageIcon,
-  Settings,
-  Zap,
-  Target,
-  Users,
-  History,
-  Copy,
-  Trash2,
-  AlertCircle,
-  CheckCircle,
-  Info,
-  ExternalLink,
+import { AlertCircle, Plus, X, ExternalLink, Link as LinkIcon, Hash, Clock } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import InternalLinkingSuggestions from './InternalLinkingSuggestions';
 
-  Download,
-  RefreshCw
-} from 'lucide-react';
-import Link from 'next/link';
-import { createArticle, updateArticle } from '@/lib/actions/articles';
-import { uploadArticleImage } from '@/lib/services/articleUpload';
-import { toast } from 'sonner';
-import dynamic from 'next/dynamic';
-
-// Dynamic imports for better performance
-const RichTextEditor = dynamic(() => import('@/components/ui/rich-text-editor'), {
-  loading: () => <Skeleton className="h-64 w-full" />,
-  ssr: false
-});
-
-interface Article {
-  id: string;
-  title: string;
-  slug: string;
-  summary: string;
-  content: string;
-  imageUrl: string | null;
-  status: string;
-  category: string | null;
-  tags: string[];
-  authorId: string;
-  createdAt: Date;
-  updatedAt: Date;
-  author: {
-    id: string;
-    email: string;
-    username: string | null;
-  };
-}
-
-interface ArticleFormProps {
-  article?: Article;
-}
-
-// Helper function to generate slug from title
-function generateSlug(title: string): string {
-  return title
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '');
-}
-
-// Helper function to validate SEO
-function validateSEO(title: string, description: string) {
-  const issues: string[] = [];
-  
-  if (title.length < 30) issues.push('SEO title should be at least 30 characters');
-  if (title.length > 60) issues.push('SEO title should be under 60 characters');
-  if (description.length < 120) issues.push('SEO description should be at least 120 characters');
-  if (description.length > 160) issues.push('SEO description should be under 160 characters');
-  
-  return issues;
-}
-
-export default function EnhancedArticleForm({ article }: ArticleFormProps) {
-  const router = useRouter();
-  const hasAccess = useRequireRole(['SUPERADMIN', 'ADMIN', 'EDITOR', 'AUTHOR']);
-  const isEditing = !!article;
-
-  // Form state
-  const [formData, setFormData] = useState({
-    title: article?.title ?? '',
-    summary: article?.summary ?? '',
-    content: article?.content ?? '',
-    status: article?.status ?? 'DRAFT' as 'DRAFT' | 'PUBLISHED',
-    category: article?.category ?? '',
-    tags: article?.tags ?? [],
-  });
-
-  // UI state
-  const [imageUrl, setImageUrl] = useState(article?.imageUrl ?? '');
-  const [uploading, setUploading] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [file, setFile] = useState<File | null>(null);
-  const [activeTab, setActiveTab] = useState('content');
-  const [showPreview, setShowPreview] = useState(false);
-  const [showImageDialog, setShowImageDialog] = useState(false);
+export default function EnhancedArticleForm() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<Record<string, string> | null>(null);
+  const [keywords, setKeywords] = useState<string[]>([]);
+  const [newKeyword, setNewKeyword] = useState('');
+  const [internalLinks, setInternalLinks] = useState<string[]>([]);
+  const [newInternalLink, setNewInternalLink] = useState('');
+  const [externalLinks, setExternalLinks] = useState<string[]>([]);
+  const [newExternalLink, setNewExternalLink] = useState('');
+  const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState('');
-  const [seoIssues, setSeoIssues] = useState<string[]>([]);
+  const [content, setContent] = useState('');
+  const [metaTitle, setMetaTitle] = useState('');
+  const [metaDescription, setMetaDescription] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
 
-  // Validation state
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isValid, setIsValid] = useState(false);
-
-  // Handle input changes
-  const handleInputChange = (field: string, value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value,
-    }));
-
-    // Auto-generate slug from title
-    if (field === 'title') {
-      const slug = generateSlug(value);
-      setFormData(prev => ({ ...prev, slug }));
-    }
-
-    // Auto-generate fields if empty
-    if (field === 'title') {
-      // Handle title changes
-    }
-    if (field === 'summary') {
-      // Handle summary changes
-    }
-
-    // Validate form
-    validateForm();
+  // Calculate reading time
+  const calculateReadingTime = (text: string) => {
+    const wordsPerMinute = 200;
+    const words = text.split(/\s+/).length;
+    return Math.ceil(words / wordsPerMinute);
   };
 
-  // Validate form
-  const validateForm = useCallback(() => {
-    const newErrors: Record<string, string> = {};
+  const readingTime = calculateReadingTime(content);
 
-    if (!formData.title.trim()) {
-      newErrors.title = 'Title is required';
-    } else if (formData.title.length < 10) {
-      newErrors.title = 'Title must be at least 10 characters';
-    }
-
-    if (!formData.summary.trim()) {
-      newErrors.summary = 'Summary is required';
-    } else if (formData.summary.length < 50) {
-      newErrors.summary = 'Summary must be at least 50 characters';
-    }
-
-    if (!formData.content.trim()) {
-      newErrors.content = 'Content is required';
-    } else if (formData.content.length < 100) {
-      newErrors.content = 'Content must be at least 100 characters';
-    }
-
-    setErrors(newErrors);
-    setIsValid(Object.keys(newErrors).length === 0);
-  }, [formData]);
-
-  // Validate on form data changes
-  useEffect(() => {
-    validateForm();
-  }, [formData, validateForm]);
-
-  // Handle file selection
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      setFile(selectedFile);
+  // Add keyword
+  const addKeyword = () => {
+    if (newKeyword.trim() && !keywords.includes(newKeyword.trim())) {
+      setKeywords([...keywords, newKeyword.trim()]);
+      setNewKeyword('');
     }
   };
 
-  // Handle image upload
-  const handleImageUpload = async () => {
-    if (!file) {
-      toast.error('Please select a file to upload');
-      return;
-    }
+  // Remove keyword
+  const removeKeyword = (index: number) => {
+    setKeywords(keywords.filter((_, i) => i !== index));
+  };
 
-    try {
-      setUploading(true);
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const response = await uploadArticleImage(formData);
-
-      if (response?.error) {
-        toast.error(response.error);
-        return;
-      }
-
-      if (response?.data?.imageUrl) {
-        setImageUrl(response.data.imageUrl);
-        setFile(null);
-        toast.success('Image uploaded successfully');
-        
-        // Clear the file input
-        const fileInput = document.getElementById('article-image') as HTMLInputElement;
-        if (fileInput) {
-          fileInput.value = '';
-        }
-      }
-    } catch (error) {
-      toast.error('Failed to upload image');
-    } finally {
-      setUploading(false);
+  // Add internal link
+  const addInternalLink = () => {
+    if (newInternalLink.trim() && !internalLinks.includes(newInternalLink.trim())) {
+      setInternalLinks([...internalLinks, newInternalLink.trim()]);
+      setNewInternalLink('');
     }
   };
 
-  // Handle form submission
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!hasAccess) {
-      toast.error('You do not have permission to perform this action');
-      return;
-    }
+  // Remove internal link
+  const removeInternalLink = (index: number) => {
+    setInternalLinks(internalLinks.filter((_, i) => i !== index));
+  };
 
-    if (!isValid) {
-      toast.error('Please fix the form errors before submitting');
-      return;
-    }
-
-    try {
-      setSaving(true);
-
-      const submitData = {
-        title: formData.title,
-        slug: generateSlug(formData.title),
-        summary: formData.summary,
-        content: formData.content,
-        status: formData.status,
-        imageUrl: imageUrl || null,
-        category: formData.category || null,
-        tags: formData.tags,
-      };
-
-      const formDataObj = new FormData();
-      Object.entries(submitData).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          if (Array.isArray(value)) {
-            formDataObj.append(key, JSON.stringify(value));
-          } else {
-            formDataObj.append(key, value.toString());
-          }
-        }
-      });
-
-      if (isEditing && article) {
-        await updateArticle(article.id, formDataObj);
-        toast.success('Article updated successfully');
-      } else {
-        await createArticle(formDataObj);
-        toast.success('Article created successfully');
-      }
-
-      router.push('/dashboard/articles');
-    } catch (error) {
-      toast.error('Failed to save article');
-    } finally {
-      setSaving(false);
+  // Add external link
+  const addExternalLink = () => {
+    if (newExternalLink.trim() && !externalLinks.includes(newExternalLink.trim())) {
+      setExternalLinks([...externalLinks, newExternalLink.trim()]);
+      setNewExternalLink('');
     }
   };
 
-  // Handle tag management
+  // Remove external link
+  const removeExternalLink = (index: number) => {
+    setExternalLinks(externalLinks.filter((_, i) => i !== index));
+  };
+
+  // Handle adding suggested internal link
+  const handleAddSuggestedLink = (url: string, title: string) => {
+    if (!internalLinks.includes(url)) {
+      setInternalLinks([...internalLinks, url]);
+    }
+  };
+
+  // Add tag
   const addTag = () => {
-    // Tags not supported in this version
-  };
-
-  const removeTag = (tagToRemove: string) => {
-    // Tags not supported in this version
-  };
-
-  // Remove image
-  const removeImage = () => {
-    setImageUrl('');
-    setFile(null);
-    const fileInput = document.getElementById('article-image') as HTMLInputElement;
-    if (fileInput) {
-      fileInput.value = '';
+    if (newTag.trim() && !tags.includes(newTag.trim())) {
+      setTags([...tags, newTag.trim()]);
+      setNewTag('');
     }
   };
 
-  // Access control
-  if (!hasAccess) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Access Denied</h2>
-          <p className="text-gray-600">You don't have permission to access this page.</p>
-        </div>
-      </div>
-    );
-  }
+  // Remove tag
+  const removeTag = (index: number) => {
+    setTags(tags.filter((_, i) => i !== index));
+  };
+
+  // Generate slug from title
+  const generateSlug = (title: string) => {
+    return title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+  };
+
+  const handleSubmit = async (formData: FormData) => {
+    setIsSubmitting(true);
+    setError(null);
+    
+    try {
+      await createArticle(formData);
+    } catch (err: any) {
+      setError({ general: err.message || 'Failed to create article' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
-    <TooltipProvider>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/dashboard/articles">
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Articles
-              </Button>
-            </Link>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                {isEditing ? 'Edit Article' : 'Create New Article'}
-              </h1>
-              <p className="text-gray-600 mt-1">
-                {isEditing ? 'Update your article content and settings' : 'Write and publish your next article'}
-              </p>
-            </div>
-          </div>
+    <form action={handleSubmit} className="space-y-6">
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            {typeof error === 'string' ? error : 'Please fix the errors below.'}
+          </AlertDescription>
+        </Alert>
+      )}
 
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              onClick={() => setShowPreview(true)}
-              disabled={!isValid}
-            >
-              <Eye className="w-4 h-4 mr-2" />
-              Preview
-            </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={!isValid || saving}
-              className="min-w-[120px]"
-            >
-              {saving ? (
-                <>
-                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="w-4 h-4 mr-2" />
-                  {isEditing ? 'Update Article' : 'Create Article'}
-                </>
-              )}
-            </Button>
-          </div>
-        </div>
-
-        {/* Main Form */}
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Main Content */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Content Tab */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <FileText className="w-5 h-5" />
-                    Article Content
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {/* Title */}
-                  <div className="space-y-2">
-                    <Label htmlFor="title">Title *</Label>
-                    <Input
-                      id="title"
-                      value={formData.title}
-                      onChange={(e) => handleInputChange('title', e.target.value)}
-                      placeholder="Enter article title"
-                      className={errors.title ? 'border-red-500' : ''}
-                    />
-                    {errors.title && (
-                      <p className="text-sm text-red-500">{errors.title}</p>
-                    )}
-                    {formData.title && (
-                      <p className="text-xs text-gray-500">
-                        Slug: {generateSlug(formData.title)}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Summary */}
-                  <div className="space-y-2">
-                    <Label htmlFor="summary">Summary *</Label>
-                    <Textarea
-                      id="summary"
-                      value={formData.summary}
-                      onChange={(e) => handleInputChange('summary', e.target.value)}
-                      placeholder="Enter article summary"
-                      rows={3}
-                      className={errors.summary ? 'border-red-500' : ''}
-                    />
-                    {errors.summary && (
-                      <p className="text-sm text-red-500">{errors.summary}</p>
-                    )}
-                    <p className="text-xs text-gray-500">
-                      {formData.summary.length}/500 characters
-                    </p>
-                  </div>
-
-                  {/* Content */}
-                  <div className="space-y-2">
-                    <Label htmlFor="content">Content *</Label>
-                    <RichTextEditor
-                      value={formData.content}
-                      onChange={(value) => handleInputChange('content', value)}
-                      placeholder="Write your article content..."
-                    />
-                    {errors.content && (
-                      <p className="text-sm text-red-500">{errors.content}</p>
-                    )}
-                    <p className="text-xs text-gray-500">
-                      {getWordCount(formData.content)} words
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Image Management */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <ImageIcon className="w-5 h-5" />
-                    Featured Image
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {imageUrl ? (
-                    <div className="space-y-3">
-                      <div className="relative w-full h-48 rounded-lg overflow-hidden border">
-                        <Image
-                          src={imageUrl}
-                          alt="Article featured image"
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => setShowImageDialog(true)}
-                        >
-                          <ImageIcon className="w-4 h-4 mr-2" />
-                          Change Image
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={removeImage}
-                        >
-                          <X className="w-4 h-4 mr-2" />
-                          Remove Image
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                      <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-600 mb-4">No featured image set</p>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setShowImageDialog(true)}
-                      >
-                        <Upload className="w-4 h-4 mr-2" />
-                        Upload Image
-                      </Button>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Sidebar */}
-            <div className="space-y-6">
-              {/* Publishing Settings */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Zap className="w-5 h-5" />
-                    Publishing
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {/* Status */}
-                  <div className="space-y-2">
-                    <Label htmlFor="status">Status</Label>
-                    <Select
-                      value={formData.status}
-                      onValueChange={(value: any) => handleInputChange('status', value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="DRAFT">
-                          <div className="flex items-center gap-2">
-                            <EyeOff className="w-4 h-4" />
-                            Draft
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="REVIEW">
-                          <div className="flex items-center gap-2">
-                            <AlertCircle className="w-4 h-4" />
-                            Review
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="SCHEDULED">
-                          <div className="flex items-center gap-2">
-                            <Calendar className="w-4 h-4" />
-                            Scheduled
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="PUBLISHED">
-                          <div className="flex items-center gap-2">
-                            <CheckCircle className="w-4 h-4" />
-                            Published
-                          </div>
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Category */}
-                  <div className="space-y-2">
-                    <Label htmlFor="category">Category</Label>
-                    <Input
-                      id="category"
-                      value={formData.category}
-                      onChange={(e) => handleInputChange('category', e.target.value)}
-                      placeholder="Enter article category"
-                    />
-                  </div>
-
-                  {/* Tags */}
-                  <div className="space-y-2">
-                    <Label htmlFor="tags">Tags</Label>
-                    <div className="flex flex-wrap gap-2 mb-2">
-                      {formData.tags.map((tag: string, index: number) => (
-                        <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                          {tag}
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const newTags = formData.tags.filter((_: string, i: number) => i !== index);
-                              handleInputChange('tags', newTags);
-                            }}
-                            className="ml-1 hover:text-red-500"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </Badge>
-                      ))}
-                    </div>
-                    <div className="flex gap-2">
-                      <Input
-                        id="tag-input"
-                        placeholder="Add a tag"
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            const input = e.target as HTMLInputElement;
-                            const tag = input.value.trim();
-                            if (tag && !formData.tags.includes(tag)) {
-                              handleInputChange('tags', [...formData.tags, tag]);
-                              input.value = '';
-                            }
-                          }
-                        }}
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => {
-                          const input = document.getElementById('tag-input') as HTMLInputElement;
-                          const tag = input.value.trim();
-                          if (tag && !formData.tags.includes(tag)) {
-                            handleInputChange('tags', [...formData.tags, tag]);
-                            input.value = '';
-                          }
-                        }}
-                      >
-                        Add
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Advanced Features - Not available in this version */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Target className="w-5 h-5" />
-                    Advanced Features
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-gray-500">SEO settings and tags are not available in this version.</p>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </form>
-
-        {/* Image Upload Dialog */}
-        <Dialog open={showImageDialog} onOpenChange={setShowImageDialog}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Upload Featured Image</DialogTitle>
-              <DialogDescription>
-                Choose an image file to upload as your article's featured image.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="article-image">Image File</Label>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Left Column - Basic Information */}
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Hash className="w-5 h-5" />
+                Basic Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="title">Article Title *</Label>
                 <Input
-                  id="article-image"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileChange}
+                  id="title"
+                  name="title"
+                  placeholder="Enter article title"
+                  required
+                  className="mt-1"
                 />
               </div>
-              {file && (
-                <div className="p-3 bg-gray-50 rounded-lg">
-                  <p className="text-sm text-gray-600">
-                    Selected: {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
-                  </p>
-                </div>
-              )}
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowImageDialog(false)}>
-                Cancel
-              </Button>
-              <Button 
-                onClick={handleImageUpload} 
-                disabled={!file || uploading}
-              >
-                {uploading ? (
-                  <>
-                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                    Uploading...
-                  </>
-                ) : (
-                  <>
-                    <Upload className="w-4 h-4 mr-2" />
-                    Upload
-                  </>
-                )}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
 
-        {/* Preview Dialog */}
-        <Dialog open={showPreview} onOpenChange={setShowPreview}>
-          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Article Preview</DialogTitle>
-              <DialogDescription>
-                Preview how your article will look when published.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              {imageUrl && (
-                <div className="relative w-full h-64 rounded-lg overflow-hidden">
-                  <Image
-                    src={imageUrl}
-                    alt="Article preview"
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              )}
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 mb-2">{formData.title}</h1>
-                <p className="text-gray-600 mb-4">{formData.summary}</p>
-                <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: formData.content }} />
+                <Label htmlFor="slug">URL Slug *</Label>
+                <Input
+                  id="slug"
+                  name="slug"
+                  placeholder="auto-generated-from-title"
+                  required
+                  className="mt-1"
+                  onChange={(e) => {
+                    if (!e.target.value) {
+                      const title = (document.getElementById('title') as HTMLInputElement)?.value;
+                      if (title) {
+                        e.target.value = generateSlug(title);
+                      }
+                    }
+                  }}
+                />
               </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
-    </TooltipProvider>
-  );
-}
 
-// Helper function to get word count
-function getWordCount(text: string): number {
-  return text.trim().split(/\s+/).length;
+              <div>
+                <Label htmlFor="category">Category</Label>
+                <Select name="category" value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="health">Health & Wellness</SelectItem>
+                    <SelectItem value="nutrition">Nutrition</SelectItem>
+                    <SelectItem value="recipes">Recipes</SelectItem>
+                    <SelectItem value="lifestyle">Lifestyle</SelectItem>
+                    <SelectItem value="products">Product Reviews</SelectItem>
+                    <SelectItem value="guides">Guides & Tips</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="status">Status *</Label>
+                <Select name="status" defaultValue="DRAFT">
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="DRAFT">Draft</SelectItem>
+                    <SelectItem value="PUBLISHED">Published</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="imageUrl">Featured Image URL</Label>
+                <Input
+                  id="imageUrl"
+                  name="imageUrl"
+                  type="url"
+                  placeholder="https://example.com/image.jpg"
+                  className="mt-1"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Content</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="summary">Summary *</Label>
+                <Textarea
+                  id="summary"
+                  name="summary"
+                  placeholder="Brief summary of the article"
+                  required
+                  rows={3}
+                  className="mt-1"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="excerpt">Excerpt</Label>
+                <Textarea
+                  id="excerpt"
+                  name="excerpt"
+                  placeholder="Short excerpt for previews"
+                  rows={2}
+                  className="mt-1"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="content">Content *</Label>
+                <Textarea
+                  id="content"
+                  name="content"
+                  placeholder="Article content (HTML supported)"
+                  required
+                  rows={12}
+                  className="mt-1"
+                  onChange={(e) => setContent(e.target.value)}
+                />
+                <div className="flex items-center gap-2 mt-2 text-sm text-gray-500">
+                  <Clock className="w-4 h-4" />
+                  <span>Estimated reading time: {readingTime} minutes</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right Column - SEO & Links */}
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Hash className="w-5 h-5" />
+                SEO Optimization
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="metaTitle">Meta Title *</Label>
+                <Input
+                  id="metaTitle"
+                  name="metaTitle"
+                  placeholder="SEO-optimized title (max 60 chars)"
+                  required
+                  maxLength={60}
+                  className="mt-1"
+                  onChange={(e) => setMetaTitle(e.target.value)}
+                />
+                <div className="flex justify-between mt-1">
+                  <span className="text-xs text-gray-500">Recommended: 50-60 characters</span>
+                  <span className={`text-xs ${metaTitle.length > 60 ? 'text-red-500' : 'text-gray-500'}`}>
+                    {metaTitle.length}/60
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="metaDescription">Meta Description *</Label>
+                <Textarea
+                  id="metaDescription"
+                  name="metaDescription"
+                  placeholder="SEO description (max 155 chars)"
+                  required
+                  rows={3}
+                  maxLength={155}
+                  className="mt-1"
+                  onChange={(e) => setMetaDescription(e.target.value)}
+                />
+                <div className="flex justify-between mt-1">
+                  <span className="text-xs text-gray-500">Recommended: 150-155 characters</span>
+                  <span className={`text-xs ${metaDescription.length > 155 ? 'text-red-500' : 'text-gray-500'}`}>
+                    {metaDescription.length}/155
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <Label>Keywords</Label>
+                <div className="flex gap-2 mt-1">
+                  <Input
+                    placeholder="Add keyword"
+                    value={newKeyword}
+                    onChange={(e) => setNewKeyword(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addKeyword())}
+                  />
+                  <Button type="button" onClick={addKeyword} size="sm">
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {keywords.map((keyword, index) => (
+                    <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                      {keyword}
+                      <button
+                        type="button"
+                        onClick={() => removeKeyword(index)}
+                        className="ml-1 hover:text-red-500"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+                <input type="hidden" name="keywords" value={JSON.stringify(keywords)} />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <LinkIcon className="w-5 h-5" />
+                Internal Links
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="text-sm text-gray-600">
+                Add at least 2 internal links to improve SEO and user experience.
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="https://sheikhshops.com/products/..."
+                  value={newInternalLink}
+                  onChange={(e) => setNewInternalLink(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addInternalLink())}
+                />
+                <Button type="button" onClick={addInternalLink} size="sm">
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </div>
+              <div className="space-y-2">
+                {internalLinks.map((link, index) => (
+                  <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 rounded">
+                    <LinkIcon className="w-4 h-4 text-blue-500" />
+                    <span className="flex-1 text-sm">{link}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeInternalLink(index)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <input type="hidden" name="internalLinks" value={JSON.stringify(internalLinks)} />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ExternalLink className="w-5 h-5" />
+                External References
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="text-sm text-gray-600">
+                Add trusted external links (Wikipedia, WHO, FAO, PubMed, etc.)
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="https://en.wikipedia.org/wiki/..."
+                  value={newExternalLink}
+                  onChange={(e) => setNewExternalLink(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addExternalLink())}
+                />
+                <Button type="button" onClick={addExternalLink} size="sm">
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </div>
+              <div className="space-y-2">
+                {externalLinks.map((link, index) => (
+                  <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 rounded">
+                    <ExternalLink className="w-4 h-4 text-green-500" />
+                    <span className="flex-1 text-sm">{link}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeExternalLink(index)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <input type="hidden" name="externalLinks" value={JSON.stringify(externalLinks)} />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Tags</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Add tag"
+                  value={newTag}
+                  onChange={(e) => setNewTag(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
+                />
+                <Button type="button" onClick={addTag} size="sm">
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {tags.map((tag, index) => (
+                  <Badge key={index} variant="outline" className="flex items-center gap-1">
+                    #{tag}
+                    <button
+                      type="button"
+                      onClick={() => removeTag(index)}
+                      className="ml-1 hover:text-red-500"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+              <input type="hidden" name="tags" value={JSON.stringify(tags)} />
+            </CardContent>
+          </Card>
+
+          {/* AI-Powered Internal Linking Suggestions */}
+          <InternalLinkingSuggestions
+            content={content}
+            category={selectedCategory}
+            tags={tags}
+            onAddLink={handleAddSuggestedLink}
+          />
+        </div>
+      </div>
+
+      <div className="flex justify-end gap-4 pt-6 border-t">
+        <Button type="button" variant="outline" disabled={isSubmitting}>
+          Save Draft
+        </Button>
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Creating...' : 'Create Article'}
+        </Button>
+      </div>
+    </form>
+  );
 }

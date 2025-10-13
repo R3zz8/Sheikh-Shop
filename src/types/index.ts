@@ -93,6 +93,15 @@ export interface ArticleWithAuthor {
   updatedAt: Date;
   category: string | null;
   tags: string[];
+  publishedAt: Date | null;
+  metaTitle: string | null;
+  metaDescription: string | null;
+  keywords: string[];
+  internalLinks: string[];
+  externalLinks: string[];
+  schemaMarkup: any;
+  readTime: number | null;
+  excerpt: string | null;
   author: {
     id: string;
     username: string | null;

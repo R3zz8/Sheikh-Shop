@@ -28,10 +28,7 @@ export default async function EditArticlePage({ params }: EditArticlePageProps) 
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <EnhancedArticleForm article={{
-        ...article,
-        imageUrl: article.imageUrl,
-      }} />
+      <EnhancedArticleForm />
     </div>
   );
 } 

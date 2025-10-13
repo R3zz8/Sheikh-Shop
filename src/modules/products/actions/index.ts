@@ -43,7 +43,7 @@ async function verifyAdminAccess() {
   const accessToken = cookieStore.get('access-token')?.value || null;
   const sessionToken = cookieStore.get('session-token')?.value || null;
   const token = accessToken || sessionToken;
-
+  
   if (!token) {
     throw new Error('Authentication required');
   }
