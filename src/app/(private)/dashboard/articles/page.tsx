@@ -87,10 +87,12 @@ async function getArticles() {
       return result.data;
     } else {
       console.error('Error fetching articles:', result.error);
+      // Return empty array instead of throwing - let the client handle the error
       return [];
     }
   } catch (error) {
     console.error('Error fetching articles:', error);
+    // Return empty array instead of throwing - let the client handle the error
     return [];
   }
 }

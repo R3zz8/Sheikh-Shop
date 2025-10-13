@@ -27,18 +27,17 @@ model Product {
   images       Image[]
   baseUnit     Unit            @relation(fields: [baseUnitId], references: [id])
   units        ProductUnit[]
-  Review       Review[]
 
   @@index([category])
   @@index([basePrice])
   @@index([status])
   @@index([createdAt])
-  @@index([name])
-  @@index([category, status])
-  @@index([basePrice, status])
   @@index([isNew])
   @@index([isBestSeller])
   @@index([isAmazing])
+  @@index([basePrice, status], map: "idx_product_baseprice_status_unique")
+  @@index([category, status], map: "idx_product_category_status_unique")
+  @@index([name], map: "idx_product_name_unique")
 }
 
 model Unit {
@@ -160,8 +159,8 @@ model User {
   comments                      Comment[]
   emailVerifications            EmailVerification[]
   recoveryCodes                 RecoveryCode[]
-  Review                        Review[]
   sessions                      Session[]
+  likes                         UserLike[]
 
   @@index([email])
   @@index([role])
@@ -263,8 +262,20 @@ model Article {
   publishedAt     DateTime?
   readTime        Int?
   schemaMarkup    Json?
+  
+  // Phase 2 Enhancements
+  views           Int           @default(0)
+  likes           Int           @default(0)
+  shares          Int           @default(0)
+  language        String        @default("en") @db.VarChar(5)
+  version         Int           @default(1)
+  previousVersions Json?
+  analytics       Json?         // stores engagement metrics, time on page, scroll depth
+  
   author          User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
   comments        Comment[]
+  versions        ArticleVersion[]
+  userLikes       UserLike[] // Renamed from 'likes' to avoid conflict
 
   @@index([slug])
   @@index([authorId])
@@ -275,6 +286,10 @@ model Article {
   @@index([category])
   @@index([metaTitle])
   @@index([keywords])
+  @@index([views])
+  @@index([language])
+  @@index([views, language])
+  @@index([status, views])
 }
 
 model Comment {
@@ -294,22 +309,42 @@ model Comment {
   @@index([status])
 }
 
-model Review {
-  id        String   @id
-  productId String
-  userId    String
-  rating    Int      @default(5)
-  comment   String
-  userName  String   @db.VarChar(255)
-  createdAt DateTime @default(now())
-  updatedAt DateTime
-  Product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+model ArticleVersion {
+  id              String   @id @default(cuid())
+  articleId       String
+  version         Int
+  content         String
+  metaTitle       String?  @db.VarChar(60)
+  metaDescription String?  @db.VarChar(155)
+  title           String?  @db.VarChar(255)
+  summary         String?  @db.VarChar(500)
+  keywords        String[] @default([])
+  updatedAt       DateTime @updatedAt
+  createdBy       String   // User ID who created this version
+  changes         Json?    // Track what changed in this version
+  
+  article         Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
 
-  @@index([createdAt])
-  @@index([productId])
-  @@index([rating])
+  @@unique([articleId, version])
+  @@index([articleId])
+  @@index([version])
+  @@index([createdBy])
+  @@index([updatedAt])
+}
+
+model UserLike {
+  id        String   @id @default(cuid())
+  userId    String
+  articleId String
+  createdAt DateTime @default(now())
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, articleId])
   @@index([userId])
+  @@index([articleId])
+  @@index([createdAt])
 }
 
 enum UserRole {

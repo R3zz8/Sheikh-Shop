@@ -141,6 +141,17 @@ export default function ArticlesDashboard({ initialArticles = [] }: ArticlesDash
     setError(null);
     try {
       const response = await fetch('/api/articles?admin=true');
+      
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Authentication required. Please log in to access the articles dashboard.');
+        } else if (response.status === 403) {
+          throw new Error('Access denied. You do not have permission to view articles.');
+        } else {
+          throw new Error(`Server error: ${response.status}`);
+        }
+      }
+
       const result = await response.json();
 
       if (result.success && result.data) {
@@ -246,10 +257,9 @@ export default function ArticlesDashboard({ initialArticles = [] }: ArticlesDash
 
   // Load articles on mount
   useEffect(() => {
-    if (initialArticles.length === 0) {
-      fetchArticles();
-    }
-  }, [initialArticles.length, fetchArticles]);
+    // Always try to fetch articles on mount to ensure we have the latest data
+    fetchArticles();
+  }, [fetchArticles]);
 
   // Handle article selection
   const handleArticleSelection = (articleId: string, checked: boolean) => {
