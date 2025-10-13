@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
-import EnhancedArticleForm from '../_components/EnhancedArticleForm';
+import AIEnhancedArticleForm from '../_components/AIEnhancedArticleForm';
 import { checkAccess } from '@/lib/checkAccess';
 import { redirect } from 'next/navigation';
 
@@ -74,7 +74,7 @@ export default async function NewArticlePage() {
         </div>
 
         <Suspense fallback={<ArticleFormSkeleton />}>
-          <EnhancedArticleForm />
+          <AIEnhancedArticleForm />
         </Suspense>
       </div>
     </div>

@@ -84,6 +84,29 @@ EMAIL_FROM="noreply@sheikhshop.com"
 UPSTASH_REDIS_REST_URL="https://your-redis-instance.upstash.io"
 UPSTASH_REDIS_REST_TOKEN="your-upstash-redis-token"
 
+# Alternative Redis Configuration (Phase 2 Enhancement)
+# For advanced caching and analytics
+REDIS_URL="redis://username:password@host:port"
+REDIS_HOST="your-redis-host"
+REDIS_PORT="6379"
+REDIS_PASSWORD="your-redis-password"
+
+# =============================================================================
+# AI INTEGRATION (PHASE 2 ENHANCEMENT)
+# =============================================================================
+
+# OpenAI API Key (REQUIRED for AI Content Assistant)
+# Get your API key from https://platform.openai.com/api-keys
+OPENAI_API_KEY="sk-your-openai-api-key-here"
+
+# =============================================================================
+# ANALYTICS & SECURITY (PHASE 2 ENHANCEMENT)
+# =============================================================================
+
+# Analytics Security Salt (REQUIRED for Phase 2)
+# Generate a secure random string for analytics data salting
+ANALYTICS_SALT="your-secure-random-string-here"
+
 # =============================================================================
 # SEO & VERIFICATION CONFIGURATION (OPTIONAL)
 # =============================================================================
@@ -129,9 +152,17 @@ CUSTOM_KEY="your-custom-key"
 - ✅ `RESEND_API_KEY` - Your Resend API key
 - ✅ `EMAIL_FROM` - Your sender email address
 
+### Phase 2 Variables (Required for new features):
+- ✅ `OPENAI_API_KEY` - For AI Content Assistant and title optimization
+- ✅ `ANALYTICS_SALT` - For analytics data security
+
 ### Optional Variables (Enhance functionality):
 - 🔧 `UPSTASH_REDIS_REST_URL` - For session caching
 - 🔧 `UPSTASH_REDIS_REST_TOKEN` - For session caching
+- 🔧 `REDIS_URL` - Alternative Redis configuration
+- 🔧 `REDIS_HOST` - Redis host for advanced caching
+- 🔧 `REDIS_PORT` - Redis port (default: 6379)
+- 🔧 `REDIS_PASSWORD` - Redis password
 - 🔧 `GOOGLE_VERIFICATION_CODE` - For SEO
 - 🔧 `YANDEX_VERIFICATION_CODE` - For SEO
 - 🔧 `YAHOO_VERIFICATION_CODE` - For SEO

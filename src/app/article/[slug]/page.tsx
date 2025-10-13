@@ -13,14 +13,19 @@ import SocialSharing from './_components/SocialSharing';
 import Breadcrumbs from './_components/Breadcrumbs';
 import TableOfContents from './_components/TableOfContents';
 import JsonLd from '@/components/seo/JsonLd';
+import { getLanguageFromPath, generateHreflangPaths, supportedLanguages } from '@/i18n.config';
+
+// Enable ISR with 60-second revalidation
+export const revalidate = 60;
 
 interface ArticlePageProps {
     params: {
         slug: string;
     };
+    searchParams?: { [key: string]: string | string[] | undefined };
 }
 
-export async function generateMetadata({ params }: ArticlePageProps) {
+export async function generateMetadata({ params, searchParams }: ArticlePageProps) {
     const result = await getArticleBySlug(params.slug);
     
     if (!result.success || !result.data) {
@@ -31,11 +36,16 @@ export async function generateMetadata({ params }: ArticlePageProps) {
     }
 
     const article = result.data;
+    const currentPath = `/article/${params.slug}`;
+    const currentLanguage = getLanguageFromPath(currentPath);
 
     // Use database SEO fields if available, fallback to generated metadata
     const metaTitle = article.metaTitle || article.title;
     const metaDescription = article.metaDescription || article.summary;
     const keywords = article.keywords && article.keywords.length > 0 ? article.keywords : article.tags || [];
+
+    // Generate hreflang for multi-language SEO
+    const hreflangPaths = generateHreflangPaths(currentPath);
 
     return {
         title: metaTitle,
@@ -59,6 +69,7 @@ export async function generateMetadata({ params }: ArticlePageProps) {
             authors: [formatAuthorName(article.author)],
             section: article.category,
             tags: keywords,
+            locale: supportedLanguages.find(lang => lang.code === currentLanguage)?.locale || 'en_US',
         },
         twitter: {
             card: 'summary_large_image',
@@ -69,7 +80,8 @@ export async function generateMetadata({ params }: ArticlePageProps) {
             site: '@sheikhshops',
         },
         alternates: {
-            canonical: `https://sheikhshops.com/article/${article.slug}`,
+            canonical: `https://sheikhshops.com${currentPath}`,
+            languages: hreflangPaths,
         },
         other: {
             'article:author': formatAuthorName(article.author),
@@ -77,6 +89,7 @@ export async function generateMetadata({ params }: ArticlePageProps) {
             'article:modified_time': article.updatedAt.toISOString(),
             'article:section': article.category || '',
             'article:tag': keywords.join(', '),
+            'article:language': currentLanguage,
         },
     };
 }

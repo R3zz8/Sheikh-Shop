@@ -97,6 +97,15 @@ export interface ArticleWithAuthor {
   metaTitle: string | null;
   metaDescription: string | null;
   keywords: string[];
+  
+  // Phase 2 Enhancements
+  views: number;
+  likes: number;
+  shares: number;
+  language: string;
+  version: number;
+  previousVersions: any;
+  analytics: any;
   internalLinks: string[];
   externalLinks: string[];
   schemaMarkup: any;

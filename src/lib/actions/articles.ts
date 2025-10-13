@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { getCurrentUserId } from '@/lib/actions/auth/session';
+import { articleCache } from '@/lib/cache/articleCache';
 
 // SEO Validation Constants
 const TRUSTED_DOMAINS = [
@@ -42,6 +43,12 @@ const createArticleSchema = z.object({
         .min(1, 'Meta description is required')
         .max(155, 'Meta description must be 155 characters or less'),
     keywords: z.array(z.string()).default([]),
+    
+    // Phase 2 Enhancements
+    language: z.string().default('en').refine(
+        (lang) => ['en', 'ar', 'fa', 'tr'].includes(lang),
+        'Language must be one of: en, ar, fa, tr'
+    ),
     
     // Link Validation
     internalLinks: z.array(z.string().url('Invalid internal URL'))
@@ -170,6 +177,9 @@ export async function createArticle(formData: FormData) {
         internalLinks: formData.get('internalLinks') ? JSON.parse(formData.get('internalLinks') as string) : [],
         externalLinks: formData.get('externalLinks') ? JSON.parse(formData.get('externalLinks') as string) : [],
         excerpt: formData.get('excerpt') as string || undefined,
+        
+        // Phase 2 Fields
+        language: formData.get('language') as string || 'en',
     };
 
     // Validate all fields including SEO requirements
@@ -196,6 +206,12 @@ export async function createArticle(formData: FormData) {
                 imageUrl: validatedFields.data.imageUrl || null,
             },
         });
+
+        // Cache the new article if it's published
+        if (article.status === 'PUBLISHED') {
+            await articleCache.setArticle(article as any);
+            await articleCache.invalidateRelatedCaches();
+        }
 
         revalidatePath('/dashboard/articles');
         redirect('/dashboard/articles');
@@ -236,6 +252,9 @@ export async function updateArticle(id: string, formData: FormData) {
         internalLinks: formData.get('internalLinks') ? JSON.parse(formData.get('internalLinks') as string) : [],
         externalLinks: formData.get('externalLinks') ? JSON.parse(formData.get('externalLinks') as string) : [],
         excerpt: formData.get('excerpt') as string || undefined,
+        
+        // Phase 2 Fields
+        language: formData.get('language') as string || 'en',
     };
 
     // Validate all fields including SEO requirements
@@ -271,6 +290,15 @@ export async function updateArticle(id: string, formData: FormData) {
                 imageUrl: updateData.imageUrl || null,
             },
         });
+
+        // Invalidate cache for updated article
+        await articleCache.invalidateArticle(article.slug);
+        
+        // Cache the updated article if it's published
+        if (article.status === 'PUBLISHED') {
+            await articleCache.setArticle(article as any);
+            await articleCache.invalidateRelatedCaches();
+        }
 
         revalidatePath('/dashboard/articles');
         redirect('/dashboard/articles');
