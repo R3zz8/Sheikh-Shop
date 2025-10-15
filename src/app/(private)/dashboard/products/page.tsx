@@ -1,10 +1,13 @@
+import { requireAdminOrSuperAdmin } from '@/lib/auth/server-auth';
 import ProductsPageClient from './_components/ProductsPageClient';
 import React from 'react';
 
-// export const dynamic = 'force-dynamic';
-// export const revalidate = 30;
+export const dynamic = 'force-dynamic';
 
-export default function DashboardProductPage() {
+export default async function DashboardProductPage() {
+  // Server-side authentication - redirects to login if not authenticated
+  await requireAdminOrSuperAdmin();
+
   return (
     <div>
       <ProductsPageClient />

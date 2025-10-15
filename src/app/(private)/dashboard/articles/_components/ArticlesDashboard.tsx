@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { useRequireRole } from '@/hooks/useRBAC';
+// Removed useRequireRole import - authentication handled server-side
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -94,7 +94,7 @@ interface BulkAction {
 
 export default function ArticlesDashboard({ initialArticles = [] }: ArticlesDashboardProps) {
   const router = useRouter();
-  const hasAccess = useRequireRole(['SUPERADMIN', 'ADMIN', 'EDITOR', 'AUTHOR']);
+  // Authentication handled server-side - no need for client-side role check
   
   // State management
   const [articles, setArticles] = useState<ArticleWithAuthor[]>(initialArticles);
@@ -140,7 +140,9 @@ export default function ArticlesDashboard({ initialArticles = [] }: ArticlesDash
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch('/api/articles?admin=true');
+      const response = await fetch('/api/articles?admin=true', {
+        credentials: 'include',
+      });
       
       if (!response.ok) {
         if (response.status === 401) {
@@ -295,6 +297,7 @@ export default function ArticlesDashboard({ initialArticles = [] }: ArticlesDash
     try {
       const response = await fetch(`/api/articles/${articleToDelete}`, {
         method: 'DELETE',
+        credentials: 'include',
       });
 
       if (response.ok) {
@@ -329,7 +332,8 @@ export default function ArticlesDashboard({ initialArticles = [] }: ArticlesDash
               fetch(`/api/articles/${id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: 'PUBLISHED' })
+                body: JSON.stringify({ status: 'PUBLISHED' }),
+                credentials: 'include',
               })
             )
           );
@@ -342,7 +346,8 @@ export default function ArticlesDashboard({ initialArticles = [] }: ArticlesDash
               fetch(`/api/articles/${id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: 'DRAFT' })
+                body: JSON.stringify({ status: 'DRAFT' }),
+                credentials: 'include',
               })
             )
           );
@@ -352,7 +357,10 @@ export default function ArticlesDashboard({ initialArticles = [] }: ArticlesDash
         case 'DELETE':
           await Promise.all(
             articleIds.map(id =>
-              fetch(`/api/articles/${id}`, { method: 'DELETE' })
+              fetch(`/api/articles/${id}`, { 
+                method: 'DELETE',
+                credentials: 'include',
+              })
             )
           );
           toast.success(`${articleIds.length} articles deleted successfully`);
@@ -373,6 +381,7 @@ export default function ArticlesDashboard({ initialArticles = [] }: ArticlesDash
       const response = await fetch('/api/articles', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           title: `${article.title} (Copy)`,
           summary: article.summary,
@@ -444,17 +453,7 @@ export default function ArticlesDashboard({ initialArticles = [] }: ArticlesDash
     return text.trim().split(/\s+/).length;
   };
 
-  if (!hasAccess) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Access Denied</h2>
-          <p className="text-gray-600">You don't have permission to access this page.</p>
-        </div>
-      </div>
-    );
-  }
+  // Authentication handled server-side - no need for client-side access check
 
   if (error) {
     return (

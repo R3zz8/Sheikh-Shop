@@ -2,6 +2,7 @@ export const uploadImage = async (formData: FormData) => {
   try {
     const res = await fetch('/api/upload', {
       method: 'POST',
+      credentials: 'include',
       body: formData,
     });
 
@@ -19,7 +20,9 @@ export const uploadImage = async (formData: FormData) => {
 
 export const fetchImages = async (productId: string) => {
   try {
-    const res = await fetch(`/api/upload?productId=${productId}`);
+    const res = await fetch(`/api/upload?productId=${productId}`, {
+      credentials: 'include',
+    });
 
     if (!res.ok) {
       const errorData = await res.json();
@@ -37,6 +40,7 @@ export const deleteImage = async (publicId: string) => {
   try {
     const res = await fetch(`/api/upload/${encodeURIComponent(publicId)}`, {
       method: 'DELETE',
+      credentials: 'include',
     });
 
     if (!res.ok) {

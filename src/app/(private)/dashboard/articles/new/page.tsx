@@ -1,8 +1,7 @@
 import { Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import AIEnhancedArticleForm from '../_components/AIEnhancedArticleForm';
-import { checkAccess } from '@/lib/checkAccess';
-import { redirect } from 'next/navigation';
+import { requireAuth } from '@/lib/auth/server-auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -53,15 +52,9 @@ function ArticleFormSkeleton() {
 }
 
 export default async function NewArticlePage() {
-  // Check if user has permission to create articles
-  const hasPermission = await checkAccess(
-    new Request('http://localhost:3000'), // Mock request for server-side check
-    ['SUPERADMIN', 'ADMIN', 'EDITOR', 'AUTHOR']
-  );
-
-  if (!hasPermission) {
-    redirect('/dashboard');
-  }
+  // Server-side authentication - redirects to login if not authenticated
+  // This allows SUPERADMIN, ADMIN, EDITOR, and AUTHOR roles
+  await requireAuth(['SUPERADMIN', 'ADMIN', 'EDITOR', 'AUTHOR']);
 
   return (
     <div className="container mx-auto p-6">

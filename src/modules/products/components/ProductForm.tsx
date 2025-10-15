@@ -70,7 +70,9 @@ const ProductForm = (props: { product: Product | null }) => {
     
     setLoadingUnits(true);
     try {
-      const response = await fetch(`/api/dashboard/products/${product.id}/units`);
+      const response = await fetch(`/api/dashboard/products/${product.id}/units`, {
+        credentials: 'include',
+      });
       if (response.ok) {
         const units = await response.json();
         setProductUnits(units.map((unit: ProductUnit) => ({
@@ -126,6 +128,7 @@ const ProductForm = (props: { product: Product | null }) => {
           await fetch(`/api/dashboard/products/${productId}/units/${unit.id}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify(unitData)
           });
         } else {
@@ -133,6 +136,7 @@ const ProductForm = (props: { product: Product | null }) => {
           await fetch(`/api/dashboard/products/${productId}/units`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify(unitData)
           });
         }
@@ -176,7 +180,11 @@ const ProductForm = (props: { product: Product | null }) => {
       setUploading(true);
       const formData = new FormData();
       formData.append('file', file);
-      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      const res = await fetch('/api/upload', { 
+        method: 'POST', 
+        credentials: 'include',
+        body: formData 
+      });
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error || 'Upload failed');
       setTempImageUrl(json.url as string);

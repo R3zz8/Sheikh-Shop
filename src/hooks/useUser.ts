@@ -17,7 +17,9 @@ export function useUser() {
     queryKey: ['user'],
     queryFn: async () => {
       try {
-        const res = await fetch('/api/user');
+        const res = await fetch('/api/user', {
+          credentials: 'include', // Include cookies in the request
+        });
         if (!res.ok) {
           if (res.status === 401) {
             // User is not authenticated

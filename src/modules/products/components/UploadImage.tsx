@@ -44,6 +44,7 @@ const UploadImage: FC<{ productId: string }> = ({ productId }) => {
         // Delete only from database (local image)
         const response = await fetch(`/api/upload/local/${imageId}`, {
           method: 'DELETE',
+          credentials: 'include',
         });
         
         if (!response.ok) {
