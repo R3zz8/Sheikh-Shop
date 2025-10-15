@@ -21,7 +21,16 @@ export async function POST(req: NextRequest) {
 
     if (type === 'smart') {
       // Generate smart internal links with positions
-      result = await generateSmartInternalLinks(content, category, tags);
+      const smartLinks = await generateSmartInternalLinks(content, category, tags);
+      // Convert to the expected format
+      result = smartLinks.map(link => ({
+        url: link.suggestedLink,
+        title: link.text,
+        type: 'smart',
+        relevanceScore: 0.8, // Default high score for smart links
+        reason: link.reason,
+        position: link.position
+      }));
     } else {
       // Get general suggestions
       result = await suggestInternalLinks(content, category, tags);
