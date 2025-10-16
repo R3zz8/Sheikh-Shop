@@ -55,14 +55,17 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
 
                             {/* Main card */}
                             <div className="relative bg-white/8 backdrop-blur-xl border border-white/15 rounded-3xl p-4 md:p-8 shadow-xl">
-                                <div className="grid lg:grid-cols-2 gap-6 lg:gap-12 items-start">
+                                <div className="grid lg:grid-cols-2 gap-6 lg:gap-12 items-start mobile-two-col">
                                     {/* Left side - Image Gallery */}
                                     <ErrorBoundary fallback={
                                         <div className="bg-white/5 rounded-lg p-8 text-center">
                                             <p className="text-gray-300">Failed to load image gallery</p>
                                         </div>
                                     }>
-                                        <ImageGallery images={product.images} productName={product.name} />
+                                        {/* Mobile: left column (approx 50% width) */}
+                                        <div className="mobile-gallery-col mx-auto w-[50vw] max-w-[340px] md:max-w-none md:w-full">
+                                            <ImageGallery images={product.images} productName={product.name} />
+                                        </div>
                                     </ErrorBoundary>
 
                                     {/* Right side - Product Info */}
@@ -77,7 +80,10 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
                                             <p className="text-gray-300 mt-4">Failed to load product information</p>
                                         </div>
                                     }>
-                                        <ProductInfo product={product} />
+                                        {/* Mobile: right column (details) */}
+                                        <div className="mobile-info-col w-full">
+                                            <ProductInfo product={product} />
+                                        </div>
                                     </ErrorBoundary>
                                 </div>
                             </div>
@@ -143,3 +149,25 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
         </ErrorBoundary>
     );
 } 
+/**
+ * Mobile-only two-column layout using CSS grid overrides.
+ * Keeps desktop/tablet intact while arranging gallery (left ~50vw) and info (right) on <=480px.
+ */
+// eslint-disable-next-line @next/next/no-css-tags
+<style jsx global>{`
+  @media (max-width: 480px) {
+    .mobile-two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: start;
+      column-gap: 12px;
+      row-gap: 12px;
+    }
+    .mobile-gallery-col {
+      grid-column: 1 / span 1;
+    }
+    .mobile-info-col {
+      grid-column: 2 / span 1;
+    }
+  }
+`}</style>

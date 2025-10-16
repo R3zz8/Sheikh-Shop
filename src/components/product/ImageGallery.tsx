@@ -52,7 +52,7 @@ export default function ImageGallery({ images, productName }: ImageGalleryProps)
     };
 
     return (
-        <div className="space-y-4 md:space-y-6">
+        <div className="space-y-3 md:space-y-6">
             {/* Main Image */}
             <div className="relative bg-white/8 backdrop-blur-sm rounded-2xl p-3 md:p-6 border border-white/15 overflow-hidden">
                 {/* Navigation arrows for multiple images */}
@@ -78,7 +78,7 @@ export default function ImageGallery({ images, productName }: ImageGalleryProps)
                 )}
 
                 {/* Main image with smooth transitions */}
-                <div className="relative aspect-square">
+                <div className="relative aspect-square rounded-[12px] overflow-hidden shadow-sm">
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={selectedImageIndex}
@@ -111,16 +111,16 @@ export default function ImageGallery({ images, productName }: ImageGalleryProps)
 
             {/* Thumbnails */}
             {images.length > 1 && (
-                <div className="flex gap-2 md:gap-3 justify-start overflow-x-auto pb-2 md:pb-0 md:justify-center lg:justify-start scrollbar-hide">
+                <div className="flex gap-1.5 md:gap-3 justify-center md:justify-center lg:justify-start overflow-x-auto pb-1 md:pb-0">
                     {images.map((image, index) => (
                         <motion.button
                             key={image.id}
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => handleImageChange(index)}
-                            className={`relative w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden border-2 transition-all duration-300 flex-shrink-0 ${index === selectedImageIndex
+                            className={`relative w-[70px] h-[70px] md:w-20 md:h-20 rounded-[12px] overflow-hidden border transition-all duration-300 flex-shrink-0 ${index === selectedImageIndex
                                 ? 'border-amber-300 shadow-lg shadow-amber-300/25'
-                                : 'border-white/20 hover:border-white/40'
+                                : 'border-amber-200/30 hover:border-amber-300/50'
                                 }`}
                         >
                             <Image

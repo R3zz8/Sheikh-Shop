@@ -168,12 +168,15 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.15 }}
             >
-                <ProductBadge 
-                    isNew={product.isNew}
-                    isBestSeller={product.isBestSeller}
-                    size="md"
-                    className="md:scale-100 scale-90"
-                />
+                <div className="flex items-center justify-between gap-3">
+                    <div className="flex-1" />
+                    <ProductBadge 
+                        isNew={product.isNew}
+                        isBestSeller={product.isBestSeller}
+                        size="md"
+                        className="md:scale-100 scale-90"
+                    />
+                </div>
             </motion.div>
 
             {/* Price Section */}
@@ -184,7 +187,8 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                 className="space-y-4"
             >
                 <div className="space-y-3">
-                    <div className="flex items-baseline gap-3">
+                    {/* Price row: final + original (if discount) aligned on one line for mobile */}
+                    <div className="flex items-baseline gap-3 flex-wrap">
                         {/* Final Price */}
                         <span className="text-3xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
                             {formatPrice(convertedFinalPrice, currency)}
@@ -288,19 +292,19 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                 </div>
             </motion.div>
 
-            {/* Stock Status */}
+            {/* Stock Status (muted, below price/unit) */}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.5 }}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 text-sm md:text-base"
             >
                 <Package className="w-5 h-5 text-gray-400" />
                 <span className={`font-medium ${stockStatus.color}`}>
                     {stockStatus.text}
                 </span>
                 <span className="text-gray-400">•</span>
-                <span className="text-gray-300">
+                <span className="text-gray-400">
                     {currentStock} units available
                 </span>
             </motion.div>
@@ -512,7 +516,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                 className="space-y-3"
             >
                 <h3 className="text-xl font-semibold text-white">Description</h3>
-                <p className="text-gray-300 leading-relaxed text-lg">
+                <p className="text-gray-300 leading-relaxed text-base md:text-lg max-w-prose">
                     {product.description || 'No description available for this product.'}
                 </p>
             </motion.div>
@@ -552,13 +556,18 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                 transition={{ duration: 0.6, delay: 0.8 }}
                 className="pt-4"
             >
-                <AddToCartButton 
-                    product={product} 
-                    selectedUnit={selectedUnit || defaultUnit}
-                    selectedQuantity={selectedQuantity}
-                    selectedProductUnit={selectedProductUnit}
-                    pricing={pricing}
-                />
+                {/* Single main Add to Cart button: centered and full-width on mobile */}
+                <div className="w-full flex">
+                    <div className="w-full max-w-sm mx-auto">
+                        <AddToCartButton 
+                            product={product} 
+                            selectedUnit={selectedUnit || defaultUnit}
+                            selectedQuantity={selectedQuantity}
+                            selectedProductUnit={selectedProductUnit}
+                            pricing={pricing}
+                        />
+                    </div>
+                </div>
             </motion.div>
 
             {/* Stock Warning */}
