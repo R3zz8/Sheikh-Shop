@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { createArticle } from '@/lib/actions/articles';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import AIContentAssistant from '@/components/ai/AIContentAssistant';
 import InternalLinkingSuggestions from './InternalLinkingSuggestions';
 import type { ContentAssistantResponse } from '@/lib/ai/content-assistant';
+import { useArticleAnalytics } from '@/hooks/useArticleAnalytics';
+import { toast } from 'sonner';
 
 export default function AIEnhancedArticleForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -32,6 +34,11 @@ export default function AIEnhancedArticleForm() {
   const [metaDescription, setMetaDescription] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [aiGeneratedContent, setAiGeneratedContent] = useState<ContentAssistantResponse | null>(null);
+  const [savingState, setSavingState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [createdArticleId, setCreatedArticleId] = useState<string | undefined>(undefined);
+
+  const draftKey = useMemo(() => 'article:new:draft', []);
+  const { trackAction } = useArticleAnalytics(createdArticleId);
 
   // Calculate reading time
   const calculateReadingTime = (text: string) => {
@@ -80,6 +87,8 @@ export default function AIEnhancedArticleForm() {
     setKeywords(content.keywords);
     setInternalLinks(content.internalLinks);
     setExternalLinks(content.externalLinks.map(link => link.url));
+
+    trackAction('ai_generation_completed');
 
     // Set category if available
     if (content.keywords.length > 0) {
@@ -164,13 +173,89 @@ export default function AIEnhancedArticleForm() {
     setError(null);
     
     try {
-      await createArticle(formData);
+      const result = await createArticle(formData);
+      // createArticle redirects on success; capture id if returned
+      if (result && typeof result === 'object' && 'data' in result && (result as any).data?.id) {
+        setCreatedArticleId((result as any).data.id as string);
+        trackAction('article_created', { articleId: (result as any).data.id });
+        const submittedStatus = (formData.get('status') as string) || 'DRAFT';
+        if (submittedStatus === 'PUBLISHED') {
+          trackAction('article_published', { articleId: (result as any).data.id });
+        }
+      } else {
+        // best effort
+        trackAction('article_created');
+      }
+      // clear draft after successful create
+      try { localStorage.removeItem(draftKey); } catch {}
     } catch (err: any) {
       setError({ general: err.message || 'Failed to create article' });
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  // Autosave: persist draft every 30s and on changes (debounced)
+  useEffect(() => {
+    const save = () => {
+      try {
+        setSavingState('saving');
+        const title = (document.getElementById('title') as HTMLInputElement)?.value || '';
+        const slug = (document.getElementById('slug') as HTMLInputElement)?.value || '';
+        const summary = (document.getElementById('summary') as HTMLTextAreaElement)?.value || '';
+        const excerpt = (document.getElementById('excerpt') as HTMLTextAreaElement)?.value || '';
+        const imageUrl = (document.getElementById('imageUrl') as HTMLInputElement)?.value || '';
+        const draft = {
+          title, slug, summary, content, metaTitle, metaDescription, selectedCategory,
+          keywords, internalLinks, externalLinks, tags, excerpt, imageUrl,
+          status: 'DRAFT',
+        };
+        localStorage.setItem(draftKey, JSON.stringify(draft));
+        setSavingState('saved');
+        trackAction('article_saved_draft');
+        setTimeout(() => setSavingState('idle'), 1500);
+      } catch {
+        setSavingState('error');
+        setTimeout(() => setSavingState('idle'), 2000);
+      }
+    };
+
+    const interval = setInterval(save, 30000);
+    return () => clearInterval(interval);
+  }, [content, metaTitle, metaDescription, selectedCategory, keywords, internalLinks, externalLinks, tags, draftKey, trackAction]);
+
+  // Restore draft on mount
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(draftKey);
+      if (!raw) return;
+      const draft = JSON.parse(raw);
+      const titleInput = document.getElementById('title') as HTMLInputElement | null;
+      const slugInput = document.getElementById('slug') as HTMLInputElement | null;
+      const summaryInput = document.getElementById('summary') as HTMLTextAreaElement | null;
+      const contentInput = document.getElementById('content') as HTMLTextAreaElement | null;
+      const metaTitleInput = document.getElementById('metaTitle') as HTMLInputElement | null;
+      const metaDescriptionInput = document.getElementById('metaDescription') as HTMLTextAreaElement | null;
+      const excerptInput = document.getElementById('excerpt') as HTMLTextAreaElement | null;
+      const imageUrlInput = document.getElementById('imageUrl') as HTMLInputElement | null;
+
+      if (titleInput && draft.title) titleInput.value = draft.title;
+      if (slugInput && draft.slug) slugInput.value = draft.slug;
+      if (summaryInput && draft.summary) summaryInput.value = draft.summary;
+      if (contentInput && draft.content) { contentInput.value = draft.content; setContent(draft.content); }
+      if (metaTitleInput && draft.metaTitle) { metaTitleInput.value = draft.metaTitle; setMetaTitle(draft.metaTitle); }
+      if (metaDescriptionInput && draft.metaDescription) { metaDescriptionInput.value = draft.metaDescription; setMetaDescription(draft.metaDescription); }
+      if (excerptInput && draft.excerpt) excerptInput.value = draft.excerpt;
+      if (imageUrlInput && draft.imageUrl) imageUrlInput.value = draft.imageUrl;
+      if (draft.selectedCategory) setSelectedCategory(draft.selectedCategory);
+      if (Array.isArray(draft.keywords)) setKeywords(draft.keywords);
+      if (Array.isArray(draft.internalLinks)) setInternalLinks(draft.internalLinks);
+      if (Array.isArray(draft.externalLinks)) setExternalLinks(draft.externalLinks);
+      if (Array.isArray(draft.tags)) setTags(draft.tags);
+
+      toast.info('Draft restored');
+    } catch {}
+  }, [draftKey]);
 
   return (
     <div className="space-y-6">
@@ -180,7 +265,10 @@ export default function AIEnhancedArticleForm() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <AIContentAssistant onContentGenerated={handleAIContentGenerated} />
+        <AIContentAssistant 
+          onContentGenerated={handleAIContentGenerated}
+          onGenerationRequested={() => trackAction('ai_generation_requested')}
+        />
       </motion.div>
 
       <form action={handleSubmit} className="space-y-6">
@@ -557,8 +645,42 @@ export default function AIEnhancedArticleForm() {
           </div>
         </div>
 
-        <div className="flex justify-end gap-4 pt-6 border-t">
-          <Button type="button" variant="outline" disabled={isSubmitting}>
+        <div className="flex justify-between items-center gap-4 pt-6 border-t">
+          <div className="text-sm">
+            {savingState === 'saving' && <span className="text-gray-500">Saving...</span>}
+            {savingState === 'saved' && <span className="text-green-600">Saved</span>}
+            {savingState === 'error' && <span className="text-red-600">Auto-save failed</span>}
+          </div>
+          <Button 
+            type="button" 
+            variant="outline" 
+            disabled={isSubmitting}
+            onClick={() => {
+              // manual draft save
+              try {
+                setSavingState('saving');
+                const title = (document.getElementById('title') as HTMLInputElement)?.value || '';
+                const slug = (document.getElementById('slug') as HTMLInputElement)?.value || '';
+                const summary = (document.getElementById('summary') as HTMLTextAreaElement)?.value || '';
+                const excerpt = (document.getElementById('excerpt') as HTMLTextAreaElement)?.value || '';
+                const imageUrl = (document.getElementById('imageUrl') as HTMLInputElement)?.value || '';
+                const draft = {
+                  title, slug, summary, content, metaTitle, metaDescription, selectedCategory,
+                  keywords, internalLinks, externalLinks, tags, excerpt, imageUrl,
+                  status: 'DRAFT',
+                };
+                localStorage.setItem(draftKey, JSON.stringify(draft));
+                setSavingState('saved');
+                trackAction('article_saved_draft');
+                setTimeout(() => setSavingState('idle'), 1500);
+                toast.success('Draft saved');
+              } catch {
+                setSavingState('error');
+                toast.error('Failed to save draft');
+                setTimeout(() => setSavingState('idle'), 2000);
+              }
+            }}
+          >
             Save Draft
           </Button>
           <Button type="submit" disabled={isSubmitting}>

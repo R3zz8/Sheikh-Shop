@@ -6,7 +6,24 @@ import { logAudit } from '@/lib/actions/auth/audit';
 import { getCurrentUserId } from '@/lib/actions/auth/session';
 
 // Validation schema for engagement tracking
-const trackEngagementSchema = z.object({
+// Supports two modes:
+// 1) Metrics-based engagement (timeOnPage/scrollDepth...)
+// 2) Action-based events (e.g., article_created, article_saved_draft, article_published, ai_generation_requested, ai_generation_completed)
+const actionEventSchema = z.object({
+  articleId: z.string().uuid('Invalid article ID'),
+  sessionId: z.string().min(1, 'Session ID is required'),
+  action: z.enum([
+    'article_created',
+    'article_saved_draft',
+    'article_published',
+    'ai_generation_requested',
+    'ai_generation_completed',
+  ]),
+  userAgent: z.string().optional(),
+  referrer: z.string().url().optional().or(z.literal('')),
+});
+
+const metricsEventSchema = z.object({
   articleId: z.string().uuid('Invalid article ID'),
   sessionId: z.string().min(1, 'Session ID is required'),
   timeOnPage: z.number().min(0, 'Time on page must be positive').max(3600, 'Time on page too high'), // Max 1 hour
@@ -16,6 +33,8 @@ const trackEngagementSchema = z.object({
   userAgent: z.string().optional(),
   referrer: z.string().url().optional().or(z.literal('')),
 });
+
+const trackEngagementSchema = z.union([actionEventSchema, metricsEventSchema]);
 
 export async function POST(req: NextRequest) {
   try {
@@ -29,16 +48,15 @@ export async function POST(req: NextRequest) {
       );
     }
     
-    const { 
-      articleId, 
-      sessionId, 
-      timeOnPage, 
-      scrollDepth, 
-      bounceRate, 
-      readingSpeed,
-      userAgent,
-      referrer 
-    } = validatedData.data;
+    const { articleId, sessionId } = validatedData.data as any;
+    const isActionEvent = 'action' in (validatedData.data as any);
+    const action = isActionEvent ? (validatedData.data as any).action as string : undefined;
+    const timeOnPage = !isActionEvent ? (validatedData.data as any).timeOnPage as number : 0;
+    const scrollDepth = !isActionEvent ? (validatedData.data as any).scrollDepth as number : 0;
+    const bounceRate = !isActionEvent ? (validatedData.data as any).bounceRate as boolean | undefined : undefined;
+    const readingSpeed = !isActionEvent ? (validatedData.data as any).readingSpeed as number | undefined : undefined;
+    const userAgent = (validatedData.data as any).userAgent as string | undefined;
+    const referrer = (validatedData.data as any).referrer as string | undefined;
     
     // Get current user (optional for authenticated users)
     let userId: string | null = null;
@@ -66,7 +84,9 @@ export async function POST(req: NextRequest) {
       );
     }
     
-    if (article.status !== 'PUBLISHED') {
+    // For action-based events (create/save draft/publish/AI), allow any status.
+    // For metrics-based engagement, require published articles.
+    if (!isActionEvent && article.status !== 'PUBLISHED') {
       return NextResponse.json(
         { error: 'Article not published' },
         { status: 404 }
@@ -76,30 +96,41 @@ export async function POST(req: NextRequest) {
     // Get existing analytics data (simulate since analytics field doesn't exist in schema)
     const existingAnalytics = {}; // Default empty object
     
-    // Calculate engagement metrics
-    const engagementScore = calculateEngagementScore(timeOnPage, scrollDepth, bounceRate);
+    // Calculate engagement metrics only for metrics events
+    const engagementScore = isActionEvent ? undefined : calculateEngagementScore(timeOnPage, scrollDepth, bounceRate);
     const avgReadingTime = (existingAnalytics as any).avgReadingTime || 0;
     const totalEngagements = (existingAnalytics as any).totalEngagements || 0;
     
     // Update analytics data
-    const updatedAnalytics = {
-      ...existingAnalytics,
-      lastEngagement: {
-        timeOnPage,
-        scrollDepth,
-        bounceRate,
-        readingSpeed,
-        engagementScore,
-        timestamp: new Date().toISOString(),
-        sessionId,
-        ...(userId && { userId }),
-      },
-      avgReadingTime: Math.round((avgReadingTime * totalEngagements + timeOnPage) / (totalEngagements + 1)),
-      avgScrollDepth: Math.round((((existingAnalytics as any).avgScrollDepth || 0) * totalEngagements + scrollDepth) / (totalEngagements + 1)),
-      avgEngagementScore: Math.round((((existingAnalytics as any).avgEngagementScore || 0) * totalEngagements + engagementScore) / (totalEngagements + 1)),
-      totalEngagements: totalEngagements + 1,
-      ...(bounceRate && { bounceCount: ((existingAnalytics as any).bounceCount || 0) + 1 }),
-    };
+    const updatedAnalytics = isActionEvent
+      ? {
+          ...existingAnalytics,
+          lastAction: {
+            action,
+            timestamp: new Date().toISOString(),
+            sessionId,
+            ...(userId && { userId }),
+          },
+          totalActions: ((existingAnalytics as any).totalActions || 0) + 1,
+        }
+      : {
+          ...existingAnalytics,
+          lastEngagement: {
+            timeOnPage,
+            scrollDepth,
+            bounceRate,
+            readingSpeed,
+            engagementScore,
+            timestamp: new Date().toISOString(),
+            sessionId,
+            ...(userId && { userId }),
+          },
+          avgReadingTime: Math.round((avgReadingTime * totalEngagements + timeOnPage) / (totalEngagements + 1)),
+          avgScrollDepth: Math.round((((existingAnalytics as any).avgScrollDepth || 0) * totalEngagements + scrollDepth) / (totalEngagements + 1)),
+          avgEngagementScore: Math.round((((existingAnalytics as any).avgEngagementScore || 0) * totalEngagements + (engagementScore || 0)) / (totalEngagements + 1)),
+          totalEngagements: totalEngagements + 1,
+          ...(bounceRate && { bounceCount: ((existingAnalytics as any).bounceCount || 0) + 1 }),
+        };
     
     // Update article with new analytics
     // Note: Since analytics field doesn't exist in schema, we'll just cache the data
@@ -122,11 +153,9 @@ export async function POST(req: NextRequest) {
         articleId,
         articleTitle: article.title,
         sessionId,
-        timeOnPage,
-        scrollDepth,
-        engagementScore,
-        bounceRate,
-        readingSpeed,
+        ...(isActionEvent
+          ? { action }
+          : { timeOnPage, scrollDepth, engagementScore, bounceRate, readingSpeed }),
         userAgent,
         referrer,
       }
@@ -134,7 +163,7 @@ export async function POST(req: NextRequest) {
     
     return NextResponse.json({
       success: true,
-      engagementScore,
+      ...(isActionEvent ? { action } : { engagementScore }),
       message: 'Engagement tracked successfully',
     });
     

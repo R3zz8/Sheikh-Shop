@@ -33,6 +33,7 @@ import type { ContentAssistantResponse } from '@/lib/ai/content-assistant';
 
 interface AIContentAssistantProps {
   onContentGenerated: (content: ContentAssistantResponse) => void;
+  onGenerationRequested?: () => void;
   className?: string;
 }
 
@@ -44,6 +45,7 @@ interface GenerationState {
 
 export default function AIContentAssistant({ 
   onContentGenerated, 
+  onGenerationRequested,
   className = '' 
 }: AIContentAssistantProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -96,6 +98,7 @@ export default function AIContentAssistant({
     }, 800);
 
     try {
+      onGenerationRequested?.();
       const response = await fetch('/api/ai/content-assistant', {
         method: 'POST',
         headers: {
