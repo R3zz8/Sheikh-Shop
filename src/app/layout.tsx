@@ -39,6 +39,7 @@ export default function RootLayout({
         <link rel="manifest" href="/site.webmanifest" />
         <meta name="theme-color" content="#451a03" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+        <meta name="p:domain_verify" content="211124b09592c994a2df8c1c9dfce648" />
         <OrganizationJsonLd />
         <WebsiteJsonLd />
       </head>
