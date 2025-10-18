@@ -14,6 +14,7 @@ import { AlertCircle, Plus, X, ExternalLink, Link as LinkIcon, Hash, Clock, Spar
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import AIContentAssistant from '@/components/ai/AIContentAssistant';
 import InternalLinkingSuggestions from './InternalLinkingSuggestions';
+import ImageUpload from '@/components/ui/ImageUpload';
 import type { ContentAssistantResponse } from '@/lib/ai/content-assistant';
 import { useArticleAnalytics } from '@/hooks/useArticleAnalytics';
 import { toast } from 'sonner';
@@ -33,6 +34,7 @@ export default function AIEnhancedArticleForm() {
   const [metaTitle, setMetaTitle] = useState('');
   const [metaDescription, setMetaDescription] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
   const [aiGeneratedContent, setAiGeneratedContent] = useState<ContentAssistantResponse | null>(null);
   const [savingState, setSavingState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [createdArticleId, setCreatedArticleId] = useState<string | undefined>(undefined);
@@ -204,7 +206,6 @@ export default function AIEnhancedArticleForm() {
         const slug = (document.getElementById('slug') as HTMLInputElement)?.value || '';
         const summary = (document.getElementById('summary') as HTMLTextAreaElement)?.value || '';
         const excerpt = (document.getElementById('excerpt') as HTMLTextAreaElement)?.value || '';
-        const imageUrl = (document.getElementById('imageUrl') as HTMLInputElement)?.value || '';
         const draft = {
           title, slug, summary, content, metaTitle, metaDescription, selectedCategory,
           keywords, internalLinks, externalLinks, tags, excerpt, imageUrl,
@@ -237,7 +238,6 @@ export default function AIEnhancedArticleForm() {
       const metaTitleInput = document.getElementById('metaTitle') as HTMLInputElement | null;
       const metaDescriptionInput = document.getElementById('metaDescription') as HTMLTextAreaElement | null;
       const excerptInput = document.getElementById('excerpt') as HTMLTextAreaElement | null;
-      const imageUrlInput = document.getElementById('imageUrl') as HTMLInputElement | null;
 
       if (titleInput && draft.title) titleInput.value = draft.title;
       if (slugInput && draft.slug) slugInput.value = draft.slug;
@@ -246,7 +246,7 @@ export default function AIEnhancedArticleForm() {
       if (metaTitleInput && draft.metaTitle) { metaTitleInput.value = draft.metaTitle; setMetaTitle(draft.metaTitle); }
       if (metaDescriptionInput && draft.metaDescription) { metaDescriptionInput.value = draft.metaDescription; setMetaDescription(draft.metaDescription); }
       if (excerptInput && draft.excerpt) excerptInput.value = draft.excerpt;
-      if (imageUrlInput && draft.imageUrl) imageUrlInput.value = draft.imageUrl;
+      if (draft.imageUrl) setImageUrl(draft.imageUrl);
       if (draft.selectedCategory) setSelectedCategory(draft.selectedCategory);
       if (Array.isArray(draft.keywords)) setKeywords(draft.keywords);
       if (Array.isArray(draft.internalLinks)) setInternalLinks(draft.internalLinks);
@@ -373,14 +373,15 @@ export default function AIEnhancedArticleForm() {
                 </div>
 
                 <div>
-                  <Label htmlFor="imageUrl">Featured Image URL</Label>
-                  <Input
-                    id="imageUrl"
-                    name="imageUrl"
-                    type="url"
-                    placeholder="https://example.com/image.jpg"
-                    className="mt-1"
-                  />
+                  <Label htmlFor="image">Featured Image</Label>
+                  <div className="mt-1">
+                    <ImageUpload
+                      value={imageUrl}
+                      onChange={setImageUrl}
+                      onRemove={() => setImageUrl('')}
+                    />
+                    <input type="hidden" name="imageUrl" value={imageUrl} />
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -663,7 +664,6 @@ export default function AIEnhancedArticleForm() {
                 const slug = (document.getElementById('slug') as HTMLInputElement)?.value || '';
                 const summary = (document.getElementById('summary') as HTMLTextAreaElement)?.value || '';
                 const excerpt = (document.getElementById('excerpt') as HTMLTextAreaElement)?.value || '';
-                const imageUrl = (document.getElementById('imageUrl') as HTMLInputElement)?.value || '';
                 const draft = {
                   title, slug, summary, content, metaTitle, metaDescription, selectedCategory,
                   keywords, internalLinks, externalLinks, tags, excerpt, imageUrl,

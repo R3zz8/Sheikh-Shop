@@ -1,61 +1,28 @@
-import 'server-only';
 import { v2 as cloudinary } from 'cloudinary';
 
-// Lazy initialization to avoid errors during import
-let isInitialized = false;
+// Configure Cloudinary with environment variables (read-only)
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
-function initializeCloudinary() {
-    if (isInitialized) return;
-    
-    const {
-        CLOUDINARY_CLOUD_NAME,
-        CLOUDINARY_API_KEY,
-        CLOUDINARY_API_SECRET,
-    } = process.env as Record<string, string | undefined>;
-
-    if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
-        throw new Error('Cloudinary environment variables are required');
-    }
-
-    cloudinary.config({
-        cloud_name: CLOUDINARY_CLOUD_NAME,
-        api_key: CLOUDINARY_API_KEY,
-        api_secret: CLOUDINARY_API_SECRET,
-        secure: true,
-    });
-    
-    isInitialized = true;
-}
-
-// Lightweight helpers for common transformations
-export const cloudinaryHelpers = {
-    urlOptimized(publicId: string): string {
-        initializeCloudinary();
-        return cloudinary.url(publicId, {
-            fetch_format: 'auto',
-            quality: 'auto',
-        });
-    },
-    urlThumbnail(publicId: string, width = 300, height = 300): string {
-        initializeCloudinary();
-        return cloudinary.url(publicId, {
-            width,
-            height,
-            crop: 'fill',
-            gravity: 'auto',
-            fetch_format: 'auto',
-            quality: 'auto',
-        });
-    },
-    urlResponsive(publicId: string, width: number): string {
-        initializeCloudinary();
-        return cloudinary.url(publicId, {
-            width,
-            crop: 'scale',
-            fetch_format: 'auto',
-            quality: 'auto',
-        });
-    },
+// Validate credentials on startup with non-blocking console warnings
+const validateCredentials = () => {
+  const missingCredentials = [];
+  
+  if (!process.env.CLOUDINARY_CLOUD_NAME) missingCredentials.push('CLOUDINARY_CLOUD_NAME');
+  if (!process.env.CLOUDINARY_API_KEY) missingCredentials.push('CLOUDINARY_API_KEY');
+  if (!process.env.CLOUDINARY_API_SECRET) missingCredentials.push('CLOUDINARY_API_SECRET');
+  
+  if (missingCredentials.length > 0) {
+    console.warn(`⚠️  Cloudinary credentials missing: ${missingCredentials.join(', ')}. Image uploads will not work.`);
+  } else {
+    console.log('✅ Cloudinary credentials loaded successfully');
+  }
 };
+
+// Run validation
+validateCredentials();
 
 export default cloudinary;

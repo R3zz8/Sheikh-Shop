@@ -30,7 +30,16 @@ const createArticleSchema = z.object({
     slug: z.string().min(1, 'Slug is required').max(255, 'Slug too long'),
     summary: z.string().min(1, 'Summary is required').max(500, 'Summary too long'),
     content: z.string().min(1, 'Content is required'),
-    imageUrl: z.string().url('Invalid image URL').optional().or(z.literal('')),
+    imageUrl: z.string()
+        .optional()
+        .or(z.literal(''))
+        .refine((url) => {
+            if (!url || url === '') return true; // Allow empty
+            // Validate Cloudinary URLs or legacy URLs
+            return url.startsWith('https://res.cloudinary.com/') || 
+                   url.startsWith('http://') || 
+                   url.startsWith('https://');
+        }, 'Image URL must be a valid Cloudinary URL or HTTP/HTTPS URL'),
     status: z.enum(['DRAFT', 'PUBLISHED']).default('DRAFT'),
     category: z.string().optional(),
     tags: z.array(z.string()).default([]),
@@ -194,6 +203,15 @@ export async function createArticle(formData: FormData) {
         // Calculate reading time
         const readTime = calculateReadingTime(validatedFields.data.content);
         
+        // Log image source for tracking
+        if (validatedFields.data.imageUrl) {
+            if (validatedFields.data.imageUrl.startsWith('https://res.cloudinary.com/')) {
+                console.log('✅ Article created with Cloudinary image:', validatedFields.data.imageUrl);
+            } else {
+                console.log('📷 Article created with legacy image URL:', validatedFields.data.imageUrl);
+            }
+        }
+        
         // Set published date if status is PUBLISHED
         const publishedAt = validatedFields.data.status === 'PUBLISHED' ? new Date() : null;
 
@@ -266,6 +284,15 @@ export async function updateArticle(id: string, formData: FormData) {
     }
 
     try {
+        // Log image source for tracking
+        if (validatedFields.data.imageUrl) {
+            if (validatedFields.data.imageUrl.startsWith('https://res.cloudinary.com/')) {
+                console.log('✅ Article updated with Cloudinary image:', validatedFields.data.imageUrl);
+            } else {
+                console.log('📷 Article updated with legacy image URL:', validatedFields.data.imageUrl);
+            }
+        }
+        
         // Calculate reading time if content is being updated
         const updateData: any = { ...validatedFields.data };
         if (validatedFields.data.content) {
