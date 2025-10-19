@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { refreshAccessToken } from '@/lib/actions/auth/session';
 import { verifyAccessToken } from '@/lib/auth/jwt';
 import { articleCache } from '@/lib/cache/articleCache';
@@ -123,7 +123,7 @@ function validateInternalLinks(links: string[]): boolean {
 }
 
 // Server action specific authentication - more robust than middleware
-async function getServerActionUser(): Promise<{ id: string; role: string; email: string }> {
+async function getServerActionUser(context?: { userAgent?: string; ip?: string }): Promise<{ id: string; role: string; email: string }> {
   console.log('[SERVER_ACTION_AUTH] Starting server action authentication');
   
   try {
@@ -161,7 +161,11 @@ async function getServerActionUser(): Promise<{ id: string; role: string; email:
     if (!payload && refreshToken) {
       console.log('[SERVER_ACTION_AUTH] Attempting refresh token');
       try {
-        const { accessToken: newAccessToken } = await refreshAccessToken(refreshToken);
+        const { accessToken: newAccessToken } = await refreshAccessToken(
+          refreshToken,
+          context?.userAgent,
+          context?.ip,
+        );
         console.log('[SERVER_ACTION_AUTH] Refresh successful, verifying new access token');
         payload = await verifyAccessToken(newAccessToken);
         console.log('[SERVER_ACTION_AUTH] New access token valid', { userId: payload?.id });
@@ -207,12 +211,15 @@ async function getServerActionUser(): Promise<{ id: string; role: string; email:
 }
 
 // Security: RBAC function to check user permissions for article operations
-async function checkArticlePermissions(allowedRoles: string[] = ['SUPERADMIN', 'ADMIN', 'EDITOR', 'AUTHOR']) {
+async function checkArticlePermissions(
+  allowedRoles: string[] = ['SUPERADMIN', 'ADMIN', 'EDITOR', 'AUTHOR'],
+  context?: { userAgent?: string; ip?: string }
+) {
   console.log('[ARTICLE_AUTH] checkArticlePermissions: Starting permission check', { allowedRoles });
   
   try {
     console.log('[ARTICLE_AUTH] checkArticlePermissions: Getting server action user');
-    const user = await getServerActionUser();
+    const user = await getServerActionUser(context);
     console.log('[ARTICLE_AUTH] checkArticlePermissions: User retrieved', { 
       userId: user.id, 
       role: user.role, 
@@ -266,7 +273,13 @@ export async function createArticle(formData: FormData) {
     
     // Security: Check user permissions first
     console.log('[ARTICLE_CREATE] createArticle: Checking permissions');
-    const user = await checkArticlePermissions(['SUPERADMIN', 'ADMIN', 'EDITOR', 'AUTHOR']);
+    const headerList = headers();
+    const userAgent = headerList.get('user-agent') || undefined;
+    const ip = headerList.get('x-forwarded-for') || undefined;
+    const user = await checkArticlePermissions(
+      ['SUPERADMIN', 'ADMIN', 'EDITOR', 'AUTHOR'],
+      { userAgent, ip }
+    );
     console.log('[ARTICLE_CREATE] createArticle: Permissions verified', { userId: user.id, role: user.role });
     
     // Parse form data with proper type handling
@@ -349,7 +362,13 @@ export async function updateArticle(id: string, formData: FormData) {
     
     // Security: Check user permissions first
     console.log('[ARTICLE_UPDATE] updateArticle: Checking permissions');
-    const user = await checkArticlePermissions(['SUPERADMIN', 'ADMIN', 'EDITOR', 'AUTHOR']);
+    const headerList = headers();
+    const userAgent = headerList.get('user-agent') || undefined;
+    const ip = headerList.get('x-forwarded-for') || undefined;
+    const user = await checkArticlePermissions(
+      ['SUPERADMIN', 'ADMIN', 'EDITOR', 'AUTHOR'],
+      { userAgent, ip }
+    );
     console.log('[ARTICLE_UPDATE] updateArticle: Permissions verified', { userId: user.id, role: user.role });
     
     // Check if user can modify this specific article
@@ -447,7 +466,13 @@ export async function updateArticle(id: string, formData: FormData) {
 
 export async function deleteArticle(id: string) {
     // Security: Check user permissions first
-    const user = await checkArticlePermissions(['SUPERADMIN', 'ADMIN', 'EDITOR', 'AUTHOR']);
+    const headerList = headers();
+    const userAgent = headerList.get('user-agent') || undefined;
+    const ip = headerList.get('x-forwarded-for') || undefined;
+    const user = await checkArticlePermissions(
+      ['SUPERADMIN', 'ADMIN', 'EDITOR', 'AUTHOR'],
+      { userAgent, ip }
+    );
     
     // Check if user can modify this specific article
     const canModify = await canModifyArticle(id, user.id, user.role);
@@ -621,7 +646,13 @@ export async function getRelatedArticles(currentArticleId: string, category?: st
 // Admin-only function to get all articles (including drafts)
 export async function getAllArticlesForAdmin() {
     // Security: Check user permissions first
-    const user = await checkArticlePermissions(['SUPERADMIN', 'ADMIN', 'EDITOR', 'AUTHOR']);
+    const headerList = headers();
+    const userAgent = headerList.get('user-agent') || undefined;
+    const ip = headerList.get('x-forwarded-for') || undefined;
+    const user = await checkArticlePermissions(
+      ['SUPERADMIN', 'ADMIN', 'EDITOR', 'AUTHOR'],
+      { userAgent, ip }
+    );
     
     try {
         const articles = await prisma.article.findMany({

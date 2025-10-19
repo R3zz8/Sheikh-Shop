@@ -160,15 +160,15 @@ export async function refreshAccessToken(
       // await invalidateSession(session.id, session.userId);
       // throw new Error('Device mismatch detected');
     }
-  }
-
-  // Security: Check for suspicious activity
-  if (userAgent && session.userAgent !== userAgent) {
-    await logAudit(session.userId, 'suspicious_refresh_attempt', {
-      expectedUserAgent: session.userAgent,
-      receivedUserAgent: userAgent,
-      ip,
-    });
+  } else {
+    // Fallback for server actions where fingerprint is not available
+    if (userAgent && session.userAgent !== userAgent) {
+        await logAudit(session.userId, 'suspicious_refresh_attempt', {
+            expectedUserAgent: session.userAgent,
+            receivedUserAgent: userAgent,
+            ip,
+        });
+    }
   }
 
   // Security: Generate new tokens with rotation
