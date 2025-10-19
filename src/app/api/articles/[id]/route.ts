@@ -3,17 +3,100 @@ import { prisma } from '@/lib/prisma';
 import { getCurrentUserId } from '@/lib/actions/auth/session';
 import { z } from 'zod';
 
-// Validation schemas
+// Enhanced validation schemas - matches createArticleSchema but with optional fields
 const updateArticleSchema = z.object({
   title: z.string().min(1, 'Title is required').max(255, 'Title too long').optional(),
   slug: z.string().min(1, 'Slug is required').max(255, 'Slug too long').optional(),
   summary: z.string().min(1, 'Summary is required').max(500, 'Summary too long').optional(),
   content: z.string().min(1, 'Content is required').optional(),
   status: z.enum(['DRAFT', 'PUBLISHED']).optional(),
-  imageUrl: z.string().optional(),
+  imageUrl: z.string()
+    .optional()
+    .or(z.literal(''))
+    .refine((url) => {
+      if (!url || url === '') return true; // Allow empty
+      // Validate Cloudinary URLs or legacy URLs
+      return url.startsWith('https://res.cloudinary.com/') || 
+             url.startsWith('http://') || 
+             url.startsWith('https://');
+    }, 'Image URL must be a valid Cloudinary URL or HTTP/HTTPS URL'),
   category: z.string().optional(),
   tags: z.array(z.string()).optional(),
+  
+  // SEO Required Fields
+  metaTitle: z.string()
+    .min(1, 'Meta title is required')
+    .max(60, 'Meta title must be 60 characters or less')
+    .optional(),
+  metaDescription: z.string()
+    .min(1, 'Meta description is required')
+    .max(155, 'Meta description must be 155 characters or less')
+    .optional(),
+  keywords: z.array(z.string()).optional(),
+  
+  // Phase 2 Enhancements
+  language: z.string().default('en').refine(
+    (lang) => ['en', 'ar', 'fa', 'tr'].includes(lang),
+    'Language must be one of: en, ar, fa, tr'
+  ).optional(),
+  
+  // Link Validation
+  internalLinks: z.array(z.string().url('Invalid internal URL'))
+    .optional()
+    .refine((links) => {
+      if (!links) return true;
+      return links.every(link => {
+        try {
+          const url = new URL(link);
+          return url.hostname === 'sheikhshops.com' || 
+                 url.hostname === 'localhost' ||
+                 url.pathname.startsWith('/');
+        } catch {
+          return false;
+        }
+      });
+    }, 'All internal links must be from sheikhshops.com domain'),
+  
+  externalLinks: z.array(z.string().url('Invalid external URL'))
+    .optional()
+    .refine((links) => {
+      if (!links) return true;
+      return links.every(link => {
+        try {
+          const url = new URL(link);
+          return TRUSTED_DOMAINS.some(domain => url.hostname.includes(domain));
+        } catch {
+          return false;
+        }
+      });
+    }, 'All external links must be from trusted domains'),
+  
+  excerpt: z.string().max(300, 'Excerpt too long').optional(),
 });
+
+// SEO Validation Constants
+const TRUSTED_DOMAINS = [
+  'wikipedia.org',
+  'fao.org',
+  'who.int',
+  'pubmed.ncbi.nlm.nih.gov',
+  'ncbi.nlm.nih.gov',
+  'mayoclinic.org',
+  'webmd.com',
+  'healthline.com',
+  'medicalnewstoday.com',
+  'nutrition.gov',
+  'usda.gov',
+  'cdc.gov',
+  'nih.gov'
+];
+
+// Helper function to calculate reading time
+function calculateReadingTime(content: string): number {
+  const wordsPerMinute = 200;
+  const words = content.split(/\s+/).length;
+  return Math.ceil(words / wordsPerMinute);
+}
 
 // Security: RBAC function to check user permissions for article operations
 async function checkArticlePermissions(allowedRoles: string[] = ['SUPERADMIN', 'ADMIN', 'EDITOR', 'AUTHOR']) {
@@ -165,7 +248,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     // Check if article exists
     const existingArticle = await prisma.article.findUnique({
       where: { id },
-      select: { id: true, authorId: true },
+      select: { id: true, authorId: true, publishedAt: true },
     });
 
     if (!existingArticle) {
@@ -175,9 +258,32 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       );
     }
 
+    // Calculate reading time if content is being updated
+    const updateData: any = { ...validatedFields };
+    if (validatedFields.content) {
+      updateData.readTime = calculateReadingTime(validatedFields.content);
+    }
+    
+    // Set published date if status is being changed to PUBLISHED
+    if (validatedFields.status === 'PUBLISHED' && !existingArticle.publishedAt) {
+      updateData.publishedAt = new Date();
+    }
+
+    // Log image source for tracking
+    if (validatedFields.imageUrl) {
+      if (validatedFields.imageUrl.startsWith('https://res.cloudinary.com/')) {
+        console.log('✅ Article updated with Cloudinary image:', validatedFields.imageUrl);
+      } else {
+        console.log('📷 Article updated with legacy image URL:', validatedFields.imageUrl);
+      }
+    }
+
     const article = await prisma.article.update({
       where: { id },
-      data: validatedFields,
+      data: {
+        ...updateData,
+        imageUrl: updateData.imageUrl || null,
+      },
       include: {
         author: {
           select: {
@@ -189,6 +295,16 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         },
       },
     });
+
+    // Invalidate cache for updated article
+    const { articleCache } = await import('@/lib/cache/articleCache');
+    await articleCache.invalidateArticle(article.slug);
+    
+    // Cache the updated article if it's published
+    if (article.status === 'PUBLISHED') {
+      await articleCache.setArticle(article as any);
+      await articleCache.invalidateRelatedCaches();
+    }
 
     return NextResponse.json({
       success: true,

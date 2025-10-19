@@ -269,6 +269,7 @@ model Article {
   shares           Int              @default(0)
   version          Int              @default(1)
   views            Int              @default(0)
+  column_1         String?
   author           User             @relation(fields: [authorId], references: [id], onDelete: Cascade)
   versions         ArticleVersion[]
   comments         Comment[]

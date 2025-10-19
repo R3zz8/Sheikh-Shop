@@ -4,7 +4,9 @@ import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
-import { getCurrentUserId } from '@/lib/actions/auth/session';
+import { cookies } from 'next/headers';
+import { refreshAccessToken } from '@/lib/actions/auth/session';
+import { verifyAccessToken } from '@/lib/auth/jwt';
 import { articleCache } from '@/lib/cache/articleCache';
 
 // SEO Validation Constants
@@ -120,26 +122,121 @@ function validateInternalLinks(links: string[]): boolean {
     });
 }
 
-// Security: RBAC function to check user permissions for article operations
-async function checkArticlePermissions(allowedRoles: string[] = ['SUPERADMIN', 'ADMIN', 'EDITOR', 'AUTHOR']) {
+// Server action specific authentication - more robust than middleware
+async function getServerActionUser(): Promise<{ id: string; role: string; email: string }> {
+  console.log('[SERVER_ACTION_AUTH] Starting server action authentication');
+  
   try {
-    const userId = await getCurrentUserId();
+    // Try multiple authentication methods for server actions
+    const cookieStore = await cookies();
+    const accessToken = cookieStore.get('access-token')?.value;
+    const refreshToken = cookieStore.get('refresh-token')?.value;
     
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { id: true, role: true, email: true },
+    console.log('[SERVER_ACTION_AUTH] Token check', {
+      hasAccessToken: !!accessToken,
+      hasRefreshToken: !!refreshToken,
+      accessTokenLength: accessToken?.length || 0,
+      refreshTokenLength: refreshToken?.length || 0
     });
 
-    if (!user) {
-      throw new Error('User not found');
+    if (!accessToken && !refreshToken) {
+      console.log('[SERVER_ACTION_AUTH] No tokens found');
+      throw new Error('No authentication token found');
     }
 
+    let payload: any = null;
+
+    // Try access token first
+    if (accessToken) {
+      console.log('[SERVER_ACTION_AUTH] Verifying access token');
+      try {
+        payload = await verifyAccessToken(accessToken);
+        console.log('[SERVER_ACTION_AUTH] Access token valid', { userId: payload?.id });
+      } catch (error) {
+        console.log('[SERVER_ACTION_AUTH] Access token invalid', { error: error instanceof Error ? error.message : 'Unknown error' });
+      }
+    }
+
+    // Try refresh token if access token failed
+    if (!payload && refreshToken) {
+      console.log('[SERVER_ACTION_AUTH] Attempting refresh token');
+      try {
+        const { accessToken: newAccessToken } = await refreshAccessToken(refreshToken);
+        console.log('[SERVER_ACTION_AUTH] Refresh successful, verifying new access token');
+        payload = await verifyAccessToken(newAccessToken);
+        console.log('[SERVER_ACTION_AUTH] New access token valid', { userId: payload?.id });
+      } catch (error) {
+        console.log('[SERVER_ACTION_AUTH] Refresh token failed', { error: error instanceof Error ? error.message : 'Unknown error' });
+        throw new Error('Invalid authentication token');
+      }
+    }
+
+    if (!payload?.id) {
+      console.log('[SERVER_ACTION_AUTH] No valid payload found');
+      throw new Error('Invalid authentication token');
+    }
+
+    // Get fresh user data from database
+    console.log('[SERVER_ACTION_AUTH] Fetching user from database', { userId: payload.id });
+    const user = await prisma.user.findUnique({
+      where: { id: payload.id },
+      select: { id: true, role: true, email: true, canLogin: true, disabled: true },
+    });
+
+    if (!user || !user.canLogin || user.disabled) {
+      console.log('[SERVER_ACTION_AUTH] User not found or disabled', { 
+        userFound: !!user, 
+        canLogin: user?.canLogin, 
+        disabled: user?.disabled 
+      });
+      throw new Error('User not found or account disabled');
+    }
+
+    console.log('[SERVER_ACTION_AUTH] Authentication successful', { 
+      userId: user.id, 
+      role: user.role, 
+      email: user.email 
+    });
+    return user;
+  } catch (error) {
+    console.log('[SERVER_ACTION_AUTH] Authentication failed', { 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    });
+    throw error;
+  }
+}
+
+// Security: RBAC function to check user permissions for article operations
+async function checkArticlePermissions(allowedRoles: string[] = ['SUPERADMIN', 'ADMIN', 'EDITOR', 'AUTHOR']) {
+  console.log('[ARTICLE_AUTH] checkArticlePermissions: Starting permission check', { allowedRoles });
+  
+  try {
+    console.log('[ARTICLE_AUTH] checkArticlePermissions: Getting server action user');
+    const user = await getServerActionUser();
+    console.log('[ARTICLE_AUTH] checkArticlePermissions: User retrieved', { 
+      userId: user.id, 
+      role: user.role, 
+      email: user.email 
+    });
+
     if (!allowedRoles.includes(user.role)) {
+      console.log('[ARTICLE_AUTH] checkArticlePermissions: Insufficient permissions', { 
+        userRole: user.role, 
+        allowedRoles 
+      });
       throw new Error(`Insufficient permissions. Required roles: ${allowedRoles.join(', ')}. Your role: ${user.role}`);
     }
 
+    console.log('[ARTICLE_AUTH] checkArticlePermissions: Permission check successful', { 
+      userId: user.id, 
+      role: user.role 
+    });
     return user;
   } catch (error) {
+    console.log('[ARTICLE_AUTH] checkArticlePermissions: Permission check failed', { 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    });
+    
     if (error instanceof Error && error.message.includes('No authentication token found')) {
       throw new Error('Authentication required. Please log in.');
     }
@@ -165,10 +262,15 @@ async function canModifyArticle(articleId: string, userId: string, userRole: str
 }
 
 export async function createArticle(formData: FormData) {
+    console.log('[ARTICLE_CREATE] createArticle: Starting article creation');
+    
     // Security: Check user permissions first
+    console.log('[ARTICLE_CREATE] createArticle: Checking permissions');
     const user = await checkArticlePermissions(['SUPERADMIN', 'ADMIN', 'EDITOR', 'AUTHOR']);
+    console.log('[ARTICLE_CREATE] createArticle: Permissions verified', { userId: user.id, role: user.role });
     
     // Parse form data with proper type handling
+    console.log('[ARTICLE_CREATE] createArticle: Parsing form data');
     const rawData = {
         title: formData.get('title') as string,
         slug: formData.get('slug') as string || generateSlug(formData.get('title') as string),
@@ -243,16 +345,24 @@ export async function createArticle(formData: FormData) {
 }
 
 export async function updateArticle(id: string, formData: FormData) {
+    console.log('[ARTICLE_UPDATE] updateArticle: Starting article update', { articleId: id });
+    
     // Security: Check user permissions first
+    console.log('[ARTICLE_UPDATE] updateArticle: Checking permissions');
     const user = await checkArticlePermissions(['SUPERADMIN', 'ADMIN', 'EDITOR', 'AUTHOR']);
+    console.log('[ARTICLE_UPDATE] updateArticle: Permissions verified', { userId: user.id, role: user.role });
     
     // Check if user can modify this specific article
+    console.log('[ARTICLE_UPDATE] updateArticle: Checking article modification rights');
     const canModify = await canModifyArticle(id, user.id, user.role);
     if (!canModify) {
+        console.log('[ARTICLE_UPDATE] updateArticle: User cannot modify this article');
         return { success: false, error: 'You can only modify your own articles' };
     }
+    console.log('[ARTICLE_UPDATE] updateArticle: Article modification rights verified');
     
     // Parse form data with proper type handling
+    console.log('[ARTICLE_UPDATE] updateArticle: Parsing form data');
     const rawData = {
         title: formData.get('title') as string,
         slug: formData.get('slug') as string,

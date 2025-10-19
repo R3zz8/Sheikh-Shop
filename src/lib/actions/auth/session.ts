@@ -262,11 +262,21 @@ export async function invalidateAllUserSessions(userId: string) {
 
 // Security: Get current user ID from session
 export async function getCurrentUserId(): Promise<string> {
+  console.log('[AUTH] getCurrentUserId: Starting authentication check');
+  
   const cookieStore = await cookies();
   const accessToken = cookieStore.get('access-token')?.value;
   const refreshToken = cookieStore.get('refresh-token')?.value;
 
+  console.log('[AUTH] getCurrentUserId: Token check', {
+    hasAccessToken: !!accessToken,
+    hasRefreshToken: !!refreshToken,
+    accessTokenLength: accessToken?.length || 0,
+    refreshTokenLength: refreshToken?.length || 0
+  });
+
   if (!accessToken && !refreshToken) {
+    console.log('[AUTH] getCurrentUserId: No authentication tokens found');
     throw new Error('No authentication token found');
   }
 
@@ -274,23 +284,35 @@ export async function getCurrentUserId(): Promise<string> {
 
   // Security: Try access token first
   if (accessToken) {
-    payload = await verifyAccessToken(accessToken);
+    console.log('[AUTH] getCurrentUserId: Verifying access token');
+    try {
+      payload = await verifyAccessToken(accessToken);
+      console.log('[AUTH] getCurrentUserId: Access token valid', { userId: payload?.id });
+    } catch (error) {
+      console.log('[AUTH] getCurrentUserId: Access token invalid', { error: error instanceof Error ? error.message : 'Unknown error' });
+    }
   }
 
   // Security: Try refresh token if access token failed
   if (!payload && refreshToken) {
+    console.log('[AUTH] getCurrentUserId: Attempting refresh token');
     try {
       const { accessToken: newAccessToken } = await refreshAccessToken(refreshToken);
+      console.log('[AUTH] getCurrentUserId: Refresh successful, verifying new access token');
       payload = await verifyAccessToken(newAccessToken);
+      console.log('[AUTH] getCurrentUserId: New access token valid', { userId: payload?.id });
     } catch (error) {
+      console.log('[AUTH] getCurrentUserId: Refresh token failed', { error: error instanceof Error ? error.message : 'Unknown error' });
       throw new Error('Invalid authentication token');
     }
   }
 
   if (!payload?.id) {
+    console.log('[AUTH] getCurrentUserId: No valid payload found');
     throw new Error('Invalid authentication token');
   }
 
+  console.log('[AUTH] getCurrentUserId: Authentication successful', { userId: payload.id });
   return payload.id;
 }
 

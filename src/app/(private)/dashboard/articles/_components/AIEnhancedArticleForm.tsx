@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { createArticle } from '@/lib/actions/articles';
+import { createArticle, updateArticle } from '@/lib/actions/articles';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,27 +19,66 @@ import type { ContentAssistantResponse } from '@/lib/ai/content-assistant';
 import { useArticleAnalytics } from '@/hooks/useArticleAnalytics';
 import { toast } from 'sonner';
 
-export default function AIEnhancedArticleForm() {
+interface Article {
+  id: string;
+  title: string;
+  slug: string;
+  summary: string;
+  content: string;
+  status: 'DRAFT' | 'PUBLISHED';
+  imageUrl?: string | null;
+  category?: string | null;
+  tags: string[];
+  metaTitle?: string | null;
+  metaDescription?: string | null;
+  keywords: string[];
+  internalLinks: string[];
+  externalLinks: string[];
+  excerpt?: string | null;
+  language: string;
+}
+
+interface AIEnhancedArticleFormProps {
+  mode?: 'create' | 'edit';
+  article?: Article;
+}
+
+// Helper function to generate URL slug
+function generateSlug(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim();
+}
+
+export default function AIEnhancedArticleForm({ mode = 'create', article }: AIEnhancedArticleFormProps) {
+  const isEditMode = mode === 'edit';
+  
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<Record<string, string> | null>(null);
-  const [keywords, setKeywords] = useState<string[]>([]);
+  const [keywords, setKeywords] = useState<string[]>(article?.keywords || []);
   const [newKeyword, setNewKeyword] = useState('');
-  const [internalLinks, setInternalLinks] = useState<string[]>([]);
+  const [internalLinks, setInternalLinks] = useState<string[]>(article?.internalLinks || []);
   const [newInternalLink, setNewInternalLink] = useState('');
-  const [externalLinks, setExternalLinks] = useState<string[]>([]);
+  const [externalLinks, setExternalLinks] = useState<string[]>(article?.externalLinks || []);
   const [newExternalLink, setNewExternalLink] = useState('');
-  const [tags, setTags] = useState<string[]>([]);
+  const [tags, setTags] = useState<string[]>(article?.tags || []);
   const [newTag, setNewTag] = useState('');
-  const [content, setContent] = useState('');
-  const [metaTitle, setMetaTitle] = useState('');
-  const [metaDescription, setMetaDescription] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
+  const [content, setContent] = useState(article?.content || '');
+  const [metaTitle, setMetaTitle] = useState(article?.metaTitle || '');
+  const [metaDescription, setMetaDescription] = useState(article?.metaDescription || '');
+  const [selectedCategory, setSelectedCategory] = useState(article?.category || '');
+  const [imageUrl, setImageUrl] = useState(article?.imageUrl || '');
   const [aiGeneratedContent, setAiGeneratedContent] = useState<ContentAssistantResponse | null>(null);
   const [savingState, setSavingState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
-  const [createdArticleId, setCreatedArticleId] = useState<string | undefined>(undefined);
+  const [createdArticleId, setCreatedArticleId] = useState<string | undefined>(article?.id);
 
-  const draftKey = useMemo(() => 'article:new:draft', []);
+  const draftKey = useMemo(() => 
+    isEditMode ? `article:${article?.id}:draft` : 'article:new:draft', 
+    [isEditMode, article?.id]
+  );
   const { trackAction } = useArticleAnalytics(createdArticleId);
 
   // Calculate reading time
@@ -175,23 +214,36 @@ export default function AIEnhancedArticleForm() {
     setError(null);
     
     try {
-      const result = await createArticle(formData);
-      // createArticle redirects on success; capture id if returned
-      if (result && typeof result === 'object' && 'data' in result && (result as any).data?.id) {
-        setCreatedArticleId((result as any).data.id as string);
-        trackAction('article_created', { articleId: (result as any).data.id });
+      let result;
+      if (isEditMode && article) {
+        result = await updateArticle(article.id, formData);
+        trackAction('article_edited', { articleId: article.id });
         const submittedStatus = (formData.get('status') as string) || 'DRAFT';
         if (submittedStatus === 'PUBLISHED') {
-          trackAction('article_published', { articleId: (result as any).data.id });
+          trackAction('article_published_update', { articleId: article.id });
+        } else {
+          trackAction('article_updated_draft', { articleId: article.id });
         }
       } else {
-        // best effort
-        trackAction('article_created');
+        result = await createArticle(formData);
+        // createArticle redirects on success; capture id if returned
+        if (result && typeof result === 'object' && 'data' in result && (result as any).data?.id) {
+          setCreatedArticleId((result as any).data.id as string);
+          trackAction('article_created', { articleId: (result as any).data.id });
+          const submittedStatus = (formData.get('status') as string) || 'DRAFT';
+          if (submittedStatus === 'PUBLISHED') {
+            trackAction('article_published', { articleId: (result as any).data.id });
+          }
+        } else {
+          // best effort
+          trackAction('article_created');
+        }
       }
-      // clear draft after successful create
+      // clear draft after successful create/update
       try { localStorage.removeItem(draftKey); } catch {}
     } catch (err: any) {
-      setError({ general: err.message || 'Failed to create article' });
+      setError({ general: err.message || `Failed to ${isEditMode ? 'update' : 'create'} article` });
+      trackAction(isEditMode ? 'article_update_failed' : 'article_creation_failed');
     } finally {
       setIsSubmitting(false);
     }
@@ -318,6 +370,7 @@ export default function AIEnhancedArticleForm() {
                     id="title"
                     name="title"
                     placeholder="Enter article title"
+                    defaultValue={article?.title || ''}
                     required
                     className="mt-1"
                   />
@@ -329,6 +382,7 @@ export default function AIEnhancedArticleForm() {
                     id="slug"
                     name="slug"
                     placeholder="auto-generated-from-title"
+                    defaultValue={article?.slug || ''}
                     required
                     className="mt-1"
                     onChange={(e) => {
@@ -361,7 +415,7 @@ export default function AIEnhancedArticleForm() {
 
                 <div>
                   <Label htmlFor="status">Status *</Label>
-                  <Select name="status" defaultValue="DRAFT">
+                  <Select name="status" defaultValue={article?.status || "DRAFT"}>
                     <SelectTrigger className="mt-1">
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
@@ -397,6 +451,7 @@ export default function AIEnhancedArticleForm() {
                     id="summary"
                     name="summary"
                     placeholder="Brief summary of the article"
+                    defaultValue={article?.summary || ''}
                     required
                     rows={3}
                     className="mt-1"
@@ -409,6 +464,7 @@ export default function AIEnhancedArticleForm() {
                     id="excerpt"
                     name="excerpt"
                     placeholder="Short excerpt for previews"
+                    defaultValue={article?.excerpt || ''}
                     rows={2}
                     className="mt-1"
                   />
@@ -420,6 +476,7 @@ export default function AIEnhancedArticleForm() {
                     id="content"
                     name="content"
                     placeholder="Article content (HTML supported)"
+                    defaultValue={article?.content || ''}
                     required
                     rows={12}
                     className="mt-1"
@@ -455,6 +512,7 @@ export default function AIEnhancedArticleForm() {
                     id="metaTitle"
                     name="metaTitle"
                     placeholder="SEO-optimized title (max 60 chars)"
+                    defaultValue={article?.metaTitle || ''}
                     required
                     maxLength={60}
                     className="mt-1"
@@ -474,6 +532,7 @@ export default function AIEnhancedArticleForm() {
                     id="metaDescription"
                     name="metaDescription"
                     placeholder="SEO description (max 155 chars)"
+                    defaultValue={article?.metaDescription || ''}
                     required
                     rows={3}
                     maxLength={155}
@@ -646,6 +705,12 @@ export default function AIEnhancedArticleForm() {
           </div>
         </div>
 
+        {/* Hidden inputs for form data */}
+        <input type="hidden" name="keywords" value={JSON.stringify(keywords)} />
+        <input type="hidden" name="internalLinks" value={JSON.stringify(internalLinks)} />
+        <input type="hidden" name="externalLinks" value={JSON.stringify(externalLinks)} />
+        <input type="hidden" name="language" value={article?.language || 'en'} />
+
         <div className="flex justify-between items-center gap-4 pt-6 border-t">
           <div className="text-sm">
             {savingState === 'saving' && <span className="text-gray-500">Saving...</span>}
@@ -684,7 +749,7 @@ export default function AIEnhancedArticleForm() {
             Save Draft
           </Button>
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Creating...' : 'Create Article'}
+            {isSubmitting ? (isEditMode ? 'Updating...' : 'Creating...') : (isEditMode ? 'Update Article' : 'Create Article')}
           </Button>
         </div>
       </form>

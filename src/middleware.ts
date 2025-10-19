@@ -69,22 +69,33 @@ type AllowedRole = typeof ALLOWED_ROLES[number];
 // Security: Simple in-memory rate limiting (use Redis in production)
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 
-function isRateLimited(ip: string): boolean {
+function isRateLimited(ip: string, userRole?: string): boolean {
   const now = Date.now();
   const windowMs = 15 * 60 * 1000; // 15 minutes
-  const maxRequests = 100; // Max requests per window
+  const maxRequests = 200; // Increased from 100 for admin operations
+
+  console.log('[RATE_LIMIT] Checking rate limit', { ip, now, userRole });
+
+  // Skip rate limiting for admin users
+  if (userRole && ['SUPERADMIN', 'ADMIN', 'EDITOR'].includes(userRole)) {
+    console.log('[RATE_LIMIT] Admin user, skipping rate limit', { ip, userRole });
+    return false;
+  }
 
   const record = rateLimitMap.get(ip);
   if (!record || now > record.resetTime) {
     rateLimitMap.set(ip, { count: 1, resetTime: now + windowMs });
+    console.log('[RATE_LIMIT] New window started', { ip, count: 1 });
     return false;
   }
 
   if (record.count >= maxRequests) {
+    console.log('[RATE_LIMIT] Rate limit exceeded', { ip, count: record.count, maxRequests });
     return true;
   }
 
   record.count++;
+  console.log('[RATE_LIMIT] Request allowed', { ip, count: record.count, maxRequests });
   return false;
 }
 
@@ -126,24 +137,24 @@ export async function middleware(request: NextRequest) {
   const isApiRoute = pathname.startsWith('/api');
   const hasJwtSecret = !!getJwtSecret();
 
+  console.log('[MIDDLEWARE] Processing request', { 
+    pathname, 
+    isApiRoute, 
+    method: request.method,
+    hasJwtSecret 
+  });
+
   // Security: Prevent redirect loops by checking if we're already on an auth page
   const isAuthPage = ['/login', '/register', '/forgot-password', '/reset-password', '/system-login', '/verify-email-sent'].includes(pathname);
   if (isAuthPage) {
+    console.log('[MIDDLEWARE] Auth page, skipping auth check');
     const response = NextResponse.next();
     setCurrencyCookieIfNeeded(request, response);
     return addSecurityHeaders(response);
   }
 
-  // Security: Rate limiting (consider separate limits per route type in production)
+  // Capture IP early for later rate limiting
   const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
-  if (isRateLimited(ip)) {
-    const response = isApiRoute
-      ? NextResponse.json({ error: 'Too many requests' }, { status: 429 })
-      : NextResponse.redirect(new URL('/login', request.url));
-    
-    setCurrencyCookieIfNeeded(request, response);
-    return addSecurityHeaders(response);
-  }
 
   // Skip auth for specific API routes (handled by their own logic)
   if (
@@ -204,12 +215,20 @@ export async function middleware(request: NextRequest) {
 
   let user: { id: string; email: string; role: string; sessionId: string } | null = null;
 
+  console.log('[MIDDLEWARE] Token validation', { 
+    hasAccessToken: !!accessToken, 
+    hasRefreshToken: !!refreshToken,
+    accessTokenLength: accessToken?.length || 0,
+    refreshTokenLength: refreshToken?.length || 0
+  });
+
   try {
     if (!hasJwtSecret) {
       throw new Error('Missing JWT secret');
     }
     // Verify access token first
     if (accessToken) {
+      console.log('[MIDDLEWARE] Verifying access token');
       const JWT_SECRET = getJwtSecret();
       if (!JWT_SECRET) throw new Error('Missing JWT secret');
       const { payload } = await jwtVerify(
@@ -221,14 +240,18 @@ export async function middleware(request: NextRequest) {
           audience: 'sheikh-shop-users',
         },
       );
+      console.log('[MIDDLEWARE] Access token valid', { userId: payload.id });
       // Fast path: resolve user from cache using sessionId
       const cached = payload.sessionId ? await getCachedSession(String(payload.sessionId)) : null;
       user = cached || (payload as { id: string; email: string; role: string; sessionId: string });
+      console.log('[MIDDLEWARE] User resolved', { userId: user?.id, fromCache: !!cached });
     }
-  } catch {
+  } catch (error) {
+    console.log('[MIDDLEWARE] Access token invalid', { error: error instanceof Error ? error.message : 'Unknown error' });
     // Access token invalid/expired, try refresh token (validate only, avoid DB when possible)
     if (refreshToken) {
       try {
+        console.log('[MIDDLEWARE] Attempting refresh token');
         const JWT_SECRET = getJwtSecret();
         if (!JWT_SECRET) throw new Error('Missing JWT secret');
         const { payload } = await jwtVerify(
@@ -240,13 +263,16 @@ export async function middleware(request: NextRequest) {
             audience: 'sheikh-shop-refresh',
           },
         );
+        console.log('[MIDDLEWARE] Refresh token valid', { userId: payload.id });
         const cached = payload.sessionId ? await getCachedSession(String(payload.sessionId)) : null;
         if (cached && cached.sessionId && cached.id) {
           user = cached;
+          console.log('[MIDDLEWARE] User resolved from refresh cache', { userId: user.id });
         }
       } catch (refreshError) {
         // If refresh token is also invalid, clear cookies and redirect to login
         console.warn('[MIDDLEWARE] Refresh token invalid:', refreshError);
+        console.log('[MIDDLEWARE] Clearing cookies and redirecting to login');
         const response = isApiRoute
           ? NextResponse.json({ error: 'Session expired. Please log in again.' }, { status: 401 })
           : NextResponse.redirect(new URL('/login', request.url));
@@ -259,6 +285,16 @@ export async function middleware(request: NextRequest) {
         return addSecurityHeaders(response);
       }
     }
+  }
+
+  // Security: Rate limiting (after user resolution so we can exempt admins)
+  if (isRateLimited(ip, user?.role)) {
+    console.log('[MIDDLEWARE] Rate limited', { ip, role: user?.role });
+    const response = isApiRoute
+      ? NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+      : NextResponse.redirect(new URL('/login', request.url));
+    setCurrencyCookieIfNeeded(request, response);
+    return addSecurityHeaders(response);
   }
 
   if (!user) {

@@ -6,6 +6,11 @@ type ArticleAction =
   | 'article_created'
   | 'article_saved_draft'
   | 'article_published'
+  | 'article_edited'
+  | 'article_published_update'
+  | 'article_updated_draft'
+  | 'article_update_failed'
+  | 'article_creation_failed'
   | 'ai_generation_requested'
   | 'ai_generation_completed';
 
