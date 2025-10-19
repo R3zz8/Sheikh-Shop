@@ -273,7 +273,7 @@ export async function createArticle(formData: FormData) {
     
     // Security: Check user permissions first
     console.log('[ARTICLE_CREATE] createArticle: Checking permissions');
-    const headerList = headers();
+    const headerList = await headers();
     const userAgent = headerList.get('user-agent') || undefined;
     const ip = headerList.get('x-forwarded-for') || undefined;
     const user = await checkArticlePermissions(
@@ -362,7 +362,7 @@ export async function updateArticle(id: string, formData: FormData) {
     
     // Security: Check user permissions first
     console.log('[ARTICLE_UPDATE] updateArticle: Checking permissions');
-    const headerList = headers();
+    const headerList = await headers();
     const userAgent = headerList.get('user-agent') || undefined;
     const ip = headerList.get('x-forwarded-for') || undefined;
     const user = await checkArticlePermissions(
@@ -466,7 +466,7 @@ export async function updateArticle(id: string, formData: FormData) {
 
 export async function deleteArticle(id: string) {
     // Security: Check user permissions first
-    const headerList = headers();
+    const headerList = await headers();
     const userAgent = headerList.get('user-agent') || undefined;
     const ip = headerList.get('x-forwarded-for') || undefined;
     const user = await checkArticlePermissions(
@@ -646,7 +646,7 @@ export async function getRelatedArticles(currentArticleId: string, category?: st
 // Admin-only function to get all articles (including drafts)
 export async function getAllArticlesForAdmin() {
     // Security: Check user permissions first
-    const headerList = headers();
+    const headerList = await headers();
     const userAgent = headerList.get('user-agent') || undefined;
     const ip = headerList.get('x-forwarded-for') || undefined;
     const user = await checkArticlePermissions(
