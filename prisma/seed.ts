@@ -23,6 +23,31 @@ async function main() {
     console.error('❌ Database connection failed:', error);
     throw new Error('Failed to connect to database. Please check your DATABASE_URL and ensure the database is running.');
   }
+  // Create Categories
+  console.log('📚 Creating categories...');
+  const categories = await Promise.all([
+    prisma.category.upsert({
+      where: { slug: 'dates' },
+      update: {},
+      create: { name: 'Dates', slug: 'dates' },
+    }),
+    prisma.category.upsert({
+      where: { slug: 'honey' },
+      update: {},
+      create: { name: 'Honey', slug: 'honey' },
+    }),
+    prisma.category.upsert({
+      where: { slug: 'saffron' },
+      update: {},
+      create: { name: 'Saffron', slug: 'saffron' },
+    }),
+    prisma.category.upsert({
+      where: { slug: 'other' },
+      update: {},
+      create: { name: 'Other', slug: 'other' },
+    }),
+  ]);
+  console.log(`✅ Created ${categories.length} categories`);
 
   // Create Units
   console.log('📏 Creating units...');
@@ -106,6 +131,14 @@ async function main() {
   if (!kgUnit || !gUnit || !pkgUnit || !LUnit) {
     throw new Error('Required units not found');
   }
+  const honeyCategory = categories.find((c) => c.slug === 'honey');
+  const saffronCategory = categories.find((c) => c.slug === 'saffron');
+  const datesCategory = categories.find((c) => c.slug === 'dates');
+  const otherCategory = categories.find((c) => c.slug === 'other');
+
+  if (!honeyCategory || !saffronCategory || !datesCategory || !otherCategory) {
+    throw new Error('Required categories not found');
+  }
 
   // Create 5 new sample products as requested
   console.log('🛍️ Creating 5 new sample products...');
@@ -115,7 +148,7 @@ async function main() {
       update: {},
       create: {
         name: 'Premium Iranian Honey',
-        category: 'HONEY',
+        categoryId: honeyCategory.id,
         description: 'Pure, natural honey sourced from the pristine mountains of Iran. Rich in antioxidants and natural enzymes, this premium honey offers a delicate floral taste with notes of wildflowers and herbs.',
         basePrice: 28.50,
         baseUnitId: kgUnit.id,
@@ -131,7 +164,7 @@ async function main() {
       update: {},
       create: {
         name: 'Organic Saffron Threads',
-        category: 'SAFFRON',
+        categoryId: saffronCategory.id,
         description: 'Hand-picked organic saffron threads from the highest quality crocus flowers. Known for its intense color, aroma, and flavor, this premium saffron is perfect for culinary and medicinal use.',
         basePrice: 85.00,
         baseUnitId: gUnit.id,
@@ -147,7 +180,7 @@ async function main() {
       update: {},
       create: {
         name: 'Medjool Dates Premium',
-        category: 'DATES',
+        categoryId: datesCategory.id,
         description: 'Large, soft, and incredibly sweet Medjool dates known as the "King of Dates". These premium dates are naturally rich in fiber, potassium, and antioxidants, making them a perfect healthy snack.',
         basePrice: 18.75,
         baseUnitId: kgUnit.id,
@@ -163,7 +196,7 @@ async function main() {
       update: {},
       create: {
         name: 'Persian Rose Water',
-        category: 'OTHERS',
+        categoryId: otherCategory.id,
         description: 'Traditional Persian rose water made from Damask roses. This authentic rose water is used in Persian cuisine, beauty treatments, and religious ceremonies. Pure, natural, and aromatic.',
         basePrice: 12.99,
         baseUnitId: LUnit.id,
@@ -179,7 +212,7 @@ async function main() {
       update: {},
       create: {
         name: 'Mixed Nuts Premium Pack',
-        category: 'OTHERS',
+        categoryId: otherCategory.id,
         description: 'Premium selection of mixed nuts including pistachios, almonds, walnuts, and cashews. Perfectly roasted and lightly salted, this premium pack is ideal for snacking or gifting.',
         basePrice: 22.50,
         baseUnitId: pkgUnit.id,

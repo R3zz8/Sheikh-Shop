@@ -27,7 +27,7 @@ const productSchema = z.object({
     .int('Quantity must be a whole number')
     .min(0, 'Quantity cannot be negative')
     .max(999999, 'Quantity must be less than 1,000,000'),
-  category: z.enum(Object.values(ProductCategory) as [string, ...string[]]),
+  categoryId: z.string().min(1, 'Category is required'),
   status: z.enum(Object.values(ProductStatus) as [string, ...string[]]).optional(),
 });
 
@@ -117,7 +117,7 @@ export const upsertProduct = async (
 
     const rawData = {
       name: formData.get('name') as string,
-      category: formData.get('category') as string,
+      categoryId: formData.get('categoryId') as string,
       description: formData.get('description') as string || '',
       basePrice: parseFloat(formData.get('price') as string),
       baseUnitId,

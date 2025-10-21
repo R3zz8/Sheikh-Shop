@@ -34,6 +34,11 @@ interface Unit {
   sortOrder: number;
   isActive: boolean;
 }
+interface Category {
+    id: string;
+    name: string;
+    slug: string;
+}
 
 const ProductForm = (props: { product: Product | null }) => {
   const { product } = props;
@@ -54,32 +59,44 @@ const ProductForm = (props: { product: Product | null }) => {
   const { error, data } = state;
   const [submitted, setSubmitted] = useState(false);
   const [units, setUnits] = useState<Unit[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loadingUnits, setLoadingUnits] = useState(true);
+  const [loadingCategories, setLoadingCategories] = useState(true);
 
   const handleSubmit = async (formData: FormData) => {
     setSubmitted(true);
     action(formData);
   };
 
-  // Load units on component mount
+  // Load units and categories on component mount
   useEffect(() => {
-    const fetchUnits = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch('/api/units');
-        if (response.ok) {
-          const result = await response.json();
-          if (result.success) {
-            setUnits(result.data);
+        const [unitsResponse, categoriesResponse] = await Promise.all([
+          fetch('/api/units'),
+          fetch('/api/categories'),
+        ]);
+
+        if (unitsResponse.ok) {
+          const unitsResult = await unitsResponse.json();
+          if (unitsResult.success) {
+            setUnits(unitsResult.data);
           }
         }
+
+        if (categoriesResponse.ok) {
+          const categoriesResult = await categoriesResponse.json();
+          setCategories(categoriesResult);
+        }
       } catch (error) {
-        console.error('Failed to fetch units:', error);
+        console.error('Failed to fetch data:', error);
       } finally {
         setLoadingUnits(false);
+        setLoadingCategories(false);
       }
     };
 
-    fetchUnits();
+    fetchData();
   }, []);
 
   useEffect(() => {
@@ -140,22 +157,26 @@ const ProductForm = (props: { product: Product | null }) => {
               )}
             </div>
             <div>
-              <Label htmlFor="category">Category *</Label>
+              <Label htmlFor="categoryId">Category *</Label>
               <Select
-                name="category"
-                defaultValue={data?.category || ProductCategory.OTHERS}
+                name="categoryId"
+                defaultValue={data?.categoryId || ''}
+                disabled={loadingCategories}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a category" />
+                  <SelectValue placeholder={loadingCategories ? "Loading categories..." : "Select a category"} />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.values(ProductCategory).map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat}
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              {error?.categoryId && (
+                <span className="text-red-600 text-sm mt-1">{error.categoryId}</span>
+              )}
             </div>
           </div>
 
