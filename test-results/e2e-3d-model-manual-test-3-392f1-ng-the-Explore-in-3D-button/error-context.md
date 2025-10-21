@@ -1,0 +1,402 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - navigation [ref=e5]:
+        - generic [ref=e7]:
+          - img [ref=e8]
+          - link "Sheikh Shop" [ref=e10] [cursor=pointer]:
+            - /url: /
+        - generic [ref=e11]:
+          - link "Home" [ref=e12] [cursor=pointer]:
+            - /url: /
+            - img [ref=e13]
+            - text: Home
+          - link "Products" [ref=e16] [cursor=pointer]:
+            - /url: /products
+            - img [ref=e17]
+            - text: Products
+          - link "About Us" [ref=e20] [cursor=pointer]:
+            - /url: /about-us
+            - img [ref=e21]
+            - text: About Us
+          - link "Article" [ref=e26] [cursor=pointer]:
+            - /url: /article
+            - img [ref=e27]
+            - text: Article
+        - generic [ref=e30]:
+          - button "€EUR" [ref=e32]:
+            - text: €EUR
+            - img [ref=e33]
+          - button [ref=e35]:
+            - img [ref=e36]
+          - generic [ref=e40]:
+            - link "Sign In" [ref=e41] [cursor=pointer]:
+              - /url: /login
+              - button "Sign In" [ref=e42]
+            - link "Get Started" [ref=e43] [cursor=pointer]:
+              - /url: /register
+              - button "Get Started" [ref=e44]
+          - button "Toggle mobile menu" [ref=e45]:
+            - img [ref=e46]
+    - generic [ref=e48]:
+      - generic [ref=e50]:
+        - generic [ref=e51]:
+          - img [ref=e53]
+          - textbox "Search with AI intelligence..." [ref=e63]
+        - generic [ref=e64]:
+          - button "Filters" [ref=e65]:
+            - img [ref=e66]
+            - text: Filters
+          - combobox [ref=e68]:
+            - option "Relevance" [selected]
+            - option "Price"
+            - option "Rating"
+            - option "Newest"
+            - option "Popularity"
+      - link "VR Store" [ref=e70] [cursor=pointer]:
+        - /url: /vr-store
+    - main [ref=e71]:
+      - generic [ref=e72]:
+        - generic [ref=e74]:
+          - generic [ref=e75]:
+            - heading "Main Categories" [level=2] [ref=e76]
+            - paragraph [ref=e77]: Explore our premium collection of authentic products from the finest sources
+          - generic [ref=e78]:
+            - link "Dates Dates" [ref=e79] [cursor=pointer]:
+              - /url: /categories/dates
+              - img "Dates" [ref=e80]
+              - heading "Dates" [level=3] [ref=e82]
+            - link "Honey Honey" [ref=e83] [cursor=pointer]:
+              - /url: /categories/honey
+              - img "Honey" [ref=e84]
+              - heading "Honey" [level=3] [ref=e86]
+            - link "Saffron Saffron" [ref=e87] [cursor=pointer]:
+              - /url: /categories/saffron
+              - img "Saffron" [ref=e88]
+              - heading "Saffron" [level=3] [ref=e90]
+            - link "Other Other" [ref=e91] [cursor=pointer]:
+              - /url: /categories/other
+              - img "Other" [ref=e92]
+              - heading "Other" [level=3] [ref=e94]
+        - generic [ref=e97]:
+          - generic [ref=e99]:
+            - generic [ref=e103]:
+              - generic [ref=e104]:
+                - generic [ref=e105]:
+                  - generic [ref=e106]: 👑
+                  - text: Sheikh Shop
+                - heading "Artisan Dates" [level=2] [ref=e107]
+                - button "Discover for Artisan Dates" [ref=e109]: Discover
+              - img "Artisan Dates" [ref=e110]
+            - generic [ref=e114]:
+              - generic [ref=e115]:
+                - generic [ref=e116]:
+                  - generic [ref=e117]: 👑
+                  - text: Sheikh Shop
+                - heading "Pure Honey" [level=2] [ref=e118]
+                - button "Shop Now for Pure Honey" [ref=e120]: Shop Now
+              - img "Pure Honey" [ref=e121]
+            - generic [ref=e125]:
+              - generic [ref=e126]:
+                - generic [ref=e127]:
+                  - generic [ref=e128]: 👑
+                  - text: Sheikh Shop
+                - heading "Saffron Collection" [level=2] [ref=e129]
+                - button "Explore for Saffron Collection" [ref=e131]: Explore
+              - img "Saffron Collection" [ref=e132]
+          - generic [ref=e134]:
+            - button "Go to slide 1" [ref=e135]
+            - button "Go to slide 2" [ref=e136]
+            - button "Go to slide 3" [ref=e137]
+        - generic [ref=e138]:
+          - generic [ref=e141]:
+            - generic [ref=e142]:
+              - heading "Welcome to Sheikh Shop" [level=1] [ref=e143]
+              - paragraph [ref=e144]: Experience luxury redefined with our curated collection of premium products, inspired by the elegance of Arabian heritage.
+              - generic [ref=e145]:
+                - link "Explore Products" [ref=e146] [cursor=pointer]:
+                  - /url: /products
+                  - button "Explore Products" [ref=e147]
+                - link "Get Started" [ref=e148] [cursor=pointer]:
+                  - /url: /register
+                  - button "Get Started" [ref=e149]
+            - generic [ref=e152]:
+              - img "Premium Date Palm Tree - Sheikh Shop" [ref=e153]
+              - generic [ref=e154]:
+                - heading "Premium Date Palm" [level=3] [ref=e155]
+                - paragraph [ref=e156]: Click to explore in 3D
+          - generic [ref=e159]:
+            - generic [ref=e160]:
+              - generic [ref=e161]: 🌟
+              - heading "Premium Quality" [level=3] [ref=e162]
+              - paragraph [ref=e163]: Curated selection of the finest products with exceptional craftsmanship
+            - generic [ref=e164]:
+              - generic [ref=e165]: 🚚
+              - heading "Fast Delivery" [level=3] [ref=e166]
+              - paragraph [ref=e167]: Swift and secure delivery to your doorstep with premium packaging
+            - generic [ref=e168]:
+              - generic [ref=e169]: 💎
+              - heading "Exclusive Collection" [level=3] [ref=e170]
+              - paragraph [ref=e171]: Limited edition items and exclusive deals for our valued customers
+    - contentinfo [ref=e172]:
+      - generic [ref=e175]:
+        - generic [ref=e176]:
+          - generic [ref=e177]:
+            - img [ref=e178]
+            - heading "Need Premium Consultation?" [level=3] [ref=e180]
+          - paragraph [ref=e181]: Experience personalized guidance from our luxury product experts
+        - button "Get Consultation" [ref=e182]:
+          - img [ref=e183]
+          - text: Get Consultation
+      - generic [ref=e185]:
+        - generic [ref=e187]:
+          - generic [ref=e188]:
+            - generic [ref=e189]:
+              - img [ref=e190]
+              - heading "Sheikh Shop" [level=3] [ref=e192]
+            - paragraph [ref=e193]: Curating the world's finest premium products with exceptional quality and craftsmanship.
+            - generic [ref=e194]:
+              - img [ref=e195]
+              - text: Premium Quality Guaranteed
+          - generic [ref=e197]:
+            - generic [ref=e198]:
+              - generic [ref=e199]:
+                - img [ref=e200]
+                - heading "Shop" [level=4] [ref=e203]
+              - list [ref=e204]:
+                - listitem [ref=e205]:
+                  - link "Premium Drinks" [ref=e206] [cursor=pointer]:
+                    - /url: "#"
+                    - img [ref=e207]
+                    - text: Premium Drinks
+                - listitem [ref=e209]:
+                  - link "Luxury Supplements" [ref=e210] [cursor=pointer]:
+                    - /url: "#"
+                    - img [ref=e211]
+                    - text: Luxury Supplements
+                - listitem [ref=e213]:
+                  - link "Artisan Spices" [ref=e214] [cursor=pointer]:
+                    - /url: "#"
+                    - img [ref=e215]
+                    - text: Artisan Spices
+            - generic [ref=e217]:
+              - generic [ref=e218]:
+                - img [ref=e219]
+                - heading "Company" [level=4] [ref=e224]
+              - list [ref=e225]:
+                - listitem [ref=e226]:
+                  - link "About Us" [ref=e227] [cursor=pointer]:
+                    - /url: "#"
+                    - img [ref=e228]
+                    - text: About Us
+                - listitem [ref=e230]:
+                  - link "Our Story" [ref=e231] [cursor=pointer]:
+                    - /url: "#"
+                    - img [ref=e232]
+                    - text: Our Story
+                - listitem [ref=e234]:
+                  - link "Careers" [ref=e235] [cursor=pointer]:
+                    - /url: "#"
+                    - img [ref=e236]
+                    - text: Careers
+          - generic [ref=e238]:
+            - text: Follow our journey
+            - generic [ref=e239]:
+              - link "Instagram" [ref=e240] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e241]
+              - link "Twitter" [ref=e244] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e245]
+              - link "YouTube" [ref=e247] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e248]
+              - link "WhatsApp" [ref=e251] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e252]
+          - generic [ref=e254]:
+            - generic [ref=e255]:
+              - link "Privacy" [ref=e256] [cursor=pointer]:
+                - /url: "#"
+              - text: •
+              - link "Terms" [ref=e257] [cursor=pointer]:
+                - /url: "#"
+              - text: •
+              - link "Cookies" [ref=e258] [cursor=pointer]:
+                - /url: "#"
+            - generic [ref=e259]: © 2025 Sheikh Shop. All rights reserved.
+        - generic [ref=e260]:
+          - generic [ref=e261]:
+            - generic [ref=e262]:
+              - generic [ref=e263]:
+                - img [ref=e264]
+                - heading "Sheikh Shop" [level=3] [ref=e266]
+              - paragraph [ref=e267]: Curating the world's finest premium products with exceptional quality and craftsmanship. Experience luxury redefined.
+              - generic [ref=e268]:
+                - img [ref=e269]
+                - text: Premium Quality Guaranteed
+            - generic [ref=e271]:
+              - generic [ref=e272]:
+                - img [ref=e273]
+                - heading "Shop" [level=4] [ref=e276]
+              - list [ref=e277]:
+                - listitem [ref=e278]:
+                  - link "Premium Drinks" [ref=e279] [cursor=pointer]:
+                    - /url: "#"
+                    - img [ref=e280]
+                    - text: Premium Drinks
+                - listitem [ref=e282]:
+                  - link "Luxury Supplements" [ref=e283] [cursor=pointer]:
+                    - /url: "#"
+                    - img [ref=e284]
+                    - text: Luxury Supplements
+                - listitem [ref=e286]:
+                  - link "Artisan Spices" [ref=e287] [cursor=pointer]:
+                    - /url: "#"
+                    - img [ref=e288]
+                    - text: Artisan Spices
+                - listitem [ref=e290]:
+                  - link "Exclusive Collections" [ref=e291] [cursor=pointer]:
+                    - /url: "#"
+                    - img [ref=e292]
+                    - text: Exclusive Collections
+                - listitem [ref=e294]:
+                  - link "Limited Editions" [ref=e295] [cursor=pointer]:
+                    - /url: "#"
+                    - img [ref=e296]
+                    - text: Limited Editions
+            - generic [ref=e298]:
+              - generic [ref=e299]:
+                - img [ref=e300]
+                - heading "Help & Support" [level=4] [ref=e303]
+              - list [ref=e304]:
+                - listitem [ref=e305]:
+                  - link "Customer Service" [ref=e306] [cursor=pointer]:
+                    - /url: "#"
+                    - img [ref=e307]
+                    - text: Customer Service
+                - listitem [ref=e309]:
+                  - link "Shipping Information" [ref=e310] [cursor=pointer]:
+                    - /url: "#"
+                    - img [ref=e311]
+                    - text: Shipping Information
+                - listitem [ref=e313]:
+                  - link "Returns & Exchanges" [ref=e314] [cursor=pointer]:
+                    - /url: "#"
+                    - img [ref=e315]
+                    - text: Returns & Exchanges
+                - listitem [ref=e317]:
+                  - link "Size Guide" [ref=e318] [cursor=pointer]:
+                    - /url: "#"
+                    - img [ref=e319]
+                    - text: Size Guide
+                - listitem [ref=e321]:
+                  - link "FAQ" [ref=e322] [cursor=pointer]:
+                    - /url: "#"
+                    - img [ref=e323]
+                    - text: FAQ
+            - generic [ref=e325]:
+              - generic [ref=e326]:
+                - img [ref=e327]
+                - heading "Company" [level=4] [ref=e332]
+              - list [ref=e333]:
+                - listitem [ref=e334]:
+                  - link "About Us" [ref=e335] [cursor=pointer]:
+                    - /url: "#"
+                    - img [ref=e336]
+                    - text: About Us
+                - listitem [ref=e338]:
+                  - link "Our Story" [ref=e339] [cursor=pointer]:
+                    - /url: "#"
+                    - img [ref=e340]
+                    - text: Our Story
+                - listitem [ref=e342]:
+                  - link "Sustainability" [ref=e343] [cursor=pointer]:
+                    - /url: "#"
+                    - img [ref=e344]
+                    - text: Sustainability
+                - listitem [ref=e346]:
+                  - link "Careers" [ref=e347] [cursor=pointer]:
+                    - /url: "#"
+                    - img [ref=e348]
+                    - text: Careers
+                - listitem [ref=e350]:
+                  - link "Press" [ref=e351] [cursor=pointer]:
+                    - /url: "#"
+                    - img [ref=e352]
+                    - text: Press
+              - generic [ref=e354]:
+                - generic [ref=e355]:
+                  - img [ref=e356]
+                  - text: +1 (555) 123-4567
+                - generic [ref=e358]:
+                  - img [ref=e359]
+                  - text: hello@sheikhshop.com
+                - generic [ref=e362]:
+                  - img [ref=e363]
+                  - text: Luxury District, Premium City
+          - generic [ref=e367]:
+            - generic [ref=e368]:
+              - text: "Follow our journey:"
+              - generic [ref=e369]:
+                - link "Instagram" [ref=e370] [cursor=pointer]:
+                  - /url: "#"
+                  - img [ref=e371]
+                - link "Twitter" [ref=e374] [cursor=pointer]:
+                  - /url: "#"
+                  - img [ref=e375]
+                - link "YouTube" [ref=e377] [cursor=pointer]:
+                  - /url: "#"
+                  - img [ref=e378]
+                - link "WhatsApp" [ref=e381] [cursor=pointer]:
+                  - /url: "#"
+                  - img [ref=e382]
+            - generic [ref=e384]:
+              - generic [ref=e385]:
+                - img [ref=e386]
+                - text: Stay updated with luxury insights
+              - button "Subscribe" [ref=e389]
+          - generic [ref=e391]:
+            - generic [ref=e392]:
+              - generic [ref=e393]: © 2025 Sheikh Shop. All rights reserved.
+              - generic [ref=e394]:
+                - link "Privacy Policy" [ref=e395] [cursor=pointer]:
+                  - /url: "#"
+                - link "Terms of Service" [ref=e396] [cursor=pointer]:
+                  - /url: "#"
+                - link "Cookie Policy" [ref=e397] [cursor=pointer]:
+                  - /url: "#"
+            - generic [ref=e398]:
+              - img [ref=e399]
+              - text: Secure & Trusted•
+              - img [ref=e401]
+              - text: Crafted with Excellence
+    - navigation [ref=e403]:
+      - generic [ref=e404]:
+        - link "Profile" [ref=e405] [cursor=pointer]:
+          - /url: /user
+          - img [ref=e406]
+          - text: Profile
+        - link "Categories" [ref=e409] [cursor=pointer]:
+          - /url: /categories
+          - img [ref=e410]
+          - text: Categories
+        - link "Shop" [ref=e412] [cursor=pointer]:
+          - /url: /products
+          - img [ref=e415]
+        - link "Home" [ref=e418] [cursor=pointer]:
+          - /url: /
+          - img [ref=e419]
+          - text: Home
+        - link "Top" [ref=e424] [cursor=pointer]:
+          - /url: /
+          - img [ref=e425]
+          - text: Top
+  - region "Notifications alt+T"
+  - generic [ref=e427]:
+    - button:
+      - img
+```

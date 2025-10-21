@@ -4,11 +4,10 @@ import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
-import { cookies, headers } from 'next/headers';
+import { cookies } from 'next/headers';
 import { refreshAccessToken } from '@/lib/actions/auth/session';
 import { verifyAccessToken } from '@/lib/auth/jwt';
 import { articleCache } from '@/lib/cache/articleCache';
-import { getCloudinary } from '@/lib/cloudinary-safe';
 
 // SEO Validation Constants
 const TRUSTED_DOMAINS = [
@@ -124,7 +123,7 @@ function validateInternalLinks(links: string[]): boolean {
 }
 
 // Server action specific authentication - more robust than middleware
-async function getServerActionUser(context?: { userAgent?: string; ip?: string }): Promise<{ id: string; role: string; email: string }> {
+async function getServerActionUser(): Promise<{ id: string; role: string; email: string }> {
   console.log('[SERVER_ACTION_AUTH] Starting server action authentication');
   
   try {
@@ -162,11 +161,7 @@ async function getServerActionUser(context?: { userAgent?: string; ip?: string }
     if (!payload && refreshToken) {
       console.log('[SERVER_ACTION_AUTH] Attempting refresh token');
       try {
-        const { accessToken: newAccessToken } = await refreshAccessToken(
-          refreshToken,
-          context?.userAgent,
-          context?.ip,
-        );
+        const { accessToken: newAccessToken } = await refreshAccessToken(refreshToken);
         console.log('[SERVER_ACTION_AUTH] Refresh successful, verifying new access token');
         payload = await verifyAccessToken(newAccessToken);
         console.log('[SERVER_ACTION_AUTH] New access token valid', { userId: payload?.id });
@@ -212,15 +207,12 @@ async function getServerActionUser(context?: { userAgent?: string; ip?: string }
 }
 
 // Security: RBAC function to check user permissions for article operations
-async function checkArticlePermissions(
-  allowedRoles: string[] = ['SUPERADMIN', 'ADMIN', 'EDITOR', 'AUTHOR'],
-  context?: { userAgent?: string; ip?: string }
-) {
+async function checkArticlePermissions(allowedRoles: string[] = ['SUPERADMIN', 'ADMIN', 'EDITOR', 'AUTHOR']) {
   console.log('[ARTICLE_AUTH] checkArticlePermissions: Starting permission check', { allowedRoles });
   
   try {
     console.log('[ARTICLE_AUTH] checkArticlePermissions: Getting server action user');
-    const user = await getServerActionUser(context);
+    const user = await getServerActionUser();
     console.log('[ARTICLE_AUTH] checkArticlePermissions: User retrieved', { 
       userId: user.id, 
       role: user.role, 
@@ -274,13 +266,7 @@ export async function createArticle(formData: FormData) {
     
     // Security: Check user permissions first
     console.log('[ARTICLE_CREATE] createArticle: Checking permissions');
-    const headerList = await headers();
-    const userAgent = headerList.get('user-agent') || undefined;
-    const ip = headerList.get('x-forwarded-for') || undefined;
-    const user = await checkArticlePermissions(
-      ['SUPERADMIN', 'ADMIN', 'EDITOR', 'AUTHOR'],
-      { userAgent, ip }
-    );
+    const user = await checkArticlePermissions(['SUPERADMIN', 'ADMIN', 'EDITOR', 'AUTHOR']);
     console.log('[ARTICLE_CREATE] createArticle: Permissions verified', { userId: user.id, role: user.role });
     
     // Parse form data with proper type handling
@@ -363,13 +349,7 @@ export async function updateArticle(id: string, formData: FormData) {
     
     // Security: Check user permissions first
     console.log('[ARTICLE_UPDATE] updateArticle: Checking permissions');
-    const headerList = await headers();
-    const userAgent = headerList.get('user-agent') || undefined;
-    const ip = headerList.get('x-forwarded-for') || undefined;
-    const user = await checkArticlePermissions(
-      ['SUPERADMIN', 'ADMIN', 'EDITOR', 'AUTHOR'],
-      { userAgent, ip }
-    );
+    const user = await checkArticlePermissions(['SUPERADMIN', 'ADMIN', 'EDITOR', 'AUTHOR']);
     console.log('[ARTICLE_UPDATE] updateArticle: Permissions verified', { userId: user.id, role: user.role });
     
     // Check if user can modify this specific article
@@ -414,41 +394,19 @@ export async function updateArticle(id: string, formData: FormData) {
     }
 
     try {
-        const file = formData.get('image') as File;
-        let finalImageUrl = validatedFields.data.imageUrl;
-
-        // Upload to Cloudinary if a new image is provided
-        if (file && file.size > 0) {
-            console.log('[ARTICLE_UPDATE] Image file found, uploading to Cloudinary...');
-            const arrayBuffer = await file.arrayBuffer();
-            const buffer = Buffer.from(arrayBuffer);
-            const base64 = buffer.toString('base64');
-            const dataUri = `data:${file.type};base64,${base64}`;
-
-            const cloudinary = getCloudinary();
-            try {
-                const uploadResult = await cloudinary.uploader.upload(dataUri, {
-                    folder: 'articles',
-                    resource_type: 'image',
-                });
-                console.log('[ARTICLE_UPDATE] Cloudinary upload successful, URL:', uploadResult.secure_url);
-                finalImageUrl = uploadResult.secure_url;
-            } catch (uploadError) {
-                console.error('[ARTICLE_UPDATE] Cloudinary upload failed:', uploadError);
-                // Optionally return an error to the user
-                return { success: false, error: 'Image upload failed. Please try again.' };
+        // Log image source for tracking
+        if (validatedFields.data.imageUrl) {
+            if (validatedFields.data.imageUrl.startsWith('https://res.cloudinary.com/')) {
+                console.log('✅ Article updated with Cloudinary image:', validatedFields.data.imageUrl);
+            } else {
+                console.log('📷 Article updated with legacy image URL:', validatedFields.data.imageUrl);
             }
         }
 
-        // Construct the final data object for the database update
-        const dataForUpdate: any = {
-            ...validatedFields.data,
-            imageUrl: finalImageUrl,
-        };
-
         // Calculate reading time if content is being updated
+        const updateData: any = { ...validatedFields.data };
         if (validatedFields.data.content) {
-            dataForUpdate.readTime = calculateReadingTime(validatedFields.data.content);
+            updateData.readTime = calculateReadingTime(validatedFields.data.content);
         }
         
         // Set published date if status is being changed to PUBLISHED
@@ -458,16 +416,16 @@ export async function updateArticle(id: string, formData: FormData) {
                 select: { publishedAt: true }
             });
             if (!currentArticle?.publishedAt) {
-                dataForUpdate.publishedAt = new Date();
+                updateData.publishedAt = new Date();
             }
         }
 
-        console.log('[ARTICLE_UPDATE] Data being sent to Prisma:', dataForUpdate);
-
-        // Update the article in the database
         const article = await prisma.article.update({
             where: { id },
-            data: dataForUpdate,
+            data: {
+                ...updateData,
+                imageUrl: updateData.imageUrl || null,
+            },
         });
 
         // Invalidate cache for updated article
@@ -480,26 +438,16 @@ export async function updateArticle(id: string, formData: FormData) {
         }
 
         revalidatePath('/dashboard/articles');
-        revalidatePath(`/dashboard/articles/${id}/edit`);
-
+        redirect('/dashboard/articles');
     } catch (error: any) {
         console.error('Article update error:', error);
         return { success: false, error: error.message ?? 'Failed to update article' };
     }
-
-    // Redirect must be called outside of try-catch
-    redirect('/dashboard/articles');
 }
 
 export async function deleteArticle(id: string) {
     // Security: Check user permissions first
-    const headerList = await headers();
-    const userAgent = headerList.get('user-agent') || undefined;
-    const ip = headerList.get('x-forwarded-for') || undefined;
-    const user = await checkArticlePermissions(
-      ['SUPERADMIN', 'ADMIN', 'EDITOR', 'AUTHOR'],
-      { userAgent, ip }
-    );
+    const user = await checkArticlePermissions(['SUPERADMIN', 'ADMIN', 'EDITOR', 'AUTHOR']);
     
     // Check if user can modify this specific article
     const canModify = await canModifyArticle(id, user.id, user.role);
@@ -673,13 +621,7 @@ export async function getRelatedArticles(currentArticleId: string, category?: st
 // Admin-only function to get all articles (including drafts)
 export async function getAllArticlesForAdmin() {
     // Security: Check user permissions first
-    const headerList = await headers();
-    const userAgent = headerList.get('user-agent') || undefined;
-    const ip = headerList.get('x-forwarded-for') || undefined;
-    const user = await checkArticlePermissions(
-      ['SUPERADMIN', 'ADMIN', 'EDITOR', 'AUTHOR'],
-      { userAgent, ip }
-    );
+    const user = await checkArticlePermissions(['SUPERADMIN', 'ADMIN', 'EDITOR', 'AUTHOR']);
     
     try {
         const articles = await prisma.article.findMany({
