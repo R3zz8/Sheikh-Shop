@@ -14,7 +14,6 @@ import { AlertCircle, Plus, X, ExternalLink, Link as LinkIcon, Hash, Clock, Spar
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import AIContentAssistant from '@/components/ai/AIContentAssistant';
 import InternalLinkingSuggestions from './InternalLinkingSuggestions';
-import ImageUpload from '@/components/ui/ImageUpload';
 import type { ContentAssistantResponse } from '@/lib/ai/content-assistant';
 import { useArticleAnalytics } from '@/hooks/useArticleAnalytics';
 import { toast } from 'sonner';
@@ -71,6 +70,7 @@ export default function AIEnhancedArticleForm({ mode = 'create', article }: AIEn
   const [metaDescription, setMetaDescription] = useState(article?.metaDescription || '');
   const [selectedCategory, setSelectedCategory] = useState(article?.category || '');
   const [imageUrl, setImageUrl] = useState(article?.imageUrl || '');
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [aiGeneratedContent, setAiGeneratedContent] = useState<ContentAssistantResponse | null>(null);
   const [savingState, setSavingState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [createdArticleId, setCreatedArticleId] = useState<string | undefined>(article?.id);
@@ -212,6 +212,10 @@ export default function AIEnhancedArticleForm({ mode = 'create', article }: AIEn
   const handleSubmit = async (formData: FormData) => {
     setIsSubmitting(true);
     setError(null);
+
+    if (imageFile) {
+      formData.append('image', imageFile);
+    }
     
     try {
       let result;
@@ -428,14 +432,20 @@ export default function AIEnhancedArticleForm({ mode = 'create', article }: AIEn
 
                 <div>
                   <Label htmlFor="image">Featured Image</Label>
-                  <div className="mt-1">
-                    <ImageUpload
-                      value={imageUrl}
-                      onChange={setImageUrl}
-                      onRemove={() => setImageUrl('')}
-                    />
-                    <input type="hidden" name="imageUrl" value={imageUrl} />
-                  </div>
+                  <Input
+                    id="image"
+                    name="image"
+                    type="file"
+                    className="mt-1"
+                    onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                  />
+                  {imageUrl && !imageFile && (
+                    <div className="mt-2">
+                      <p className="text-sm text-gray-500">Current image:</p>
+                      <img src={imageUrl} alt="Current article image" className="w-32 h-32 object-cover rounded-md mt-1" />
+                    </div>
+                  )}
+                  <input type="hidden" name="imageUrl" value={imageUrl} />
                 </div>
               </CardContent>
             </Card>
@@ -756,7 +766,3 @@ export default function AIEnhancedArticleForm({ mode = 'create', article }: AIEn
     </div>
   );
 }
-
-
-
-

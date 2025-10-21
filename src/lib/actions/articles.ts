@@ -8,6 +8,7 @@ import { cookies, headers } from 'next/headers';
 import { refreshAccessToken } from '@/lib/actions/auth/session';
 import { verifyAccessToken } from '@/lib/auth/jwt';
 import { articleCache } from '@/lib/cache/articleCache';
+import { getCloudinary } from '@/lib/cloudinary-safe';
 
 // SEO Validation Constants
 const TRUSTED_DOMAINS = [
@@ -413,17 +414,40 @@ export async function updateArticle(id: string, formData: FormData) {
     }
 
     try {
+        const file = formData.get('image') as File;
+        let imageUrl = validatedFields.data.imageUrl;
+
+        if (file && file.size > 0) {
+            console.log('[ARTICLE_UPDATE] Image file found, uploading to Cloudinary...');
+            const arrayBuffer = await file.arrayBuffer();
+            const buffer = Buffer.from(arrayBuffer);
+            const base64 = buffer.toString('base64');
+            const dataUri = `data:${file.type};base64,${base64}`;
+
+            const cloudinary = getCloudinary();
+            try {
+                const uploadResult = await cloudinary.uploader.upload(dataUri, {
+                    folder: 'articles',
+                    resource_type: 'image',
+                });
+                console.log('[ARTICLE_UPDATE] Cloudinary upload successful, URL:', uploadResult.secure_url);
+                imageUrl = uploadResult.secure_url;
+            } catch (uploadError) {
+                console.error('[ARTICLE_UPDATE] Cloudinary upload failed:', uploadError);
+            }
+        }
+
         // Log image source for tracking
-        if (validatedFields.data.imageUrl) {
-            if (validatedFields.data.imageUrl.startsWith('https://res.cloudinary.com/')) {
-                console.log('✅ Article updated with Cloudinary image:', validatedFields.data.imageUrl);
+        if (imageUrl) {
+            if (imageUrl.startsWith('https://res.cloudinary.com/')) {
+                console.log('✅ Article updated with Cloudinary image:', imageUrl);
             } else {
-                console.log('📷 Article updated with legacy image URL:', validatedFields.data.imageUrl);
+                console.log('📷 Article updated with legacy image URL:', imageUrl);
             }
         }
         
         // Calculate reading time if content is being updated
-        const updateData: any = { ...validatedFields.data };
+        const updateData: any = { ...validatedFields.data, imageUrl };
         if (validatedFields.data.content) {
             updateData.readTime = calculateReadingTime(validatedFields.data.content);
         }
@@ -443,7 +467,6 @@ export async function updateArticle(id: string, formData: FormData) {
             where: { id },
             data: {
                 ...updateData,
-                imageUrl: updateData.imageUrl || null,
             },
         });
 

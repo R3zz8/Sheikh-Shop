@@ -10,10 +10,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Upload, X, Save, ArrowLeft } from 'lucide-react';
+import { X, Save, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { createArticle, updateArticle } from '@/lib/actions/articles';
-import { uploadArticleImage } from '@/lib/services/articleUpload';
 import { toast } from 'sonner';
 
 // Helper function to generate slug from title
@@ -56,7 +55,6 @@ export default function ArticleForm({ article }: ArticleFormProps) {
     });
 
     const [imageUrl, setImageUrl] = useState(article?.imageUrl ?? '');
-    const [uploading, setUploading] = useState(false);
     const [saving, setSaving] = useState(false);
     const [file, setFile] = useState<File | null>(null);
 
@@ -71,41 +69,6 @@ export default function ArticleForm({ article }: ArticleFormProps) {
         const selectedFile = e.target.files?.[0];
         if (selectedFile) {
             setFile(selectedFile);
-        }
-    };
-
-    const handleImageUpload = async () => {
-        if (!file) {
-            toast.error('Please select a file to upload');
-            return;
-        }
-
-        try {
-            setUploading(true);
-            const formData = new FormData();
-            formData.append('file', file);
-
-            const response = await uploadArticleImage(formData);
-
-            if (response?.error) {
-                toast.error(response.error);
-                return;
-            }
-
-            if (response?.data?.imageUrl) {
-                setImageUrl(response.data.imageUrl);
-                setFile(null);
-                // Clear the file input
-                const fileInput = document.getElementById('article-image') as HTMLInputElement;
-                if (fileInput) {
-                    fileInput.value = '';
-                }
-                toast.success('Image uploaded successfully');
-            }
-        } catch (error) {
-            toast.error('Failed to upload image');
-        } finally {
-            setUploading(false);
         }
     };
 
@@ -134,6 +97,10 @@ export default function ArticleForm({ article }: ArticleFormProps) {
                     formDataObj.append(key, value.toString());
                 }
             });
+
+            if (file) {
+                formDataObj.append('image', file);
+            }
 
             if (isEditing && article) {
                 await updateArticle(article.id, formDataObj);
@@ -272,14 +239,6 @@ export default function ArticleForm({ article }: ArticleFormProps) {
                                     onChange={handleFileChange}
                                     className="flex-1"
                                 />
-                                <Button
-                                    type="button"
-                                    onClick={handleImageUpload}
-                                    disabled={!file || uploading}
-                                    variant="outline"
-                                >
-                                    {uploading ? 'Uploading...' : <Upload className="h-4 w-4" />}
-                                </Button>
                             </div>
                         </div>
 
@@ -325,4 +284,4 @@ export default function ArticleForm({ article }: ArticleFormProps) {
             </form>
         </div>
     );
-} 
+}
