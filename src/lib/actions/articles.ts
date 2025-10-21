@@ -415,8 +415,9 @@ export async function updateArticle(id: string, formData: FormData) {
 
     try {
         const file = formData.get('image') as File;
-        let imageUrl = validatedFields.data.imageUrl;
+        let finalImageUrl = validatedFields.data.imageUrl;
 
+        // Upload to Cloudinary if a new image is provided
         if (file && file.size > 0) {
             console.log('[ARTICLE_UPDATE] Image file found, uploading to Cloudinary...');
             const arrayBuffer = await file.arrayBuffer();
@@ -431,25 +432,23 @@ export async function updateArticle(id: string, formData: FormData) {
                     resource_type: 'image',
                 });
                 console.log('[ARTICLE_UPDATE] Cloudinary upload successful, URL:', uploadResult.secure_url);
-                imageUrl = uploadResult.secure_url;
+                finalImageUrl = uploadResult.secure_url;
             } catch (uploadError) {
                 console.error('[ARTICLE_UPDATE] Cloudinary upload failed:', uploadError);
+                // Optionally return an error to the user
+                return { success: false, error: 'Image upload failed. Please try again.' };
             }
         }
 
-        // Log image source for tracking
-        if (imageUrl) {
-            if (imageUrl.startsWith('https://res.cloudinary.com/')) {
-                console.log('✅ Article updated with Cloudinary image:', imageUrl);
-            } else {
-                console.log('📷 Article updated with legacy image URL:', imageUrl);
-            }
-        }
-        
+        // Construct the final data object for the database update
+        const dataForUpdate: any = {
+            ...validatedFields.data,
+            imageUrl: finalImageUrl,
+        };
+
         // Calculate reading time if content is being updated
-        const updateData: any = { ...validatedFields.data, imageUrl };
         if (validatedFields.data.content) {
-            updateData.readTime = calculateReadingTime(validatedFields.data.content);
+            dataForUpdate.readTime = calculateReadingTime(validatedFields.data.content);
         }
         
         // Set published date if status is being changed to PUBLISHED
@@ -459,15 +458,16 @@ export async function updateArticle(id: string, formData: FormData) {
                 select: { publishedAt: true }
             });
             if (!currentArticle?.publishedAt) {
-                updateData.publishedAt = new Date();
+                dataForUpdate.publishedAt = new Date();
             }
         }
 
+        console.log('[ARTICLE_UPDATE] Data being sent to Prisma:', dataForUpdate);
+
+        // Update the article in the database
         const article = await prisma.article.update({
             where: { id },
-            data: {
-                ...updateData,
-            },
+            data: dataForUpdate,
         });
 
         // Invalidate cache for updated article
@@ -480,11 +480,15 @@ export async function updateArticle(id: string, formData: FormData) {
         }
 
         revalidatePath('/dashboard/articles');
-        redirect('/dashboard/articles');
+        revalidatePath(`/dashboard/articles/${id}/edit`);
+
     } catch (error: any) {
         console.error('Article update error:', error);
         return { success: false, error: error.message ?? 'Failed to update article' };
     }
+
+    // Redirect must be called outside of try-catch
+    redirect('/dashboard/articles');
 }
 
 export async function deleteArticle(id: string) {
