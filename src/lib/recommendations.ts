@@ -1,8 +1,5 @@
 import type { ProductsWithImages, ProductUnit } from '@/types';
 import type { UserPreferences, RecommendationContext } from '@/hooks/useUserBehavior';
-import type { Category } from '@prisma/client';
-
-type ProductWithCategory = ProductsWithImages & { category: Category | null };
 
 export type { RecommendationContext };
 
@@ -24,10 +21,10 @@ export interface BundleRecommendation {
 }
 
 export class RecommendationEngine {
-  private products: ProductWithCategory[] = [];
-  private categories: Map<string, ProductWithCategory[]> = new Map();
+  private products: ProductsWithImages[] = [];
+  private categories: Map<string, ProductsWithImages[]> = new Map();
 
-  constructor(products: ProductWithCategory[]) {
+  constructor(products: ProductsWithImages[]) {
     this.products = products;
     this.buildCategoryIndex();
   }
@@ -35,10 +32,10 @@ export class RecommendationEngine {
   private buildCategoryIndex() {
     this.products.forEach(product => {
       if (product.category) {
-        if (!this.categories.has(product.category.name)) {
-          this.categories.set(product.category.name, []);
+        if (!this.categories.has(product.category)) {
+          this.categories.set(product.category, []);
         }
-        this.categories.get(product.category.name)!.push(product);
+        this.categories.get(product.category)!.push(product);
       }
     });
   }
@@ -57,7 +54,7 @@ export class RecommendationEngine {
     // Category-based recommendations
     if (userPreferences.preferredCategories.length > 0) {
       const categoryProducts = availableProducts.filter(p => 
-        p.category && userPreferences.preferredCategories.includes(p.category.name)
+        userPreferences.preferredCategories.includes(p.category || '')
       );
       
       categoryProducts.forEach(product => {
@@ -116,7 +113,7 @@ export class RecommendationEngine {
 
   // Get cross-sell recommendations for a specific product
   getCrossSellRecommendations(
-    product: ProductWithCategory,
+    product: ProductsWithImages,
     context: RecommendationContext,
     limit: number = 4
   ): RecommendationResult[] {
@@ -124,14 +121,14 @@ export class RecommendationEngine {
 
     // Same category products
     if (product.category) {
-      const categoryProducts = this.categories.get(product.category.name) || [];
+      const categoryProducts = this.categories.get(product.category) || [];
       const otherCategoryProducts = categoryProducts.filter(p => p.id !== product.id);
       
       otherCategoryProducts.slice(0, 2).forEach(p => {
         recommendations.push({
           product: p,
           score: 0.7,
-          reason: `Other ${product.category?.name} products`,
+          reason: `Other ${product.category} products`,
           type: 'cross_sell'
         });
       });
@@ -159,7 +156,7 @@ export class RecommendationEngine {
 
   // Get upsell recommendations (higher value products)
   getUpsellRecommendations(
-    product: ProductWithCategory,
+    product: ProductsWithImages,
     context: RecommendationContext,
     limit: number = 3
   ): RecommendationResult[] {
@@ -168,7 +165,7 @@ export class RecommendationEngine {
 
     // Find products in same category with higher price
     if (product.category) {
-      const categoryProducts = this.categories.get(product.category.name) || [];
+      const categoryProducts = this.categories.get(product.category) || [];
       const upsellProducts = categoryProducts
         .filter(p => {
           const price = this.getProductPrice(p);
@@ -216,7 +213,7 @@ export class RecommendationEngine {
 
   // Get bundle recommendations
   getBundleRecommendations(
-    product: ProductWithCategory,
+    product: ProductsWithImages,
     context: RecommendationContext,
     limit: number = 2
   ): BundleRecommendation[] {
@@ -224,7 +221,7 @@ export class RecommendationEngine {
 
     // Create bundles based on product category and complementary items
     if (product.category) {
-      const categoryProducts = this.categories.get(product.category.name) || [];
+      const categoryProducts = this.categories.get(product.category) || [];
       const otherProducts = categoryProducts.filter(p => p.id !== product.id);
 
       if (otherProducts.length > 0) {
@@ -236,12 +233,12 @@ export class RecommendationEngine {
 
         bundles.push({
           id: `bundle_${product.id}_${Date.now()}`,
-          name: `${product.category?.name} Bundle`,
+          name: `${product.category} Bundle`,
           products: bundleProducts,
           totalPrice: totalPrice - savings,
           discountPercentage,
           savings,
-          description: `Save ${discountPercentage}% when you buy these ${product.category?.name} products together`
+          description: `Save ${discountPercentage}% when you buy these ${product.category} products together`
         });
       }
     }
@@ -250,17 +247,17 @@ export class RecommendationEngine {
   }
 
   // Helper methods
-  private calculateCategoryScore(product: ProductWithCategory, preferences: UserPreferences): number {
+  private calculateCategoryScore(product: ProductsWithImages, preferences: UserPreferences): number {
     if (!product.category) return 0;
     
-    const categoryIndex = preferences.preferredCategories.indexOf(product.category.name);
+    const categoryIndex = preferences.preferredCategories.indexOf(product.category);
     if (categoryIndex === -1) return 0;
     
     // Higher score for more recently preferred categories
     return 1 - (categoryIndex / preferences.preferredCategories.length);
   }
 
-  private calculatePriceScore(product: ProductWithCategory, preferences: UserPreferences): number {
+  private calculatePriceScore(product: ProductsWithImages, preferences: UserPreferences): number {
     const price = this.getProductPrice(product);
     const { min, max } = preferences.priceRange;
     
@@ -276,17 +273,17 @@ export class RecommendationEngine {
 
   private getSimilarProducts(
     viewedProductIds: string[],
-    availableProducts: ProductWithCategory[]
-  ): ProductWithCategory[] {
+    availableProducts: ProductsWithImages[]
+  ): ProductsWithImages[] {
     // Simple similarity based on category and price range
     const viewedProducts = this.products.filter(p => viewedProductIds.includes(p.id));
     const avgPrice = viewedProducts.reduce((sum, p) => sum + this.getProductPrice(p), 0) / viewedProducts.length;
-    const categories = new Set(viewedProducts.map(p => p.category?.name).filter(Boolean));
+    const categories = new Set(viewedProducts.map(p => p.category).filter(Boolean));
 
     return availableProducts.filter(p => {
       const price = this.getProductPrice(p);
       const priceSimilar = Math.abs(price - avgPrice) / avgPrice < 0.3; // Within 30% price range
-      const categorySimilar = p.category && categories.has(p.category.name);
+      const categorySimilar = p.category && categories.has(p.category);
       
       return priceSimilar || categorySimilar;
     });
@@ -300,12 +297,12 @@ export class RecommendationEngine {
       .filter(word => !['with', 'and', 'the', 'for', 'from'].includes(word));
   }
 
-  private getProductPrice(product: ProductWithCategory): number {
+  private getProductPrice(product: ProductsWithImages): number {
     // Get the lowest price from units or use base price
     if (product.units && product.units.length > 0) {
-      const activeUnits = product.units.filter((u: ProductUnit) => u.isActive && u.stock > 0);
+      const activeUnits = product.units.filter(u => u.isActive && u.stock > 0);
       if (activeUnits.length > 0) {
-        return Math.min(...activeUnits.map((u: ProductUnit) => Number(u.price)));
+        return Math.min(...activeUnits.map(u => Number(u.price)));
       }
     }
     return product.basePrice;
@@ -313,7 +310,7 @@ export class RecommendationEngine {
 }
 
 // Factory function to create recommendation engine
-export function createRecommendationEngine(products: ProductWithCategory[]): RecommendationEngine {
+export function createRecommendationEngine(products: ProductsWithImages[]): RecommendationEngine {
   return new RecommendationEngine(products);
 }
 

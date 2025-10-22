@@ -22,7 +22,6 @@ export async function POST(request: NextRequest) {
         baseUnit: true,
         units: true,
         discounts: true,
-        category: true,
       },
     });
 
@@ -44,7 +43,7 @@ export async function POST(request: NextRequest) {
         product: {
           id: product.id,
           name: product.name,
-          category: product.category?.name
+          category: product.category
         }
       });
     }
@@ -92,7 +91,6 @@ export async function GET(request: NextRequest) {
         baseUnit: true,
         units: true,
         discounts: true,
-        category: true,
       },
     });
 

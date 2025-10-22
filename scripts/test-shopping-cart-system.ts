@@ -14,7 +14,7 @@ async function testShoppingCartSystem() {
         // 2. Test Products with Images
         console.log('\n✅ Product Data for Cart Testing:');
         const productsWithImages = await prisma.product.findMany({
-            include: { images: true, category: true },
+            include: { images: true },
             take: 3,
         });
 
@@ -23,7 +23,7 @@ async function testShoppingCartSystem() {
             console.log(`     - Name: ${product.name}`);
             console.log(`     - ID: ${product.id}`);
             console.log(`     - Price: ${product.basePrice || 'N/A'}`);
-            console.log(`     - Category: ${product.category?.name}`);
+            console.log(`     - Category: ${product.category}`);
             console.log(`     - Status: ${product.status}`);
             console.log(`     - Quantity: ${product.quantity}`);
             console.log(`     - Images: ${product.images.length}`);

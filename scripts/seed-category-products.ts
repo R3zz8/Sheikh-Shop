@@ -15,9 +15,6 @@ async function seedCategoryProducts() {
             throw new Error('Kilogram unit not found. Please run the main seed script first.');
         }
 
-        const categories = await prisma.category.findMany();
-        const categoryMap = new Map(categories.map(c => [c.name.toUpperCase(), c.id]));
-
         // Sample products for each category
         const sampleProducts = [
             // Dates Category
@@ -140,21 +137,14 @@ async function seedCategoryProducts() {
         // Create products and their images
         for (const productData of sampleProducts) {
             const { images, ...productInfo } = productData;
-            const categoryId = categoryMap.get(productInfo.category);
-            if (!categoryId) {
-              console.warn(`Category ${productInfo.category} not found, skipping product ${productInfo.name}`);
-              continue;
-            }
 
             const product = await prisma.product.create({
                 data: {
-                    name: productInfo.name,
-                    description: productInfo.description,
-                    basePrice: productInfo.price,
-                    quantity: productInfo.quantity,
+                    ...productInfo,
+                    category: productInfo.category as any,
                     status: productInfo.status as any,
                     baseUnitId: kgUnit.id,
-                    categoryId,
+                    basePrice: productInfo.price
                 }
             });
 
@@ -174,29 +164,16 @@ async function seedCategoryProducts() {
         console.log('🎉 Category products seeded successfully!');
 
         // Display summary
-        const productCountsByCategoryId = await prisma.product.groupBy({
-            by: ['categoryId'],
+        const productCounts = await prisma.product.groupBy({
+            by: ['category'],
             _count: {
-                _all: true
-            }
-        });
-
-        const categoriesWithCounts = await prisma.category.findMany({
-            where: {
-                id: {
-                    in: productCountsByCategoryId.map(pc => pc.categoryId)
-                }
-            },
-            include: {
-                _count: {
-                    select: { products: true }
-                }
+                id: true
             }
         });
 
         console.log('\n📊 Product Summary:');
-        categoriesWithCounts.forEach(category => {
-            console.log(`${category.name}: ${category._count.products} products`);
+        productCounts.forEach(({ category, _count }) => {
+            console.log(`${category}: ${_count.id} products`);
         });
 
     } catch (error) {

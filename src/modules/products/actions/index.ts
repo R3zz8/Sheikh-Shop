@@ -2,7 +2,7 @@
 
 import { prisma } from '@/lib/prisma';
 import type { Product } from '@prisma/client';
-import { ProductStatus } from '@prisma/client';
+import { ProductCategory, ProductStatus } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { cookies } from 'next/headers';
@@ -27,7 +27,7 @@ const productSchema = z.object({
     .int('Quantity must be a whole number')
     .min(0, 'Quantity cannot be negative')
     .max(999999, 'Quantity must be less than 1,000,000'),
-  categoryId: z.string().min(1, 'Category is required'),
+  category: z.enum(Object.values(ProductCategory) as [string, ...string[]]),
   status: z.enum(Object.values(ProductStatus) as [string, ...string[]]).optional(),
 });
 
@@ -117,7 +117,7 @@ export const upsertProduct = async (
 
     const rawData = {
       name: formData.get('name') as string,
-      categoryId: formData.get('categoryId') as string,
+      category: formData.get('category') as string,
       description: formData.get('description') as string || '',
       basePrice: parseFloat(formData.get('price') as string),
       baseUnitId,
@@ -378,7 +378,7 @@ export const exportProducts = async (filters?: {
     const where: any = {};
 
     if (filters?.category && filters.category !== 'all') {
-      where.categoryId = filters.category;
+      where.category = filters.category;
     }
 
     if (filters?.status && filters.status !== 'all') {
@@ -394,7 +394,7 @@ export const exportProducts = async (filters?: {
 
     const products = await prisma.product.findMany({
       where,
-      include: { images: true, category: true },
+      include: { images: true },
       orderBy: { createdAt: 'desc' }
     });
 
@@ -402,7 +402,7 @@ export const exportProducts = async (filters?: {
     const csvHeader = 'ID,Name,Category,Price,Quantity,Status,Description,Images,Created At\n';
     const csvRows = products.map(product => {
       const images = product.images.map(img => img.image).join(';');
-      return `"${product.id}","${product.name}","${product.category?.name}","${product.basePrice || 'N/A'}","${product.quantity}","${product.status}","${product.description || ''}","${images}","${product.createdAt}"`;
+      return `"${product.id}","${product.name}","${product.category}","${product.basePrice || 'N/A'}","${product.quantity}","${product.status}","${product.description || ''}","${images}","${product.createdAt}"`;
     }).join('\n');
 
     return csvHeader + csvRows;

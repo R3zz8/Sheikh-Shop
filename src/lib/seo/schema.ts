@@ -1,8 +1,6 @@
-import type { Product, Article, User, Category } from '@prisma/client';
+import type { Product, Article, User } from '@prisma/client';
 import { getMultiCurrencyPrices } from '../currency';
 import type { CurrencyCode } from '../currencyConfig';
-
-type ProductWithCategory = Product & { category: Category | null };
 
 // Base URL configuration
 const getBaseUrl = () => {
@@ -70,7 +68,7 @@ export const websiteSchema = {
 };
 
 // Product Schema
-export function generateProductSchema(product: ProductWithCategory & { images?: any[] }) {
+export function generateProductSchema(product: Product & { images?: any[] }) {
   const baseUrl = getBaseUrl();
   const productUrl = `${baseUrl}/products/${product.id}`;
   
@@ -95,7 +93,7 @@ export function generateProductSchema(product: ProductWithCategory & { images?: 
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: product.name,
-    description: product.description || `Premium ${product.category?.name.toLowerCase()} from Sheikh Shop`,
+    description: product.description || `Premium ${product.category.toLowerCase()} from Sheikh Shop`,
     image: product.images?.map(img => `${baseUrl}${img.image}`) || [`${baseUrl}/noImage.jpg`],
     url: productUrl,
     sku: product.id,
@@ -103,7 +101,7 @@ export function generateProductSchema(product: ProductWithCategory & { images?: 
       '@type': 'Brand',
       name: 'Sheikh Shop',
     },
-    category: product.category?.name,
+    category: product.category,
     offers: offers,
     aggregateRating: product.isBestSeller ? {
       '@type': 'AggregateRating',
@@ -116,7 +114,7 @@ export function generateProductSchema(product: ProductWithCategory & { images?: 
       {
         '@type': 'PropertyValue',
         name: 'Category',
-        value: product.category?.name,
+        value: product.category,
       },
       {
         '@type': 'PropertyValue',

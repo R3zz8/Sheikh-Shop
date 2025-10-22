@@ -310,7 +310,7 @@ export default function Chatbot({ onProductClick, className = "" }: ChatbotProps
                         </div>
                         <div className="flex-1">
                           <h5 className="text-sm font-medium text-gray-900">{product.name}</h5>
-                          <p className="text-xs text-gray-500">{product.category?.name}</p>
+                          <p className="text-xs text-gray-500">{product.category}</p>
                           <p className="text-sm font-semibold text-amber-600">
                             {formatPrice(convertCurrency(product.basePrice, 'EUR', currency), currency)}
                           </p>

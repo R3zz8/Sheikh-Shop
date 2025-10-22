@@ -1,7 +1,5 @@
 import type { Metadata } from 'next';
-import type { Product, Article, User, Category } from '@prisma/client';
-
-type ProductWithCategory = Product & { category: Category | null };
+import type { Product, Article, User } from '@prisma/client';
 
 // Environment-based URL configuration
 export const getBaseUrl = () => {
@@ -98,19 +96,19 @@ const getDefaultCurrency = () => {
 };
 
 export const generateProductSchema = (
-  product: ProductWithCategory & { images?: any[] },
+  product: Product & { images?: any[] },
   opts?: { currency?: string; availabilityOverride?: 'InStock' | 'OutOfStock' }
 ) => ({
   '@context': 'https://schema.org',
   '@type': 'Product',
   name: product.name,
-  description: product.description || `Premium ${product.category?.name.toLowerCase()} from Sheikh Shop`,
+  description: product.description || `Premium ${product.category.toLowerCase()} from Sheikh Shop`,
   image: product.images?.map(img => img.image) || [`${getBaseUrl()}/noImage.jpg`],
   brand: {
     '@type': 'Brand',
     name: 'Sheikh Shop',
   },
-  category: product.category?.name,
+  category: product.category,
   sku: product.id,
   offers: {
     '@type': 'Offer',
@@ -234,21 +232,21 @@ export const generateMetadata = ({
 };
 
 // Product-specific metadata
-export const generateProductMetadata = (product: ProductWithCategory & { images?: any[] }) => {
+export const generateProductMetadata = (product: Product & { images?: any[] }) => {
   const keywords = [
     product.name,
-    product.category?.name.toLowerCase(),
+    product.category.toLowerCase(),
     'premium',
     'luxury',
     'sheikh shop',
     'arabian',
     'heritage',
     'quality',
-  ].filter(Boolean) as string[];
+  ];
 
   return generateMetadata({
-    title: `${product.name} - Premium ${product.category?.name} | Sheikh Shop`,
-    description: product.description || `Discover premium ${product.name} at Sheikh Shop. Exceptional quality ${product.category?.name.toLowerCase()} with authentic Arabian heritage.`,
+    title: `${product.name} - Premium ${product.category} | Sheikh Shop`,
+    description: product.description || `Discover premium ${product.name} at Sheikh Shop. Exceptional quality ${product.category.toLowerCase()} with authentic Arabian heritage.`,
     keywords,
     images: product.images?.map(img => img.image) || [],
     canonicalPath: `/products/${product.id}`,

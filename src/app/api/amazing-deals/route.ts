@@ -18,7 +18,6 @@ export async function GET(req: NextRequest) {
         images: true,
         baseUnit: true, // This is correct - it's the relation name in the schema
         units: true, // Include ProductUnits
-        category: true,
         discounts: {
           where: {
             isActive: true,
@@ -93,7 +92,6 @@ export async function PATCH(req: NextRequest) {
       include: {
         images: true,
         baseUnit: true,
-        category: true,
       },
     });
 

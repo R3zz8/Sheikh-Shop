@@ -54,8 +54,8 @@ export class CachedProductService {
     }
 
     // Get products by category with caching
-    async getProductsByCategory(categorySlug: string) {
-        const cacheKey = CACHE_KEYS.CATEGORY_PRODUCTS(categorySlug);
+    async getProductsByCategory(category: string) {
+        const cacheKey = CACHE_KEYS.CATEGORY_PRODUCTS(category);
 
         // Try to get from cache first
         const cached = await cacheService.get(cacheKey);
@@ -66,9 +66,7 @@ export class CachedProductService {
         // If not in cache, fetch from database
         const products = await prisma.product.findMany({
             where: {
-                category: {
-                    slug: categorySlug,
-                },
+                category: category as any,
                 status: 'ACTIVE'
             },
             include: {
@@ -150,11 +148,11 @@ export class CachedProductService {
         }
 
         // If not in cache, fetch from database
-        const categories = await prisma.category.findMany({
-            include: {
-                _count: {
-                    select: { products: true },
-                },
+        const categories = await prisma.product.groupBy({
+            by: ['category'],
+            where: { status: 'ACTIVE' },
+            _count: {
+                category: true,
             },
         });
 

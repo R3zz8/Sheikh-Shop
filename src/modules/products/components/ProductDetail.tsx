@@ -168,7 +168,7 @@ export default function ProductDetail(product: ProductsWithImages) {
                       <div className="text-center lg:text-left">
                         <span className="inline-flex items-center gap-2 bg-white/8 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 text-gray-200 font-medium">
                           <Sparkles className="w-4 h-4" />
-                          {product?.category?.name}
+                          {product?.category}
                         </span>
                       </div>
 

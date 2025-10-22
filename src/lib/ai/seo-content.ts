@@ -123,7 +123,7 @@ export class SEOContentGenerator {
   private generateMetaDescription(product: ProductsWithImages, primaryKeyword: string, keywords: string[]): string {
     const productName = product.name || 'Product';
     const price = product.basePrice;
-    const category = product.category?.name;
+    const category = product.category;
     const keyFeatures = keywords.slice(0, 3).join(', ');
     
     const templates = [
@@ -145,9 +145,7 @@ export class SEOContentGenerator {
     productWords.forEach(word => keywords.add(word));
     
     // Add category
-    if (product.category) {
-      keywords.add(product.category.name.toLowerCase());
-    }
+    keywords.add(product.category.toLowerCase());
     
     // Add brand
     const brand = (product.name || '').split(' ')[0]?.toLowerCase() || '';
@@ -209,7 +207,7 @@ export class SEOContentGenerator {
 
   private generateAltText(product: ProductsWithImages): string {
     const productName = product.name;
-    const category = product.category?.name.toLowerCase();
+    const category = product.category.toLowerCase();
     const brand = product.name.split(' ')[0];
     
     return `${productName} - ${brand} ${category} product image`;
@@ -233,7 +231,7 @@ export class SEOContentGenerator {
 
   private generateContent(product: ProductsWithImages, keywords: string[]): string {
     const productName = product.name;
-    const category = product.category?.name;
+    const category = product.category;
     const price = product.basePrice;
     const primaryKeyword = keywords[0];
     
@@ -243,7 +241,7 @@ export class SEOContentGenerator {
       
       <h2>Product Features</h2>
       <ul>
-        <li>High-quality ${category?.toLowerCase()} design</li>
+        <li>High-quality ${category.toLowerCase()} design</li>
         <li>Competitive pricing at $${price}</li>
         <li>Fast and secure shipping</li>
         <li>30-day money-back guarantee</li>
@@ -412,16 +410,14 @@ export class SEOContentGenerator {
     });
     
     // Add category pages
-    const categories = [...new Set(this.products.map(p => p.category?.name))];
+    const categories = [...new Set(this.products.map(p => p.category))];
     categories.forEach(category => {
-      if (category) {
-        urls.push({
-          url: `/categories/${category.toLowerCase()}`,
-          lastmod: new Date().toISOString(),
-          changefreq: 'monthly',
-          priority: 0.6
-        });
-      }
+      urls.push({
+        url: `/categories/${category.toLowerCase()}`,
+        lastmod: new Date().toISOString(),
+        changefreq: 'monthly',
+        priority: 0.6
+      });
     });
     
     // Add static pages

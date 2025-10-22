@@ -52,7 +52,6 @@ export async function GET(request: NextRequest) {
         baseUnit: true,
         units: true,
         discounts: true,
-        category: true,
       },
       take: 1000, // Limit for performance
     });
@@ -158,7 +157,6 @@ export async function POST(request: NextRequest) {
         baseUnit: true,
         units: true,
         discounts: true,
-        category: true,
       },
       take: 1000, // Limit for performance
     });

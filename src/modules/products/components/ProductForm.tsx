@@ -1,6 +1,7 @@
 'use client';
 
-import type { Product, ProductUnit, Category } from '@prisma/client';
+import type { Product, ProductUnit } from '@prisma/client';
+import { ProductCategory } from '@prisma/client';
 import {
   Input,
   Button,
@@ -44,27 +45,9 @@ const ProductForm = (props: { product: Product | null }) => {
   const [tempImageUrl, setTempImageUrl] = useState<string | null>(null);
   const [productUnits, setProductUnits] = useState<ProductUnitForm[]>([]);
   const [loadingUnits, setLoadingUnits] = useState(false);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loadingCategories, setLoadingCategories] = useState(true);
 
   // Load existing product units when editing
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await fetch('/api/categories');
-        if (response.ok) {
-          const data = await response.json();
-          setCategories(data);
-        }
-      } catch (error) {
-        console.error('Failed to fetch categories:', error);
-      } finally {
-        setLoadingCategories(false);
-      }
-    };
-
-    fetchCategories();
-
     if (product?.id) {
       loadProductUnits();
     } else {
@@ -233,22 +216,21 @@ const ProductForm = (props: { product: Product | null }) => {
             />
           </div>
           <div className="my-2">
-            <Label htmlFor="categoryId">Category</Label>
+            <Label htmlFor="category">Category</Label>
             <Select
               required
               onValueChange={(value) =>
-                setValue('categoryId', value)
+                setValue('category', value as ProductCategory)
               }
-              defaultValue={product?.categoryId || ''}
-              disabled={loadingCategories}
+              defaultValue={product?.category || ProductCategory.OTHERS}
             >
               <SelectTrigger>
-                <SelectValue placeholder={loadingCategories ? "Loading..." : "Select a category"} />
+                <SelectValue placeholder="Select a category" />
               </SelectTrigger>
               <SelectContent>
-                {categories.map((cat) => (
-                  <SelectItem key={cat.id} value={cat.id}>
-                    {cat.name}
+                {Object.values(ProductCategory).map((cat) => (
+                  <SelectItem key={cat} value={cat}>
+                    {cat}
                   </SelectItem>
                 ))}
               </SelectContent>

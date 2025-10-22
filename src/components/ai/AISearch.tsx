@@ -365,7 +365,7 @@ export default function AISearch({
                             {result.product.name}
                           </h5>
                           <p className="text-xs text-gray-500 mb-1">
-                            {result.product.category?.name}
+                            {result.product.category}
                           </p>
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-semibold text-amber-600">

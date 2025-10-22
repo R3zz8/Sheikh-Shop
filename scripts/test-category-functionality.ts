@@ -8,35 +8,26 @@ async function testCategoryFunctionality() {
 
         // Test 1: Check if all categories have products
         const categoryStats = await prisma.product.groupBy({
-            by: ['categoryId'],
+            by: ['category'],
             _count: {
-                _all: true
+                id: true
             }
         });
-
-        const categoriesWithCounts = await prisma.category.findMany({
-            where: {
-                id: {
-                    in: categoryStats.map(cs => cs.categoryId)
-                }
-            }
-        });
-        const categoryIdToName = new Map(categoriesWithCounts.map(c => [c.id, c.name]));
 
         console.log('📊 Category Product Counts:');
-        categoryStats.forEach(({ categoryId, _count }) => {
-            console.log(`  ${categoryIdToName.get(categoryId) || 'Unknown Category'}: ${_count._all} products`);
+        categoryStats.forEach(({ category, _count }) => {
+            console.log(`  ${category}: ${_count.id} products`);
         });
 
         // Test 2: Test fetching products for each category
-        const categories = await prisma.category.findMany();
+        const categories = ['DATES', 'HONEY', 'SAFFRON', 'OTHERS'];
 
         console.log('\n🔍 Testing product fetching by category:');
 
         for (const category of categories) {
             const products = await prisma.product.findMany({
                 where: {
-                    categoryId: category.id,
+                    category: category as any,
                     status: 'ACTIVE'
                 },
                 include: {
@@ -52,18 +43,22 @@ async function testCategoryFunctionality() {
 
         // Test 3: Verify URL mapping
         console.log('\n🔗 URL Mapping Test:');
-        const categoriesForURLTest = await prisma.category.findMany();
-        const urlMapping = new Map(categoriesForURLTest.map(c => [c.slug, c.id]));
+        const urlMapping = {
+            'dates': 'DATES',
+            'honey': 'HONEY',
+            'saffron': 'SAFFRON',
+            'other': 'OTHERS'
+        };
 
-        for (const [slug, categoryId] of urlMapping.entries()) {
+        for (const [slug, category] of Object.entries(urlMapping)) {
             const products = await prisma.product.findMany({
                 where: {
-                    categoryId: categoryId,
+                    category: category as any,
                     status: 'ACTIVE'
                 }
             });
-            const category = categories.find(c => c.id === categoryId);
-            console.log(`  /categories/${slug} -> ${category?.name} (${products.length} products)`);
+
+            console.log(`  /categories/${slug} -> ${category} (${products.length} products)`);
         }
 
         console.log('\n✅ All category functionality tests passed!');

@@ -320,8 +320,62 @@ export async function middleware(request: NextRequest) {
   response.headers.set('x-user-role', user.role);
   response.headers.set('x-session-id', user.sessionId);
   setCurrencyCookieIfNeeded(request, response);
+
+  // Handle affiliate referral tracking
+  await handleReferralTracking(request, response);
   
   return addSecurityHeaders(response);
+}
+
+// Affiliate referral tracking
+async function handleReferralTracking(request: NextRequest, response: NextResponse) {
+  const refCode = request.nextUrl.searchParams.get('ref');
+
+  if (refCode) {
+    try {
+      // Set cookie to track referral for the session
+      response.cookies.set('referral_code', refCode, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 60 * 60 * 24, // 1 day
+      });
+
+      // Asynchronously log the referral visit to the database
+      const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+      const userAgent = request.headers.get('user-agent') || 'unknown';
+
+      // Use a separate async function to avoid blocking the middleware
+      (async () => {
+        try {
+          const { prisma } = await import('@/lib/prisma');
+          const affiliate = await prisma.affiliate.findUnique({ where: { referralCode: refCode } });
+
+          if (affiliate) {
+            await prisma.referral.create({
+              data: {
+                affiliateId: affiliate.id,
+                ipAddress: ip,
+                userAgent: userAgent,
+              },
+            });
+
+            // Increment total clicks
+            await prisma.affiliate.update({
+              where: { id: affiliate.id },
+              data: { totalClicks: { increment: 1 } },
+            });
+          }
+        } catch (dbError) {
+          console.error('Error logging referral visit:', dbError);
+        }
+      })();
+
+    } catch (error) {
+      console.error('Error in referral tracking:', error);
+    }
+  }
 }
 
 export const config = {

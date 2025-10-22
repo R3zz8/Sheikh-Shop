@@ -14,7 +14,7 @@ async function testProductNavigation() {
         // 2. Test Products with Images
         console.log('\n✅ Product Data for Navigation:');
         const productsWithImages = await prisma.product.findMany({
-            include: { images: true, category: true },
+            include: { images: true },
             take: 5,
         });
 
@@ -23,7 +23,7 @@ async function testProductNavigation() {
             console.log(`     - Name: ${product.name}`);
             console.log(`     - ID: ${product.id}`);
             console.log(`     - Price: $${product.basePrice || 'N/A'}`);
-            console.log(`     - Category: ${product.category?.name}`);
+            console.log(`     - Category: ${product.category}`);
             console.log(`     - Images: ${product.images.length}`);
             console.log(`     - Navigation URL: /product/${product.id}`);
         });

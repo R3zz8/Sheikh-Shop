@@ -165,7 +165,7 @@ export default function SEOContentManager({ products, className = '' }: SEOConte
                       <h4 className="text-sm font-medium text-gray-900 truncate">
                         {product.name}
                       </h4>
-                      <p className="text-xs text-gray-500">{product.category?.name}</p>
+                      <p className="text-xs text-gray-500">{product.category}</p>
                     </div>
                   </div>
                 </button>

@@ -70,7 +70,7 @@ export class EnhancedAISearchEngine {
       keys: [
         { name: 'name', weight: 0.7 },
         { name: 'description', weight: 0.3 },
-        { name: 'category.name', weight: 0.5 },
+        { name: 'category', weight: 0.5 },
       ],
       threshold: 0.3,
       includeScore: true,
@@ -225,7 +225,7 @@ export class EnhancedAISearchEngine {
     const parts = [
       product.name,
       product.description || '',
-      product.category?.name,
+      product.category,
       ...(product.units?.map(unit => unit.name) || []),
       // Add brand information if available
       product.name.split(' ')[0], // Assume first word is brand
@@ -546,7 +546,7 @@ export class EnhancedAISearchEngine {
       const product = result.product;
       
       // Category filter
-      if (filters.category && product.category?.name !== filters.category) {
+      if (filters.category && product.category !== filters.category) {
         return false;
       }
       
@@ -663,13 +663,13 @@ export class EnhancedAISearchEngine {
     });
     
     // Category suggestions
-    const categories = [...new Set(this.products.map(p => p.category?.name))];
+    const categories = [...new Set(this.products.map(p => p.category))];
     categories.forEach(category => {
-      if (category?.toLowerCase().includes(lastToken || '')) {
+      if (category.toLowerCase().includes(lastToken || '')) {
         suggestions.push({
           text: category,
           type: 'category',
-          count: this.products.filter(p => p.category?.name === category).length,
+          count: this.products.filter(p => p.category === category).length,
           confidence: 0.8,
         });
       }

@@ -17,12 +17,7 @@ export async function GET(request: NextRequest) {
         id: true,
         name: true,
         basePrice: true,
-        category: {
-          select: {
-            name: true,
-            slug: true,
-          }
-        },
+        category: true,
         isBestSeller: true,
         isAmazing: true,
         isNew: true,

@@ -1,7 +1,7 @@
 'use client';
 
 import type { Product } from '@prisma/client';
-import { ProductStatus } from '@prisma/client';
+import { ProductCategory, ProductStatus } from '@prisma/client';
 import {
   Input,
   Button,
@@ -34,11 +34,6 @@ interface Unit {
   sortOrder: number;
   isActive: boolean;
 }
-interface Category {
-    id: string;
-    name: string;
-    slug: string;
-}
 
 const ProductForm = (props: { product: Product | null }) => {
   const { product } = props;
@@ -59,44 +54,32 @@ const ProductForm = (props: { product: Product | null }) => {
   const { error, data } = state;
   const [submitted, setSubmitted] = useState(false);
   const [units, setUnits] = useState<Unit[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
   const [loadingUnits, setLoadingUnits] = useState(true);
-  const [loadingCategories, setLoadingCategories] = useState(true);
 
   const handleSubmit = async (formData: FormData) => {
     setSubmitted(true);
     action(formData);
   };
 
-  // Load units and categories on component mount
+  // Load units on component mount
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchUnits = async () => {
       try {
-        const [unitsResponse, categoriesResponse] = await Promise.all([
-          fetch('/api/units'),
-          fetch('/api/categories'),
-        ]);
-
-        if (unitsResponse.ok) {
-          const unitsResult = await unitsResponse.json();
-          if (unitsResult.success) {
-            setUnits(unitsResult.data);
+        const response = await fetch('/api/units');
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success) {
+            setUnits(result.data);
           }
         }
-
-        if (categoriesResponse.ok) {
-          const categoriesResult = await categoriesResponse.json();
-          setCategories(categoriesResult);
-        }
       } catch (error) {
-        console.error('Failed to fetch data:', error);
+        console.error('Failed to fetch units:', error);
       } finally {
         setLoadingUnits(false);
-        setLoadingCategories(false);
       }
     };
 
-    fetchData();
+    fetchUnits();
   }, []);
 
   useEffect(() => {
@@ -157,26 +140,22 @@ const ProductForm = (props: { product: Product | null }) => {
               )}
             </div>
             <div>
-              <Label htmlFor="categoryId">Category *</Label>
+              <Label htmlFor="category">Category *</Label>
               <Select
-                name="categoryId"
-                defaultValue={data?.categoryId || ''}
-                disabled={loadingCategories}
+                name="category"
+                defaultValue={data?.category || ProductCategory.OTHERS}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder={loadingCategories ? "Loading categories..." : "Select a category"} />
+                  <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
                 <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem key={category.id} value={category.id}>
-                      {category.name}
+                  {Object.values(ProductCategory).map((cat) => (
+                    <SelectItem key={cat} value={cat}>
+                      {cat}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              {error?.categoryId && (
-                <span className="text-red-600 text-sm mt-1">{error.categoryId}</span>
-              )}
             </div>
           </div>
 

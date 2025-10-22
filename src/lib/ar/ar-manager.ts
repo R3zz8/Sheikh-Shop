@@ -160,8 +160,7 @@ export class ARManager {
       },
     };
 
-    const categoryName = product.category?.name?.toUpperCase() as keyof typeof categoryDefaults;
-    const defaults = categoryDefaults[categoryName] || categoryDefaults.OTHERS;
+    const defaults = categoryDefaults[product.category] || categoryDefaults.OTHERS;
 
     return {
       id: product.id,

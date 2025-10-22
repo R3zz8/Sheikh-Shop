@@ -25,14 +25,6 @@ async function createKabkabDates() {
       where: { name: 'Kabkab Dates' }
     });
 
-    const datesCategory = await prisma.category.findUnique({
-      where: { name: 'Dates' },
-    });
-
-    if (!datesCategory) {
-      throw new Error('Category "Dates" not found. Please seed the database first.');
-    }
-
     if (existingProduct) {
       console.log('⚠️  Product "Kabkab Dates" already exists. Updating...');
       
@@ -42,7 +34,7 @@ async function createKabkabDates() {
           basePrice: 9.7,
           quantity: 40,
           description: 'Kabkab Dates are one of the most popular and naturally sweet date varieties, known for their soft texture, rich flavor, and high energy content. Our Kabkab Dates are freshly harvested and carefully packed to bring you the authentic taste of premium quality dates straight from the palm groves.',
-          categoryId: datesCategory.id,
+          category: 'DATES',
           status: 'ACTIVE',
           baseUnitId: kgUnit.id,
         }
@@ -53,7 +45,7 @@ async function createKabkabDates() {
         name: updatedProduct.name,
         basePrice: updatedProduct.basePrice,
         quantity: updatedProduct.quantity,
-        categoryId: updatedProduct.categoryId,
+        category: updatedProduct.category,
         status: updatedProduct.status,
         baseUnit: `${kgUnit.name} (${kgUnit.symbol})`
       });
@@ -65,7 +57,7 @@ async function createKabkabDates() {
           basePrice: 9.7,
           quantity: 40,
           description: 'Kabkab Dates are one of the most popular and naturally sweet date varieties, known for their soft texture, rich flavor, and high energy content. Our Kabkab Dates are freshly harvested and carefully packed to bring you the authentic taste of premium quality dates straight from the palm groves.',
-        categoryId: datesCategory.id,
+          category: 'DATES',
           status: 'ACTIVE',
           baseUnitId: kgUnit.id,
         }
@@ -76,7 +68,7 @@ async function createKabkabDates() {
         name: newProduct.name,
         basePrice: newProduct.basePrice,
         quantity: newProduct.quantity,
-      categoryId: newProduct.categoryId,
+        category: newProduct.category,
         status: newProduct.status,
         baseUnit: `${kgUnit.name} (${kgUnit.symbol})`
       });
@@ -88,8 +80,7 @@ async function createKabkabDates() {
       include: {
         baseUnit: {
           select: { name: true, symbol: true }
-        },
-        category: true,
+        }
       }
     });
 
@@ -99,7 +90,7 @@ async function createKabkabDates() {
       console.log(`   Name: ${verifyProduct.name}`);
       console.log(`   Base Price: $${verifyProduct.basePrice}`);
       console.log(`   Quantity: ${verifyProduct.quantity}`);
-      console.log(`   Category: ${verifyProduct.category?.name}`);
+      console.log(`   Category: ${verifyProduct.category}`);
       console.log(`   Status: ${verifyProduct.status}`);
       console.log(`   Base Unit: ${verifyProduct.baseUnit.name} (${verifyProduct.baseUnit.symbol})`);
       console.log(`   Description: ${verifyProduct.description?.substring(0, 100)}...`);
