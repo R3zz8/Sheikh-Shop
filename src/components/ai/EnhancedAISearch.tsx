@@ -515,7 +515,7 @@ export default function EnhancedAISearch({
                             </span>
                           </div>
                           <p className="text-xs text-gray-500 mb-1">
-                            {result.product.category}
+                            {result.product.category?.name}
                           </p>
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-semibold text-amber-600">

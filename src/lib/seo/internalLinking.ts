@@ -62,7 +62,7 @@ export async function suggestInternalLinks(
       const relevanceScore = calculateRelevanceScore(
         contentKeywords,
         product.name + ' ' + (product.description || ''),
-        product.category
+        product.category.name
       );
       
       if (relevanceScore > 0.4) {
@@ -189,7 +189,11 @@ async function getRelevantProducts(keywords: string[]) {
       id: true,
       name: true,
       description: true,
-      category: true,
+      category: {
+        select: {
+          name: true,
+        },
+      },
     },
     take: 15,
     orderBy: {
@@ -204,14 +208,19 @@ async function getRelevantProducts(keywords: string[]) {
  * Get relevant categories
  */
 async function getRelevantCategories(keywords: string[], articleCategory?: string) {
-  const categories = ['DATES', 'HONEY', 'SAFFRON', 'OTHERS'];
+  const categories = await prisma.category.findMany({
+    select: {
+      name: true,
+    },
+  });
+  const categoryNames = categories.map(c => c.name);
   
   // If article has a category, prioritize it
   if (articleCategory) {
-    return [articleCategory, ...categories.filter(c => c !== articleCategory)];
+    return [articleCategory, ...categoryNames.filter(c => c !== articleCategory)];
   }
   
-  return categories;
+  return categoryNames;
 }
 
 /**

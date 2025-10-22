@@ -66,7 +66,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
 
     // Track product view on component mount
     useEffect(() => {
-        trackProductView(product.id, product.category);
+        trackProductView(product.id, product.category?.name);
     }, [product.id, product.category, trackProductView]);
 
     // Detect if AR model exists (product-specific or category fallback)
@@ -75,7 +75,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
         const checkModels = async () => {
             try {
                 const productModel = `/models/${product.id}.gltf`;
-                const categoryModel = `/models/${String(product.category || '').toLowerCase()}.glb`;
+                const categoryModel = `/models/${String(product.category?.name || '').toLowerCase()}.glb`;
                 const [res1, res2] = await Promise.allSettled([
                     fetch(productModel, { method: 'HEAD' }),
                     fetch(categoryModel, { method: 'HEAD' }),
@@ -288,7 +288,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
             >
                 <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2">
                     <Tag className="w-4 h-4 text-amber-400" />
-                    <span className="text-gray-200 font-medium">{product.category}</span>
+                    <span className="text-gray-200 font-medium">{product.category?.name}</span>
                 </div>
             </motion.div>
 
@@ -343,7 +343,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                                             onClick={() => {
                                                 if (!isOutOfStock) {
                                                     setSelectedProductUnit(productUnit);
-                                                    trackProductClick(product.id, product.category, productUnit.id);
+                                                    trackProductClick(product.id, product.category?.name, productUnit.id);
                                                 }
                                             }}
                                         >

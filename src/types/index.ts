@@ -132,4 +132,12 @@ export interface ArticleWithAuthor {
 }
 
 // Type for products with images
-export type ProductsWithImages = Product;
+export type ProductsWithImages = Prisma.ProductGetPayload<{
+  include: {
+    images: true;
+    baseUnit: true;
+    discounts: true;
+    units: true;
+    category: true;
+  };
+}>;

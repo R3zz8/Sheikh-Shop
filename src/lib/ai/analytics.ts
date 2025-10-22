@@ -295,7 +295,7 @@ export class SmartAnalytics {
   private calculateHistoricalTrend(product: ProductsWithImages): number {
     // Simulate historical trend calculation
     const baseTrend = (Math.random() - 0.5) * 0.3; // -15% to +15%
-    const categoryMultiplier = this.getCategoryMultiplier(product.category);
+    const categoryMultiplier = this.getCategoryMultiplier(product.category?.name || '');
     return baseTrend * categoryMultiplier;
   }
 
@@ -309,7 +309,7 @@ export class SmartAnalytics {
       SPORTS: [0.8, 0.9, 1.2, 1.4, 1.5, 1.3, 1.2, 1.1, 1.3, 1.2, 1.0, 0.9],
     };
     
-    const factor = seasonalFactors[product.category as keyof typeof seasonalFactors]?.[month] || 1.0;
+    const factor = seasonalFactors[product.category?.name as keyof typeof seasonalFactors]?.[month] || 1.0;
     return (factor - 1) * 0.5; // Convert to percentage change
   }
 
@@ -325,7 +325,7 @@ export class SmartAnalytics {
 
   private calculateCompetition(product: ProductsWithImages): number {
     // Simulate competition analysis
-    const categoryProducts = this.products.filter(p => p.category === product.category);
+    const categoryProducts = this.products.filter(p => p.category?.name === product.category?.name);
     const competitionLevel = categoryProducts.length / 10; // Normalize by category size
     return Math.min(competitionLevel * 0.1, 0.3); // Max 30% impact
   }
@@ -340,7 +340,7 @@ export class SmartAnalytics {
       SPORTS: 40,
     };
     
-    return categoryBase[product.category as keyof typeof categoryBase] || 50;
+    return categoryBase[product.category?.name as keyof typeof categoryBase] || 50;
   }
 
   private calculateConfidence(historicalTrend: number, seasonality: number, priceImpact: number, competition: number): number {

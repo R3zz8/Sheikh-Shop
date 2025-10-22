@@ -306,10 +306,19 @@ async function main() {
 
   // Display product summary
   console.log('\n📋 Product Summary:');
-  newProducts.forEach((product, index) => {
+  const productsForSummary = await prisma.product.findMany({
+    where: {
+      id: { in: newProducts.map((p) => p.id) },
+    },
+    include: {
+      category: true,
+    },
+  });
+
+  productsForSummary.forEach((product, index) => {
     const discount = newDiscounts.find(d => d.productId === product.id);
     console.log(`   ${index + 1}. ${product.name}`);
-    console.log(`      Category: ${product.category}`);
+    console.log(`      Category: ${product.category.name}`);
     console.log(`      Price: $${product.basePrice}`);
     console.log(`      Stock: ${product.quantity}`);
     if (discount) {

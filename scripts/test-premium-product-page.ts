@@ -14,7 +14,7 @@ async function testPremiumProductPage() {
         // 2. Test Product with Images
         console.log('\n✅ Product Data:');
         const productsWithImages = await prisma.product.findMany({
-            include: { images: true },
+            include: { images: true, category: true },
             take: 3,
         });
 
@@ -22,7 +22,7 @@ async function testPremiumProductPage() {
             console.log(`   Product ${index + 1}:`);
             console.log(`     - Name: ${product.name}`);
             console.log(`     - Price: $${product.basePrice || 'N/A'}`);
-            console.log(`     - Category: ${product.category}`);
+            console.log(`     - Category: ${product.category?.name}`);
             console.log(`     - Status: ${product.status}`);
             console.log(`     - Quantity: ${product.quantity}`);
             console.log(`     - Images: ${product.images.length}`);

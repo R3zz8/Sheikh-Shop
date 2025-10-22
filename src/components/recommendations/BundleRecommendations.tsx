@@ -29,7 +29,7 @@ export default function BundleRecommendations({
   const [error, setError] = useState<string | null>(null);
   const { getRecommendationContext = () => ({
     currentProductId: currentProduct?.id,
-    currentCategoryId: currentProduct?.category,
+    currentCategoryId: currentProduct?.category?.name,
     userPreferences: {
       preferredCategories: [],
       priceRange: { min: 0, max: 1000 },
@@ -55,7 +55,7 @@ export default function BundleRecommendations({
 
         const context = getRecommendationContext(
           currentProduct.id,
-          currentProduct.category
+          currentProduct.category?.name
         );
         
         const engine = createRecommendationEngine(products);
@@ -163,7 +163,7 @@ export default function BundleRecommendations({
                         src={product.images[0]?.image || ''}
                         alt={product.name || 'Product'}
                         className="w-full h-full object-cover"
-                        onClick={() => trackProductView(product.id, product.category)}
+                        onClick={() => trackProductView(product.id, product.category?.name)}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">

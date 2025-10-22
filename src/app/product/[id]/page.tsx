@@ -22,7 +22,7 @@ export async function generateMetadata({
 
     const product = await prisma.product.findUnique({
         where: { id },
-        include: { images: true },
+        include: { images: true, category: true },
     });
 
     if (!product) {
@@ -35,6 +35,7 @@ export async function generateMetadata({
     return generateProductMetadata({
       ...product,
       description: product.description || undefined,
+      category: product.category?.name || 'Uncategorized',
     });
 }
 
@@ -53,6 +54,7 @@ async function getProduct(id: string) {
                 baseUnit: true,
                 units: true, // Include ProductUnits
                 discounts: true,
+                category: true,
             },
         });
 
@@ -84,6 +86,7 @@ async function getAllProducts() {
                 baseUnit: true,
                 units: true,
                 discounts: true,
+                category: true,
             },
             take: 50, // Limit for performance
         });
@@ -164,7 +167,7 @@ async function page({ params }: { params: Promise<{ id: string }> }) {
         // Generate breadcrumbs on server side
         const breadcrumbs = [
             { name: 'Products', url: '/products' },
-            { name: product.category, url: `/categories/${product.category.toLowerCase()}` },
+            { name: product.category?.name, url: `/categories/${product.category?.slug}` },
             { name: product.name, url: `/product/${product.id}` },
         ];
 

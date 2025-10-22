@@ -11,7 +11,8 @@ datasource db {
 model Product {
   id           String          @id @default(uuid())
   name         String          @unique @db.VarChar(255)
-  category     ProductCategory
+  categoryId   String
+  category     Category        @relation(fields: [categoryId], references: [id])
   description  String?
   basePrice    Float           @default(0.0)
   baseUnitId   String
@@ -28,7 +29,7 @@ model Product {
   baseUnit     Unit            @relation(fields: [baseUnitId], references: [id])
   units        ProductUnit[]
 
-  @@index([category])
+  @@index([categoryId])
   @@index([basePrice])
   @@index([status])
   @@index([createdAt])
@@ -36,8 +37,18 @@ model Product {
   @@index([isBestSeller])
   @@index([isAmazing])
   @@index([basePrice, status], map: "idx_product_baseprice_status_unique")
-  @@index([category, status], map: "idx_product_category_status_unique")
+  @@index([categoryId, status], map: "idx_product_category_status_unique")
   @@index([name], map: "idx_product_name_unique")
+}
+
+model Category {
+  id       String    @id @default(uuid())
+  name     String    @unique @db.VarChar(100)
+  slug     String    @unique @db.VarChar(100)
+  products Product[]
+
+  @@index([name])
+  @@index([slug])
 }
 
 model Unit {
@@ -351,13 +362,6 @@ enum UserRole {
   SUPERADMIN
   SYSTEM
   AUTHOR
-}
-
-enum ProductCategory {
-  HONEY
-  SAFFRON
-  DATES
-  OTHERS
 }
 
 enum ProductStatus {

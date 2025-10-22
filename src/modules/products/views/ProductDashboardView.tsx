@@ -4,29 +4,42 @@ import React, { useEffect, useState } from 'react';
 import ProductTable from '../components/ProductTable';
 import { getProductsAPI } from '../services';
 import type { ProductsWithImages } from '@/types';
+import type { Category } from '@prisma/client';
 
 function ProductDashboardView() {
   const [products, setProducts] = useState<ProductsWithImages[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchProducts = async () => {
-    try {
-      const response = await getProductsAPI();
-
-      if (response?.data) {
-        setProducts(response.data);
-      } else {
-        setProducts([]);
-      }
-    } catch {
-      setProducts([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchProducts();
+    const fetchData = async () => {
+      try {
+        const [productsResponse, categoriesResponse] = await Promise.all([
+          getProductsAPI(),
+          fetch('/api/categories'),
+        ]);
+
+        if (productsResponse?.data) {
+          setProducts(productsResponse.data);
+        } else {
+          setProducts([]);
+        }
+
+        if (categoriesResponse.ok) {
+          const categoriesData = await categoriesResponse.json();
+          setCategories(categoriesData);
+        } else {
+          setCategories([]);
+        }
+      } catch {
+        setProducts([]);
+        setCategories([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
   if (loading) {
@@ -35,7 +48,7 @@ function ProductDashboardView() {
 
   return (
     <div>
-      <ProductTable products={products} />
+      <ProductTable products={products} categories={categories} />
     </div>
   );
 }

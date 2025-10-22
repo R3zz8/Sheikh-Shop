@@ -31,6 +31,7 @@ export default async function Products() {
           },
           baseUnit: true,
           units: true, // Include ProductUnits
+          category: true,
           discounts: {
             where: {
               isActive: true,

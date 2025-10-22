@@ -1,7 +1,7 @@
 'use client';
 
 import type { Product } from '@prisma/client';
-import { ProductCategory, ProductStatus } from '@prisma/client';
+import { ProductStatus } from '@prisma/client';
 import {
   Input,
   Button,

@@ -36,7 +36,7 @@ async function verifySuperadminProductAccess() {
 
         // 3. Check existing products
         const products = await prisma.product.findMany({
-            include: { images: true },
+            include: { images: true, category: true },
             take: 5
         });
 
@@ -45,7 +45,7 @@ async function verifySuperadminProductAccess() {
         if (products.length > 0) {
             console.log('   Sample products:');
             products.forEach((product, index) => {
-                console.log(`   ${index + 1}. ${product.name} (${product.category}) - $${product.basePrice || 'N/A'}`);
+                console.log(`   ${index + 1}. ${product.name} (${product.category?.name}) - $${product.basePrice || 'N/A'}`);
             });
         }
 

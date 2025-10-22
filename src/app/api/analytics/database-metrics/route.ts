@@ -10,8 +10,8 @@ export async function GET(request: NextRequest) {
         const [productCount, categoryCount, userCount] = await Promise.all([
             prisma.product.count(),
             prisma.product.groupBy({
-                by: ['category'],
-                _count: { category: true }
+                by: ['categoryId'],
+                _count: { categoryId: true }
             }).then(result => result.length),
             prisma.user.count()
         ]);
@@ -66,8 +66,8 @@ async function getDatabaseSize(): Promise<string> {
         const [productCount, categoryCount, userCount] = await Promise.all([
             prisma.product.count(),
             prisma.product.groupBy({
-                by: ['category'],
-                _count: { category: true }
+                by: ['categoryId'],
+                _count: { categoryId: true }
             }).then(result => result.length),
             prisma.user.count()
         ]);

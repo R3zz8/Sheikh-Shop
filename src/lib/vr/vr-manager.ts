@@ -1,5 +1,8 @@
 
 import type { ProductsWithImages } from '@/types';
+import type { Category } from '@prisma/client';
+
+type ProductWithCategory = ProductsWithImages & { category: Category | null };
 
 export interface VRStoreVisit {
   id: string;
@@ -190,7 +193,7 @@ export class VRManager {
   }
 
   // Generate VR store data from products
-  generateVRStoreData(products: ProductsWithImages[]): VRStoreData {
+  generateVRStoreData(products: ProductWithCategory[]): VRStoreData {
     const categories = this.generateVRCategories(products);
     const vrProducts = this.generateVRProducts(products);
     
@@ -205,15 +208,17 @@ export class VRManager {
   }
 
   // Generate VR categories
-  private generateVRCategories(products: ProductsWithImages[]): VRCategory[] {
-    const categoryMap = new Map<string, ProductsWithImages[]>();
+  private generateVRCategories(products: ProductWithCategory[]): VRCategory[] {
+    const categoryMap = new Map<string, ProductWithCategory[]>();
     
     // Group products by category
     products.forEach(product => {
-      if (!categoryMap.has(product.category)) {
-        categoryMap.set(product.category, []);
+      if (product.category) {
+        if (!categoryMap.has(product.category.name)) {
+          categoryMap.set(product.category.name, []);
+        }
+        categoryMap.get(product.category.name)!.push(product);
       }
-      categoryMap.get(product.category)!.push(product);
     });
 
     const categories: VRCategory[] = [];
@@ -248,7 +253,7 @@ export class VRManager {
   }
 
   // Generate VR products
-  private generateVRProducts(products: ProductsWithImages[]): VRProduct[] {
+  private generateVRProducts(products: ProductWithCategory[]): VRProduct[] {
     return products.map((product, index) => {
       // Distribute products in a grid around the store
       const gridSize = Math.ceil(Math.sqrt(products.length));
@@ -258,7 +263,7 @@ export class VRManager {
       return {
         id: product.id,
         name: product.name,
-        category: product.category,
+        category: product.category?.name || 'Uncategorized',
         position: { x, y: 1, z },
         rotation: { x: 0, y: 0, z: 0 },
         scale: { x: 1, y: 1, z: 1 },

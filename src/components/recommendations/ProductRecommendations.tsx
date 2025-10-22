@@ -33,7 +33,7 @@ export default function ProductRecommendations({
   const [error, setError] = useState<string | null>(null);
   const { getRecommendationContext = () => ({
     currentProductId: currentProduct?.id,
-    currentCategoryId: currentProduct?.category,
+    currentCategoryId: currentProduct?.category?.name,
     userPreferences: {
       preferredCategories: [],
       priceRange: { min: 0, max: 1000 },
@@ -54,7 +54,7 @@ export default function ProductRecommendations({
       try {
         const context = getRecommendationContext(
           currentProduct?.id,
-          currentProduct?.category
+          currentProduct?.category?.name
         );
         
         const engine = createRecommendationEngine(products);
@@ -184,7 +184,7 @@ export default function ProductRecommendations({
           >
             <div
               className="cursor-pointer"
-              onClick={() => trackProductView(rec.product.id, rec.product.category)}
+              onClick={() => trackProductView(rec.product.id, rec.product.category?.name)}
             >
               <ProductCard product={rec.product} />
             </div>

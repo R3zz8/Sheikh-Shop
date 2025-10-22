@@ -32,14 +32,15 @@ import type { ProductsWithImages } from '@/types';
 import { useHasRole } from '@/hooks/useRBAC';
 import { useState, useMemo, useCallback } from 'react';
 import { toast } from 'sonner';
-import { ProductStatus } from '@prisma/client';
+import type { ProductStatus, Category } from '@prisma/client';
 
 const ITEMS_PER_PAGE = 10;
 
 const ProductTable = (props: {
   products: ProductsWithImages[];
+  categories: Category[];
 }) => {
-  const { products } = props;
+  const { products, categories } = props;
   const canEdit = useHasRole(['ADMIN', 'SUPERADMIN']);
 
   // State management
@@ -58,7 +59,7 @@ const ProductTable = (props: {
     let filtered = products.filter(product => {
       const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.description?.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
+      const matchesCategory = selectedCategory === 'all' || product.categoryId === selectedCategory;
       const matchesStatus = selectedStatus === 'all' || product.status === selectedStatus;
       return matchesSearch && matchesCategory && matchesStatus;
     });
@@ -193,14 +194,15 @@ const ProductTable = (props: {
     }).format(price);
   };
 
-  const getCategoryBadgeColor = (category: string) => {
-    const colors = {
-      HONEY: 'bg-amber-100 text-amber-800',
-      SAFFRON: 'bg-red-100 text-red-800',
-      DATES: 'bg-orange-100 text-orange-800',
-      OTHERS: 'bg-gray-100 text-gray-800',
+  const getCategoryBadgeColor = (category?: Category) => {
+    if (!category) return 'bg-gray-100 text-gray-800';
+    const colors: { [key: string]: string } = {
+      honey: 'bg-amber-100 text-amber-800',
+      saffron: 'bg-red-100 text-red-800',
+      dates: 'bg-orange-100 text-orange-800',
+      other: 'bg-gray-100 text-gray-800',
     };
-    return colors[category as keyof typeof colors] || colors.OTHERS;
+    return colors[category.slug] || colors.other;
   };
 
   const getStatusBadgeColor = (status: ProductStatus) => {
@@ -310,10 +312,11 @@ const ProductTable = (props: {
             className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="all">All Categories</option>
-            <option value="HONEY">Honey</option>
-            <option value="SAFFRON">Saffron</option>
-            <option value="DATES">Dates</option>
-            <option value="OTHERS">Others</option>
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
           </select>
 
           <select
@@ -414,8 +417,8 @@ const ProductTable = (props: {
                     </div>
                   </TableCell>
                   <TableCell className="text-center">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryBadgeColor(product.category)}`}>
-                      {product.category}
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryBadgeColor(categories.find(c => c.id === product.categoryId))}`}>
+                      {categories.find(c => c.id === product.categoryId)?.name}
                     </span>
                   </TableCell>
                   <TableCell className="text-center font-medium">

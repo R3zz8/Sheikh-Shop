@@ -21,6 +21,7 @@ export async function GET(req: NextRequest) {
                 images: true,
                 discounts: true,
                 units: true,
+                category: true,
             },
         });
 

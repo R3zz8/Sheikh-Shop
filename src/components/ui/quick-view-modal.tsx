@@ -134,7 +134,7 @@ export const QuickViewModal = ({ product, children }: QuickViewModalProps) => {
                 <div>
                   <span className="inline-flex items-center gap-2 bg-white/12 backdrop-blur-sm border border-white/25 rounded-full px-4 py-2 text-gray-200 font-medium">
                     <Sparkles className="w-4 h-4" />
-                    {product?.category}
+                    {product?.category?.name}
                   </span>
                 </div>
 

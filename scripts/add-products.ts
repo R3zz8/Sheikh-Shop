@@ -1,6 +1,6 @@
 #!/usr/bin/env tsx
 
-import { PrismaClient, ProductCategory, ProductStatus, DiscountType } from '@prisma/client';
+import { PrismaClient, ProductStatus, DiscountType } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -18,12 +18,20 @@ async function addProducts() {
     if (!baseUnit) {
       throw new Error('Failed to get base unit from units array');
     }
+
+    const otherCategory = await prisma.category.findUnique({
+      where: { name: 'Other' },
+    });
+
+    if (!otherCategory) {
+      throw new Error('Category "Other" not found. Please seed the database first.');
+    }
     
     // Product 1: Premium Black Tea (with discount)
     const product1 = await prisma.product.create({
       data: {
         name: 'Premium Black Tea',
-        category: 'OTHERS',
+        categoryId: otherCategory.id,
         description: 'High-quality black tea leaves from premium estates',
         basePrice: 12.99,
         baseUnitId: baseUnit.id,
@@ -53,7 +61,7 @@ async function addProducts() {
     const product2 = await prisma.product.create({
       data: {
         name: 'Organic Green Tea',
-        category: 'OTHERS',
+        categoryId: otherCategory.id,
         description: 'Certified organic green tea with antioxidant properties',
         basePrice: 15.99,
         baseUnitId: baseUnit.id,
@@ -83,7 +91,7 @@ async function addProducts() {
     const product3 = await prisma.product.create({
       data: {
         name: 'Premium Coffee Beans',
-        category: 'OTHERS',
+        categoryId: otherCategory.id,
         description: 'Single-origin coffee beans, medium roast',
         basePrice: 18.99,
         baseUnitId: baseUnit.id,
@@ -113,7 +121,7 @@ async function addProducts() {
     const product4 = await prisma.product.create({
       data: {
         name: 'Herbal Tea Collection',
-        category: 'OTHERS',
+        categoryId: otherCategory.id,
         description: 'Assorted herbal tea blend with chamomile, mint, and lavender',
         basePrice: 14.99,
         baseUnitId: baseUnit.id,
@@ -131,7 +139,7 @@ async function addProducts() {
     const product5 = await prisma.product.create({
       data: {
         name: 'Premium Matcha Powder',
-        category: 'OTHERS',
+        categoryId: otherCategory.id,
         description: 'Ceremonial grade matcha powder for traditional tea preparation',
         basePrice: 22.99,
         baseUnitId: baseUnit.id,

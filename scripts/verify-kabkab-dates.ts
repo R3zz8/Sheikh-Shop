@@ -16,7 +16,8 @@ async function verifyKabkabDates() {
         },
         images: {
           select: { id: true, image: true, secureUrl: true }
-        }
+        },
+        category: true,
       }
     });
 
@@ -30,7 +31,7 @@ async function verifyKabkabDates() {
     console.log(`   Name: ${product.name}`);
     console.log(`   Base Price: $${product.basePrice}`);
     console.log(`   Quantity: ${product.quantity}`);
-    console.log(`   Category: ${product.category}`);
+    console.log(`   Category: ${product.category?.name}`);
     console.log(`   Status: ${product.status}`);
     console.log(`   Base Unit: ${product.baseUnit.name} (${product.baseUnit.symbol})`);
     console.log(`   Description: ${product.description?.substring(0, 100)}...`);
@@ -41,7 +42,7 @@ async function verifyKabkabDates() {
     // Check if it appears in the products list
     const allProducts = await prisma.product.findMany({
       where: { status: 'ACTIVE' },
-      select: { id: true, name: true, category: true, basePrice: true },
+      select: { id: true, name: true, category: { select: { name: true } }, basePrice: true },
       orderBy: { name: 'asc' }
     });
 

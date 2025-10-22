@@ -15,6 +15,9 @@ async function seedCategoryProducts() {
             throw new Error('Kilogram unit not found. Please run the main seed script first.');
         }
 
+        const categories = await prisma.category.findMany();
+        const categoryMap = new Map(categories.map(c => [c.name.toUpperCase(), c.id]));
+
         // Sample products for each category
         const sampleProducts = [
             // Dates Category
@@ -137,14 +140,21 @@ async function seedCategoryProducts() {
         // Create products and their images
         for (const productData of sampleProducts) {
             const { images, ...productInfo } = productData;
+            const categoryId = categoryMap.get(productInfo.category);
+            if (!categoryId) {
+              console.warn(`Category ${productInfo.category} not found, skipping product ${productInfo.name}`);
+              continue;
+            }
 
             const product = await prisma.product.create({
                 data: {
-                    ...productInfo,
-                    category: productInfo.category as any,
+                    name: productInfo.name,
+                    description: productInfo.description,
+                    basePrice: productInfo.price,
+                    quantity: productInfo.quantity,
                     status: productInfo.status as any,
                     baseUnitId: kgUnit.id,
-                    basePrice: productInfo.price
+                    categoryId,
                 }
             });
 
@@ -164,16 +174,29 @@ async function seedCategoryProducts() {
         console.log('🎉 Category products seeded successfully!');
 
         // Display summary
-        const productCounts = await prisma.product.groupBy({
-            by: ['category'],
+        const productCountsByCategoryId = await prisma.product.groupBy({
+            by: ['categoryId'],
             _count: {
-                id: true
+                _all: true
+            }
+        });
+
+        const categoriesWithCounts = await prisma.category.findMany({
+            where: {
+                id: {
+                    in: productCountsByCategoryId.map(pc => pc.categoryId)
+                }
+            },
+            include: {
+                _count: {
+                    select: { products: true }
+                }
             }
         });
 
         console.log('\n📊 Product Summary:');
-        productCounts.forEach(({ category, _count }) => {
-            console.log(`${category}: ${_count.id} products`);
+        categoriesWithCounts.forEach(category => {
+            console.log(`${category.name}: ${category._count.products} products`);
         });
 
     } catch (error) {

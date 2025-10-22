@@ -417,7 +417,7 @@ export class ShoppingAssistant {
     // Filter by search terms
     if (terms.length > 0) {
       results = results.filter(product => {
-        const searchText = `${product.name} ${product.description || ''} ${product.category}`.toLowerCase();
+        const searchText = `${product.name} ${product.description || ''} ${product.category?.name}`.toLowerCase();
         return terms.some(term => searchText.includes(term));
       });
     }
@@ -425,7 +425,7 @@ export class ShoppingAssistant {
     // Filter by preferences
     if (preferences.preferredCategories.length > 0) {
       results = results.filter(product => 
-        preferences.preferredCategories.includes(product.category)
+        preferences.preferredCategories.includes(product.category?.name || '')
       );
     }
     
@@ -451,7 +451,7 @@ export class ShoppingAssistant {
     // Filter by preferences
     if (context.userPreferences.preferredCategories.length > 0) {
       recommendations = recommendations.filter(product => 
-        context.userPreferences.preferredCategories.includes(product.category)
+        context.userPreferences.preferredCategories.includes(product.category?.name || '')
       );
     }
     
