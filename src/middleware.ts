@@ -366,6 +366,29 @@ async function handleReferralTracking(request: NextRequest, response: NextRespon
               where: { id: affiliate.id },
               data: { totalClicks: { increment: 1 } },
             });
+
+            // New: Update daily stats
+            const today = new Date();
+            today.setUTCHours(0, 0, 0, 0);
+
+            await prisma.affiliateDailyStat.upsert({
+              where: {
+                affiliateId_date: {
+                  affiliateId: affiliate.id,
+                  date: today,
+                },
+              },
+              update: {
+                clicks: { increment: 1 },
+              },
+              create: {
+                affiliateId: affiliate.id,
+                date: today,
+                clicks: 1,
+                sales: 0, // Sales are tracked separately
+                commission: 0, // Commission is tracked separately
+              },
+            });
           }
         } catch (dbError) {
           console.error('Error logging referral visit:', dbError);

@@ -59,6 +59,30 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // New: Update daily stats for sales and commission
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
+
+    await prisma.affiliateDailyStat.upsert({
+      where: {
+        affiliateId_date: {
+          affiliateId: affiliate.id,
+          date: today,
+        },
+      },
+      update: {
+        sales: { increment: 1 },
+        commission: { increment: commission },
+      },
+      create: {
+        affiliateId: affiliate.id,
+        date: today,
+        clicks: 0, // Clicks are tracked separately in middleware
+        sales: 1,
+        commission: commission,
+      },
+    });
+
     // Clear the referral cookie
     const response = NextResponse.json({ message: 'Conversion successful' });
     response.cookies.delete('referral_code');

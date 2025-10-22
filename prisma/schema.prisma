@@ -400,9 +400,10 @@ model Affiliate {
   balance          Decimal    @default(0) @db.Decimal(10, 2)
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
-  user             User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user             User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   referrals        Referral[]
   transactions     Transaction[]
+  dailyStats       AffiliateDailyStat[]
 
   @@index([userId])
   @@index([referralCode])
@@ -464,6 +465,22 @@ model Transaction {
   @@index([affiliateId])
   @@index([status])
   @@index([createdAt])
+}
+
+model AffiliateDailyStat {
+  id               String    @id @default(cuid())
+  affiliateId      String
+  date             DateTime  @db.Date
+  clicks           Int       @default(0)
+  sales            Int       @default(0)
+  commissionEarned Decimal   @default(0) @db.Decimal(10, 2)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  affiliate        Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+
+  @@unique([affiliateId, date])
+  @@index([affiliateId])
+  @@index([date])
 }
 
 enum OrderStatus {
