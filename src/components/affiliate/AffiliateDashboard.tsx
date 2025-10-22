@@ -1,14 +1,60 @@
 // src/components/affiliate/AffiliateDashboard.tsx
 'use client';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import StatsCard from './StatsCard';
 import ReferralLink from './ReferralLink';
 import PerformanceChart from './PerformanceChart';
 import ProgressCard from './ProgressCard';
+import TransactionHistory from './TransactionHistory';
 import { motion } from 'framer-motion';
-import { affiliateStats, performanceData, progressGoals } from './mockData';
+
+interface AffiliateData {
+  totalClicks: number;
+  totalSales: number;
+  commissionEarned: number;
+  referralCode: string;
+}
+
+interface PerformanceData {
+  name: string;
+  sales: number;
+  clicks: number;
+}
+
+interface ProgressGoals {
+  sales: { value: number; goal: number };
+  clicks: { value: number; goal: number };
+}
 
 const AffiliateDashboard = () => {
+  const [affiliateData, setAffiliateData] = useState<AffiliateData | null>(null);
+  const [performanceData, setPerformanceData] = useState<PerformanceData[]>([]);
+  const [progressGoals, setProgressGoals] = useState<ProgressGoals | null>(null);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const [affiliateRes, performanceRes] = await Promise.all([
+          fetch('/api/affiliate/me'),
+          fetch('/api/affiliate/performance'),
+        ]);
+        const affiliateData = await affiliateRes.json();
+        const performanceData = await performanceRes.json();
+        setAffiliateData(affiliateData);
+        setPerformanceData(performanceData.performanceData);
+        setProgressGoals(performanceData.progressGoals);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  if (!affiliateData || !progressGoals) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <motion.div
       className="p-4 sm:p-6 lg:p-8 bg-gradient-to-br from-yellow-950 via-yellow-900 to-black min-h-screen text-white"
@@ -27,26 +73,28 @@ const AffiliateDashboard = () => {
         </motion.h1>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <StatsCard title="Total Clicks" value={affiliateStats.totalClicks} />
-          <StatsCard title="Total Sales" value={affiliateStats.totalSales} />
-          <StatsCard title="Total Earned" value={`$${affiliateStats.totalEarned.toFixed(2)}`} />
+          <StatsCard title="Total Clicks" value={affiliateData.totalClicks} />
+          <StatsCard title="Total Sales" value={affiliateData.totalSales} />
+          <StatsCard title="Total Earned" value={`$${affiliateData.commissionEarned}`} />
         </div>
 
         <div className="mb-8">
-          <ReferralLink referralCode={affiliateStats.referralCode} />
+          <ReferralLink referralCode={affiliateData.referralCode} />
         </div>
 
         <div className="mb-8">
           <PerformanceChart data={performanceData} />
         </div>
 
-        <div>
+        <div className="mb-8">
           <h2 className="text-2xl font-bold mb-4 text-yellow-300">Your Progress</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <ProgressCard title="Sales Goal" value={progressGoals.sales.value} goal={progressGoals.sales.goal} />
             <ProgressCard title="Clicks Goal" value={progressGoals.clicks.value} goal={progressGoals.clicks.goal} />
           </div>
         </div>
+
+        <TransactionHistory />
       </div>
     </motion.div>
   );
