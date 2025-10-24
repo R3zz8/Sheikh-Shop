@@ -2,17 +2,18 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
-import { getCurrentUser } from '@/lib/session';
 import { nanoid } from 'nanoid';
+import { getServerSession } from '@/lib/auth';
+import { redirect } from 'next/navigation';
+import { NextRequest } from 'next/server';
 
 const registerSchema = z.object({});
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const user = await getCurrentUser();
-
+    const user = await getServerSession(req);
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return redirect('/');
     }
 
     const existingAffiliate = await prisma.affiliate.findUnique({

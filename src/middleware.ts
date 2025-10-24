@@ -386,7 +386,7 @@ async function handleReferralTracking(request: NextRequest, response: NextRespon
                 date: today,
                 clicks: 1,
                 sales: 0, // Sales are tracked separately
-                commission: 0, // Commission is tracked separately
+                commissionEarned: 0, // Commission is tracked separately
               },
             });
           }

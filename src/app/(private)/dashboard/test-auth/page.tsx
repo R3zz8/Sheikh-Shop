@@ -1,7 +1,11 @@
-import { getServerUser } from '@/lib/auth/server-auth';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
+
+export const dynamic = 'force-dynamic';
 
 export default async function TestAuthPage() {
-  const user = await getServerUser();
+  const session = await getServerSession(authOptions);
+  const user = session?.user;
   
   return (
     <div className="container mx-auto p-6">

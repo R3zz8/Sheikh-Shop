@@ -2,7 +2,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
-import { cookies } from 'next/headers';
 
 const convertSchema = z.object({
   orderId: z.string().cuid(),
@@ -11,8 +10,7 @@ const convertSchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
-    const cookieStore = cookies();
-    const referralCode = cookieStore.get('referral_code')?.value;
+    const referralCode = req.cookies.get('referral_code')?.value;
 
     if (!referralCode) {
       return NextResponse.json({ message: 'No referral code found' });
@@ -72,14 +70,14 @@ export async function POST(req: NextRequest) {
       },
       update: {
         sales: { increment: 1 },
-        commission: { increment: commission },
+        commissionEarned: { increment: commission },
       },
       create: {
         affiliateId: affiliate.id,
         date: today,
         clicks: 0, // Clicks are tracked separately in middleware
         sales: 1,
-        commission: commission,
+        commissionEarned: commission,
       },
     });
 

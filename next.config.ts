@@ -180,6 +180,15 @@ const nextConfig: NextConfig = {
 
   // Performance: Webpack optimizations
   webpack: (config, { dev, isServer }) => {
+    // Exclude server-side modules from client-side bundle
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        'natural': false,
+        'webworker-threads': false,
+      };
+    }
+
     // Security: Disable eval in production
     if (!dev) {
       config.optimization.minimize = true;

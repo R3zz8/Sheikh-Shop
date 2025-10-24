@@ -85,8 +85,8 @@ async function main() {
   if (updatedAffiliate.totalSales !== 1) {
     throw new Error(`Expected totalSales to be 1, but got ${updatedAffiliate.totalSales}`);
   }
-  if (updatedAffiliate.commissionEarned !== 10) {
-    throw new Error(`Expected commissionEarned to be 10, but got ${updatedAffiliate.commissionEarned}`);
+  if (updatedAffiliate.commissionEarned.toNumber() !== 10) {
+    throw new Error(`Expected commissionEarned to be 10, but got ${updatedAffiliate.commissionEarned.toNumber()}`);
   }
   console.log('✅ All assertions passed!');
 

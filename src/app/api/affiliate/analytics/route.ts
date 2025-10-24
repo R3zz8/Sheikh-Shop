@@ -68,7 +68,7 @@ export async function GET(req: NextRequest) {
       (acc, stat) => {
         acc.clicks += stat.clicks;
         acc.sales += stat.sales;
-        acc.commission += stat.commission;
+        acc.commission += Number(stat.commissionEarned);
         return acc;
       },
       { clicks: 0, sales: 0, commission: 0 }
@@ -102,7 +102,7 @@ export async function GET(req: NextRequest) {
         (acc, stat) => {
           acc.clicks += stat.clicks;
           acc.sales += stat.sales;
-          acc.commission += stat.commission;
+          acc.commission += Number(stat.commissionEarned);
           return acc;
         },
         { clicks: 0, sales: 0, commission: 0 }

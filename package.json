@@ -62,6 +62,7 @@
   },
   "dependencies": {
     "@huggingface/inference": "^4.9.0",
+    "@json2csv/plainjs": "^7.0.6",
     "@pinecone-database/pinecone": "^6.1.2",
     "@prisma/client": "^6.16.2",
     "@radix-ui/react-accordion": "^1.2.12",
@@ -82,6 +83,7 @@
     "@react-three/fiber": "^9.2.0",
     "@react-three/postprocessing": "^3.0.4",
     "@react-three/rapier": "^2.1.0",
+    "@swc/jest": "^0.2.39",
     "@tailwindcss/line-clamp": "^0.4.4",
     "@tailwindcss/typography": "^0.5.16",
     "@tanstack/react-query": "^5.67.3",
@@ -89,6 +91,8 @@
     "@tensorflow/tfjs-node": "^4.22.0",
     "@types/ms": "^2.1.0",
     "@types/three": "^0.178.1",
+    "@upstash/ratelimit": "^2.0.6",
+    "@vercel/kv": "^3.0.0",
     "@webxr-input-profiles/motion-controllers": "^1.0.0",
     "aframe": "^1.7.1",
     "aframe-react": "^4.4.0",
@@ -107,6 +111,7 @@
     "levenshtein": "^1.0.5",
     "lucide-react": "^0.474.0",
     "ms": "^2.1.3",
+    "nanoid": "^5.1.6",
     "natural": "^8.1.0",
     "next": "^15.4.3",
     "next-auth": "^4.24.11",
@@ -118,7 +123,9 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.54.2",
+    "react-icons": "^5.5.0",
     "react-intersection-observer": "^9.16.0",
+    "recharts": "^3.3.0",
     "resend": "^6.0.2",
     "sonner": "^2.0.1",
     "speakeasy": "^2.0.0",
@@ -128,6 +135,7 @@
     "three": "^0.178.0",
     "three-bmfont-text": "^3.0.1",
     "three-stdlib": "^2.36.0",
+    "ts-jest": "^29.4.5",
     "weaviate-ts-client": "^2.2.0",
     "zod": "^3.24.2"
   },
@@ -142,13 +150,13 @@
     "@testing-library/react": "^16.3.0",
     "@types/bcrypt": "^6.0.0",
     "@types/bcryptjs": "^2.4.6",
-    "@types/jest": "^29.5.0",
+    "@types/jest": "^29.5.14",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/levenshtein": "^1.0.4",
-    "@types/node": "^20",
+    "@types/node": "^20.19.23",
     "@types/qrcode": "^1.5.5",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
     "@types/speakeasy": "^2.0.10",
     "chrome-launcher": "^1.2.0",
     "dotenv-cli": "^10.0.0",
@@ -168,17 +176,5 @@
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
-  },
-  "jest": {
-    "testEnvironment": "jsdom",
-    "setupFilesAfterEnv": [
-      "<rootDir>/jest.setup.js"
-    ],
-    "moduleNameMapper": {
-      "^@/(.*)$": "<rootDir>/src/$1"
-    },
-    "roots": [
-      "<rootDir>/tests"
-    ]
   }
 }

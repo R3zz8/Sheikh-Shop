@@ -42,7 +42,8 @@
     "allowUnreachableCode": false,
     "noFallthroughCasesInSwitch": true,
     "useUnknownInCatchVariables": true,
-    "verbatimModuleSyntax": true
+    "verbatimModuleSyntax": true,
+    "types": ["jest", "@testing-library/jest-dom", "node"]
   },
   "include": [
     "next-env.d.ts",
