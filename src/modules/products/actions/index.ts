@@ -1,8 +1,7 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
-import type { Product } from '@prisma/client';
-import { ProductCategory, ProductStatus } from '@prisma/client';
+import type { Product, ProductCategory, ProductStatus } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { cookies } from 'next/headers';
@@ -85,7 +84,7 @@ async function logAuditEvent(userId: string, action: string, details: any) {
       },
     });
   } catch (error) {
-    console.error('Audit logging failed:', error);
+    // Audit logging failure should not block the main operation
   }
 }
 
@@ -187,8 +186,6 @@ export const upsertProduct = async (
     }
 
   } catch (error) {
-    console.error('Product upsert error:', error);
-
     if (error instanceof Error) {
       if (error.message.includes('Authentication') || error.message.includes('permissions')) {
         return {
@@ -236,7 +233,6 @@ export const deleteProduct = async (productId: string) => {
           await fs.unlink(imagePath);
         } catch (fileError) {
           // Continue even if file doesn't exist
-          console.warn('Could not delete image file:', image.image);
         }
       }
     }
@@ -256,7 +252,6 @@ export const deleteProduct = async (productId: string) => {
     return { success: true };
 
   } catch (error) {
-    console.error('Product deletion error:', error);
     throw error;
   }
 };
@@ -310,7 +305,7 @@ export const bulkProductOperation = async (formData: FormData) => {
                 const imagePath = path.join(process.cwd(), 'public', image.image);
                 await fs.unlink(imagePath);
               } catch (fileError) {
-                console.warn('Could not delete image file:', image.image);
+                // Continue even if file doesn't exist
               }
             }
           }
@@ -361,7 +356,6 @@ export const bulkProductOperation = async (formData: FormData) => {
     return { success: true, affectedCount: result.count };
 
   } catch (error) {
-    console.error('Bulk operation error:', error);
     return { error: 'Bulk operation failed' };
   }
 };
@@ -408,7 +402,6 @@ export const exportProducts = async (filters?: {
     return csvHeader + csvRows;
 
   } catch (error) {
-    console.error('Export error:', error);
     throw new Error('Export failed');
   }
 };

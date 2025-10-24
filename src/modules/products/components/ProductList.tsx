@@ -29,11 +29,8 @@ export default function ProductList({
   const [filteredProducts, setFilteredProducts] = useState<ProductsWithImages[]>(products);
   const [currentMobileLayout, setCurrentMobileLayout] = useState<'grid' | 'carousel'>(mobileLayout === 'auto' ? 'grid' : mobileLayout);
 
-  console.log('ProductList render:', { products, units, filteredProducts, isLoading });
-
   // Update filteredProducts when products change
   useEffect(() => {
-    console.log('ProductList useEffect - setting filteredProducts:', products);
     setFilteredProducts(products);
   }, [products]);
 
@@ -61,9 +58,6 @@ export default function ProductList({
       </div>
     );
   }
-
-  // Debug: Show products count
-  console.log('About to render products:', { productsCount: products?.length, filteredCount: filteredProducts?.length });
 
   return (
     <div className="min-h-screen relative bg-gradient-to-br from-amber-950/95 via-stone-900/95 to-amber-950/95">

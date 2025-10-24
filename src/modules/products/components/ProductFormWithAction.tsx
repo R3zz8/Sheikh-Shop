@@ -1,7 +1,6 @@
 'use client';
 
-import type { Product } from '@prisma/client';
-import { ProductCategory, ProductStatus } from '@prisma/client';
+import type { Product, ProductCategory, ProductStatus } from '@prisma/client';
 import {
   Input,
   Button,
@@ -73,7 +72,7 @@ const ProductForm = (props: { product: Product | null }) => {
           }
         }
       } catch (error) {
-        console.error('Failed to fetch units:', error);
+        // Failed to fetch units
       } finally {
         setLoadingUnits(false);
       }

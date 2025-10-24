@@ -50,7 +50,7 @@ export async function generateMetadata({ params, searchParams }: ArticlePageProp
     return {
         title: metaTitle,
         description: metaDescription,
-        keywords: keywords,
+        keywords,
         authors: [{ name: formatAuthorName(article.author) }],
         openGraph: {
             title: metaTitle,

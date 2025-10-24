@@ -528,7 +528,7 @@ export function formatCurrency(amount: number, currency: string, locale: Locale)
 
   return new Intl.NumberFormat(localeMap[locale], {
     style: 'currency',
-    currency: currency,
+    currency,
   }).format(amount);
 }
 

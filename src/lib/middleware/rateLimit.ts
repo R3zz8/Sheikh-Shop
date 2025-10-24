@@ -161,7 +161,7 @@ export function createDynamicRateLimitMiddleware(baseConfig: RateLimitConfig) {
     const userRole = req.headers.get('x-user-role');
 
     // Adjust rate limits based on user role
-    let adjustedConfig = { ...baseConfig };
+    const adjustedConfig = { ...baseConfig };
 
     if (userRole === 'ADMIN' || userRole === 'SUPERADMIN') {
       adjustedConfig.maxRequests = Math.floor(baseConfig.maxRequests * 2); // Double limit for admins

@@ -226,7 +226,7 @@ Please generate the complete JSON response following the exact structure specifi
       internalLinks: ['/products/honey', '/products/saffron', '/about-us'],
       externalLinks: [
         {
-          url: 'https://en.wikipedia.org/wiki/' + encodeURIComponent(request.topic),
+          url: `https://en.wikipedia.org/wiki/${  encodeURIComponent(request.topic)}`,
           title: `Wikipedia: ${request.topic}`,
           description: 'Comprehensive information from Wikipedia'
         }

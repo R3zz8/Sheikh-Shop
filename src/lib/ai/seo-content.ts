@@ -60,7 +60,7 @@ export class SEOContentGenerator {
 
     // Add product-specific keywords
     this.products.forEach(product => {
-      const productKeywords = this.extractKeywords(product.name + ' ' + (product.description || ''));
+      const productKeywords = this.extractKeywords(`${product.name  } ${  product.description || ''}`);
       productKeywords.forEach(keyword => {
         const currentCount = this.keywordDatabase.get(keyword) || 0;
         this.keywordDatabase.set(keyword, currentCount + 1);
@@ -95,7 +95,7 @@ export class SEOContentGenerator {
     return {
       title: this.generateTitle(product, primaryKeyword || 'Product'),
       metaDescription: this.generateMetaDescription(product, primaryKeyword || 'Product', keywords),
-      keywords: keywords,
+      keywords,
       structuredData: this.generateStructuredData(product),
       altText: this.generateAltText(product),
       h1: this.generateH1(product, primaryKeyword || 'Product'),
@@ -134,7 +134,7 @@ export class SEOContentGenerator {
     ];
     
     const description = templates[Math.floor(Math.random() * templates.length)];
-    return (description || '').length > 160 ? (description || '').substring(0, 157) + '...' : (description || '');
+    return (description || '').length > 160 ? `${(description || '').substring(0, 157)  }...` : (description || '');
   }
 
   private generateKeywords(product: ProductsWithImages): string[] {
@@ -310,7 +310,7 @@ export class SEOContentGenerator {
 
   private generateExcerpt(content: string): string {
     const plainText = content.replace(/<[^>]*>/g, '');
-    return plainText.substring(0, 150) + '...';
+    return `${plainText.substring(0, 150)  }...`;
   }
 
   private calculateSEOScore(content: string, keywords: string[]): number {

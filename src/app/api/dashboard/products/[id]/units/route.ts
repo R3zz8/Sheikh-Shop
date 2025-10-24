@@ -70,7 +70,7 @@ export async function GET(
     return NextResponse.json({
       success: true,
       data: units,
-      product: product,
+      product,
     });
   } catch (error) {
     console.error('Error fetching product units:', error);

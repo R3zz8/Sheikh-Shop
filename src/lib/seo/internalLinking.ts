@@ -41,7 +41,7 @@ export async function suggestInternalLinks(
     articles.forEach(article => {
       const relevanceScore = calculateRelevanceScore(
         contentKeywords,
-        article.title + ' ' + article.summary,
+        `${article.title  } ${  article.summary}`,
         article.category || undefined,
         article.tags
       );
@@ -61,7 +61,7 @@ export async function suggestInternalLinks(
     products.forEach(product => {
       const relevanceScore = calculateRelevanceScore(
         contentKeywords,
-        product.name + ' ' + (product.description || ''),
+        `${product.name  } ${  product.description || ''}`,
         product.category
       );
       
@@ -223,7 +223,7 @@ function calculateRelevanceScore(
   targetCategory?: string,
   targetTags?: string[]
 ): number {
-  const targetText = (targetContent + ' ' + (targetCategory || '') + ' ' + (targetTags?.join(' ') || ''))
+  const targetText = (`${targetContent  } ${  targetCategory || ''  } ${  targetTags?.join(' ') || ''}`)
     .toLowerCase();
   
   let score = 0;

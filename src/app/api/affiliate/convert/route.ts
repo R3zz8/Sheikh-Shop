@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
     // Mark referral as converted
     await prisma.referral.update({
       where: { id: referral.id },
-      data: { isConverted: true, orderId: orderId },
+      data: { isConverted: true, orderId },
     });
 
     // Update affiliate stats
@@ -68,6 +68,7 @@ export async function POST(req: NextRequest) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.errors }, { status: 400 });
     }
+    // eslint-disable-next-line no-console
     console.error('Conversion tracking error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }

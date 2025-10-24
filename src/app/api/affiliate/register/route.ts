@@ -37,6 +37,7 @@ export async function POST(req: Request) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.errors }, { status: 400 });
     }
+    // eslint-disable-next-line no-console
     console.error('Affiliate registration error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }

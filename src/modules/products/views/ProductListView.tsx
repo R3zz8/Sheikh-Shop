@@ -10,8 +10,6 @@ interface ProductListViewProps {
 }
 
 function ProductListView({ products: initialProducts, units: initialUnits }: ProductListViewProps) {
-  console.log('ProductListView render:', { initialProducts, initialUnits });
-  
   // Just pass the props directly without state management
   return <ProductList products={initialProducts || []} units={initialUnits} />;
 }

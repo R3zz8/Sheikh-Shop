@@ -208,7 +208,7 @@ export class MonitoringSystem {
         metrics: {
           current: activeUsers,
           expected: expectedUsers,
-          deviation: deviation
+          deviation
         },
         action: 'Investigate traffic sources and server capacity'
       });

@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Determine which unit to use
-        let selectedUnitId = unitId || product.baseUnitId;
+        const selectedUnitId = unitId || product.baseUnitId;
         let unitPrice = product.basePrice;
 
         // If unitId is provided, validate it and get its price

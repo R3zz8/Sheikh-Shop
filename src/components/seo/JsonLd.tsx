@@ -53,7 +53,7 @@ export function ProductOfferJsonLd({
     sku: product.id,
     category: product.category,
     brand: { '@type': 'Brand', name: 'Sheikh Shop' },
-    offers: offers,
+    offers,
     aggregateRating: rating
       ? {
           '@type': 'AggregateRating',

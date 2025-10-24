@@ -102,7 +102,7 @@ export function generateProductSchema(product: Product & { images?: any[] }) {
       name: 'Sheikh Shop',
     },
     category: product.category,
-    offers: offers,
+    offers,
     aggregateRating: product.isBestSeller ? {
       '@type': 'AggregateRating',
       ratingValue: '4.8',

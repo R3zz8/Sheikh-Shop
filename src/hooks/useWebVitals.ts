@@ -24,7 +24,7 @@ export function useWebVitals() {
         if (typeof window !== 'undefined') {
             // Cumulative Layout Shift (CLS)
             let clsValue = 0;
-            let clsEntries: any[] = [];
+            const clsEntries: any[] = [];
 
             const observer = new PerformanceObserver((list) => {
                 for (const entry of list.getEntries()) {

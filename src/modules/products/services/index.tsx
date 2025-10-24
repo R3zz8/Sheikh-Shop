@@ -36,7 +36,6 @@ export const getProductById = async (id: string) => {
   try {
     // Validate ID format
     if (!id || typeof id !== 'string' || id.length === 0) {
-      console.error('Invalid product ID:', id);
       return null;
     }
 
@@ -50,19 +49,16 @@ export const getProductById = async (id: string) => {
     });
 
     if (!result) {
-      console.error('Product not found:', id);
       return null;
     }
 
     // Validate required fields
     if (!result.baseUnit) {
-      console.error('Product missing baseUnit:', id);
       return null;
     }
 
     return serializeProduct(result);
   } catch (error) {
-    console.error('Error fetching product by ID:', id, error);
     return null;
   }
 };

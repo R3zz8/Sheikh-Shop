@@ -151,7 +151,7 @@ export async function POST(req: NextRequest) {
         },
         {
           role: "user",
-          content: content,
+          content,
         },
       ],
       temperature: 0.3, // Lower temperature for more consistent translations

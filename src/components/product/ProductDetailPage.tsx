@@ -153,7 +153,7 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
  * Mobile-only two-column layout using CSS grid overrides.
  * Keeps desktop/tablet intact while arranging gallery (left ~50vw) and info (right) on <=480px.
  */
-// eslint-disable-next-line @next/next/no-css-tags
+
 <style jsx global>{`
   @media (max-width: 480px) {
     .mobile-two-col {

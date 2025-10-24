@@ -15,7 +15,7 @@ type ArticleAction =
   | 'ai_generation_completed';
 
 function getOrCreateSessionId(): string {
-  if (typeof window === 'undefined') return 'server-' + Math.random().toString(36).slice(2);
+  if (typeof window === 'undefined') return `server-${  Math.random().toString(36).slice(2)}`;
   const key = 'article_session_id';
   let existing = sessionStorage.getItem(key);
   if (!existing) {

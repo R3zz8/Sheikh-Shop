@@ -1,7 +1,6 @@
 'use client';
 
-import type { Product, ProductUnit } from '@prisma/client';
-import { ProductCategory } from '@prisma/client';
+import type { Product, ProductUnit, ProductCategory } from '@prisma/client';
 import {
   Input,
   Button,
@@ -25,6 +24,7 @@ import { upsertProduct } from '../services';
 import UploadImage from './UploadImage';
 import { useState, useEffect } from 'react';
 import { Plus, Trash2, Package } from 'lucide-react';
+import Image from 'next/image';
 
 interface ProductUnitForm {
   id?: string;
@@ -46,26 +46,7 @@ const ProductForm = (props: { product: Product | null }) => {
   const [productUnits, setProductUnits] = useState<ProductUnitForm[]>([]);
   const [loadingUnits, setLoadingUnits] = useState(false);
 
-  // Load existing product units when editing
-  useEffect(() => {
-    if (product?.id) {
-      loadProductUnits();
-    } else {
-      // Initialize with one default unit for new products
-      setProductUnits([{
-        name: 'Default Unit',
-        price: 0,
-        stock: 0,
-        isActive: true,
-        isFeatured: true,
-        discountPercentage: 0,
-        discountStartDate: '',
-        discountEndDate: ''
-      }]);
-    }
-  }, [product?.id]);
-
-  const loadProductUnits = async () => {
+  const loadProductUnits = useCallback(async () => {
     if (!product?.id) return;
     
     setLoadingUnits(true);
@@ -88,11 +69,30 @@ const ProductForm = (props: { product: Product | null }) => {
         })));
       }
     } catch (error) {
-      console.error('Failed to load product units:', error);
+      // Failed to load product units
     } finally {
       setLoadingUnits(false);
     }
-  };
+  }, [product?.id]);
+
+  // Load existing product units when editing
+  useEffect(() => {
+    if (product?.id) {
+      loadProductUnits();
+    } else {
+      // Initialize with one default unit for new products
+      setProductUnits([{
+        name: 'Default Unit',
+        price: 0,
+        stock: 0,
+        isActive: true,
+        isFeatured: true,
+        discountPercentage: 0,
+        discountStartDate: '',
+        discountEndDate: ''
+      }]);
+    }
+  }, [product?.id, loadProductUnits]);
 
   const onSubmitForm = async (data: any) => {
     const _product = {
@@ -436,7 +436,7 @@ const ProductForm = (props: { product: Product | null }) => {
                 disabled={uploading}
               />
               {tempImageUrl && (
-                <img src={tempImageUrl} alt="preview" className="mt-3 rounded-md border" />
+                <Image src={tempImageUrl} alt="preview" className="mt-3 rounded-md border" width={100} height={100} />
               )}
             </div>
           )}

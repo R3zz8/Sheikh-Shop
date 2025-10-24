@@ -10,7 +10,7 @@ export async function logoutUser() {
     const cookieStore = await cookies();
 
     // Security: Get current session information before clearing
-    let sessionId = '';
+    const sessionId = '';
     let userId = '';
     let accessToken = '';
     let refreshToken = '';

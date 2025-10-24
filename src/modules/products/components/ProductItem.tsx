@@ -102,7 +102,7 @@ export default function ProductItem({
     if (availableUnits.length > 0 && !selectedUnit) {
       setSelectedUnit(availableUnits[0] || null);
     }
-  }, [availableUnits]); // Removed selectedUnit from dependencies to prevent infinite loop
+  }, [availableUnits]);
 
   // Set default ProductUnit when available
   useEffect(() => {
