@@ -14,7 +14,7 @@ const PalmTreeScene = dynamic(() => import('./PalmTreeScene'), {
 // Fallback component for loading state
 function PalmTreeFallback() {
   return (
-    <div className="w-full h-full min-h-[400px] bg-gradient-to-br from-amber-50 to-orange-100 rounded-2xl flex items-center justify-center">
+    <div className="w-full h-full min-h-[320px] lg:min-h-[450px] bg-gradient-to-br from-amber-50 to-orange-100 rounded-2xl flex items-center justify-center">
       <div className="text-center">
         <div className="w-16 h-16 border-4 border-amber-300 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
         <p className="text-amber-700 font-medium">Loading 3D Palm Tree...</p>
@@ -26,7 +26,7 @@ function PalmTreeFallback() {
 // Static fallback for when 3D is not supported
 function StaticPalmTree() {
   return (
-    <div className="w-full h-full min-h-[400px] bg-gradient-to-br from-amber-50 to-orange-100 rounded-2xl flex items-center justify-center relative overflow-hidden">
+    <div className="w-full h-full min-h-[320px] lg:min-h-[450px] bg-gradient-to-br from-amber-50 to-orange-100 rounded-2xl flex items-center justify-center relative overflow-hidden">
       {/* Static palm tree illustration */}
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="text-center space-y-4">
@@ -77,7 +77,7 @@ interface PalmTreeContainerProps {
 
 export default function PalmTreeContainer({
   className = '',
-  height = '400px',
+  height = 'h-[320px] lg:h-[450px]',
   enableControls = false,
   autoRotate = true,
   intensity = 1,
@@ -99,8 +99,7 @@ export default function PalmTreeContainer({
 
   return (
     <div
-      className={`relative w-full ${className}`}
-      style={{ height }}
+      className={`relative w-full ${height} ${className}`}
     >
       {isLoading && <PalmTreeFallback />}
       <ErrorBoundary fallback={<StaticPalmTree />}>

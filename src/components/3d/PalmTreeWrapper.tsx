@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 const PalmTreeContainer = dynamic(() => import('./PalmTree'), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-[500px] bg-gradient-to-br from-amber-50 to-orange-100 rounded-2xl flex items-center justify-center">
+    <div className="w-full h-[320px] lg:h-[500px] bg-gradient-to-br from-amber-50 to-orange-100 rounded-2xl flex items-center justify-center">
       <div className="text-center">
         <div className="w-16 h-16 border-4 border-amber-300 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
         <p className="text-amber-700 font-medium">Loading 3D Palm Tree...</p>
@@ -25,7 +25,7 @@ interface PalmTreeWrapperProps {
 }
 
 export default function PalmTreeWrapper({
-  height = '500px',
+  height = 'h-[320px] lg:h-[500px]',
   enableControls = true,
   autoRotate = true,
   intensity = 1.2,
@@ -46,7 +46,7 @@ export default function PalmTreeWrapper({
 
   if (reducedMotion) {
     return (
-      <div className={`w-full rounded-2xl overflow-hidden ${className}`} style={{ height }}>
+      <div className={`w-full ${height} rounded-2xl overflow-hidden ${className}`}>
         <img
           src="/assets/palm-poster.jpg"
           alt="Palm Tree"

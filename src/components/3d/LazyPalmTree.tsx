@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { useInView } from 'react-intersection-observer';
 
@@ -26,7 +26,7 @@ interface LazyPalmTreeProps {
 }
 
 export default function LazyPalmTree({
-  height = '500px',
+  height = 'h-[500px] lg:h-[550px]',
   enableControls = true,
   autoRotate = true,
   intensity = 1.2,
@@ -95,7 +95,7 @@ export default function LazyPalmTree({
   );
 
   return (
-    <div ref={ref} className={`relative ${className}`} style={{ height }}>
+    <div ref={ref} className={`w-full ${height} ${className}`}>
       {prefersReducedMotion || !shouldLoad ? (
         <PosterImage />
       ) : (
@@ -107,12 +107,6 @@ export default function LazyPalmTree({
           className="rounded-2xl"
         />
       )}
-      
-      {/* Decorative overlay */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-4 right-4 w-16 h-16 bg-gradient-to-br from-amber-400/20 to-orange-400/20 rounded-full blur-xl" />
-        <div className="absolute bottom-4 left-4 w-12 h-12 bg-gradient-to-br from-yellow-400/20 to-amber-400/20 rounded-full blur-lg" />
-      </div>
     </div>
   );
 }
