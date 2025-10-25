@@ -8,7 +8,6 @@ import ErrorBoundary from './ErrorBoundary';
 // Lazy load the 3D component to avoid SSR issues
 const PalmTreeScene = dynamic(() => import('./PalmTreeScene'), {
   ssr: false,
-  loading: () => null,
 });
 
 // Fallback component for loading state
@@ -83,13 +82,9 @@ export default function PalmTreeContainer({
   intensity = 1,
 }: PalmTreeContainerProps) {
   const [isClient, setIsClient] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     setIsClient(true);
-    // Add a small delay to ensure smooth transition
-    const timer = setTimeout(() => setIsLoading(false), 100);
-    return () => clearTimeout(timer);
   }, []);
 
   // Show loading fallback on server-side
@@ -101,7 +96,6 @@ export default function PalmTreeContainer({
     <div
       className={`relative w-full ${height} ${className}`}
     >
-      {isLoading && <PalmTreeFallback />}
       <ErrorBoundary fallback={<StaticPalmTree />}>
         <Suspense fallback={<PalmTreeFallback />}>
           <Canvas
@@ -113,7 +107,6 @@ export default function PalmTreeContainer({
               powerPreference: 'high-performance',
             }}
             dpr={[1, 2]} // Responsive pixel ratio
-            onCreated={() => setIsLoading(false)}
           >
             <PalmTreeScene
               enableControls={enableControls}

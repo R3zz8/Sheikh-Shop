@@ -1,7 +1,6 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useEffect, useState } from 'react';
 
 // Dynamically import the 3D palm tree component with optimized loading
 const PalmTreeContainer = dynamic(() => import('./PalmTree'), {
@@ -31,32 +30,6 @@ export default function PalmTreeWrapper({
   intensity = 1.2,
   className = '',
 }: PalmTreeWrapperProps) {
-  const [reducedMotion, setReducedMotion] = useState(false);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-      const onChange = () => setReducedMotion(mq.matches);
-      onChange();
-      mq.addEventListener?.('change', onChange);
-      return () => mq.removeEventListener?.('change', onChange);
-    }
-    return undefined;
-  }, []);
-
-  if (reducedMotion) {
-    return (
-      <div className={`w-full ${height} rounded-2xl overflow-hidden ${className}`}>
-        <img
-          src="/assets/palm-poster.jpg"
-          alt="Palm Tree"
-          className="w-full h-full object-cover"
-          loading="lazy"
-        />
-      </div>
-    );
-  }
-
   return (
     <PalmTreeContainer
       height={height}
