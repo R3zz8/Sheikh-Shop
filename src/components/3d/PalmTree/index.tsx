@@ -114,6 +114,7 @@ export default function PalmTreeContainer({
             }}
             dpr={[1, 2]} // Responsive pixel ratio
             onCreated={() => setIsLoading(false)}
+            className="w-full h-full"
           >
             <PalmTreeScene
               enableControls={enableControls}

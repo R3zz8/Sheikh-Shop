@@ -37,7 +37,7 @@ export default function Home() {
         {/* Hero Section with 3D Palm Tree */}
         <section className="container-fluid section-padding">
           <div className="max-w-6xl mx-auto">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            <div className="flex flex-col lg:flex-row items-center justify-center gap-6">
               {/* Text Content */}
               <div className="text-center lg:text-left">
                 <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent mb-6">
@@ -62,14 +62,12 @@ export default function Home() {
               </div>
 
               {/* Optimized 3D Palm Tree */}
-              <div className="relative">
+              <div className="relative w-full flex-1 min-w-0">
                 <OptimizedPalmTree
-                  height="500px"
                   enableControls={true}
                   autoRotate={true}
                   intensity={1.2}
                   className="rounded-2xl"
-                  posterImage="/palm-tree-poster.jpg"
                 />
               </div>
             </div>
