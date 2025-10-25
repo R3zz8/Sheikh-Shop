@@ -117,7 +117,7 @@ export const upsertProduct = async (
 
     const rawData = {
       name: formData.get('name') as string,
-      category: formData.get('category') as string,
+      category: formData.get('category') as string, // This will be the slug
       description: formData.get('description') as string || '',
       basePrice: parseFloat(formData.get('price') as string),
       baseUnitId,
@@ -125,8 +125,39 @@ export const upsertProduct = async (
       status: (formData.get('status') as string) || 'ACTIVE',
     };
 
+    // Find category by slug and get both enum and ID
+    let categoryEnum: ProductCategory = ProductCategory.OTHERS;
+    let categoryId: string | null = null;
+
+    if (rawData.category) {
+      const category = await prisma.category.findUnique({
+        where: { 
+          slug: rawData.category,
+          isActive: true 
+        }
+      });
+
+      if (category) {
+        categoryId = category.id;
+        // Map category slug to enum
+        const slugToEnumMap: Record<string, ProductCategory> = {
+          'dates': ProductCategory.DATES,
+          'honey': ProductCategory.HONEY,
+          'saffron': ProductCategory.SAFFRON,
+          'other': ProductCategory.OTHERS,
+        };
+        categoryEnum = slugToEnumMap[rawData.category] || ProductCategory.OTHERS;
+      }
+    }
+
+    const processedData = {
+      ...rawData,
+      category: categoryEnum,
+      categoryId,
+    };
+
     // Enhanced validation
-    const validationResult = productSchema.safeParse(rawData);
+    const validationResult = productSchema.safeParse(processedData);
     if (!validationResult.success) {
       const errors: Record<string, string> = {};
       validationResult.error.errors.forEach((err) => {

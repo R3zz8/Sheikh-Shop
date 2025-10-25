@@ -97,14 +97,74 @@ async function main() {
 
   console.log(`✅ Created ${units.length} units`);
 
-  // Get the required units
+  // Create Categories
+  console.log('📂 Creating categories...');
+  const categories = await Promise.all([
+    prisma.category.upsert({
+      where: { slug: 'dates' },
+      update: {},
+      create: {
+        name: 'Dates',
+        slug: 'dates',
+        description: 'Premium quality dates from the finest orchards. Rich in natural sugars, fiber, and essential minerals.',
+        isActive: true,
+        sortOrder: 1,
+      },
+    }),
+    prisma.category.upsert({
+      where: { slug: 'honey' },
+      update: {},
+      create: {
+        name: 'Honey',
+        slug: 'honey',
+        description: 'Pure, natural honey sourced from pristine locations. Rich in antioxidants and natural enzymes.',
+        isActive: true,
+        sortOrder: 2,
+      },
+    }),
+    prisma.category.upsert({
+      where: { slug: 'saffron' },
+      update: {},
+      create: {
+        name: 'Saffron',
+        slug: 'saffron',
+        description: 'Premium saffron threads hand-picked from the highest quality crocus flowers.',
+        isActive: true,
+        sortOrder: 3,
+      },
+    }),
+    prisma.category.upsert({
+      where: { slug: 'other' },
+      update: {},
+      create: {
+        name: 'Other',
+        slug: 'other',
+        description: 'A diverse collection of premium products including nuts, spices, and traditional items.',
+        isActive: true,
+        sortOrder: 4,
+      },
+    }),
+  ]);
+
+  console.log(`✅ Created ${categories.length} categories`);
+
+  // Get the required units and categories
   const kgUnit = units.find((u: any) => u.symbol === 'kg');
   const gUnit = units.find((u: any) => u.symbol === 'g');
   const pkgUnit = units.find((u: any) => u.symbol === 'pkg');
   const LUnit = units.find((u: any) => u.symbol === 'L');
   
+  const datesCategory = categories.find((c: any) => c.slug === 'dates');
+  const honeyCategory = categories.find((c: any) => c.slug === 'honey');
+  const saffronCategory = categories.find((c: any) => c.slug === 'saffron');
+  const otherCategory = categories.find((c: any) => c.slug === 'other');
+  
   if (!kgUnit || !gUnit || !pkgUnit || !LUnit) {
     throw new Error('Required units not found');
+  }
+  
+  if (!datesCategory || !honeyCategory || !saffronCategory || !otherCategory) {
+    throw new Error('Required categories not found');
   }
 
   // Create 5 new sample products as requested
@@ -116,6 +176,7 @@ async function main() {
       create: {
         name: 'Premium Iranian Honey',
         category: 'HONEY',
+        categoryId: honeyCategory.id,
         description: 'Pure, natural honey sourced from the pristine mountains of Iran. Rich in antioxidants and natural enzymes, this premium honey offers a delicate floral taste with notes of wildflowers and herbs.',
         basePrice: 28.50,
         baseUnitId: kgUnit.id,
@@ -132,6 +193,7 @@ async function main() {
       create: {
         name: 'Organic Saffron Threads',
         category: 'SAFFRON',
+        categoryId: saffronCategory.id,
         description: 'Hand-picked organic saffron threads from the highest quality crocus flowers. Known for its intense color, aroma, and flavor, this premium saffron is perfect for culinary and medicinal use.',
         basePrice: 85.00,
         baseUnitId: gUnit.id,
@@ -148,6 +210,7 @@ async function main() {
       create: {
         name: 'Medjool Dates Premium',
         category: 'DATES',
+        categoryId: datesCategory.id,
         description: 'Large, soft, and incredibly sweet Medjool dates known as the "King of Dates". These premium dates are naturally rich in fiber, potassium, and antioxidants, making them a perfect healthy snack.',
         basePrice: 18.75,
         baseUnitId: kgUnit.id,
@@ -164,6 +227,7 @@ async function main() {
       create: {
         name: 'Persian Rose Water',
         category: 'OTHERS',
+        categoryId: otherCategory.id,
         description: 'Traditional Persian rose water made from Damask roses. This authentic rose water is used in Persian cuisine, beauty treatments, and religious ceremonies. Pure, natural, and aromatic.',
         basePrice: 12.99,
         baseUnitId: LUnit.id,
@@ -180,6 +244,7 @@ async function main() {
       create: {
         name: 'Mixed Nuts Premium Pack',
         category: 'OTHERS',
+        categoryId: otherCategory.id,
         description: 'Premium selection of mixed nuts including pistachios, almonds, walnuts, and cashews. Perfectly roasted and lightly salted, this premium pack is ideal for snacking or gifting.',
         basePrice: 22.50,
         baseUnitId: pkgUnit.id,
@@ -193,6 +258,153 @@ async function main() {
   ]);
 
   console.log(`✅ Created ${newProducts.length} new products`);
+
+  // Add additional test products for each category
+  console.log('🛍️ Adding additional test products for each category...');
+  const additionalProducts = await Promise.all([
+    // Additional Honey products
+    prisma.product.upsert({
+      where: { name: 'Wildflower Honey Premium' },
+      update: {},
+      create: {
+        name: 'Wildflower Honey Premium',
+        category: 'HONEY',
+        categoryId: honeyCategory.id,
+        description: 'Pure wildflower honey collected from diverse floral sources. Rich in natural enzymes and antioxidants.',
+        basePrice: 24.99,
+        baseUnitId: kgUnit.id,
+        quantity: 45,
+        status: 'ACTIVE',
+        isNew: false,
+        isBestSeller: false,
+        isAmazing: true,
+      },
+    }),
+    prisma.product.upsert({
+      where: { name: 'Manuka Honey Grade A' },
+      update: {},
+      create: {
+        name: 'Manuka Honey Grade A',
+        category: 'HONEY',
+        categoryId: honeyCategory.id,
+        description: 'Premium Manuka honey with high antibacterial properties. Perfect for health-conscious consumers.',
+        basePrice: 45.00,
+        baseUnitId: gUnit.id,
+        quantity: 25,
+        status: 'ACTIVE',
+        isNew: true,
+        isBestSeller: false,
+        isAmazing: false,
+      },
+    }),
+    // Additional Saffron products
+    prisma.product.upsert({
+      where: { name: 'Spanish Saffron Premium' },
+      update: {},
+      create: {
+        name: 'Spanish Saffron Premium',
+        category: 'SAFFRON',
+        categoryId: saffronCategory.id,
+        description: 'High-quality Spanish saffron threads known for their intense color and aroma.',
+        basePrice: 75.00,
+        baseUnitId: gUnit.id,
+        quantity: 20,
+        status: 'ACTIVE',
+        isNew: false,
+        isBestSeller: true,
+        isAmazing: false,
+      },
+    }),
+    prisma.product.upsert({
+      where: { name: 'Kashmiri Saffron Deluxe' },
+      update: {},
+      create: {
+        name: 'Kashmiri Saffron Deluxe',
+        category: 'SAFFRON',
+        categoryId: saffronCategory.id,
+        description: 'Premium Kashmiri saffron with exceptional quality and potency.',
+        basePrice: 95.00,
+        baseUnitId: gUnit.id,
+        quantity: 15,
+        status: 'ACTIVE',
+        isNew: true,
+        isBestSeller: false,
+        isAmazing: true,
+      },
+    }),
+    // Additional Dates products
+    prisma.product.upsert({
+      where: { name: 'Deglet Noor Dates' },
+      update: {},
+      create: {
+        name: 'Deglet Noor Dates',
+        category: 'DATES',
+        categoryId: datesCategory.id,
+        description: 'Semi-dry dates with a firm texture and sweet, nutty flavor. Perfect for snacking.',
+        basePrice: 15.50,
+        baseUnitId: kgUnit.id,
+        quantity: 80,
+        status: 'ACTIVE',
+        isNew: false,
+        isBestSeller: false,
+        isAmazing: false,
+      },
+    }),
+    prisma.product.upsert({
+      where: { name: 'Barhi Dates Fresh' },
+      update: {},
+      create: {
+        name: 'Barhi Dates Fresh',
+        category: 'DATES',
+        categoryId: datesCategory.id,
+        description: 'Fresh, soft Barhi dates with a caramel-like flavor and creamy texture.',
+        basePrice: 22.00,
+        baseUnitId: kgUnit.id,
+        quantity: 60,
+        status: 'ACTIVE',
+        isNew: true,
+        isBestSeller: false,
+        isAmazing: true,
+      },
+    }),
+    // Additional Other products
+    prisma.product.upsert({
+      where: { name: 'Premium Pistachios' },
+      update: {},
+      create: {
+        name: 'Premium Pistachios',
+        category: 'OTHERS',
+        categoryId: otherCategory.id,
+        description: 'Premium quality pistachios, perfectly roasted and lightly salted.',
+        basePrice: 28.00,
+        baseUnitId: kgUnit.id,
+        quantity: 40,
+        status: 'ACTIVE',
+        isNew: false,
+        isBestSeller: true,
+        isAmazing: false,
+      },
+    }),
+    prisma.product.upsert({
+      where: { name: 'Organic Turmeric Powder' },
+      update: {},
+      create: {
+        name: 'Organic Turmeric Powder',
+        category: 'OTHERS',
+        categoryId: otherCategory.id,
+        description: 'Pure organic turmeric powder with high curcumin content. Perfect for cooking and health benefits.',
+        basePrice: 12.50,
+        baseUnitId: gUnit.id,
+        quantity: 100,
+        status: 'ACTIVE',
+        isNew: true,
+        isBestSeller: false,
+        isAmazing: false,
+      },
+    }),
+  ]);
+
+  console.log(`✅ Created ${additionalProducts.length} additional test products`);
 
   // Create discounts for 2 products as requested
   console.log('🏷️ Creating discounts for 2 products...');

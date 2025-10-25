@@ -12,6 +12,7 @@ export async function GET(req: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1', 10);
     const limit = parseInt(searchParams.get('limit') || '20', 10);
     const category = searchParams.get('category') || '';
+    const categorySlug = searchParams.get('categorySlug') || '';
     const search = searchParams.get('search') || '';
     const sortBy = searchParams.get('sortBy') || 'createdAt';
     const sortOrder = searchParams.get('sortOrder') || 'desc';
@@ -25,10 +26,33 @@ export async function GET(req: NextRequest) {
     }
 
     // Build where clause
-    const where: any = {};
-    if (category) {
+    const where: any = {
+      status: 'ACTIVE'
+    };
+
+    // Handle category filtering - support both enum and slug-based filtering
+    if (categorySlug) {
+      // Find category by slug and filter by categoryId
+      const categoryRecord = await prisma.category.findUnique({
+        where: { 
+          slug: categorySlug,
+          isActive: true 
+        }
+      });
+      
+      if (categoryRecord) {
+        where.categoryId = categoryRecord.id;
+      } else {
+        return NextResponse.json(
+          { error: 'Category not found' },
+          { status: 404 }
+        );
+      }
+    } else if (category) {
+      // Legacy enum-based filtering
       where.category = category;
     }
+
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' as const } },
@@ -42,7 +66,15 @@ export async function GET(req: NextRequest) {
         where,
         include: { 
           images: true,
-          units: true // Include ProductUnits
+          units: true,
+          Category: true, // Include category information
+          discounts: {
+            where: {
+              isActive: true,
+              startDate: { lte: new Date() },
+              endDate: { gte: new Date() }
+            }
+          }
         },
         orderBy: { [sortBy]: sortOrder },
         skip: (page - 1) * limit,

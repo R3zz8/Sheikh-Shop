@@ -17,7 +17,7 @@ export async function GET() {
     const totalAffiliates = await prisma.affiliate.count();
     const totalUnpaidBalances = await prisma.affiliate.aggregate({
       _sum: {
-        balance: true,
+        commissionEarned: true,
       },
     });
 
@@ -37,7 +37,7 @@ export async function GET() {
       },
     });
 
-    const payoutLogs = await prisma.transaction.findMany({
+    const payoutLogs = await prisma.referral.findMany({
         orderBy: {
             createdAt: 'desc',
         },
@@ -59,7 +59,7 @@ export async function GET() {
 
     return NextResponse.json({
       totalAffiliates,
-      totalUnpaidBalances: totalUnpaidBalances._sum.balance,
+      totalUnpaidBalances: totalUnpaidBalances._sum?.commissionEarned || 0,
       topPerformers,
       payoutLogs,
     });

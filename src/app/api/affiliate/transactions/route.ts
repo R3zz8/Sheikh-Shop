@@ -22,7 +22,7 @@ export async function GET() {
       return NextResponse.json({ message: 'Affiliate not found' }, { status: 404 });
     }
 
-    const transactions = await prisma.transaction.findMany({
+    const transactions = await prisma.affiliateTransaction.findMany({
       where: { affiliateId: affiliate.id },
       orderBy: { createdAt: 'desc' },
     });

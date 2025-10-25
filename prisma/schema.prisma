@@ -11,7 +11,7 @@ datasource db {
 model Product {
   id           String          @id @default(uuid())
   name         String          @unique @db.VarChar(255)
-  category     ProductCategory
+  category     ProductCategory // Keep enum for backward compatibility
   description  String?
   basePrice    Float           @default(0.0)
   baseUnitId   String
@@ -22,10 +22,12 @@ model Product {
   isAmazing    Boolean         @default(false)
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
+  categoryId   String?         // Foreign key to Category model
   cartItems    CartItem[]
   discounts    Discount[]
   images       Image[]
   baseUnit     Unit            @relation(fields: [baseUnitId], references: [id])
+  Category     Category?       @relation(fields: [categoryId], references: [id])
   units        ProductUnit[]
 
   @@index([category])
@@ -38,6 +40,7 @@ model Product {
   @@index([basePrice, status], map: "idx_product_baseprice_status_unique")
   @@index([category, status], map: "idx_product_category_status_unique")
   @@index([name], map: "idx_product_name_unique")
+  @@index([categoryId])
 }
 
 model Unit {
@@ -154,15 +157,15 @@ model User {
   lockedUntil                   DateTime?
   createdAt                     DateTime            @default(now())
   updatedAt                     DateTime            @updatedAt
+  affiliate                     Affiliate?
   articles                      Article[]
   auditLogs                     AuditLog[]
   comments                      Comment[]
   emailVerifications            EmailVerification[]
+  orders                        Order[]
   recoveryCodes                 RecoveryCode[]
   sessions                      Session[]
   likes                         UserLike[]
-  affiliate                     Affiliate?
-  orders                        Order[]
 
   @@index([email])
   @@index([role])
@@ -345,6 +348,116 @@ model UserLike {
   @@index([createdAt])
 }
 
+model Affiliate {
+  id               String               @id @default(cuid())
+  userId           String               @unique
+  referralCode     String               @unique
+  totalClicks      Int                  @default(0)
+  totalSales       Int                  @default(0)
+  commissionEarned Decimal              @default(0) @db.Decimal(10, 2)
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  user             User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dailyStats       AffiliateDailyStat[]
+  referrals        Referral[]
+  transactions     AffiliateTransaction[]
+
+  @@index([userId])
+  @@index([referralCode])
+}
+
+model Referral {
+  id          String    @id @default(cuid())
+  affiliateId String
+  ipAddress   String?
+  userAgent   String?
+  isConverted Boolean   @default(false)
+  orderId     String?   @unique
+  createdAt   DateTime  @default(now())
+  affiliate   Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  order       Order?    @relation(fields: [orderId], references: [id])
+
+  @@index([affiliateId])
+  @@index([orderId])
+}
+
+model Order {
+  id        String      @id @default(cuid())
+  userId    String
+  total     Decimal     @db.Decimal(10, 2)
+  status    OrderStatus @default(PENDING)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  user      User        @relation(fields: [userId], references: [id])
+  items     OrderItem[]
+  referral  Referral?
+
+  @@index([userId])
+  @@index([status])
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  productId String
+  quantity  Int
+  price     Decimal @db.Decimal(10, 2)
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model AffiliateDailyStat {
+  id               String    @id @default(cuid())
+  affiliateId      String
+  date             DateTime  @db.Date
+  clicks           Int       @default(0)
+  sales            Int       @default(0)
+  commissionEarned Decimal   @default(0) @db.Decimal(10, 2)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  affiliate        Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+
+  @@unique([affiliateId, date])
+  @@index([affiliateId])
+  @@index([date])
+}
+
+model AffiliateTransaction {
+  id            String   @id @default(cuid())
+  affiliateId   String
+  amount        Decimal  @db.Decimal(10, 2)
+  status        String   @default("PENDING")
+  paymentGateway String?  @db.VarChar(50)
+  transactionId String?  @db.VarChar(255)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  affiliate     Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+
+  @@index([affiliateId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String    @unique @db.VarChar(100)
+  slug        String    @unique @db.VarChar(100)
+  description String?   @db.VarChar(500)
+  image       String?   @db.VarChar(500)
+  isActive    Boolean   @default(true)
+  sortOrder   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  products    Product[]
+
+  @@index([slug])
+  @@index([isActive])
+  @@index([sortOrder])
+  @@index([name])
+}
+
 enum UserRole {
   USER
   ADMIN
@@ -390,107 +503,8 @@ enum CommentStatus {
   REJECTED
 }
 
-model Affiliate {
-  id               String     @id @default(cuid())
-  userId           String     @unique
-  referralCode     String     @unique
-  totalClicks      Int        @default(0)
-  totalSales       Int        @default(0)
-  commissionEarned Decimal    @default(0) @db.Decimal(10, 2)
-  balance          Decimal    @default(0) @db.Decimal(10, 2)
-  createdAt        DateTime   @default(now())
-  updatedAt        DateTime   @updatedAt
-  user             User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  referrals        Referral[]
-  transactions     Transaction[]
-  dailyStats       AffiliateDailyStat[]
-
-  @@index([userId])
-  @@index([referralCode])
-}
-
-model Referral {
-  id          String    @id @default(cuid())
-  affiliateId String
-  ipAddress   String?
-  userAgent   String?
-  isConverted Boolean   @default(false)
-  orderId     String?   @unique
-  createdAt   DateTime  @default(now())
-  affiliate   Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
-  order       Order?    @relation(fields: [orderId], references: [id])
-
-  @@index([affiliateId])
-  @@index([orderId])
-}
-
-model Order {
-  id              String      @id @default(cuid())
-  userId          String
-  total           Decimal     @db.Decimal(10, 2)
-  status          OrderStatus @default(PENDING)
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-  user            User        @relation(fields: [userId], references: [id])
-  items           OrderItem[]
-  referral        Referral?
-
-  @@index([userId])
-  @@index([status])
-}
-
-model OrderItem {
-  id        String   @id @default(cuid())
-  orderId   String
-  productId String
-  quantity  Int
-  price     Decimal  @db.Decimal(10, 2)
-  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-
-  @@index([orderId])
-  @@index([productId])
-}
-
-model Transaction {
-  id                String            @id @default(cuid())
-  affiliateId       String
-  amount            Decimal           @db.Decimal(10, 2)
-  status            TransactionStatus @default(PENDING)
-  paymentGateway    String?
-  transactionId     String?
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
-  affiliate         Affiliate         @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
-
-  @@index([affiliateId])
-  @@index([status])
-  @@index([createdAt])
-}
-
-model AffiliateDailyStat {
-  id               String    @id @default(cuid())
-  affiliateId      String
-  date             DateTime  @db.Date
-  clicks           Int       @default(0)
-  sales            Int       @default(0)
-  commissionEarned Decimal   @default(0) @db.Decimal(10, 2)
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-  affiliate        Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
-
-  @@unique([affiliateId, date])
-  @@index([affiliateId])
-  @@index([date])
-}
-
 enum OrderStatus {
   PENDING
   COMPLETED
   CANCELLED
-}
-
-enum TransactionStatus {
-  PENDING
-  COMPLETED
-  FAILED
 }

@@ -66,28 +66,30 @@ export async function POST(req: Request) {
 
     // 2. If the payout is successful, update the database
     if (payout.batch_header.batch_status === 'SUCCESS') {
-      await prisma.affiliate.update({
-        where: { id: affiliateId },
-        data: {
-          balance: {
-            decrement: amount,
+      await prisma.$transaction(async (tx) => {
+        await tx.affiliate.update({
+          where: { id: affiliateId },
+          data: {
+            commissionEarned: {
+              decrement: amount,
+            },
           },
-        },
-      });
+        });
 
-      await prisma.transaction.create({
-        data: {
-          affiliateId,
-          amount,
-          status: 'COMPLETED',
-          paymentGateway: 'PayPal',
-          transactionId: payout.batch_header.payout_batch_id,
-        },
+        await tx.affiliateTransaction.create({
+          data: {
+            affiliateId,
+            amount,
+            status: 'COMPLETED',
+            paymentGateway: 'PayPal',
+            transactionId: payout.batch_header.payout_batch_id,
+          },
+        });
       });
 
       return NextResponse.json({ message: 'Payout successful', payout });
     } else {
-        await prisma.transaction.create({
+        await prisma.affiliateTransaction.create({
             data: {
               affiliateId,
               amount,

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui';
 interface Product {
     id: string;
     name: string;
-    price: number;
+    basePrice: number;
     description?: string;
     images: Array<{
         id: string;
@@ -89,7 +89,7 @@ export default function CategoryProducts({ products, categoryName, categorySlug 
 
                                     <div className="flex items-center justify-center space-x-2">
                                         <span className="text-2xl font-bold text-amber-400">
-                                            ${product.price.toFixed(2)}
+                                            ${product.basePrice.toFixed(2)}
                                         </span>
                                     </div>
                                 </div>

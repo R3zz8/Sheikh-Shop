@@ -35,6 +35,15 @@ interface Unit {
   isActive: boolean;
 }
 
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  isActive: boolean;
+  sortOrder: number;
+}
+
 const ProductForm = (props: { product: Product | null }) => {
   const { product } = props;
   const router = useRouter();
@@ -54,32 +63,45 @@ const ProductForm = (props: { product: Product | null }) => {
   const { error, data } = state;
   const [submitted, setSubmitted] = useState(false);
   const [units, setUnits] = useState<Unit[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loadingUnits, setLoadingUnits] = useState(true);
+  const [loadingCategories, setLoadingCategories] = useState(true);
 
   const handleSubmit = async (formData: FormData) => {
     setSubmitted(true);
     action(formData);
   };
 
-  // Load units on component mount
+  // Load units and categories on component mount
   useEffect(() => {
-    const fetchUnits = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch('/api/units');
-        if (response.ok) {
-          const result = await response.json();
-          if (result.success) {
-            setUnits(result.data);
+        // Fetch units
+        const unitsResponse = await fetch('/api/units');
+        if (unitsResponse.ok) {
+          const unitsResult = await unitsResponse.json();
+          if (unitsResult.success) {
+            setUnits(unitsResult.data);
+          }
+        }
+
+        // Fetch categories
+        const categoriesResponse = await fetch('/api/categories');
+        if (categoriesResponse.ok) {
+          const categoriesResult = await categoriesResponse.json();
+          if (categoriesResult.success) {
+            setCategories(categoriesResult.data);
           }
         }
       } catch (error) {
-        console.error('Failed to fetch units:', error);
+        console.error('Failed to fetch data:', error);
       } finally {
         setLoadingUnits(false);
+        setLoadingCategories(false);
       }
     };
 
-    fetchUnits();
+    fetchData();
   }, []);
 
   useEffect(() => {
@@ -144,18 +166,22 @@ const ProductForm = (props: { product: Product | null }) => {
               <Select
                 name="category"
                 defaultValue={data?.category || ProductCategory.OTHERS}
+                disabled={loadingCategories}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a category" />
+                  <SelectValue placeholder={loadingCategories ? "Loading categories..." : "Select a category"} />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.values(ProductCategory).map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat}
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.slug}>
+                      {cat.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              {error?.category && (
+                <span className="text-red-600 text-sm mt-1">{error.category}</span>
+              )}
             </div>
           </div>
 

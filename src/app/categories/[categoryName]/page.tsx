@@ -5,6 +5,7 @@ import { generateCategoryMetadata } from '@/lib/seo/metadata';
 
 // Force dynamic rendering to prevent build-time database queries
 export const dynamic = 'force-dynamic';
+export const revalidate = 3600; // Revalidate every hour
 
 interface CategoryPageProps {
     params: {
@@ -39,29 +40,67 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     const data = await params;
     const { categoryName } = data;
 
-    // Validate category name
-    if (!categoryMap[categoryName]) {
-        notFound();
-    }
-
-    const categoryEnum = categoryMap[categoryName];
-
     try {
-        // Fetch products for this category
-        const products = await prisma.product.findMany({
+        // First try to find category by slug (new approach)
+        let category = await prisma.category.findUnique({
             where: {
-                category: categoryEnum as any,
-                status: 'ACTIVE'
-            },
-            include: {
-                images: true
-            },
-            orderBy: {
-                createdAt: 'desc'
+                slug: categoryName,
+                isActive: true
             }
         });
 
-        const categoryDisplayName = categoryName.charAt(0).toUpperCase() + categoryName.slice(1);
+        let products: any[] = [];
+        let categoryDisplayName = categoryName.charAt(0).toUpperCase() + categoryName.slice(1);
+
+        if (category) {
+            // Use new category model approach
+            products = await prisma.product.findMany({
+                where: {
+                    categoryId: category.id,
+                    status: 'ACTIVE'
+                },
+                include: {
+                    images: true,
+                    units: true,
+                    discounts: {
+                        where: {
+                            isActive: true,
+                            startDate: { lte: new Date() },
+                            endDate: { gte: new Date() }
+                        }
+                    }
+                },
+                orderBy: {
+                    createdAt: 'desc'
+                }
+            });
+            categoryDisplayName = category.name;
+        } else if (categoryMap[categoryName]) {
+            // Fallback to legacy enum approach
+            const categoryEnum = categoryMap[categoryName];
+            products = await prisma.product.findMany({
+                where: {
+                    category: categoryEnum as any,
+                    status: 'ACTIVE'
+                },
+                include: {
+                    images: true,
+                    units: true,
+                    discounts: {
+                        where: {
+                            isActive: true,
+                            startDate: { lte: new Date() },
+                            endDate: { gte: new Date() }
+                        }
+                    }
+                },
+                orderBy: {
+                    createdAt: 'desc'
+                }
+            });
+        } else {
+            notFound();
+        }
 
         return (
             <div className="min-h-screen bg-gradient-to-br from-amber-950 via-stone-900 to-amber-950 relative">
