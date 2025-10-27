@@ -167,11 +167,11 @@ export default function PremiumMobileMenu({
           transition={{ duration: 0.3, ease: "easeOut" }}
         >
           {/* Solid Background Base - Immediately visible, no transparency */}
-          <div className="absolute inset-0 bg-black z-20 " />
+          <div className="absolute inset-0 bg-amber-950 z-20 " />
 
-          {/* Solid Opaque Gradient Overlay - No transparency */}
+          {/* Solid Opaque Overlay - No transparency */}
           <motion.div
-            className="absolute inset-0 bg-gradient-to-br from-amber-950 via-stone-900 to-amber-950 z-30"
+            className="absolute inset-0 bg-amber-950 z-30"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
