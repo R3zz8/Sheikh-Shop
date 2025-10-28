@@ -2,86 +2,100 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { User, Folder, Lock, Store, ArrowUp } from 'lucide-react';
+import { useCallback } from 'react';
+import { motion } from 'framer-motion';
+import { 
+  UserRound, 
+  FileText, 
+  ShoppingBag, 
+  Home, 
+  ArrowUp 
+} from 'lucide-react';
 
-interface NavItem {
-    icon: React.ComponentType<{ className?: string }>;
-    href: string;
-    label: string;
+function cx(...classes: (string | false | undefined)[]) {
+  return classes.filter(Boolean).join(' ');
 }
-
-const navItems: NavItem[] = [
-    {
-        icon: User,
-        href: '/user',
-        label: 'Profile'
-    },
-    {
-        icon: Folder,
-        href: '/categories',
-        label: 'Categories'
-    },
-    {
-        icon: Lock,
-        href: '/products',
-        label: 'Shop'
-    },
-    {
-        icon: Store,
-        href: '/',
-        label: 'Home'
-    },
-    {
-        icon: ArrowUp,
-        href: '/',
-        label: 'Top'
-    }
-];
 
 export default function MobileFooter() {
-    const pathname = usePathname();
+  const pathname = usePathname();
 
-    return (
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-200 dark:bg-slate-900 dark:border-slate-700">
-            <div className="flex items-center justify-around px-2 py-2">
-                {navItems.map((item, index) => {
-                    const Icon = item.icon;
-                    const isCenter = index === 2; // Lock icon (Shop)
-                    const isActive = pathname === item.href;
+  const scrollToTop = useCallback(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
-                    return (
-                        <Link
-                            key={`${item.href}-${index}`}
-                            href={item.href}
-                            className={`relative flex flex-col items-center justify-center min-w-0 flex-1 px-2 py-2 transition-colors duration-200 ${isActive && !isCenter
-                                    ? 'text-amber-600 dark:text-amber-400'
-                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-                                }`}
-                            aria-label={item.label}
-                        >
-                            {isCenter ? (
-                                // Special styling for the center Lock icon
-                                <div className="relative">
-                                    <div className="w-12 h-12 rounded-full bg-amber-600 dark:bg-amber-500 shadow-lg flex items-center justify-center -mt-4">
-                                        <Icon className="w-6 h-6 text-white" />
-                                    </div>
-                                    {/* Notification dot */}
-                                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-slate-900"></div>
-                                </div>
-                            ) : (
-                                <Icon className={`w-5 h-5 ${isActive ? 'text-amber-600 dark:text-amber-400' : ''}`} />
-                            )}
+  const navItems = [
+    { icon: UserRound, href: '/login', label: 'Profile' },
+    { icon: FileText, href: '/article', label: 'Articles' },
+    // وسط خالی — اینجا فقط placeholder هست
+    null,
+    { icon: Home, href: '/', label: 'Home' },
+    { icon: ArrowUp, label: 'Top', onClick: scrollToTop },
+  ];
 
-                            {!isCenter && (
-                                <span className="text-xs mt-1 font-medium">
-                                    {item.label}
-                                </span>
-                            )}
-                        </Link>
-                    );
-                })}
-            </div>
-        </nav>
-    );
+  return (
+    <div className="md:hidden fixed inset-x-0 bottom-0 z-50 px-3 pb-1">
+      <div className="relative w-full">
+        {/* نوار اصلی */}
+        <div className="relative rounded-3xl bg-gradient-to-t from-amber-100/95 to-amber-50/90 backdrop-blur-md border border-amber-300/40 shadow-xl overflow-hidden h-20">
+          
+          {/* بریدگی شفاف */}
+          <div className="absolute -top-8 left-1/2 -translate-x-1/2 w-24 h-24 pointer-events-none">
+            <div className="absolute inset-0 bg-transparent" />
+            <div className="absolute inset-0 rounded-full shadow-[inset_0_-12px_20px_rgba(139,69,19,0.3)]" />
+          </div>
+
+          {/* ۵ ستون: Profile | Articles | خالی | Home | Top */}
+          <div className="grid grid-cols-5 gap-1 px-3 pt-3 pb-1 h-full">
+            {navItems.map((item, index) => {
+              // وسط (index === 2) رو خالی می‌ذاریم
+              if (index === 2) {
+                return <div key="center" className="h-full" />;
+              }
+
+              const Icon = item!.icon;
+              const isActive = item!.href && (pathname === item!.href || (item!.href === '/article' && pathname.startsWith('/article')));
+              const isTop = !!item!.onClick;
+
+              return (
+                <div key={index} className="flex flex-col items-center justify-end gap-0.5 pb-1">
+                  {isTop ? (
+                    <button onClick={item!.onClick} className="flex flex-col items-center w-full cursor-pointer">
+                      <Icon className="w-6 h-6 text-amber-700/90 transition-all" />
+                      <span className="text-[10px] font-bold text-amber-700/85">{item!.label}</span>
+                    </button>
+                  ) : (
+                    <Link href={item!.href!} className="flex flex-col items-center w-full">
+                      <Icon
+                        className={cx(
+                          'w-6 h-6 transition-all duration-200',
+                          isActive ? 'text-amber-800 scale-110 drop-shadow-lg' : 'text-amber-700/90'
+                        )}
+                      />
+                      <span className={cx('text-[10px] font-bold tracking-wide', isActive ? 'text-amber-800' : 'text-amber-700/85')}>
+                        {item!.label}
+                      </span>
+                    </Link>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* دکمه وسط - دقیقاً بالای ستون وسط */}
+        <div className="absolute -top-6 left-1/2 -translate-x-1/2">
+          <Link href="/products" aria-label="Products">
+            <motion.div
+              whileTap={{ scale: 0.94 }}
+              className="w-20 h-20 rounded-full flex items-center justify-center bg-gradient-to-br from-amber-800 via-amber-900 to-orange-900 shadow-2xl border-4 border-amber-100 ring-6 ring-amber-700/40 backdrop-blur-sm"
+            >
+              <ShoppingBag className="w-11 h-11 text-amber-50 drop-shadow-xl font-bold" />
+              <div className="absolute -top-1 -right-1 w-6 h-6 bg-emerald-500 rounded-full border-2 border-amber-100 shadow-lg animate-ping opacity-75" />
+              <div className="absolute -top-1 -right-1 w-6 h-6 bg-emerald-500 rounded-full border-2 border-amber-100 shadow-lg" />
+            </motion.div>
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
 }
-

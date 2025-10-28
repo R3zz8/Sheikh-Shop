@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
+import clsx from 'clsx'; // حتماً نصب کن: npm install clsx
 
 // Dynamically import the 3D palm tree component
 const PalmTreeContainer = dynamic(() => import('./PalmTree'), {
@@ -24,12 +25,12 @@ interface LazyPalmTreeProps {
   className?: string;
 }
 
-// A simple static fallback image component
-const StaticFallbackImage = ({ height, className }: { height: string, className?: string }) => (
-  <div className={`w-full ${height} rounded-2xl overflow-hidden ${className}`}>
+// Static fallback
+const StaticFallbackImage = ({ height, className }: { height: string; className?: string }) => (
+  <div className={clsx('w-full rounded-2xl overflow-hidden', height, className)}>
     <img
       src="/assets/palm-poster.jpg"
-      alt="Static fallback image of a palm tree"
+      alt="Static palm tree"
       className="w-full h-full object-cover"
       loading="lazy"
     />
@@ -46,7 +47,8 @@ export default function LazyPalmTree({
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
   useEffect(() => {
-    // This check ensures window is defined, avoiding SSR errors.
+    let cleanup: (() => void) | undefined;
+
     if (typeof window !== 'undefined') {
       const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
       setPrefersReducedMotion(mediaQuery.matches);
@@ -56,18 +58,18 @@ export default function LazyPalmTree({
       };
 
       mediaQuery.addEventListener('change', handleChange);
-      return () => mediaQuery.removeEventListener('change', handleChange);
+      cleanup = () => mediaQuery.removeEventListener('change', handleChange);
     }
+
+    return cleanup;
   }, []);
 
-  // Conditional rendering based on motion preference
   if (prefersReducedMotion) {
     return <StaticFallbackImage height={height} className={className} />;
   }
 
-  // Directly render the 3D component if motion is preferred
   return (
-    <div className={`w-full ${height} ${className}`}>
+    <div className={clsx('w-full', height, className)}>
       <PalmTreeContainer
         height={height}
         enableControls={enableControls}
