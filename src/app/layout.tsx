@@ -14,6 +14,7 @@ import ShoppingChatbot from '@/components/ai/ShoppingChatbot';
 import EnhancedAISearch from '@/components/ai/EnhancedAISearch';
 import Link from 'next/link';
 
+
 // Font variables with fallbacks
 const fontVariables = '--font-inter --font-poppins --font-jetbrains-mono';
 
@@ -71,7 +72,7 @@ export default function RootLayout({
               </div>
               <Toaster />
               <ShoppingChatbot />
-            </CurrencyProvider>
+             </CurrencyProvider>
           </ReactQueryProvider>
         </ErrorBoundary>
       </body>
