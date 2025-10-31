@@ -84,7 +84,7 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
   },
 
-  turbopack: true,
+  turbopack: {},
 
   poweredByHeader: false,
   compress: true,
