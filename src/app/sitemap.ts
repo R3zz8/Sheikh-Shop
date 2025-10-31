@@ -1,70 +1,137 @@
+// app/sitemap.ts
 import { getProducts } from '@/modules/products/services';
 import { prisma } from '@/lib/prisma';
 import type { MetadataRoute } from 'next';
-import {
-	buildLocalizedEntries,
-	dedupeKeepNewest,
-	enforceSitemapUrlLimit,
-	getBaseUrl,
-} from '@/lib/seo/sitemapUtils';
+import { getBaseUrl } from '@/lib/seo/sitemapUtils';
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-	const baseUrl = getBaseUrl().replace(/\/$/, '');
-	const now = new Date();
+// نوع‌های دقیق
+type ChangeFrequency = 'always' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'never';
 
-	try {
-		const entries: MetadataRoute.Sitemap = [];
-
-		// Static pages
-		entries.push(...buildLocalizedEntries('/', now, 1.0, 'daily'));
-		entries.push(...buildLocalizedEntries('/about-us', now, 0.8, 'monthly'));
-		entries.push(...buildLocalizedEntries('/contact', now, 0.8, 'monthly'));
-		entries.push(...buildLocalizedEntries('/privacy', now, 0.3, 'yearly'));
-		entries.push(...buildLocalizedEntries('/terms', now, 0.3, 'yearly'));
-		entries.push(...buildLocalizedEntries('/article', now, 0.8, 'weekly'));
-
-		// Category pages
-		const categories = ['HONEY', 'SAFFRON', 'DATES', 'OTHERS'];
-		for (const category of categories) {
-			entries.push(
-				...buildLocalizedEntries(`/categories/${category.toLowerCase()}`, now, 0.9, 'weekly'),
-			);
-		}
-
-		// Product pages
-		const products = await getProducts();
-		if (Array.isArray(products)) {
-			for (const p of products) {
-				if (!p?.id) continue;
-				const updated = p.updatedAt ? new Date(p.updatedAt) : now;
-				entries.push(...buildLocalizedEntries(`/products/${p.id}`, updated, 0.7, 'weekly'));
-			}
-		}
-
-		// Article pages
-		const articles = await prisma.article.findMany({
-			where: { status: 'PUBLISHED' },
-			select: { slug: true, updatedAt: true },
-		});
-		if (Array.isArray(articles)) {
-			for (const a of articles) {
-				if (!a?.slug) continue;
-				const updated = a.updatedAt ? new Date(a.updatedAt) : now;
-				entries.push(...buildLocalizedEntries(`/article/${a.slug}`, updated, 0.6, 'monthly'));
-			}
-		}
-
-		// Dedupe and enforce limits
-		const deduped = dedupeKeepNewest(entries);
-		const limited = enforceSitemapUrlLimit(deduped);
-		return limited;
-	} catch (error) {
-		console.warn('Sitemap generation failed, returning fallback sitemap:', error);
-		return [
-			{ url: `${baseUrl}/`, lastModified: now, changeFrequency: 'daily', priority: 1.0 },
-			{ url: `${baseUrl}/ar`, lastModified: now, changeFrequency: 'daily', priority: 1.0 },
-		];
-	}
+interface SitemapEntry {
+  url: string;
+  lastModified: Date | string;
+  changeFrequency: ChangeFrequency;
+  priority: number;
+  alternates?: {
+    languages: Record<string, string>;
+  };
 }
 
+const LANGUAGES = ['en', 'ar'] as const;
+const DEFAULT_LANG = 'en';
 
+// تابع کمکی
+function createHreflangEntries(
+  path: string,
+  lastmod: Date,
+  priority: number,
+  freq: ChangeFrequency
+): SitemapEntry[] {
+  const baseUrl = getBaseUrl().replace(/\/$/, '');
+  const entries: SitemapEntry[] = [];
+
+  for (const lang of LANGUAGES) {
+    const localizedPath = lang === DEFAULT_LANG ? path : `/${lang}${path}`;
+    const url = `${baseUrl}${localizedPath}`;
+
+    const alternates: Record<string, string> = {};
+    for (const altLang of LANGUAGES) {
+      const altPath = altLang === DEFAULT_LANG ? path : `/${altLang}${path}`;
+      alternates[altLang] = `${baseUrl}${altPath}`;
+    }
+    alternates['x-default'] = `${baseUrl}${path}`;
+
+    entries.push({
+      url,
+      lastModified: lastmod,
+      changeFrequency: freq,
+      priority,
+      alternates: { languages: alternates },
+    });
+  }
+
+  return entries;
+}
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const now = new Date();
+  const entries: SitemapEntry[] = [];
+
+  try {
+    // === 1. Static Pages ===
+    const staticPages: Array<{
+      path: string;
+      priority: number;
+      freq: ChangeFrequency;
+    }> = [
+      { path: '/', priority: 1.0, freq: 'daily' },
+      { path: '/products', priority: 0.9, freq: 'daily' },
+      { path: '/about-us', priority: 0.8, freq: 'monthly' },
+      { path: '/article', priority: 0.8, freq: 'weekly' },
+      { path: '/faq', priority: 0.7, freq: 'monthly' },
+      { path: '/affiliate', priority: 0.7, freq: 'monthly' },
+      { path: '/contact', priority: 0.8, freq: 'monthly' },
+      { path: '/privacy', priority: 0.3, freq: 'yearly' },
+      { path: '/terms', priority: 0.3, freq: 'yearly' },
+      { path: '/checkout', priority: 0.5, freq: 'weekly' },
+      { path: '/register', priority: 0.4, freq: 'monthly' },
+      { path: '/login', priority: 0.4, freq: 'monthly' },
+    ];
+
+    for (const { path, priority, freq } of staticPages) {
+      entries.push(...createHreflangEntries(path, now, priority, freq));
+    }
+
+    // === 2. Categories (بدون status — فقط slug و updatedAt) ===
+    const categories = await prisma.category.findMany({
+      select: { slug: true, updatedAt: true },
+      take: 1000,
+    });
+
+    for (const cat of categories) {
+      if (!cat.slug) continue;
+      const lastmod = cat.updatedAt ? new Date(cat.updatedAt) : now;
+      entries.push(...createHreflangEntries(`/categories/${cat.slug}`, lastmod, 0.9, 'weekly'));
+    }
+
+    // === 3. Products ===
+    const products = await getProducts();
+    if (Array.isArray(products)) {
+      for (const p of products) {
+        if (!p?.id) continue;
+        const lastmod = p.updatedAt ? new Date(p.updatedAt) : now;
+        entries.push(...createHreflangEntries(`/products/${p.id}`, lastmod, 0.7, 'weekly'));
+      }
+    }
+
+    // === 4. Articles ===
+    const articles = await prisma.article.findMany({
+      where: { status: 'PUBLISHED' }, // این احتمالاً درسته
+      select: { slug: true, updatedAt: true },
+      take: 5000,
+    });
+
+    for (const a of articles) {
+      if (!a?.slug) continue;
+      const lastmod = a.updatedAt ? new Date(a.updatedAt) : now;
+      entries.push(...createHreflangEntries(`/article/${a.slug}`, lastmod, 0.6, 'monthly'));
+    }
+
+    // === 5. Dedupe ===
+    const seen = new Set<string>();
+    const deduped: SitemapEntry[] = [];
+    for (const entry of entries) {
+      if (!seen.has(entry.url)) {
+        seen.add(entry.url);
+        deduped.push(entry);
+      }
+    }
+
+    // === 6. Limit to 50k ===
+    return deduped.slice(0, 50000);
+
+  } catch (error) {
+    console.error('Sitemap generation failed:', error);
+    return createHreflangEntries('/', now, 1.0, 'daily');
+  }
+}

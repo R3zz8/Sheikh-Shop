@@ -5,7 +5,8 @@ import Categories from '@/components/Categories';
 import AmazingDeals from '@/components/AmazingDeals';
 import FAQSchema from '@/components/seo/FAQSchema';
 import CarouselMobile from '@/components/CarouselMobile';
-
+import '@fontsource/inter/400.css';     // Regular
+import '@fontsource/tajawal/400.css';    // Regular
 export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-950 via-stone-900 to-amber-950 relative">

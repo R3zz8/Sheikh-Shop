@@ -1,3 +1,4 @@
+// app/layout.tsx
 import type { Metadata } from 'next';
 import './globals.css';
 import ClientHeader from '@/components/ClientHeader';
@@ -8,30 +9,88 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 import ReactQueryProvider from '@/providers/ReactQuery';
 import { CurrencyProvider } from '@/providers/CurrencyProvider';
 import { OrganizationJsonLd, WebsiteJsonLd } from '@/components/seo/JsonLd';
-import { generateMetadata as generateSEOMetadata } from '@/lib/seo/metadata';
+import { generateSEO } from '@/lib/seo/metadata';
 import AccessibilityEnhancements from '@/components/accessibility/AccessibilityEnhancements';
 import ShoppingChatbot from '@/components/ai/ShoppingChatbot';
 import EnhancedAISearch from '@/components/ai/EnhancedAISearch';
 import Link from 'next/link';
 
+// === فونت‌ها از @fontsource (بدون localFont) ===
+import '@fontsource/inter/400.css';
+import '@fontsource/tajawal/400.css';
 
-// Font variables with fallbacks
-const fontVariables = '--font-inter --font-poppins --font-jetbrains-mono';
+// === generateMetadata ===
+export async function generateMetadata({
+  params,
+}: {
+  params: { lang?: string; slug?: string[]; id?: string };
+}): Promise<Metadata> {
+  const lang = params?.lang || 'en';
+  const isArabic = lang === 'ar';
 
-export const metadata: Metadata = generateSEOMetadata({
-  title: 'Sheikh Shop - Premium Luxury Products',
-  description: 'Discover our curated collection of premium luxury products. Experience exceptional quality and craftsmanship with Sheikh Shop.',
-  keywords: ['luxury', 'premium', 'products', 'sheikh shop', 'quality', 'craftsmanship'],
-  canonical: '/',
-});
+  const path = params?.slug?.join('/') || '';
+  const currentPath = path ? `/${path}` : '/';
+  const cleanPath = currentPath.replace(/^\/ar/, '') || '/';
 
+  const seoMap: Record<string, { en: string; ar: string }> = {
+    '/': {
+      en: 'Pure Honey, Premium Dates, Saffron | Sheikh Shop',
+      ar: 'عسل جبلي طبيعي، تمر فاخر، زعفران سوبر نجين | شيخ شوب',
+    },
+    '/products': {
+      en: 'Natural Honey, Dates & Saffron | Sheikh Shop',
+      ar: 'عسل طبيعي، تمر فاخر، زعفران | شيخ شوب',
+    },
+    '/categories/honey': {
+      en: 'Pure Natural Honey | 100% Raw & Organic | Sheikh Shop',
+      ar: 'عسل جبلي طبيعي 100% | خام وعضوي | شيخ شوب',
+    },
+    '/categories/dates': {
+      en: 'Premium Majdool & Piarom Dates | Fresh Harvest',
+      ar: 'تمور المجدول والپیاروم الفاخرة | محصول طازج',
+    },
+    '/categories/saffron': {
+      en: 'Super Negin Saffron | Lab-Tested & Certified',
+      ar: 'زعفران سوبر نجين | فحص مخبري وشهادة جودة',
+    },
+    '/categories/others': {
+      en: 'Natural & Organic Products | Sheikh Shop',
+      ar: 'منتجات طبيعية وعضوية | شيخ شوب',
+    },
+  };
+
+  const defaultSEO = seoMap['/'] || { en: 'Sheikh Shop', ar: 'شيخ شوب' };
+  const pageSEO = seoMap[cleanPath] || defaultSEO;
+
+  const title = isArabic ? pageSEO.ar : pageSEO.en;
+  const description = isArabic
+    ? 'عسل طبيعي 100%، تمور المجدول والپیاروم، زعفران سوبر نجين مع شحن مجاني عالمي.'
+    : '100% Natural Mountain Honey, Majdool & Piarom Dates, Premium Saffron. Free Worldwide Shipping.';
+
+  return generateSEO({
+    title,
+    description,
+    keywords: isArabic
+      ? ['عسل طبيعي', 'تمر فاخر', 'زعفران', 'شيخ شوب', 'شحن مجاني']
+      : ['natural honey', 'premium dates', 'saffron', 'sheikh shop', 'free shipping'],
+    canonical: cleanPath,
+    ogImage: `/og-${lang}.jpg`,
+  });
+}
+
+// === RootLayout ===
 export default function RootLayout({
   children,
+  params,
 }: {
   children: React.ReactNode;
+  params: { lang?: string };
 }) {
+  const lang = params?.lang || 'en';
+  const isArabic = lang === 'ar';
+
   return (
-    <html lang="en" className={fontVariables}>
+    <html lang={lang} dir={isArabic ? 'rtl' : 'ltr'}>
       <head>
         <link rel="icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
@@ -44,14 +103,13 @@ export default function RootLayout({
         <OrganizationJsonLd />
         <WebsiteJsonLd />
       </head>
-      <body className="antialiased">
+      <body className="antialiased font-sans">
         <AccessibilityEnhancements />
         <ErrorBoundary>
           <ReactQueryProvider>
             <CurrencyProvider>
               <div className="flex flex-col min-h-screen">
                 <ClientHeader />
-                {/* Feature toolbar below header */}
                 <div className="sticky top-20 z-40 w-full bg-amber-950/90 backdrop-blur supports-[backdrop-filter]:bg-amber-950/70 border-b border-amber-200/10">
                   <div className="max-w-7xl mx-auto px-6 md:px-8 py-3 flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
                     <div className="w-full md:max-w-xl">
@@ -72,7 +130,7 @@ export default function RootLayout({
               </div>
               <Toaster />
               <ShoppingChatbot />
-             </CurrencyProvider>
+            </CurrencyProvider>
           </ReactQueryProvider>
         </ErrorBoundary>
       </body>

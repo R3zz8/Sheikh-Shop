@@ -1,13 +1,41 @@
+// tailwind.config.ts
 import type { Config } from 'tailwindcss';
 
-export default {
+const config: Config = {
   darkMode: ['class'],
-  content: ['./src/**/*.{js,ts,jsx,tsx,mdx}'],
+  content: [
+    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
+  ],
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'sans-serif'],
-        heading: ['Poppins', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'sans-serif'],
+        sans: [
+          'Inter',           // انگلیسی
+          'Tajawal',         // عربی
+          'ui-sans-serif',
+          'system-ui',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          '"Segoe UI"',
+          'Roboto',
+          '"Helvetica Neue"',
+          'Arial',
+          '"Noto Sans"',
+          'sans-serif',
+          '"Apple Color Emoji"',
+          '"Segoe UI Emoji"',
+          '"Segoe UI Symbol"',
+          '"Noto Color Emoji"',
+        ],
+        heading: [
+          'Poppins',
+          'Inter',
+          'Tajawal',
+          'ui-sans-serif',
+          'system-ui',
+        ],
         mono: ['JetBrains Mono', 'monospace'],
       },
       colors: {
@@ -166,3 +194,5 @@ export default {
     require('@tailwindcss/typography'),
   ],
 } satisfies Config;
+
+export default config;

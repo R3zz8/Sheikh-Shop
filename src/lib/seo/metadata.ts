@@ -1,3 +1,4 @@
+// lib/seo/metadata.ts
 import type { Metadata } from 'next';
 import { buildLanguageAlternates, getBaseUrl } from './hreflang';
 
@@ -12,7 +13,7 @@ export interface SEOProps {
   structuredData?: any;
 }
 
-export function generateMetadata({
+export function generateSEO({
   title,
   description,
   keywords = [],
@@ -126,10 +127,9 @@ export function generateProductMetadata(product: {
     'luxury food',
   ];
 
-  // Prefer dynamic OG image API route
   const ogImage = `/api/og/product?id=${product.id}`;
 
-  return generateMetadata({
+  return generateSEO({
     title,
     description,
     keywords,
@@ -161,7 +161,7 @@ export function generateArticleMetadata(article: {
 
   const ogImage = `/api/og/article?slug=${article.slug}`;
 
-  return generateMetadata({
+  return generateSEO({
     title,
     description,
     keywords,
@@ -187,7 +187,7 @@ export function generateCategoryMetadata(category: string) {
     'middle eastern products',
   ];
 
-  return generateMetadata({
+  return generateSEO({
     title,
     description,
     keywords,

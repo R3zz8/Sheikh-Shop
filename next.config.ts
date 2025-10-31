@@ -1,18 +1,31 @@
+// next.config.ts
 import type { NextConfig } from 'next';
+import type { Configuration as WebpackConfig } from 'webpack';
 
+// === تایپ درست برای webpack callback در Next.js 15+ ===
+interface WebpackContext {
+  dev: boolean;
+  isServer: boolean;
+  buildId: string;
+  dir: string;
+  config: NextConfig;
+  defaultLoaders: any;
+  totalPages: number;
+}
+
+// === NextConfig اصلی ===
 const nextConfig: NextConfig = {
-  // ESLint: Ignore during production builds
+  output: 'standalone',
+
   eslint: {
     ignoreDuringBuilds: true,
   },
 
-  // Security: Enhanced security headers
   async headers() {
     return [
       {
         source: '/(.*)',
         headers: [
-          // Security: Content Security Policy
           {
             key: 'Content-Security-Policy',
             value: [
@@ -30,177 +43,87 @@ const nextConfig: NextConfig = {
               "upgrade-insecure-requests",
             ].join('; '),
           },
-          // Security: X-Frame-Options
-          {
-            key: 'X-Frame-Options',
-            value: 'DENY',
-          },
-          // Security: X-Content-Type-Options
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
-          },
-          // Security: X-XSS-Protection
-          {
-            key: 'X-XSS-Protection',
-            value: '1; mode=block',
-          },
-          // Security: Referrer Policy
-          {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin',
-          },
-          // Security: Permissions Policy
-          {
-            key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()',
-          },
-          // Security: Strict-Transport-Security (HSTS)
-          {
-            key: 'Strict-Transport-Security',
-            value: 'max-age=31536000; includeSubDomains; preload',
-          },
-          // Security: Cache Control for sensitive pages
-          {
-            key: 'Cache-Control',
-            value: 'no-store, no-cache, must-revalidate, proxy-revalidate',
-          },
-          // Security: Pragma
-          {
-            key: 'Pragma',
-            value: 'no-cache',
-          },
-          // Security: Expires
-          {
-            key: 'Expires',
-            value: '0',
-          },
-          // Security: X-DNS-Prefetch-Control
-          {
-            key: 'X-DNS-Prefetch-Control',
-            value: 'on',
-          },
+          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'X-XSS-Protection', value: '1; mode=block' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()' },
+          { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains; preload' },
+          { key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+          { key: 'Pragma', value: 'no-cache' },
+          { key: 'Expires', value: '0' },
+          { key: 'X-DNS-Prefetch-Control', value: 'on' },
         ],
       },
-      // Security: Additional headers for API routes
       {
         source: '/api/(.*)',
         headers: [
-          {
-            key: 'Cache-Control',
-            value: 'no-store, no-cache, must-revalidate, proxy-revalidate',
-          },
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
-          },
-          {
-            key: 'X-Frame-Options',
-            value: 'DENY',
-          },
+          { key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'X-Frame-Options', value: 'DENY' },
         ],
       },
     ];
   },
 
-  // Performance: Image optimization
   images: {
     formats: ['image/webp', 'image/avif'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    qualities: [25, 50, 75, 85, 100],
     minimumCacheTTL: 60,
     dangerouslyAllowSVG: true,
-    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
-    // Allow external image domains for development and production
     remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'images.unsplash.com',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'res.cloudinary.com',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'via.placeholder.com',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'picsum.photos',
-        port: '',
-        pathname: '/**',
-      },
+      { protocol: 'https', hostname: 'images.unsplash.com', pathname: '/**' },
+      { protocol: 'https', hostname: 'res.cloudinary.com', pathname: '/**' },
+      { protocol: 'https', hostname: 'via.placeholder.com', pathname: '/**' },
+      { protocol: 'https', hostname: 'picsum.photos', pathname: '/**' },
     ],
-    // Alternative: Use domains array for simpler configuration
-    // domains: ['images.unsplash.com', 'res.cloudinary.com', 'via.placeholder.com', 'picsum.photos'],
   },
 
-  // Performance: Bundle optimization
   experimental: {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
   },
 
-  // Turbopack configuration (stable in Next.js 15)
-  turbopack: {
-    rules: {
-      '*.svg': {
-        loaders: ['@svgr/webpack'],
-        as: '*.js',
-      },
-    },
-  },
+  turbopack: true,
 
-  // Security: Disable powered by header
   poweredByHeader: false,
-
-  // Performance: Compression
   compress: true,
-
-  // Development: Source maps in development only
   productionBrowserSourceMaps: false,
-
-  // Security: Disable directory listing
   trailingSlash: false,
-
-  // Performance: Static optimization
   staticPageGenerationTimeout: 120,
 
-  // Security: Environment variables validation
-  env: {
-    CUSTOM_KEY: process.env.CUSTOM_KEY,
-  },
+  // === Webpack با تایپ کامل (بدون ارور) ===
+  webpack: (
+    config: WebpackConfig,
+    context: WebpackContext
+  ): WebpackConfig => {
+    const { dev, isServer } = context;
 
-  // Performance: Webpack optimizations
-  webpack: (config, { dev, isServer }) => {
-    // Exclude server-side modules from client-side bundle
+    // حذف ماژول‌های غیرضروری از کلاینت
     if (!isServer) {
+      config.resolve = config.resolve || {};
       config.resolve.fallback = {
         ...config.resolve.fallback,
-        'natural': false,
+        natural: false,
         'webworker-threads': false,
       };
     }
 
-    // Security: Disable eval in production
+    // فشرده‌سازی در production
     if (!dev) {
+      config.optimization = config.optimization || {};
       config.optimization.minimize = true;
     }
 
-    // Performance: Bundle analyzer in development
+    // آنالیز باندل فقط در dev
     if (dev && !isServer) {
-      const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
+      const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer') as typeof import('webpack-bundle-analyzer');
+      config.plugins = config.plugins || [];
       config.plugins.push(
         new BundleAnalyzerPlugin({
           analyzerMode: 'static',
           openAnalyzer: false,
+          reportFilename: '../.reports/bundle-analyzer-report.html',
         })
       );
     }
