@@ -5,8 +5,7 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Clock, Star, Zap, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
-import { formatPrice, convertCurrency } from '@/lib/currency';
-import { useCurrencySafe } from '@/providers/CurrencyProvider';
+import { formatPrice } from '@/lib/currency'; // فقط formatPrice استفاده می‌کنیم
 import { useAmazingDeals } from '@/hooks/useAmazingDeals';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Autoplay, Keyboard } from 'swiper/modules';
@@ -14,7 +13,6 @@ import { Navigation, Autoplay, Keyboard } from 'swiper/modules';
 // Import Swiper styles
 import 'swiper/css';
 import 'swiper/css/navigation';
-
 
 interface Product {
   id: string;
@@ -29,13 +27,14 @@ interface Product {
 
 export default function AmazingDeals() {
   const [isClient, setIsClient] = useState(false);
-  const { currency } = useCurrencySafe();
   const { products, loading, error } = useAmazingDeals();
-  
+
+  // همیشه یورو — ثابت
+  const CURRENCY = 'EUR';
+
   useEffect(() => {
     setIsClient(true);
   }, []);
-  
 
   const [timeLeft, setTimeLeft] = useState({
     hours: 23,
@@ -185,7 +184,7 @@ export default function AmazingDeals() {
             transition={{ duration: 0.6 }}
             className="text-center"
           >
-            <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent mb-4">
+            <h2 className="text-3xl md:text-4xl font-old bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent mb-4">
               Amazing Deals
             </h2>
             <p className="text-gray-300 text-lg max-w-2xl mx-auto mb-8">
@@ -281,7 +280,6 @@ export default function AmazingDeals() {
               onlyInViewport: true,
             }}
             breakpoints={{
-              // ≤360px → 1 column; >360px and ≤768px → 2 columns
               0: { slidesPerView: 1, spaceBetween: 12 },
               361: { slidesPerView: 2, spaceBetween: 12 },
               769: { slidesPerView: 3, spaceBetween: 20 },
@@ -295,7 +293,7 @@ export default function AmazingDeals() {
               const discount = hasDiscount ? product.discounts[0] : null;
               const discountPercentage = discount ? discount.value : 0;
               
-              // Get the lowest available price (from ProductUnits or basePrice)
+              // Get the lowest available price
               const getLowestPrice = () => {
                 if (product.units && product.units.length > 0) {
                   const activeUnits = product.units.filter(unit => unit.isActive && unit.stock > 0);
@@ -306,7 +304,6 @@ export default function AmazingDeals() {
                       : lowestUnitPrice;
                   }
                 }
-                // Fallback to basePrice
                 return hasDiscount 
                   ? product.basePrice * (1 - discountPercentage / 100)
                   : product.basePrice;
@@ -314,10 +311,6 @@ export default function AmazingDeals() {
               
               const finalPrice = getLowestPrice();
               const hasMultipleUnits = product.units && product.units.length > 1;
-              
-              // Convert prices to current currency (basePrice is in EUR)
-              const convertedFinalPrice = convertCurrency(finalPrice, 'EUR', currency);
-              const convertedBasePrice = convertCurrency(product.basePrice, 'EUR', currency);
 
               return (
                 <SwiperSlide key={product.id}>
@@ -366,11 +359,11 @@ export default function AmazingDeals() {
                           <div className="space-y-1">
                             <div className="flex items-baseline gap-2">
                               <span className="text-base md:text-lg font-bold text-amber-200">
-                                {hasMultipleUnits ? 'from ' : ''}{formatPrice(convertedFinalPrice, currency)}
+                                {hasMultipleUnits ? 'from ' : ''}{formatPrice(finalPrice, CURRENCY)}
                               </span>
                               {hasDiscount && (
                                 <span className="text-xs md:text-sm text-gray-400 line-through">
-                                  {hasMultipleUnits ? 'from ' : ''}{formatPrice(convertedBasePrice, currency)}
+                                  {hasMultipleUnits ? 'from ' : ''}{formatPrice(product.basePrice, CURRENCY)}
                                 </span>
                               )}
                             </div>
@@ -467,7 +460,6 @@ export default function AmazingDeals() {
           cursor: not-allowed !important;
         }
         
-        /* Hide navigation arrows on mobile */
         @media (max-width: 767px) {
           .swiper-button-prev-amazing,
           .swiper-button-next-amazing {
@@ -477,14 +469,8 @@ export default function AmazingDeals() {
           .amazing-deals-swiper {
             padding: 0 20px !important;
           }
-          /* Slightly reduce outer spacing on small screens */
-          .amazing-deals-swiper .swiper-slide .p-4 { padding: 0.75rem !important; }
-          .amazing-deals-swiper .swiper-slide h3 { font-size: 0.875rem; }
-          .amazing-deals-swiper .swiper-slide .text-lg { font-size: 1rem; }
-          .amazing-deals-swiper .swiper-slide .text-sm { font-size: 0.75rem; }
         }
         
-        /* Ensure equal height cards */
         .amazing-deals-swiper .swiper-slide {
           height: auto !important;
         }

@@ -4,23 +4,28 @@ import { motion } from 'framer-motion';
 import type { ProductsWithImages } from '@/types';
 import ImageGallery from './ImageGallery';
 import ProductInfo from './ProductInfo';
-import AddToCartButton from './AddToCartButton';
 import ProductRecommendations from '@/components/recommendations/ProductRecommendations';
 import BundleRecommendations from '@/components/recommendations/BundleRecommendations';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import ProductDetailSkeleton from '@/components/ui/ProductDetailSkeleton';
 
 interface ProductDetailPageProps {
-    product: ProductsWithImages;
+    product: ProductsWithImages & {
+        displayPrice: string;
+        lowestPrice?: string;
+        basePrice: number;
+    };
     allProducts?: ProductsWithImages[];
 }
 
 export default function ProductDetailPage({ product, allProducts = [] }: ProductDetailPageProps) {
-    // Add data validation and logging
+    // لاگ برای دیباگ
     console.log('ProductDetailPage: Received product data:', {
         id: product?.id,
         name: product?.name,
-        baseUnit: product?.baseUnit,
+        basePrice: product?.basePrice,
+        displayPrice: product?.displayPrice,
+        lowestPrice: product?.lowestPrice,
         units: product?.units?.length || 0,
         images: product?.images?.length || 0
     });
@@ -33,7 +38,7 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
     return (
         <ErrorBoundary>
             <div className="min-h-screen bg-gradient-to-br from-amber-950/95 via-stone-900/95 to-amber-950/95 relative overflow-hidden">
-                {/* Animated background effects matching header/footer */}
+                {/* Animated background effects */}
                 <div className="absolute inset-0">
                     <div className="absolute inset-0 bg-gradient-radial from-amber-500/3 via-orange-500/2 to-yellow-500/3 pointer-events-none" />
                     <div className="absolute inset-0 bg-gradient-to-b from-amber-500/2 via-transparent to-orange-500/2 pointer-events-none" />
@@ -48,27 +53,24 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
                         transition={{ duration: 0.6 }}
                         className="max-w-7xl mx-auto"
                     >
-                        {/* Main product card with glowing border */}
+                        {/* Main product card */}
                         <div className="relative group">
-                            {/* Glowing border effect matching header/footer theme */}
                             <div className="absolute -inset-1 bg-gradient-to-r from-amber-200/15 via-yellow-200/15 to-orange-200/15 rounded-3xl opacity-0 group-hover:opacity-100 transition-all duration-700" />
 
-                            {/* Main card */}
                             <div className="relative bg-white/8 backdrop-blur-xl border border-white/15 rounded-3xl p-4 md:p-8 shadow-xl">
                                 <div className="grid lg:grid-cols-2 gap-6 lg:gap-12 items-start mobile-two-col">
-                                    {/* Left side - Image Gallery */}
+                                    {/* Image Gallery */}
                                     <ErrorBoundary fallback={
                                         <div className="bg-white/5 rounded-lg p-8 text-center">
                                             <p className="text-gray-300">Failed to load image gallery</p>
                                         </div>
                                     }>
-                                        {/* Mobile: left column (approx 50% width) */}
                                         <div className="mobile-gallery-col mx-auto w-[50vw] max-w-[340px] md:max-w-none md:w-full">
                                             <ImageGallery images={product.images} productName={product.name} />
                                         </div>
                                     </ErrorBoundary>
 
-                                    {/* Right side - Product Info */}
+                                    {/* Product Info */}
                                     <ErrorBoundary fallback={
                                         <div className="bg-white/5 rounded-lg p-8 text-center">
                                             <div className="animate-pulse">
@@ -80,7 +82,6 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
                                             <p className="text-gray-300 mt-4">Failed to load product information</p>
                                         </div>
                                     }>
-                                        {/* Mobile: right column (details) */}
                                         <div className="mobile-info-col w-full">
                                             <ProductInfo product={product} />
                                         </div>
@@ -90,7 +91,7 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
                         </div>
                     </motion.div>
 
-                    {/* Recommendations Section */}
+                    {/* Recommendations */}
                     {allProducts.length > 0 && (
                         <motion.div
                             initial={{ opacity: 0, y: 50 }}
@@ -99,7 +100,6 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
                             className="container mx-auto px-4 py-12"
                         >
                             <div className="space-y-12">
-                                {/* Bundle Recommendations */}
                                 <ErrorBoundary fallback={
                                     <div className="bg-white/5 rounded-lg p-8 text-center">
                                         <p className="text-gray-300">Failed to load bundle recommendations</p>
@@ -112,7 +112,6 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
                                     />
                                 </ErrorBoundary>
 
-                                {/* Cross-sell Recommendations */}
                                 <ErrorBoundary fallback={
                                     <div className="bg-white/5 rounded-lg p-8 text-center">
                                         <p className="text-gray-300">Failed to load recommendations</p>
@@ -127,7 +126,6 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
                                     />
                                 </ErrorBoundary>
 
-                                {/* Personalized Recommendations */}
                                 <ErrorBoundary fallback={
                                     <div className="bg-white/5 rounded-lg p-8 text-center">
                                         <p className="text-gray-300">Failed to load personalized recommendations</p>
@@ -148,12 +146,11 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
             </div>
         </ErrorBoundary>
     );
-} 
+}
+
 /**
- * Mobile-only two-column layout using CSS grid overrides.
- * Keeps desktop/tablet intact while arranging gallery (left ~50vw) and info (right) on <=480px.
+ * Mobile-only two-column layout
  */
-// eslint-disable-next-line @next/next/no-css-tags
 <style jsx global>{`
   @media (max-width: 480px) {
     .mobile-two-col {
