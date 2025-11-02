@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 
-// Lazy load the 3D component
+// Lazy load the 3D component - auto-loads when in view
 const PalmTreeContainer = dynamic(() => import('./PalmTree'), {
   ssr: false,
   loading: () => (
@@ -34,14 +34,14 @@ export default function OptimizedPalmTree({
   className = '',
   posterImage = '/palm-tree-poster.jpg',
 }: OptimizedPalmTreeProps) {
-  const [isInView, setIsInView] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
   const [shouldLoad, setShouldLoad] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Check for reduced motion preference
+  // Check for reduced motion preference - SSR safe
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     setPrefersReducedMotion(mediaQuery.matches);
 
@@ -53,19 +53,20 @@ export default function OptimizedPalmTree({
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
-  // Intersection Observer for lazy loading
+  // Auto-load when component comes into view - no user interaction required
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry?.isIntersecting) {
-          setIsInView(true);
-          // Add a small delay to ensure smooth transition
-          setTimeout(() => setShouldLoad(true), 100);
+          // Auto-load immediately when in view
+          setShouldLoad(true);
         }
       },
       {
-        threshold: 0.1,
-        rootMargin: '50px',
+        threshold: 0.01,
+        rootMargin: '100px', // Start loading slightly before visible
       }
     );
 
@@ -76,17 +77,18 @@ export default function OptimizedPalmTree({
     return () => observer.disconnect();
   }, []);
 
-  const handleLoad = useCallback(() => {
-    setIsLoaded(true);
-  }, []);
+  // Handle both fixed heights (like "500px") and percentage heights (like "100%")
+  const heightStyle = height === '100%' 
+    ? { height: '100%', minHeight: '250px' }
+    : { height };
 
-  // Show static poster if user prefers reduced motion
+  // Show static poster only if user prefers reduced motion
   if (prefersReducedMotion) {
     return (
       <div
         ref={containerRef}
         className={`relative w-full ${className}`}
-        style={{ height }}
+        style={heightStyle}
       >
         <div className="w-full h-full rounded-2xl overflow-hidden shadow-2xl">
           <Image
@@ -97,11 +99,6 @@ export default function OptimizedPalmTree({
             priority
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-          <div className="absolute bottom-4 left-4 text-white">
-            <h3 className="text-xl font-bold">Premium Date Palm</h3>
-            <p className="text-sm opacity-90">Authentic Middle Eastern Heritage</p>
-          </div>
         </div>
       </div>
     );
@@ -111,10 +108,10 @@ export default function OptimizedPalmTree({
     <div
       ref={containerRef}
       className={`relative w-full ${className}`}
-      style={{ height }}
+      style={heightStyle}
     >
-      {/* Static poster image as fallback */}
-      {!isLoaded && (
+      {/* Static poster image as fallback while loading */}
+      {!shouldLoad && (
         <div className="absolute inset-0 w-full h-full rounded-2xl overflow-hidden shadow-2xl">
           <Image
             src={posterImage}
@@ -124,31 +121,12 @@ export default function OptimizedPalmTree({
             priority
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-          <div className="absolute bottom-4 left-4 text-white">
-            <h3 className="text-xl font-bold">Premium Date Palm</h3>
-            <p className="text-sm opacity-90">Click to explore in 3D</p>
-          </div>
-          {isInView && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-              <button
-                onClick={() => setShouldLoad(true)}
-                className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 shadow-lg"
-              >
-                Explore in 3D
-              </button>
-            </div>
-          )}
         </div>
       )}
 
-      {/* 3D Component - only load when in view and user wants it */}
+      {/* 3D Component - Auto-loads when in view */}
       {shouldLoad && (
-        <div
-          className={`w-full h-full transition-opacity duration-500 ${
-            isLoaded ? 'opacity-100' : 'opacity-0'
-          }`}
-        >
+        <div className="w-full h-full">
           <PalmTreeContainer
             height={height}
             enableControls={enableControls}
@@ -159,7 +137,7 @@ export default function OptimizedPalmTree({
         </div>
       )}
 
-      {/* Decorative overlay */}
+      {/* Subtle decorative overlay - no text or buttons */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-4 right-4 w-16 h-16 bg-gradient-to-br from-amber-400/20 to-orange-400/20 rounded-full blur-xl" />
         <div className="absolute bottom-4 left-4 w-12 h-12 bg-gradient-to-br from-yellow-400/20 to-amber-400/20 rounded-full blur-lg" />

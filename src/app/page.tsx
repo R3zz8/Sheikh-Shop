@@ -35,37 +35,77 @@ export default function Home() {
       />
 
       <div className="relative z-10">
-        {/* Hero Section with 3D Palm Tree */}
+        {/* Hero Section with 3D Palm Tree - Always Horizontal */}
         <section className="container-fluid section-padding">
-          <div className="max-w-6xl mx-auto">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-              {/* Text Content */}
-              <div className="text-center lg:text-left">
-                <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent mb-6">
+          <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
+            {/* Grid with 2 columns that never wrap - scales proportionally */}
+            <div 
+              className="grid items-center overflow-hidden"
+              style={{
+                gridTemplateColumns: '1fr 1fr',
+                gap: 'clamp(0.5rem, 3vw, 2rem)',
+                minHeight: 'clamp(400px, 85vh, 700px)',
+                width: '100%',
+              }}
+            >
+              {/* Text Content - Left Column */}
+              <div className="text-left overflow-hidden flex flex-col justify-center pr-2 sm:pr-4">
+                <h1 
+                  className="font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent mb-3 sm:mb-4 md:mb-6"
+                  style={{
+                    fontSize: 'clamp(1.25rem, 3.5vw + 0.75rem, 3.75rem)',
+                    lineHeight: '1.1',
+                    wordBreak: 'break-word',
+                  }}
+                >
                   Welcome to Sheikh Shop
                 </h1>
-                <p className="text-gray-300 text-lg md:text-xl max-w-2xl lg:max-w-none mb-8">
+                <p 
+                  className="text-gray-300 mb-4 sm:mb-6 md:mb-8 leading-relaxed"
+                  style={{
+                    fontSize: 'clamp(0.75rem, 1.25vw + 0.5rem, 1.25rem)',
+                    lineHeight: '1.6',
+                  }}
+                >
                   Experience luxury redefined with our curated collection of premium products,
                   inspired by the elegance of Arabian heritage.
                 </p>
-                <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-4">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 md:gap-4">
                   <Link href="/products">
-                    <Button className="btn-primary text-lg">
+                    <Button 
+                      className="btn-primary whitespace-nowrap"
+                      style={{
+                        fontSize: 'clamp(0.75rem, 0.9vw + 0.5rem, 1.125rem)',
+                        padding: 'clamp(0.5rem, 1.25vw, 0.875rem) clamp(0.875rem, 1.75vw, 1.5rem)',
+                      }}
+                    >
                       Explore Products
                     </Button>
                   </Link>
                   <Link href="/register">
-                    <Button className="btn-secondary text-lg">
+                    <Button 
+                      className="btn-secondary whitespace-nowrap"
+                      style={{
+                        fontSize: 'clamp(0.75rem, 0.9vw + 0.5rem, 1.125rem)',
+                        padding: 'clamp(0.5rem, 1.25vw, 0.875rem) clamp(0.875rem, 1.75vw, 1.5rem)',
+                      }}
+                    >
                       Get Started
                     </Button>
                   </Link>
                 </div>
               </div>
 
-              {/* Optimized 3D Palm Tree */}
-              <div className="relative">
+              {/* Optimized 3D Palm Tree - Right Column */}
+              <div 
+                className="relative w-full flex items-center justify-center overflow-hidden"
+                style={{ 
+                  height: 'clamp(250px, 45vw, 600px)',
+                  minHeight: '250px',
+                }}
+              >
                 <OptimizedPalmTree
-                  height="500px"
+                  height="100%"
                   enableControls={true}
                   autoRotate={true}
                   intensity={1.2}
