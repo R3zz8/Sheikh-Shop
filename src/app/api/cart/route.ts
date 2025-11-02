@@ -28,6 +28,7 @@ export async function GET(request: NextRequest) {
         const userId = await getUserIdFromToken(request);
 
         if (!userId) {
+            console.error('Unauthorized cart access attempt (GET):', { cookie: request.cookies.get('session-token')?.value, timestamp: new Date().toISOString() });
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
@@ -61,6 +62,7 @@ export async function POST(request: NextRequest) {
         const userId = await getUserIdFromToken(request);
 
         if (!userId) {
+            console.error('Unauthorized cart access attempt (POST):', { cookie: request.cookies.get('session-token')?.value, timestamp: new Date().toISOString() });
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
@@ -192,6 +194,7 @@ export async function PUT(request: NextRequest) {
         const userId = await getUserIdFromToken(request);
 
         if (!userId) {
+            console.error('Unauthorized cart access attempt (PUT):', { cookie: request.cookies.get('session-token')?.value, timestamp: new Date().toISOString() });
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
@@ -284,6 +287,7 @@ export async function DELETE(request: NextRequest) {
         const userId = await getUserIdFromToken(request);
 
         if (!userId) {
+            console.error('Unauthorized cart access attempt (DELETE):', { cookie: request.cookies.get('session-token')?.value, timestamp: new Date().toISOString() });
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 

@@ -71,11 +71,23 @@ export async function verifyJwtToken(token: string): Promise<JWTPayload | null> 
       return null;
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET, {
-      algorithms: ['HS256'],
-      issuer: 'sheikh-shop',
-      audience: 'sheikh-shop-users',
-    });
+    let decoded;
+    try {
+        decoded = jwt.verify(token, JWT_SECRET, {
+            algorithms: ['HS256'],
+            issuer: 'sheikh-shop',
+            audience: 'sheikh-shop-users',
+        });
+    } catch (error) {
+        if (error instanceof jwt.JsonWebTokenError) {
+            console.error('JWT Verification Error:', {
+                name: error.name,
+                message: error.message,
+                token: token.slice(0, 15) + '...', // Log a truncated token
+            });
+        }
+        throw error; // Re-throw to be caught by the outer try-catch
+    }
 
     return decoded as unknown as JWTPayload;
   } catch (error) {

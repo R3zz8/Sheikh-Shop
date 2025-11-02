@@ -127,13 +127,24 @@ export const useCart = () => {
 
       return { previousCart };
     },
-    onError: (error, variables, context) => {
+    onError: (error: Error, variables, context) => {
       console.error('❌ Add to cart mutation error:', error);
+      if (error.message.includes('Unauthorized') || error.message.includes('401')) {
+          toast.error('Your session has expired. Please log in again.');
+          // Invalidate user query to trigger re-authentication flow
+          queryClient.invalidateQueries({ queryKey: ['user'] });
+          // Optional: Redirect to login page after a short delay
+          setTimeout(() => {
+              window.location.href = '/login';
+          }, 2000);
+      } else {
+          toast.error(error.message || 'Failed to add to cart');
+      }
+
       // Revert optimistic update
       if (context?.previousCart) {
         queryClient.setQueryData(['cart'], context.previousCart);
       }
-      toast.error(error.message || 'Failed to add to cart');
     },
     onSuccess: (data) => {
       console.log('✅ Add to cart mutation success:', data);
@@ -199,11 +210,19 @@ export const useCart = () => {
 
       return { previousCart };
     },
-    onError: (error, variables, context) => {
+    onError: (error: Error, variables, context) => {
+      if (error.message.includes('Unauthorized') || error.message.includes('401')) {
+        toast.error('Your session has expired. Please log in again.');
+        queryClient.invalidateQueries({ queryKey: ['user'] });
+        setTimeout(() => {
+            window.location.href = '/login';
+        }, 2000);
+      } else {
+        toast.error(error.message || 'Failed to update cart');
+      }
       if (context?.previousCart) {
         queryClient.setQueryData(['cart'], context.previousCart);
       }
-      toast.error(error.message || 'Failed to update cart');
     },
     onSuccess: () => {
       toast.success('Cart updated successfully!');
@@ -243,11 +262,19 @@ export const useCart = () => {
 
       return { previousCart };
     },
-    onError: (error, variables, context) => {
+    onError: (error: Error, variables, context) => {
+      if (error.message.includes('Unauthorized') || error.message.includes('401')) {
+        toast.error('Your session has expired. Please log in again.');
+        queryClient.invalidateQueries({ queryKey: ['user'] });
+        setTimeout(() => {
+            window.location.href = '/login';
+        }, 2000);
+      } else {
+        toast.error(error.message || 'Failed to remove from cart');
+      }
       if (context?.previousCart) {
         queryClient.setQueryData(['cart'], context.previousCart);
       }
-      toast.error(error.message || 'Failed to remove from cart');
     },
     onSuccess: () => {
       toast.success('Item removed from cart');
@@ -283,11 +310,19 @@ export const useCart = () => {
 
       return { previousCart };
     },
-    onError: (error, variables, context) => {
+    onError: (error: Error, variables, context) => {
+      if (error.message.includes('Unauthorized') || error.message.includes('401')) {
+        toast.error('Your session has expired. Please log in again.');
+        queryClient.invalidateQueries({ queryKey: ['user'] });
+        setTimeout(() => {
+            window.location.href = '/login';
+        }, 2000);
+      } else {
+        toast.error('Failed to clear cart');
+      }
       if (context?.previousCart) {
         queryClient.setQueryData(['cart'], context.previousCart);
       }
-      toast.error('Failed to clear cart');
     },
     onSuccess: () => {
       toast.success('Cart cleared successfully!');
