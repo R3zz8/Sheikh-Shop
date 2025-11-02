@@ -6,28 +6,82 @@ import { hasSufficientStock, calculateProductUnitPrice } from '@/lib/pricing';
 // Cache cart data for 1 minute (cart data changes frequently)
 export const revalidate = 60;
 
-// Helper function to get user ID from JWT
-async function getUserIdFromToken(request: NextRequest) {
+// Helper function to get user ID from JWT - supports multiple token types
+async function getUserIdFromToken(request: NextRequest): Promise<string | null> {
+    const timestamp = new Date().toISOString();
+    
     try {
-        const token = request.cookies.get('session-token')?.value;
+        // Security: Check multiple token types for compatibility
+        const sessionToken = request.cookies.get('session-token')?.value; // legacy
+        const accessToken = request.cookies.get('access-token')?.value;
+        const refreshToken = request.cookies.get('refresh-token')?.value;
 
-        if (!token) {
-            return null;
+        // Log available cookies (without values for security)
+        const hasSessionToken = !!sessionToken;
+        const hasAccessToken = !!accessToken;
+        const hasRefreshToken = !!refreshToken;
+
+        // Try access-token first (primary authentication method)
+        if (accessToken) {
+            try {
+                const user = await verifyJwtToken(accessToken);
+                if (user?.id) {
+                    return user.id;
+                }
+            } catch (error) {
+                console.warn(`[${timestamp}] Access token verification failed:`, error instanceof Error ? error.message : 'Unknown error');
+            }
         }
 
-        const user = await verifyJwtToken(token);
-        return user?.id || null;
+        // Fallback to refresh-token
+        if (refreshToken) {
+            try {
+                const user = await verifyJwtToken(refreshToken);
+                if (user?.id) {
+                    return user.id;
+                }
+            } catch (error) {
+                console.warn(`[${timestamp}] Refresh token verification failed:`, error instanceof Error ? error.message : 'Unknown error');
+            }
+        }
+
+        // Legacy: session-token support
+        if (sessionToken) {
+            try {
+                const user = await verifyJwtToken(sessionToken);
+                if (user?.id) {
+                    return user.id;
+                }
+            } catch (error) {
+                console.warn(`[${timestamp}] Session token verification failed:`, error instanceof Error ? error.message : 'Unknown error');
+            }
+        }
+
+        // Log 401 case with cookie presence info
+        console.warn(`[${timestamp}] 401 Unauthorized - No valid token found. Cookies present:`, {
+            hasSessionToken,
+            hasAccessToken,
+            hasRefreshToken,
+            path: request.nextUrl.pathname,
+            method: request.method,
+        });
+
+        return null;
     } catch (error) {
+        console.error(`[${timestamp}] Error in getUserIdFromToken:`, error instanceof Error ? error.message : 'Unknown error');
         return null;
     }
 }
 
 // GET - Fetch user's cart
 export async function GET(request: NextRequest) {
+    const timestamp = new Date().toISOString();
+    
     try {
         const userId = await getUserIdFromToken(request);
 
         if (!userId) {
+            console.warn(`[${timestamp}] 401 Unauthorized: Failed to authenticate user for cart GET`);
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
@@ -57,10 +111,17 @@ export async function GET(request: NextRequest) {
 
 // POST - Add item to cart
 export async function POST(request: NextRequest) {
+    const timestamp = new Date().toISOString();
+    
     try {
         const userId = await getUserIdFromToken(request);
 
         if (!userId) {
+            console.error(`[${timestamp}] 401 Unauthorized: Failed to authenticate user for cart POST`, {
+                path: request.nextUrl.pathname,
+                ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip'),
+                userAgent: request.headers.get('user-agent'),
+            });
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
@@ -178,7 +239,12 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json(cartItem);
     } catch (error) {
-        console.error('Error adding to cart:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        console.error(`[${timestamp}] Error adding to cart:`, {
+            error: errorMessage,
+            stack: error instanceof Error ? error.stack : undefined,
+            path: request.nextUrl.pathname,
+        });
         return NextResponse.json(
             { error: 'Failed to add to cart' },
             { status: 500 }
@@ -188,10 +254,13 @@ export async function POST(request: NextRequest) {
 
 // PUT - Update cart item quantity
 export async function PUT(request: NextRequest) {
+    const timestamp = new Date().toISOString();
+    
     try {
         const userId = await getUserIdFromToken(request);
 
         if (!userId) {
+            console.warn(`[${timestamp}] 401 Unauthorized: Failed to authenticate user for cart PUT`);
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
@@ -204,9 +273,10 @@ export async function PUT(request: NextRequest) {
             );
         }
 
-        if (quantity <= 0) {
+        // Validate quantity
+        if (quantity < 0) {
             return NextResponse.json(
-                { error: 'Quantity must be greater than 0' },
+                { error: 'Quantity cannot be negative' },
                 { status: 400 }
             );
         }
@@ -231,6 +301,14 @@ export async function PUT(request: NextRequest) {
                 { error: 'Cart item not found' },
                 { status: 404 }
             );
+        }
+
+        // Auto-remove if quantity is 0
+        if (quantity === 0) {
+            await prisma.cartItem.delete({
+                where: { id: cartItemId },
+            });
+            return NextResponse.json({ success: true, removed: true });
         }
 
         // Check stock availability - support both ProductUnit and legacy stock
@@ -280,10 +358,13 @@ export async function PUT(request: NextRequest) {
 
 // DELETE - Remove item from cart
 export async function DELETE(request: NextRequest) {
+    const timestamp = new Date().toISOString();
+    
     try {
         const userId = await getUserIdFromToken(request);
 
         if (!userId) {
+            console.warn(`[${timestamp}] 401 Unauthorized: Failed to authenticate user for cart DELETE`);
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 

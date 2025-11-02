@@ -45,6 +45,7 @@ export const useCart = () => {
         headers: {
           'Cache-Control': 'no-cache',
         },
+        credentials: 'include', // Include cookies in the request
       });
       console.log('📡 Cart API response status:', res.status);
 
@@ -76,6 +77,7 @@ export const useCart = () => {
       const res = await fetch('/api/cart', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Include cookies in the request
         body: JSON.stringify({ productId, unitId, quantity }),
       });
 
@@ -84,6 +86,12 @@ export const useCart = () => {
       if (!res.ok) {
         const errorData = await res.json();
         console.error('❌ Add to cart failed:', errorData);
+        
+        // Handle 401 specifically
+        if (res.status === 401) {
+          throw new Error('401 Unauthorized');
+        }
+        
         throw new Error(errorData.error || 'Failed to add to cart');
       }
 
@@ -129,6 +137,29 @@ export const useCart = () => {
     },
     onError: (error, variables, context) => {
       console.error('❌ Add to cart mutation error:', error);
+      
+      // Handle 401 Unauthorized errors
+      if (error instanceof Error && (error.message.includes('401') || error.message.includes('Unauthorized'))) {
+        // Revert optimistic update
+        if (context?.previousCart) {
+          queryClient.setQueryData(['cart'], context.previousCart);
+        }
+        
+        // Clear user state and redirect to login
+        toast.error('Your session has expired. Please log in again.');
+        
+        // Clear user query cache
+        queryClient.setQueryData(['user'], null);
+        
+        // Redirect to login after a short delay
+        setTimeout(() => {
+          if (typeof window !== 'undefined') {
+            window.location.href = '/login';
+          }
+        }, 1500);
+        return;
+      }
+      
       // Revert optimistic update
       if (context?.previousCart) {
         queryClient.setQueryData(['cart'], context.previousCart);
@@ -175,6 +206,7 @@ export const useCart = () => {
       const res = await fetch('/api/cart', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Include cookies in the request
         body: JSON.stringify({ cartItemId, quantity }),
       });
 
@@ -183,15 +215,29 @@ export const useCart = () => {
         throw new Error(errorData.error || 'Failed to update cart');
       }
 
-      return res.json();
+      const result = await res.json();
+      
+      // Handle auto-removal (quantity 0)
+      if (result.removed) {
+        return { removed: true, cartItemId };
+      }
+      
+      return result;
     },
     onMutate: async ({ cartItemId, quantity }) => {
       await queryClient.cancelQueries({ queryKey: ['cart'] });
       const previousCart = queryClient.getQueryData(['cart']);
 
-      // Optimistically update quantity
+      // Optimistically update quantity or remove if 0
       queryClient.setQueryData(['cart'], (old: any) => {
         if (!old) return old;
+        
+        if (quantity === 0) {
+          // Remove item optimistically
+          return old.filter((item: any) => item.id !== cartItemId);
+        }
+        
+        // Update quantity
         return old.map((item: any) =>
           item.id === cartItemId ? { ...item, quantity } : item
         );
@@ -205,8 +251,13 @@ export const useCart = () => {
       }
       toast.error(error.message || 'Failed to update cart');
     },
-    onSuccess: () => {
-      toast.success('Cart updated successfully!');
+    onSuccess: (data) => {
+      // Handle auto-removal response
+      if (data?.removed) {
+        toast.success('Item removed from cart');
+      } else {
+        toast.success('Cart updated successfully!');
+      }
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['cart'] });
@@ -221,6 +272,7 @@ export const useCart = () => {
       const res = await fetch('/api/cart', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Include cookies in the request
         body: JSON.stringify({ cartItemId }),
       });
 
@@ -268,6 +320,7 @@ export const useCart = () => {
         fetch('/api/cart', {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include', // Include cookies in the request
           body: JSON.stringify({ cartItemId: item.id }),
         })
       );
@@ -297,10 +350,14 @@ export const useCart = () => {
     },
   });
 
-  // Calculate cart totals
+  // Calculate cart totals - use unitPrice (price per unit at time of adding to cart)
   const cartTotals = cart ? {
     itemCount: cart.reduce((total: number, item: any) => total + item.quantity, 0),
-    subtotal: cart.reduce((total: number, item: any) => total + (item.product.basePrice * item.quantity), 0),
+    subtotal: cart.reduce((total: number, item: any) => {
+      // Use unitPrice if available, otherwise fallback to product basePrice
+      const price = item.unitPrice || item.product?.basePrice || 0;
+      return total + (price * item.quantity);
+    }, 0),
     uniqueItems: cart.length,
   } : {
     itemCount: 0,
@@ -312,6 +369,28 @@ export const useCart = () => {
     if (process.env.NODE_ENV === 'development') {
       console.log('🛒 Cart state:', { cart, cartTotals, isLoading, error });
     }
+
+  // Increment quantity helper
+  const incrementQuantity = (cartItemId: number) => {
+    const cartItem = cart?.find((item: any) => item.id === cartItemId);
+    if (cartItem) {
+      const newQuantity = cartItem.quantity + 1;
+      updateCartItemMutation.mutate({ cartItemId, quantity: newQuantity });
+    }
+  };
+
+  // Decrement quantity helper (auto-removes if reaches 0)
+  const decrementQuantity = (cartItemId: number) => {
+    const cartItem = cart?.find((item: any) => item.id === cartItemId);
+    if (cartItem) {
+      const newQuantity = cartItem.quantity - 1;
+      if (newQuantity <= 0) {
+        removeCartItemMutation.mutate({ cartItemId });
+      } else {
+        updateCartItemMutation.mutate({ cartItemId, quantity: newQuantity });
+      }
+    }
+  };
 
   // Wrapper functions for easier usage in components
   const updateCartItem = async (productId: string, unitId: string, quantity: number) => {
@@ -330,8 +409,18 @@ export const useCart = () => {
     }
   };
 
+  // Direct remove by cart item ID
+  const removeCartItemById = (cartItemId: number) => {
+    removeCartItemMutation.mutate({ cartItemId });
+  };
+
+  // Clear cart helper
+  const clearCart = () => {
+    clearCartMutation.mutate();
+  };
+
   return {
-    cart,
+    cart: cart || [],
     isLoading,
     error,
     refetch,
@@ -340,8 +429,13 @@ export const useCart = () => {
     removeCartItemMutation,
     clearCartMutation,
     cartTotals,
+    // Quantity control helpers
+    incrementQuantity,
+    decrementQuantity,
     // Wrapper functions for easier usage
     updateCartItem,
     removeFromCart,
+    removeCartItemById,
+    clearCart,
   };
 };

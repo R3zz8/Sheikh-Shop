@@ -1,7 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import { 
   CreditCard, 
   Lock, 
@@ -13,7 +15,8 @@ import {
   Truck, 
   Shield,
   CheckCircle,
-  ArrowRight
+  ArrowRight,
+  ShoppingCart
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -21,8 +24,16 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useCart } from '@/hooks/useCart';
+import { useUser } from '@/hooks/useUser';
+import { formatPrice } from '@/lib/currency';
+import Link from 'next/link';
 
 export default function CheckoutPage() {
+  const router = useRouter();
+  const { cart, cartTotals, isLoading } = useCart();
+  const { data: user } = useUser();
+
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -38,34 +49,27 @@ export default function CheckoutPage() {
 
   const [paymentMethod, setPaymentMethod] = useState('credit-card');
 
-  // Example cart items
-  const cartItems = [
-    {
-      id: 1,
-      name: 'Premium Saffron - 1g',
-      price: 89.99,
-      quantity: 2,
-      image: '/assets/saffron.jpg'
-    },
-    {
-      id: 2,
-      name: 'Organic Honey - 500g',
-      price: 24.99,
-      quantity: 1,
-      image: '/assets/honey.jpg'
-    },
-    {
-      id: 3,
-      name: 'Luxury Dates - 1kg',
-      price: 34.99,
-      quantity: 1,
-      image: '/assets/dates.jpg'
+  // Pre-fill form with user data if available
+  useEffect(() => {
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        email: user.email || prev.email,
+      }));
     }
-  ];
+  }, [user]);
 
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const shipping = 9.99;
-  const tax = subtotal * 0.08;
+  // Redirect if cart is empty
+  useEffect(() => {
+    if (!isLoading && (!cart || cart.length === 0)) {
+      router.push('/cart');
+    }
+  }, [cart, isLoading, router]);
+
+  // Calculate totals using actual cart data
+  const subtotal = cartTotals.subtotal || 0;
+  const shipping = subtotal > 0 ? 9.99 : 0; // Free shipping over threshold can be added later
+  const tax = subtotal * 0.08; // 8% tax rate
   const total = subtotal + shipping + tax;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -77,9 +81,48 @@ export default function CheckoutPage() {
   };
 
   const handlePlaceOrder = () => {
+    // Validate form
+    if (!formData.firstName || !formData.lastName || !formData.email || 
+        !formData.phone || !formData.address || !formData.city || 
+        !formData.zipCode || !formData.country) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    if (!cart || cart.length === 0) {
+      alert('Your cart is empty');
+      router.push('/cart');
+      return;
+    }
+
     // Handle order placement logic here
-    console.log('Order placed:', { formData, paymentMethod, cartItems, total });
+    console.log('Order placed:', { formData, paymentMethod, cart, total });
+    // TODO: Implement order creation API call
   };
+
+  // Show loading or empty state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-amber-950 via-stone-900 to-black flex items-center justify-center">
+        <div className="text-white text-xl">Loading cart...</div>
+      </div>
+    );
+  }
+
+  if (!cart || cart.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-amber-950 via-stone-900 to-black flex items-center justify-center">
+        <div className="text-center">
+          <ShoppingCart className="w-16 h-16 text-amber-400 mx-auto mb-4" />
+          <h2 className="text-white text-2xl mb-2">Your cart is empty</h2>
+          <p className="text-gray-400 mb-4">Add items to your cart before checkout</p>
+          <Link href="/">
+            <Button>Continue Shopping</Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
     return (
     <div className="min-h-screen bg-gradient-to-br from-amber-950 via-stone-900 to-black relative overflow-hidden">
@@ -360,26 +403,44 @@ export default function CheckoutPage() {
                 <CardContent className="p-6">
                   {/* Cart Items */}
                   <div className="space-y-4 mb-6">
-                    {cartItems.map((item) => (
-                      <motion.div
-                        key={item.id}
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.5 }}
-                        className="flex items-center space-x-4 p-3 bg-white/5 rounded-xl"
-                      >
-                        <div className="w-16 h-16 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-lg flex items-center justify-center">
-                          <ShoppingBag className="w-8 h-8 text-amber-400" />
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="text-white font-semibold text-sm">{item.name}</h4>
-                          <p className="text-gray-400 text-sm">Qty: {item.quantity}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-amber-400 font-semibold">${(item.price * item.quantity).toFixed(2)}</p>
-                        </div>
-                      </motion.div>
-                    ))}
+                    {cart.map((item: any) => {
+                      const unitPrice = item.unitPrice || item.product?.basePrice || 0;
+                      const itemTotal = unitPrice * item.quantity;
+                      const productImage = item.product?.images?.[0]?.image || '/assets/noImage.jpg';
+                      const productName = item.product?.name || 'Product';
+                      const unitName = item.unit?.name || item.unit?.symbol || '';
+                      
+                      return (
+                        <motion.div
+                          key={item.id}
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.5 }}
+                          className="flex items-center space-x-4 p-3 bg-white/5 rounded-xl"
+                        >
+                          <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
+                            <Image
+                              src={productImage}
+                              alt={productName}
+                              fill
+                              className="object-cover"
+                              sizes="64px"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-white font-semibold text-sm truncate">{productName}</h4>
+                            <p className="text-gray-400 text-xs">
+                              {unitName && `${unitName} • `}
+                              Qty: {item.quantity}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-amber-400 font-semibold">{formatPrice(itemTotal, 'EUR')}</p>
+                            <p className="text-gray-400 text-xs">{formatPrice(unitPrice, 'EUR')} each</p>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
                   </div>
 
                   <Separator className="bg-amber-200/20" />
@@ -387,25 +448,25 @@ export default function CheckoutPage() {
                   {/* Pricing Breakdown */}
                   <div className="space-y-3 mt-6">
                     <div className="flex justify-between text-gray-300">
-                      <span>Subtotal</span>
-                      <span>${subtotal.toFixed(2)}</span>
+                      <span>Subtotal ({cartTotals.itemCount} {cartTotals.itemCount === 1 ? 'item' : 'items'})</span>
+                      <span>{formatPrice(subtotal, 'EUR')}</span>
                     </div>
                     <div className="flex justify-between text-gray-300">
                       <span className="flex items-center gap-2">
                         <Truck className="w-4 h-4" />
                         Shipping
                       </span>
-                      <span>${shipping.toFixed(2)}</span>
+                      <span>{formatPrice(shipping, 'EUR')}</span>
                     </div>
                     <div className="flex justify-between text-gray-300">
-                      <span>Tax</span>
-                      <span>${tax.toFixed(2)}</span>
+                      <span>Tax (8%)</span>
+                      <span>{formatPrice(tax, 'EUR')}</span>
                     </div>
                     <Separator className="bg-amber-200/20" />
                     <div className="flex justify-between text-xl font-bold">
                       <span className="text-white">Total</span>
                       <span className="bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-400 bg-clip-text text-transparent">
-                        ${total.toFixed(2)}
+                        {formatPrice(total, 'EUR')}
                       </span>
                     </div>
                 </div>

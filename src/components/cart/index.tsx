@@ -8,7 +8,8 @@ import {
 import { useCart } from '@/hooks/useCart';
 import type { CartWithProduct } from '@/types';
 import { ShoppingCart, Trash2, Sparkles, Plus, Minus, Package } from 'lucide-react';
-import { cn, formatPrice } from '@/lib/utils';
+import { cn } from '@/lib/utils';
+import { formatPrice } from '@/lib/currency';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -17,29 +18,12 @@ export default function CartDropdown() {
   const {
     cart,
     isLoading,
-    removeCartItemMutation,
-    updateCartItemMutation,
-    clearCartMutation,
+    incrementQuantity,
+    decrementQuantity,
+    removeCartItemById,
+    clearCart,
     cartTotals
   } = useCart();
-
-  const handleQuantityChange = (cartItemId: number, newQuantity: number) => {
-    if (newQuantity <= 0) {
-      removeCartItemMutation.mutate({ cartItemId });
-    } else {
-      updateCartItemMutation.mutate({ cartItemId, quantity: newQuantity });
-    }
-  };
-
-  const handleRemoveItem = (cartItemId: number) => {
-    removeCartItemMutation.mutate({ cartItemId });
-  };
-
-  const handleClearCart = () => {
-    if (cart && cart.length > 0) {
-      clearCartMutation.mutate();
-    }
-  };
 
   return (
     <DropdownMenu>
@@ -90,8 +74,7 @@ export default function CartDropdown() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={handleClearCart}
-              disabled={clearCartMutation.isPending}
+              onClick={clearCart}
               className="text-xs text-red-400 hover:text-red-300 hover:bg-red-400/10"
             >
               Clear All
@@ -141,7 +124,7 @@ export default function CartDropdown() {
                       {item.product.name}
                     </p>
                     <p className="text-xs text-amber-300 font-medium">
-                                              {formatPrice(item.product.basePrice)}
+                      {formatPrice(item.unitPrice || item.product.basePrice, 'EUR')}
                     </p>
                   </div>
 
@@ -150,8 +133,7 @@ export default function CartDropdown() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleQuantityChange(Number(item.id), Number(item.quantity) - 1)}
-                      disabled={updateCartItemMutation.isPending || removeCartItemMutation.isPending}
+                      onClick={() => decrementQuantity(Number(item.id))}
                       className="w-6 h-6 p-0 rounded-md bg-white/8 backdrop-blur-sm border border-white/20 text-gray-400 hover:text-white hover:bg-white/12"
                     >
                       <Minus className="w-3 h-3" />
@@ -164,8 +146,7 @@ export default function CartDropdown() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleQuantityChange(Number(item.id), Number(item.quantity) + 1)}
-                      disabled={updateCartItemMutation.isPending}
+                      onClick={() => incrementQuantity(Number(item.id))}
                       className="w-6 h-6 p-0 rounded-md bg-white/8 backdrop-blur-sm border border-white/20 text-gray-400 hover:text-white hover:bg-white/12"
                     >
                       <Plus className="w-3 h-3" />
@@ -175,7 +156,7 @@ export default function CartDropdown() {
                   {/* Item Total */}
                   <div className="text-right min-w-0">
                     <p className="text-sm font-semibold text-amber-300">
-                                              {formatPrice(item.product.basePrice * item.quantity)}
+                      {formatPrice((item.unitPrice || item.product.basePrice) * item.quantity, 'EUR')}
                     </p>
                   </div>
 
@@ -183,8 +164,7 @@ export default function CartDropdown() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleRemoveItem(Number(item.id))}
-                    disabled={removeCartItemMutation.isPending}
+                    onClick={() => removeCartItemById(Number(item.id))}
                     className={cn(
                       'w-6 h-6 p-0 rounded-md bg-white/8 backdrop-blur-sm',
                       'border border-white/20 text-gray-400 hover:text-red-400',
@@ -208,7 +188,7 @@ export default function CartDropdown() {
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm text-gray-300">Subtotal:</span>
               <span className="text-lg font-semibold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
-                {formatPrice(cartTotals.subtotal)}
+                {formatPrice(cartTotals.subtotal, 'EUR')}
               </span>
             </div>
             <Button asChild className={cn(

@@ -68,6 +68,9 @@ export async function verifyJwtToken(token: string): Promise<JWTPayload | null> 
     
     // Security: Check if token is blacklisted
     if (await isTokenBlacklisted(token)) {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('[JWT] Token is blacklisted');
+      }
       return null;
     }
 
@@ -75,13 +78,27 @@ export async function verifyJwtToken(token: string): Promise<JWTPayload | null> 
       algorithms: ['HS256'],
       issuer: 'sheikh-shop',
       audience: 'sheikh-shop-users',
-    });
+    }) as unknown as JWTPayload;
 
-    return decoded as unknown as JWTPayload;
+    return decoded;
   } catch (error) {
-    // Security: Log verification failures (in production, use proper logging)
-    if (process.env.NODE_ENV === 'development') {
-      console.warn('JWT verification failed:', error);
+    // Security: Enhanced error logging with specific error types
+    if (error instanceof jwt.TokenExpiredError) {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('[JWT] Token expired:', error.expiredAt);
+      }
+    } else if (error instanceof jwt.JsonWebTokenError) {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('[JWT] Token verification failed:', error.message);
+      }
+    } else if (error instanceof jwt.NotBeforeError) {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('[JWT] Token not active yet:', error.date);
+      }
+    } else {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('[JWT] Verification failed:', error instanceof Error ? error.message : 'Unknown error');
+      }
     }
     return null;
   }
@@ -150,16 +167,39 @@ export async function blacklistToken(token: string, expiresAt?: Date): Promise<v
 export async function cleanupExpiredBlacklistedTokens(): Promise<void> {
   try {
     const { prisma } = await import('@/lib/prisma');
-    await prisma.blacklistedToken.deleteMany({
+    const result = await prisma.blacklistedToken.deleteMany({
       where: {
         expiresAt: {
           lt: new Date(),
         },
       },
     });
+    
+    if (result.count > 0) {
+      console.log(`[JWT] Cleaned up ${result.count} expired blacklisted tokens`);
+    }
   } catch (error) {
-    console.error('Failed to cleanup expired blacklisted tokens:', error);
+    console.error('[JWT] Failed to cleanup expired blacklisted tokens:', error);
   }
+}
+
+// Security: Schedule cleanup of expired blacklisted tokens
+if (typeof window === 'undefined') {
+  // Run cleanup every hour
+  const CLEANUP_INTERVAL = 60 * 60 * 1000; // 1 hour
+  
+  setInterval(async () => {
+    try {
+      await cleanupExpiredBlacklistedTokens();
+    } catch (error) {
+      console.error('[JWT] Scheduled cleanup failed:', error);
+    }
+  }, CLEANUP_INTERVAL);
+  
+  // Run initial cleanup on server start
+  cleanupExpiredBlacklistedTokens().catch(error => {
+    console.error('[JWT] Initial cleanup failed:', error);
+  });
 }
 
 // Add missing functions that are being imported

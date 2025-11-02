@@ -53,6 +53,11 @@ export default function AddToCartButton({
         } catch (error) {
             // Error handling is done in the mutation
             console.error('Failed to add to cart:', error);
+            
+            // Additional 401 handling - prompt user to log in
+            if (error instanceof Error && (error.message.includes('401') || error.message.includes('Unauthorized'))) {
+                // Mutation will handle redirect, but we can add additional UI feedback here if needed
+            }
         }
     };
 
