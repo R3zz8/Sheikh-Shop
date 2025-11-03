@@ -161,10 +161,31 @@ async function getServerActionUser(): Promise<{ id: string; role: string; email:
     if (!payload && refreshToken) {
       console.log('[SERVER_ACTION_AUTH] Attempting refresh token');
       try {
-        const { accessToken: newAccessToken } = await refreshAccessToken(refreshToken);
+        // IMPORTANT: Get cookie store BEFORE refreshing to ensure atomic operation
+        const cookieStore = await cookies();
+        
+        const { accessToken: newAccessToken, refreshToken: newRefreshToken } = await refreshAccessToken(refreshToken);
         console.log('[SERVER_ACTION_AUTH] Refresh successful, verifying new access token');
         payload = await verifyAccessToken(newAccessToken);
         console.log('[SERVER_ACTION_AUTH] New access token valid', { userId: payload?.id });
+        
+        // CRITICAL: Set new tokens in cookies IMMEDIATELY after refresh
+        // This must happen BEFORE any other async operations to prevent race conditions
+        cookieStore.set('access-token', newAccessToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'strict',
+          path: '/',
+          maxAge: 15 * 60, // 15 minutes
+        });
+        cookieStore.set('refresh-token', newRefreshToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'strict',
+          path: '/',
+          maxAge: 7 * 24 * 60 * 60, // 7 days
+        });
+        console.log('[SERVER_ACTION_AUTH] New tokens set in cookies immediately');
       } catch (error) {
         console.log('[SERVER_ACTION_AUTH] Refresh token failed', { error: error instanceof Error ? error.message : 'Unknown error' });
         throw new Error('Invalid authentication token');
@@ -237,8 +258,20 @@ async function checkArticlePermissions(allowedRoles: string[] = ['SUPERADMIN', '
       error: error instanceof Error ? error.message : 'Unknown error' 
     });
     
-    if (error instanceof Error && error.message.includes('No authentication token found')) {
-      throw new Error('Authentication required. Please log in.');
+    // Don't throw redirect errors - return error object instead
+    // This prevents Next.js from triggering logout redirects
+    if (error instanceof Error) {
+      if (error.message.includes('No authentication token found') || 
+          error.message.includes('Invalid authentication token') ||
+          error.message.includes('Session expired')) {
+        // Return error object instead of throwing to avoid redirect loops
+        return { 
+          id: '',
+          role: '',
+          email: '',
+          error: 'Authentication required. Please log in and try again.'
+        } as any;
+      }
     }
     throw error;
   }
@@ -267,6 +300,13 @@ export async function createArticle(formData: FormData) {
     // Security: Check user permissions first
     console.log('[ARTICLE_CREATE] createArticle: Checking permissions');
     const user = await checkArticlePermissions(['SUPERADMIN', 'ADMIN', 'EDITOR', 'AUTHOR']);
+    
+    // Check if authentication failed
+    if ('error' in user && user.error) {
+      console.log('[ARTICLE_CREATE] createArticle: Authentication failed', { error: user.error });
+      return { success: false, error: user.error };
+    }
+    
     console.log('[ARTICLE_CREATE] createArticle: Permissions verified', { userId: user.id, role: user.role });
     
     // Parse form data with proper type handling
@@ -350,6 +390,13 @@ export async function updateArticle(id: string, formData: FormData) {
     // Security: Check user permissions first
     console.log('[ARTICLE_UPDATE] updateArticle: Checking permissions');
     const user = await checkArticlePermissions(['SUPERADMIN', 'ADMIN', 'EDITOR', 'AUTHOR']);
+    
+    // Check if authentication failed
+    if ('error' in user && user.error) {
+      console.log('[ARTICLE_UPDATE] updateArticle: Authentication failed', { error: user.error });
+      return { success: false, error: user.error };
+    }
+    
     console.log('[ARTICLE_UPDATE] updateArticle: Permissions verified', { userId: user.id, role: user.role });
     
     // Check if user can modify this specific article

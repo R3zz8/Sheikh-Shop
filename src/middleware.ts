@@ -288,8 +288,12 @@ export async function middleware(request: NextRequest) {
   }
 
   // Security: Rate limiting (after user resolution so we can exempt admins)
-  if (isRateLimited(ip, user?.role)) {
-    console.log('[MIDDLEWARE] Rate limited', { ip, role: user?.role });
+  // Skip rate limiting for dashboard/article operations to prevent false positives
+  const isArticleOperation = pathname.includes('/dashboard/articles') && 
+                             (request.method === 'POST' || request.method === 'PATCH' || request.method === 'PUT');
+  
+  if (!isArticleOperation && isRateLimited(ip, user?.role)) {
+    console.log('[MIDDLEWARE] Rate limited', { ip, role: user?.role, pathname });
     const response = isApiRoute
       ? NextResponse.json({ error: 'Too many requests' }, { status: 429 })
       : NextResponse.redirect(new URL('/login', request.url));
