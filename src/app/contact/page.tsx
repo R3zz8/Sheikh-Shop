@@ -76,7 +76,7 @@ export default function ContactPage() {
     },
     {
       name: 'Instagram',
-      href: 'https://www.instagram.com/energyup_._?igsh=cnZ2b3owZTUxYng1',
+      href: 'https://www.instagram.com/sheikh._.shops?igsh=cnZ2b3owZTUxYng1',
       Icon: InstagramIcon,
     },
     {
