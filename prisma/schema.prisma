@@ -472,6 +472,7 @@ enum ProductCategory {
   HONEY
   SAFFRON
   DATES
+  TECH
   OTHERS
 }
 

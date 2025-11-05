@@ -87,6 +87,7 @@ export default function ClientHeader() {
   const navigation = [
     { name: 'Home', href: '/', icon: Home },
     { name: 'Products', href: '/products', icon: ShoppingBag },
+    { name: 'Tech', href: '/tech', icon: ShoppingBag },
     {
       name: 'About Us',
       href: '/about-us',

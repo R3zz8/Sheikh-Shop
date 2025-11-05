@@ -166,15 +166,14 @@ const ProductForm = (props: { product: Product | null }) => {
               <Select
                 name="category"
                 defaultValue={data?.category || ProductCategory.OTHERS}
-                disabled={loadingCategories}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder={loadingCategories ? "Loading categories..." : "Select a category"} />
+                  <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
                 <SelectContent>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.slug}>
-                      {cat.name}
+                  {Object.values(ProductCategory).map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
                     </SelectItem>
                   ))}
                 </SelectContent>
