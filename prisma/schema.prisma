@@ -20,6 +20,7 @@ model Product {
   isNew        Boolean         @default(false)
   isBestSeller Boolean         @default(false)
   isAmazing    Boolean         @default(false)
+  categoryType ProductCategoryType @default(SheikhFood)
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
   categoryId   String?
@@ -473,6 +474,11 @@ enum ProductCategory {
   SAFFRON
   DATES
   OTHERS
+}
+
+enum ProductCategoryType {
+  SheikhFood
+  SheikhTech
 }
 
 enum ProductStatus {

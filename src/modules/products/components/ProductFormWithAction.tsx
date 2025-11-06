@@ -183,6 +183,24 @@ const ProductForm = (props: { product: Product | null }) => {
                 <span className="text-red-600 text-sm mt-1">{error.category}</span>
               )}
             </div>
+            <div>
+              <Label htmlFor="categoryType">Store Category *</Label>
+              <Select
+                name="categoryType"
+                defaultValue={data?.categoryType || 'SheikhFood'}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a store category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="SheikhFood">Sheikh Food</SelectItem>
+                  <SelectItem value="SheikhTech">Sheikh Tech</SelectItem>
+                </SelectContent>
+              </Select>
+              {error?.categoryType && (
+                <span className="text-red-600 text-sm mt-1">{error.categoryType}</span>
+              )}
+            </div>
           </div>
 
           <div>

@@ -29,6 +29,7 @@ const productSchema = z.object({
     .max(999999, 'Quantity must be less than 1,000,000'),
   category: z.enum(Object.values(ProductCategory) as [string, ...string[]]),
   status: z.enum(Object.values(ProductStatus) as [string, ...string[]]).optional(),
+  categoryType: z.enum(['SheikhFood', 'SheikhTech']).optional(),
 });
 
 // Bulk operations schema
@@ -123,6 +124,7 @@ export const upsertProduct = async (
       baseUnitId,
       quantity: parseInt(formData.get('quantity') as string),
       status: (formData.get('status') as string) || 'ACTIVE',
+      categoryType: formData.get('categoryType') as 'SheikhFood' | 'SheikhTech',
     };
 
     // Find category by slug and get both enum and ID
