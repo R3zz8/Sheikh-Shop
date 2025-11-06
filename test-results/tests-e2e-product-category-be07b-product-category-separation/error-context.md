@@ -1,0 +1,248 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - link "Skip to main content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - navigation [ref=e7]:
+        - generic [ref=e8]:
+          - img [ref=e10]
+          - link "Sheikh Shop" [ref=e13] [cursor=pointer]:
+            - /url: /
+        - generic [ref=e14]:
+          - link "Home" [ref=e15] [cursor=pointer]:
+            - /url: /
+            - img [ref=e16]
+            - text: Home
+          - link "Products" [ref=e19] [cursor=pointer]:
+            - /url: /products
+            - img [ref=e20]
+            - text: Products
+          - link "About Us" [ref=e24] [cursor=pointer]:
+            - /url: /about-us
+            - img [ref=e25]
+            - text: About Us
+            - img [ref=e30]
+          - link "Article" [ref=e32] [cursor=pointer]:
+            - /url: /article
+            - img [ref=e33]
+            - text: Article
+        - generic [ref=e36]:
+          - button "€ EUR" [ref=e38] [cursor=pointer]:
+            - generic [ref=e39]: €
+            - generic [ref=e40]: EUR
+            - img [ref=e41]
+          - button [ref=e43] [cursor=pointer]:
+            - img
+          - generic [ref=e44]:
+            - link "Sign In" [ref=e45] [cursor=pointer]:
+              - /url: /login
+              - button "Sign In" [ref=e46]
+            - link "Get Started" [ref=e47] [cursor=pointer]:
+              - /url: /register
+              - button "Get Started" [ref=e48]
+    - generic [ref=e50]:
+      - generic [ref=e52]:
+        - generic [ref=e53]:
+          - generic:
+            - img
+          - textbox "Search with AI intelligence..." [active] [ref=e54]
+        - generic [ref=e56]:
+          - button "Filters" [ref=e57] [cursor=pointer]:
+            - img [ref=e58]
+            - text: Filters
+          - combobox [ref=e60]:
+            - option "Relevance" [selected]
+            - option "Price"
+            - option "Rating"
+            - option "Newest"
+            - option "Popularity"
+      - link "VR Store" [ref=e62] [cursor=pointer]:
+        - /url: /vr-store
+        - generic [ref=e63]: VR Store
+    - main [ref=e64]:
+      - generic [ref=e66]:
+        - img [ref=e68]
+        - heading "Error Loading Products" [level=1] [ref=e70]
+        - paragraph [ref=e71]: We encountered an issue while loading the products. Please refresh the page to try again.
+        - generic [ref=e72]:
+          - paragraph [ref=e73]: If the problem persists, please contact support.
+          - paragraph [ref=e74]: "Error: Invalid `prisma.unit.findMany()` invocation: Can't reach database server at `localhost:5432` Please make sure your database server is running at `localhost:5432`."
+    - contentinfo [ref=e75]:
+      - generic [ref=e79]:
+        - generic [ref=e80]:
+          - generic [ref=e81]:
+            - img [ref=e82]
+            - heading "Need Premium Consultation?" [level=3] [ref=e84]
+          - paragraph [ref=e85]: Experience personalized guidance from our luxury product experts
+        - button "Get Consultation" [ref=e86] [cursor=pointer]:
+          - img
+          - text: Get Consultation
+      - generic [ref=e88]:
+        - generic [ref=e89]:
+          - generic [ref=e90]:
+            - generic [ref=e91]:
+              - img [ref=e92]
+              - heading "Sheikh Shop" [level=3] [ref=e94]
+            - paragraph [ref=e95]: Curating the world's finest premium products with exceptional quality and craftsmanship. Experience luxury redefined.
+            - generic [ref=e96]:
+              - img [ref=e97]
+              - generic [ref=e99]: Premium Quality Guaranteed
+          - generic [ref=e100]:
+            - generic [ref=e101]:
+              - img [ref=e102]
+              - heading "Shop" [level=4] [ref=e105]
+            - list [ref=e106]:
+              - listitem [ref=e107]:
+                - link "Premium Drinks" [ref=e108] [cursor=pointer]:
+                  - /url: "#"
+                  - img [ref=e109]
+                  - text: Premium Drinks
+              - listitem [ref=e111]:
+                - link "Luxury Supplements" [ref=e112] [cursor=pointer]:
+                  - /url: "#"
+                  - img [ref=e113]
+                  - text: Luxury Supplements
+              - listitem [ref=e115]:
+                - link "Artisan Spices" [ref=e116] [cursor=pointer]:
+                  - /url: "#"
+                  - img [ref=e117]
+                  - text: Artisan Spices
+              - listitem [ref=e119]:
+                - link "Exclusive Collections" [ref=e120] [cursor=pointer]:
+                  - /url: "#"
+                  - img [ref=e121]
+                  - text: Exclusive Collections
+              - listitem [ref=e123]:
+                - link "Limited Editions" [ref=e124] [cursor=pointer]:
+                  - /url: "#"
+                  - img [ref=e125]
+                  - text: Limited Editions
+          - generic [ref=e127]:
+            - generic [ref=e128]:
+              - img [ref=e129]
+              - heading "Help & Support" [level=4] [ref=e132]
+            - list [ref=e133]:
+              - listitem [ref=e134]:
+                - link "Customer Service" [ref=e135] [cursor=pointer]:
+                  - /url: "#"
+                  - img [ref=e136]
+                  - text: Customer Service
+              - listitem [ref=e138]:
+                - link "Shipping Information" [ref=e139] [cursor=pointer]:
+                  - /url: "#"
+                  - img [ref=e140]
+                  - text: Shipping Information
+              - listitem [ref=e142]:
+                - link "Returns & Exchanges" [ref=e143] [cursor=pointer]:
+                  - /url: "#"
+                  - img [ref=e144]
+                  - text: Returns & Exchanges
+              - listitem [ref=e146]:
+                - link "Size Guide" [ref=e147] [cursor=pointer]:
+                  - /url: "#"
+                  - img [ref=e148]
+                  - text: Size Guide
+              - listitem [ref=e150]:
+                - link "FAQ" [ref=e151] [cursor=pointer]:
+                  - /url: "#"
+                  - img [ref=e152]
+                  - text: FAQ
+          - generic [ref=e154]:
+            - generic [ref=e155]:
+              - img [ref=e156]
+              - heading "Company" [level=4] [ref=e161]
+            - list [ref=e162]:
+              - listitem [ref=e163]:
+                - link "About Us" [ref=e164] [cursor=pointer]:
+                  - /url: "#"
+                  - img [ref=e165]
+                  - text: About Us
+              - listitem [ref=e167]:
+                - link "Our Story" [ref=e168] [cursor=pointer]:
+                  - /url: "#"
+                  - img [ref=e169]
+                  - text: Our Story
+              - listitem [ref=e171]:
+                - link "Sustainability" [ref=e172] [cursor=pointer]:
+                  - /url: "#"
+                  - img [ref=e173]
+                  - text: Sustainability
+              - listitem [ref=e175]:
+                - link "Careers" [ref=e176] [cursor=pointer]:
+                  - /url: "#"
+                  - img [ref=e177]
+                  - text: Careers
+              - listitem [ref=e179]:
+                - link "Press" [ref=e180] [cursor=pointer]:
+                  - /url: "#"
+                  - img [ref=e181]
+                  - text: Press
+            - generic [ref=e183]:
+              - generic [ref=e184]:
+                - img [ref=e185]
+                - generic [ref=e187]: +1 (555) 123-4567
+              - generic [ref=e188]:
+                - img [ref=e189]
+                - generic [ref=e192]: hello@sheikhshop.com
+              - generic [ref=e193]:
+                - img [ref=e194]
+                - generic [ref=e197]: Luxury District, Premium City
+        - generic [ref=e199]:
+          - generic [ref=e200]:
+            - generic [ref=e201]: "Follow our journey:"
+            - generic [ref=e202]:
+              - link "Instagram" [ref=e203] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e204]
+              - link "Twitter" [ref=e207] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e208]
+              - link "YouTube" [ref=e210] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e211]
+              - link "WhatsApp" [ref=e214] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e215]
+          - generic [ref=e217]:
+            - generic [ref=e218]:
+              - img [ref=e219]
+              - generic [ref=e222]: Stay updated with luxury insights
+            - button "Subscribe" [ref=e223] [cursor=pointer]
+        - generic [ref=e225]:
+          - generic [ref=e226]:
+            - generic [ref=e227]: © 2025 Sheikh Shop. All rights reserved.
+            - generic [ref=e228]:
+              - link "Privacy Policy" [ref=e229] [cursor=pointer]:
+                - /url: "#"
+              - link "Terms of Service" [ref=e230] [cursor=pointer]:
+                - /url: "#"
+              - link "Cookie Policy" [ref=e231] [cursor=pointer]:
+                - /url: "#"
+          - generic [ref=e232]:
+            - img [ref=e233]
+            - generic [ref=e235]: Secure & Trusted
+            - generic [ref=e236]: •
+            - img [ref=e237]
+            - generic [ref=e239]: Crafted with Excellence
+  - region "Notifications alt+T"
+  - generic [ref=e240]:
+    - button:
+      - img
+  - generic [ref=e245] [cursor=pointer]:
+    - button "Open Next.js Dev Tools" [ref=e246]:
+      - img [ref=e247]
+    - generic [ref=e250]:
+      - button "Open issues overlay" [ref=e251]:
+        - generic [ref=e252]:
+          - generic [ref=e253]: "1"
+          - generic [ref=e254]: "2"
+        - generic [ref=e255]:
+          - text: Issue
+          - generic [ref=e256]: s
+      - button "Collapse issues badge" [ref=e257]:
+        - img [ref=e258]
+  - alert [ref=e260]
+```
