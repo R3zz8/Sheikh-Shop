@@ -1,7 +1,7 @@
 'use client';
 
 import type { Product, ProductUnit } from '@prisma/client';
-import { ProductCategory } from '@prisma/client';
+import { ProductCategory, ProductCategoryType } from '@prisma/client';
 import {
   Input,
   Button,
@@ -229,6 +229,27 @@ const ProductForm = (props: { product: Product | null }) => {
               </SelectTrigger>
               <SelectContent>
                 {Object.values(ProductCategory).map((cat) => (
+                  <SelectItem key={cat} value={cat}>
+                    {cat}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="my-2">
+            <Label htmlFor="categoryType">Category Type</Label>
+            <Select
+              required
+              onValueChange={(value) =>
+                setValue('categoryType', value as ProductCategoryType)
+              }
+              defaultValue={product?.categoryType || ProductCategoryType.SheikhFood}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select a category type" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.values(ProductCategoryType).map((cat) => (
                   <SelectItem key={cat} value={cat}>
                     {cat}
                   </SelectItem>
