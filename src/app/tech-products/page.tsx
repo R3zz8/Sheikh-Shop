@@ -7,10 +7,10 @@ import { ProductCategoryType } from '@prisma/client';
 // Force dynamic rendering to prevent build-time database queries
 export const dynamic = 'force-dynamic';
 
-export default async function Products() {
+export default async function TechProducts() {
   try {
     const [data, units] = await Promise.all([
-      getProductsByCategory(ProductCategoryType.SheikhFood),
+      getProductsByCategory(ProductCategoryType.SheikhTech),
       prisma.unit.findMany({
         where: {
           isActive: true,
@@ -34,7 +34,7 @@ export default async function Products() {
     );
   } catch (error) {
     // Enhanced error logging and handling
-    console.error('Failed to fetch products:', {
+    console.error('Failed to fetch tech products:', {
       error: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined,
       timestamp: new Date().toISOString(),
