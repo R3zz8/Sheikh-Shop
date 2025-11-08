@@ -112,28 +112,45 @@ export function generateProductMetadata(product: {
   basePrice: number;
   images?: Array<{ image: string | null; secureUrl?: string | null }>;
   id: string;
+  slug?: string | null;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+  metaKeywords?: string[];
+  canonicalUrl?: string | null;
+  ogImage?: string | null;
 }) {
-  const title = `${product.name} - Premium ${product.category} | Sheikh Shop`;
-  const description = product.description || 
+  // Use custom SEO fields if available, fallback to generated
+  const title = product.seoTitle || 
+    `${product.name} - Premium ${product.category} | Sheikh Shop`;
+  const description = product.seoDescription || 
+    product.description || 
     `Buy premium ${product.name} - authentic ${product.category.toLowerCase()} from Sheikh Shop. High quality, authentic products with worldwide shipping.`;
   
-  const keywords = [
-    product.name.toLowerCase(),
-    product.category.toLowerCase(),
-    'premium quality',
-    'authentic',
-    'sheikh shop',
-    'buy online',
-    'luxury food',
-  ];
+  const keywords = product.metaKeywords && product.metaKeywords.length > 0
+    ? product.metaKeywords
+    : [
+        product.name.toLowerCase(),
+        product.category.toLowerCase(),
+        'premium quality',
+        'authentic',
+        'sheikh shop',
+        'buy online',
+        'luxury food',
+      ];
 
-  const ogImage = `/api/og/product?id=${product.id}`;
+  // Use slug for canonical URL, fallback to ID for backward compatibility
+  const canonical = product.canonicalUrl || 
+    `/products/${product.slug || product.id}`;
+  
+  // Use custom OG image if available
+  const ogImage = product.ogImage || 
+    `/api/og/product?id=${product.id}`;
 
   return generateSEO({
     title,
     description,
     keywords,
-    canonical: `/products/${product.id}`,
+    canonical,
     ogType: 'website',
     ogImage,
   });

@@ -1,6 +1,6 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import Image from 'next/image';
 import { Button } from '@/components/ui';
 import { ShoppingCart, ArrowLeft, Star, Sparkles, Crown, Heart, Share2 } from 'lucide-react';
@@ -101,9 +101,9 @@ export default function ProductDetail(product: ProductsWithImages) {
                   </Button>
                 </div>
 
-                <CardTitle className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent tracking-tight text-center lg:text-left">
+                <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent tracking-tight text-center lg:text-left">
                   {product?.name}
-                </CardTitle>
+                </h1>
               </CardHeader>
 
               <CardContent className="p-6 sm:p-8">
@@ -115,10 +115,10 @@ export default function ProductDetail(product: ProductsWithImages) {
                       {product?.images.length > 0 ? (
                         <Image
                           src={product?.images[0]?.image || ''}
-                          alt={product?.name}
+                          alt={`${product?.name} - Premium ${product?.category} from Sheikh Shop`}
                           width={600}
                           height={600}
-                          quality={85}
+                          quality={80}
                           className="relative z-10 rounded-xl w-full h-auto object-contain"
                           sizes="(max-width: 768px) 100vw, 50vw"
                           priority
@@ -181,7 +181,7 @@ export default function ProductDetail(product: ProductsWithImages) {
 
                       {/* Description */}
                       <div className="text-center lg:text-left">
-                        <h3 className="text-xl font-semibold text-white mb-3">Description</h3>
+                        <h2 className="text-xl font-semibold text-white mb-3">Description</h2>
                         <p className="text-gray-200 leading-relaxed text-base sm:text-lg">
                           {product?.description || 'No description available.'}
                         </p>

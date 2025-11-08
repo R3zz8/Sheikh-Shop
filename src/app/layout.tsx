@@ -20,17 +20,12 @@ import '@fontsource/inter/400.css';
 import '@fontsource/tajawal/400.css';
 
 // === generateMetadata ===
-export async function generateMetadata({
-  params,
-}: {
-  params: { lang?: string; slug?: string[]; id?: string };
-}): Promise<Metadata> {
-  const lang = params?.lang || 'en';
-  const isArabic = lang === 'ar';
-
-  const path = params?.slug?.join('/') || '';
-  const currentPath = path ? `/${path}` : '/';
-  const cleanPath = currentPath.replace(/^\/ar/, '') || '/';
+export async function generateMetadata(): Promise<Metadata> {
+  // Root layout doesn't receive params in Next.js 15
+  // Use default metadata for homepage
+  const lang = 'en';
+  const isArabic = false;
+  const cleanPath = '/';
 
   const seoMap: Record<string, { en: string; ar: string }> = {
     '/': {
@@ -81,13 +76,12 @@ export async function generateMetadata({
 // === RootLayout ===
 export default function RootLayout({
   children,
-  params,
 }: {
   children: React.ReactNode;
-  params: { lang?: string };
 }) {
-  const lang = params?.lang || 'en';
-  const isArabic = lang === 'ar';
+  // Root layout doesn't receive params in Next.js 15
+  const lang = 'en';
+  const isArabic = false;
 
   return (
     <html lang={lang} dir={isArabic ? 'rtl' : 'ltr'}>

@@ -8,7 +8,15 @@ export type Product = Prisma.ProductGetPayload<{
     discounts: true;
     units: true; // Include ProductUnits
   };
-}>;
+}> & {
+  // Ensure slug and SEO fields are properly typed
+  slug?: string | null;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+  metaKeywords?: string[];
+  canonicalUrl?: string | null;
+  ogImage?: string | null;
+};
 
 export type Unit = Prisma.UnitGetPayload<{}>;
 export type ProductUnit = Prisma.ProductUnitGetPayload<{}> & {

@@ -171,7 +171,7 @@ export default function ProductItem({
         className="relative bg-white/8 backdrop-blur-sm rounded-xl shadow-md hover:shadow-xl transition-transform duration-300 hover:scale-[1.01] border border-amber-200/20 hover:border-amber-300/40 hover:bg-white/12 flex flex-col h-[420px] lg:h-[440px] group overflow-hidden"
       >
         {/* Product Image Container with Badges */}
-        <Link href={`/product/${product.id}`} className="block relative">
+        <Link href={`/products/${product.slug || product.id}`} className="block relative">
           <div className="relative w-full h-40 lg:h-44 p-3 bg-gradient-to-br from-amber-950/20 via-stone-900/20 to-amber-950/20 overflow-hidden rounded-xl">
             {/* Loading Skeleton */}
             {!isImageLoaded && (
@@ -181,7 +181,7 @@ export default function ProductItem({
             {/* Main Image - Contain, Center, Full View, No Crop */}
             <Image
               src={product?.images[0]?.secureUrl || '/assets/noImage.jpg'}
-              alt={product?.name || 'Product image'}
+              alt={`${product?.name || 'Product'} - Premium ${product?.category || 'product'} from Sheikh Shop`}
               fill
               className={cn(
                 'object-contain object-center transition-all duration-300 rounded-xl p-2',
@@ -190,7 +190,7 @@ export default function ProductItem({
               loading={index < 4 ? 'eager' : 'lazy'}
               priority={index < 4}
               sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-              quality={90}
+              quality={80}
               placeholder="blur"
               blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
               onLoad={() => setIsImageLoaded(true)}
@@ -228,10 +228,10 @@ export default function ProductItem({
 
         {/* Product Content */}
         <div className="relative z-10 p-4 flex flex-col flex-grow min-h-0">
-          <Link href={`/product/${product.id}`} className="block mb-2">
-            <h3 className="text-base font-semibold text-white group-hover:text-amber-200 transition-colors duration-300 cursor-pointer line-clamp-2 leading-tight">
+          <Link href={`/products/${product.slug || product.id}`} className="block mb-2">
+            <h2 className="text-base font-semibold text-white group-hover:text-amber-200 transition-colors duration-300 cursor-pointer line-clamp-2 leading-tight">
               {product?.name}
-            </h3>
+            </h2>
           </Link>
 
           <p className="text-amber-200/80 text-sm mb-3 line-clamp-2 leading-relaxed">

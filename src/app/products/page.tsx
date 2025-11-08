@@ -1,11 +1,58 @@
+import type { Metadata } from 'next';
 import { prisma } from '@/lib/prisma';
 import ProductListView from '@/modules/products/views/ProductListView';
 import React from 'react';
 import { getProductsByCategory } from '@/lib/data/products';
 import { ProductCategoryType } from '@prisma/client';
 
-// Force dynamic rendering to prevent build-time database queries
-export const dynamic = 'force-dynamic';
+/**
+ * Generate metadata for product listing page
+ */
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: 'Premium Products Collection | Sheikh Shop',
+    description: 'Discover our curated collection of premium dates, saffron, honey, and authentic Middle Eastern products. Exceptional quality with worldwide shipping.',
+    keywords: [
+      'premium products',
+      'dates',
+      'saffron',
+      'honey',
+      'luxury food',
+      'sheikh shop',
+      'middle eastern products',
+      'authentic products',
+      'organic dates',
+      'premium saffron',
+    ],
+    openGraph: {
+      title: 'Premium Products Collection | Sheikh Shop',
+      description: 'Discover our curated collection of premium Middle Eastern products.',
+      type: 'website',
+      url: '/products',
+      siteName: 'Sheikh Shop',
+      images: [
+        {
+          url: '/og-products.jpg',
+          width: 1200,
+          height: 630,
+          alt: 'Premium Products Collection - Sheikh Shop',
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: 'Premium Products Collection | Sheikh Shop',
+      description: 'Discover our curated collection of premium Middle Eastern products.',
+      images: ['/og-products.jpg'],
+    },
+    alternates: {
+      canonical: '/products',
+    },
+  };
+}
+
+// Use ISR for better performance instead of force-dynamic
+export const revalidate = 3600; // Revalidate every hour
 
 export default async function Products() {
   try {

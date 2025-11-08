@@ -2,6 +2,7 @@
 import { prisma } from '@/lib/prisma';
 import type { Product } from '@prisma/client';
 import { redirect } from 'next/navigation';
+import { generateProductSlug } from '@/lib/utils/slug';
 
 export const getProducts = async () => {
   const result = await prisma.product.findMany({ include: { images: true } });
@@ -32,6 +33,9 @@ export const getProductsAPI = async (params?: {
   return response;
 };
 
+/**
+ * Get product by ID (for backward compatibility)
+ */
 export const getProductById = async (id: string) => {
   try {
     // Validate ID format
@@ -45,7 +49,18 @@ export const getProductById = async (id: string) => {
       include: { 
         images: true,
         baseUnit: true,
-        discounts: true,
+        discounts: {
+          where: {
+            isActive: true,
+            startDate: { lte: new Date() },
+            endDate: { gte: new Date() },
+          },
+        },
+        units: {
+          where: {
+            isActive: true,
+          },
+        },
       },
     });
 
@@ -67,19 +82,124 @@ export const getProductById = async (id: string) => {
   }
 };
 
-export const upsertProduct = async (product: Product) => {
+/**
+ * Get product by slug (SEO-friendly lookup)
+ */
+export const getProductBySlug = async (slug: string) => {
+  try {
+    // Validate slug format
+    if (!slug || typeof slug !== 'string' || slug.length === 0) {
+      console.error('Invalid product slug:', slug);
+      return null;
+    }
+
+    const result = await prisma.product.findFirst({
+      where: { 
+        slug: slug,
+      },
+      include: { 
+        images: true,
+        baseUnit: true,
+        discounts: {
+          where: {
+            isActive: true,
+            startDate: { lte: new Date() },
+            endDate: { gte: new Date() },
+          },
+        },
+        units: {
+          where: {
+            isActive: true,
+          },
+        },
+      },
+    });
+
+    if (!result) {
+      console.error('Product not found by slug:', slug);
+      return null;
+    }
+
+    // Validate required fields
+    if (!result.baseUnit) {
+      console.error('Product missing baseUnit:', slug);
+      return null;
+    }
+
+    return serializeProduct(result);
+  } catch (error) {
+    console.error('Error fetching product by slug:', slug, error);
+    return null;
+  }
+};
+
+/**
+ * Get product by ID or slug (supports both for backward compatibility)
+ */
+export const getProductByIdOrSlug = async (identifier: string) => {
+  try {
+    if (!identifier || typeof identifier !== 'string' || identifier.length === 0) {
+      console.error('Invalid product identifier:', identifier);
+      return null;
+    }
+
+    // Try slug first (more common for SEO-friendly URLs)
+    // If it looks like a UUID, try ID lookup
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(identifier);
+    
+    if (isUUID) {
+      // Try ID lookup first for UUIDs
+      const byId = await getProductById(identifier);
+      if (byId) return byId;
+    }
+    
+    // Try slug lookup (for both UUIDs and slugs)
+    const bySlug = await getProductBySlug(identifier);
+    if (bySlug) return bySlug;
+    
+    // Product not found by either ID or slug
+    console.error('Product not found by ID or slug:', identifier);
+    return null;
+  } catch (error) {
+    console.error('Error fetching product by ID or slug:', identifier, error);
+    return null;
+  }
+};
+
+export const upsertProduct = async (product: Product & { name?: string; slug?: string | null }) => {
   const { id } = product;
+  
+  // Prepare product data
+  const productData: any = { ...product };
+  
+  // Auto-generate slug if not provided and name exists
+  if (product.name && !product.slug) {
+    // Get all existing slugs to ensure uniqueness
+    const existingProducts = await prisma.product.findMany({
+      select: { slug: true },
+    });
+    const existingSlugs = existingProducts
+      .map(p => p.slug)
+      .filter((slug): slug is string => slug !== null && slug !== undefined);
+    
+    productData.slug = generateProductSlug(
+      product.name,
+      existingSlugs,
+      id || undefined
+    );
+  }
+  
   let result;
   if (id) {
     result = await prisma.product.update({
       where: {
         id,
       },
-      data: product,
+      data: productData,
     });
   } else {
     result = await prisma.product.create({
-      data: product,
+      data: productData,
     });
   }
 

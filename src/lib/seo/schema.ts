@@ -68,9 +68,10 @@ export const websiteSchema = {
 };
 
 // Product Schema
-export function generateProductSchema(product: Product & { images?: any[] }) {
+export function generateProductSchema(product: Product & { images?: any[]; slug?: string | null }) {
   const baseUrl = getBaseUrl();
-  const productUrl = `${baseUrl}/products/${product.id}`;
+  // Use slug for SEO-friendly URL, fallback to ID for backward compatibility
+  const productUrl = `${baseUrl}/products/${product.slug || product.id}`;
   
   // Get multi-currency prices (assuming basePrice is in EUR)
   const multiCurrencyPrices = getMultiCurrencyPrices(product.basePrice);
@@ -89,7 +90,9 @@ export function generateProductSchema(product: Product & { images?: any[] }) {
     priceValidUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
   }));
   
-  return {
+  // Build schema without hardcoded ratings
+  // Only include aggregateRating if you have real review data
+  const schema: any = {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: product.name,
@@ -103,13 +106,6 @@ export function generateProductSchema(product: Product & { images?: any[] }) {
     },
     category: product.category,
     offers: offers,
-    aggregateRating: product.isBestSeller ? {
-      '@type': 'AggregateRating',
-      ratingValue: '4.8',
-      reviewCount: '127',
-      bestRating: '5',
-      worstRating: '1',
-    } : undefined,
     additionalProperty: [
       {
         '@type': 'PropertyValue',
@@ -123,6 +119,20 @@ export function generateProductSchema(product: Product & { images?: any[] }) {
       },
     ],
   };
+  
+  // Note: aggregateRating removed - only include if you have real review data
+  // Example of how to add it when you have real reviews:
+  // if (product.reviews && product.reviews.length > 0) {
+  //   schema.aggregateRating = {
+  //     '@type': 'AggregateRating',
+  //     ratingValue: calculateAverageRating(product.reviews).toString(),
+  //     reviewCount: product.reviews.length.toString(),
+  //     bestRating: '5',
+  //     worstRating: '1',
+  //   };
+  // }
+  
+  return schema;
 }
 
 // Article Schema

@@ -9,27 +9,33 @@ datasource db {
 }
 
 model Product {
-  id           String          @id @default(uuid())
-  name         String          @unique @db.VarChar(255)
-  category     ProductCategory
-  description  String?
-  basePrice    Float           @default(0.0)
-  baseUnitId   String
-  quantity     Int             @default(0)
-  status       ProductStatus   @default(ACTIVE)
-  isNew        Boolean         @default(false)
-  isBestSeller Boolean         @default(false)
-  isAmazing    Boolean         @default(false)
-  categoryType ProductCategoryType @default(SheikhFood)
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
-  categoryId   String?
-  cartItems    CartItem[]
-  discounts    Discount[]
-  images       Image[]
-  baseUnit     Unit            @relation(fields: [baseUnitId], references: [id])
-  Category     Category?       @relation(fields: [categoryId], references: [id])
-  units        ProductUnit[]
+  id             String              @id @default(uuid())
+  name           String              @unique @db.VarChar(255)
+  category       ProductCategory
+  description    String?
+  basePrice      Float               @default(0.0)
+  baseUnitId     String
+  quantity       Int                 @default(0)
+  status         ProductStatus       @default(ACTIVE)
+  isNew          Boolean             @default(false)
+  isBestSeller   Boolean             @default(false)
+  isAmazing      Boolean             @default(false)
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  categoryId     String?
+  categoryType   ProductCategoryType @default(SheikhFood)
+  slug           String?             @db.VarChar(255)
+  seoTitle       String?             @db.VarChar(60)
+  seoDescription String?             @db.VarChar(160)
+  metaKeywords   String[]            @default([])
+  canonicalUrl   String?             @db.VarChar(500)
+  ogImage        String?             @db.VarChar(500)
+  cartItems      CartItem[]
+  discounts      Discount[]
+  images         Image[]
+  baseUnit       Unit                @relation(fields: [baseUnitId], references: [id])
+  Category       Category?           @relation(fields: [categoryId], references: [id])
+  units          ProductUnit[]
 
   @@index([category])
   @@index([basePrice])
@@ -42,6 +48,8 @@ model Product {
   @@index([category, status], map: "idx_product_category_status_unique")
   @@index([name], map: "idx_product_name_unique")
   @@index([categoryId])
+  @@index([slug])
+  @@index([name, status], map: "idx_product_name_status")
 }
 
 model Unit {

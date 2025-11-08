@@ -16,8 +16,12 @@ export async function GET(req: NextRequest) {
       },
       include: {
         images: true,
-        baseUnit: true, // This is correct - it's the relation name in the schema
-        units: true, // Include ProductUnits
+        baseUnit: true,
+        units: {
+          where: {
+            isActive: true,
+          },
+        },
         discounts: {
           where: {
             isActive: true,
@@ -25,7 +29,7 @@ export async function GET(req: NextRequest) {
             endDate: { gte: new Date() },
           },
           orderBy: { value: 'desc' },
-          take: 1, // Get the best active discount
+          take: 1,
         },
       },
       orderBy: { createdAt: 'desc' },

@@ -96,42 +96,55 @@ const getDefaultCurrency = () => {
 };
 
 export const generateProductSchema = (
-  product: Product & { images?: any[] },
+  product: Product & { images?: any[]; slug?: string | null },
   opts?: { currency?: string; availabilityOverride?: 'InStock' | 'OutOfStock' }
-) => ({
-  '@context': 'https://schema.org',
-  '@type': 'Product',
-  name: product.name,
-  description: product.description || `Premium ${product.category.toLowerCase()} from Sheikh Shop`,
-  image: product.images?.map(img => img.image) || [`${getBaseUrl()}/noImage.jpg`],
-  brand: {
-    '@type': 'Brand',
-    name: 'Sheikh Shop',
-  },
-  category: product.category,
-  sku: product.id,
-  offers: {
-    '@type': 'Offer',
-    price: product.basePrice,
-    priceCurrency: opts?.currency || getDefaultCurrency(),
-    availability: (opts?.availabilityOverride || (product.status === 'ACTIVE' ? 'InStock' : 'OutOfStock'))
-      === 'InStock'
-      ? 'https://schema.org/InStock'
-      : 'https://schema.org/OutOfStock',
-    seller: {
-      '@type': 'Organization',
+) => {
+  // Use slug for SEO-friendly URL, fallback to ID for backward compatibility
+  const productUrl = `${getBaseUrl()}/products/${product.slug || product.id}`;
+  
+  const schema: any = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.name,
+    description: product.description || `Premium ${product.category.toLowerCase()} from Sheikh Shop`,
+    image: product.images?.map(img => img.image) || [`${getBaseUrl()}/noImage.jpg`],
+    brand: {
+      '@type': 'Brand',
       name: 'Sheikh Shop',
     },
-    url: `${getBaseUrl()}/products/${product.id}`,
-  },
-  aggregateRating: {
-    '@type': 'AggregateRating',
-    ratingValue: '4.8',
-    reviewCount: '127',
-    bestRating: '5',
-    worstRating: '1',
-  },
-});
+    category: product.category,
+    sku: product.id,
+    offers: {
+      '@type': 'Offer',
+      price: product.basePrice,
+      priceCurrency: opts?.currency || getDefaultCurrency(),
+      availability: (opts?.availabilityOverride || (product.status === 'ACTIVE' ? 'InStock' : 'OutOfStock'))
+        === 'InStock'
+        ? 'https://schema.org/InStock'
+        : 'https://schema.org/OutOfStock',
+      seller: {
+        '@type': 'Organization',
+        name: 'Sheikh Shop',
+      },
+      url: productUrl,
+    },
+    url: productUrl,
+  };
+  
+  // Note: aggregateRating removed - only include if you have real review data
+  // Example of how to add it when you have real reviews:
+  // if (product.reviews && product.reviews.length > 0) {
+  //   schema.aggregateRating = {
+  //     '@type': 'AggregateRating',
+  //     ratingValue: calculateAverageRating(product.reviews).toString(),
+  //     reviewCount: product.reviews.length.toString(),
+  //     bestRating: '5',
+  //     worstRating: '1',
+  //   };
+  // }
+  
+  return schema;
+};
 
 export const generateArticleSchema = (article: Article & { author?: User }) => ({
   '@context': 'https://schema.org',
@@ -232,24 +245,53 @@ export const generateMetadata = ({
 };
 
 // Product-specific metadata
-export const generateProductMetadata = (product: Product & { images?: any[] }) => {
-  const keywords = [
-    product.name,
-    product.category.toLowerCase(),
-    'premium',
-    'luxury',
-    'sheikh shop',
-    'arabian',
-    'heritage',
-    'quality',
-  ];
+export const generateProductMetadata = (
+  product: Product & { 
+    images?: any[];
+    slug?: string | null;
+    seoTitle?: string | null;
+    seoDescription?: string | null;
+    metaKeywords?: string[];
+    canonicalUrl?: string | null;
+    ogImage?: string | null;
+  }
+) => {
+  // Use custom SEO fields if available, fallback to generated
+  const title = product.seoTitle || 
+    `${product.name} - Premium ${product.category} | Sheikh Shop`;
+  
+  const description = product.seoDescription || 
+    product.description || 
+    `Discover premium ${product.name} at Sheikh Shop. Exceptional quality ${product.category.toLowerCase()} with authentic Arabian heritage.`;
+
+  const keywords = product.metaKeywords && product.metaKeywords.length > 0
+    ? product.metaKeywords
+    : [
+        product.name,
+        product.category.toLowerCase(),
+        'premium',
+        'luxury',
+        'sheikh shop',
+        'arabian',
+        'heritage',
+        'quality',
+      ];
+
+  // Use slug for canonical URL, fallback to ID for backward compatibility
+  const canonical = product.canonicalUrl || 
+    `/products/${product.slug || product.id}`;
+  
+  // Use custom OG image if available, otherwise use product images
+  const images = product.ogImage 
+    ? [product.ogImage]
+    : product.images?.map(img => img.image) || [];
 
   return generateMetadata({
-    title: `${product.name} - Premium ${product.category} | Sheikh Shop`,
-    description: product.description || `Discover premium ${product.name} at Sheikh Shop. Exceptional quality ${product.category.toLowerCase()} with authentic Arabian heritage.`,
+    title,
+    description,
     keywords,
-    images: product.images?.map(img => img.image) || [],
-    canonicalPath: `/products/${product.id}`,
+    images,
+    canonicalPath: canonical,
     type: 'product',
   });
 };

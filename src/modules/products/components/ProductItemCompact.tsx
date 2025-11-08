@@ -100,7 +100,7 @@ export default function ProductItemCompact({
         <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-orange-500/3 to-yellow-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
         {/* Product Image - Circular, centered at top */}
-        <Link href={`/product/${product.id}`} className="block">
+        <Link href={`/products/${product.slug || product.id}`} className="block">
           <div className="relative w-full h-32 bg-gradient-to-br from-amber-950/20 via-stone-900/20 to-amber-950/20 backdrop-blur-sm flex items-center justify-center p-4 cursor-pointer hover:bg-gradient-to-br hover:from-amber-950/30 hover:via-stone-900/30 hover:to-amber-950/30 transition-all duration-300">
             {!isImageLoaded && (
               <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-yellow-500/10 animate-pulse rounded-full" />
@@ -108,7 +108,7 @@ export default function ProductItemCompact({
             <div className="relative w-20 h-20 rounded-full overflow-hidden">
             <Image
               src={product?.images[0]?.image || '/assets/noImage.jpg'}
-              alt={product?.name || 'Product image'}
+              alt={`${product?.name || 'Product'} - Premium ${product?.category || 'product'} from Sheikh Shop`}
                 fill
               className={cn(
                   'object-cover transition-all duration-300',
@@ -117,7 +117,7 @@ export default function ProductItemCompact({
               loading={index < 4 ? 'eager' : 'lazy'}
               priority={index < 4}
               sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
-              quality={85}
+              quality={80}
               placeholder="blur"
               blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
               onLoad={() => setIsImageLoaded(true)}
@@ -130,10 +130,10 @@ export default function ProductItemCompact({
         {/* Product Content - Flexible content area */}
         <div className="relative z-10 p-3 flex flex-col flex-grow">
           {/* Product Name */}
-          <Link href={`/product/${product.id}`} className="block mb-2">
-            <h3 className="text-sm font-semibold text-white group-hover:text-amber-200 transition-colors duration-300 cursor-pointer line-clamp-2 leading-tight text-center">
+          <Link href={`/products/${product.slug || product.id}`} className="block mb-2">
+            <h2 className="text-sm font-semibold text-white group-hover:text-amber-200 transition-colors duration-300 cursor-pointer line-clamp-2 leading-tight text-center">
                 {product?.name}
-              </h3>
+              </h2>
             </Link>
             
           {/* Star Rating with Review Count */}
