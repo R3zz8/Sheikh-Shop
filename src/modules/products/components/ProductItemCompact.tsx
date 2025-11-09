@@ -42,7 +42,7 @@ export default function ProductItemCompact({
     return (
       <div className="relative bg-white/8 backdrop-blur-sm border border-amber-200/20 rounded-xl overflow-hidden aspect-square">
         <div className="flex flex-col items-center justify-center h-full p-4 text-center">
-          <h3 className="text-white font-bold text-sm mb-2 line-clamp-2">{product.name}</h3>
+          <h2 className="text-white font-bold text-sm mb-2 line-clamp-2">{product.name}</h2>
           <p className="text-amber-300 font-semibold text-lg">${product.basePrice}</p>
         </div>
       </div>

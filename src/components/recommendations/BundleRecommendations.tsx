@@ -8,7 +8,6 @@ import type { BundleRecommendation, RecommendationContext } from '@/lib/recommen
 import { useUserBehavior } from '@/hooks/useUserBehavior';
 import { createRecommendationEngine } from '@/lib/recommendations';
 import { formatPrice, convertCurrency } from '@/lib/currency';
-import { useCurrencySafe } from '@/providers/CurrencyProvider';
 import { Button } from '@/components/ui';
 
 interface BundleRecommendationsProps {
@@ -40,7 +39,8 @@ export default function BundleRecommendations({
     },
     recentActivity: []
   }), trackProductView = () => {} } = useUserBehavior() || {};
-  const { currency = 'EUR' } = useCurrencySafe() || {};
+  // Always use EUR currency for bundle deals (unified with product detail page)
+  const currency = 'EUR';
 
   useEffect(() => {
     const generateBundles = async () => {

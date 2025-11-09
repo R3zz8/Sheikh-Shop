@@ -55,7 +55,7 @@ export default function ProductCard({ product, className = '', onClick }: Produc
       className={`bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow h-[420px] lg:h-[440px] flex flex-col overflow-hidden ${className}`}
       onClick={onClick}
     >
-      <Link href={`/products/${product.id}`}>
+      <Link href={`/products/${product.slug || product.id}`}>
         <div className="relative overflow-hidden rounded-t-lg h-40 lg:h-44">
           <Image
             src={imageUrl}

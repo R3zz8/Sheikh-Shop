@@ -114,20 +114,6 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
 
                                 <ErrorBoundary fallback={
                                     <div className="bg-white/5 rounded-lg p-8 text-center">
-                                        <p className="text-gray-300">Failed to load recommendations</p>
-                                    </div>
-                                }>
-                                    <ProductRecommendations
-                                        currentProduct={product}
-                                        products={allProducts}
-                                        type="cross_sell"
-                                        limit={4}
-                                        title="You Might Also Like"
-                                    />
-                                </ErrorBoundary>
-
-                                <ErrorBoundary fallback={
-                                    <div className="bg-white/5 rounded-lg p-8 text-center">
                                         <p className="text-gray-300">Failed to load personalized recommendations</p>
                                     </div>
                                 }>

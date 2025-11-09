@@ -175,7 +175,7 @@ export default function ShoppingChatbot({
   };
 
   const handleProductClick = (product: ProductsWithImages) => {
-    window.location.href = `/product/${product.id}`;
+    window.location.href = `/products/${product.slug || product.id}`;
   };
 
   const handleSubmit = (e: React.FormEvent) => {

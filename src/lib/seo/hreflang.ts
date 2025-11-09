@@ -5,22 +5,30 @@ export function getBaseUrl(): string {
   return process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 }
 
-export type Locale = 'en' | 'ar';
+export type Locale = 'en' | 'ar' | 'fa';
 
 export function detectLocaleFromPath(pathname: string): Locale {
   const seg = pathname.split('/').filter(Boolean)[0];
-  return seg === 'ar' ? 'ar' : 'en';
+  if (seg === 'ar') return 'ar';
+  if (seg === 'fa') return 'fa';
+  return 'en';
 }
 
 // Build alternates.languages object for Next.js metadata based on a canonical pathname
 // pathname should start with '/'
+// Supports fa (Persian), en (English), and ar (Arabic)
 export function buildLanguageAlternates(pathname: string): Record<string, string> {
   const base = getBaseUrl();
   const cleanPath = pathname.startsWith('/') ? pathname : `/${pathname}`;
+  
+  // Remove any existing language prefix to get the base path
+  const basePath = cleanPath.replace(/^\/(en|ar|fa)/, '') || '/';
 
   return {
-    en: `${base}${cleanPath.replace(/^\/ar/, '') || '/'}`,
-    ar: `${base}/ar${cleanPath.replace(/^\/en/, '')}`,
+    'fa': `${base}${basePath === '/' ? '/' : basePath}`,
+    'en': `${base}${basePath === '/' ? '/en' : `/en${basePath}`}`,
+    'ar': `${base}${basePath === '/' ? '/ar' : `/ar${basePath}`}`,
+    'x-default': `${base}${basePath}`,
   };
 }
 

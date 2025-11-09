@@ -146,7 +146,7 @@ export function generateProductMetadata(product: {
   const ogImage = product.ogImage || 
     `/api/og/product?id=${product.id}`;
 
-  return generateSEO({
+  const metadata = generateSEO({
     title,
     description,
     keywords,
@@ -154,6 +154,13 @@ export function generateProductMetadata(product: {
     ogType: 'website',
     ogImage,
   });
+  
+  // Ensure hreflang is included for product pages
+  if (metadata.alternates) {
+    metadata.alternates.languages = buildLanguageAlternates(canonical);
+  }
+  
+  return metadata;
 }
 
 // Article-specific metadata generator

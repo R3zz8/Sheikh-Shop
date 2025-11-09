@@ -5,8 +5,53 @@ import Categories from '@/components/Categories';
 import AmazingDeals from '@/components/AmazingDeals';
 import FAQSchema from '@/components/seo/FAQSchema';
 import CarouselMobile from '@/components/CarouselMobile';
+import type { Metadata } from 'next';
+import { generateSEO } from '@/lib/seo/metadata';
+import { buildLanguageAlternates } from '@/lib/seo/hreflang';
 import '@fontsource/inter/400.css';     // Regular
 import '@fontsource/tajawal/400.css';    // Regular
+
+export async function generateMetadata(): Promise<Metadata> {
+  const baseUrl = process.env.NODE_ENV === 'production' 
+    ? 'https://sheikhshops.com' 
+    : process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  
+  const canonicalPath = '/';
+  const canonicalUrl = `${baseUrl}${canonicalPath}`;
+  
+  return {
+    title: 'Pure Honey, Premium Dates, Saffron | Sheikh Shop',
+    description: '100% Natural Mountain Honey, Majdool & Piarom Dates, Premium Saffron. Free Worldwide Shipping.',
+    keywords: ['natural honey', 'premium dates', 'saffron', 'sheikh shop', 'free shipping'],
+    alternates: {
+      canonical: canonicalUrl,
+      languages: buildLanguageAlternates(canonicalPath),
+    },
+    openGraph: {
+      type: 'website',
+      locale: 'en_US',
+      url: canonicalUrl,
+      title: 'Pure Honey, Premium Dates, Saffron | Sheikh Shop',
+      description: '100% Natural Mountain Honey, Majdool & Piarom Dates, Premium Saffron. Free Worldwide Shipping.',
+      siteName: 'Sheikh Shop',
+      images: [
+        {
+          url: `${baseUrl}/og-image.jpg`,
+          width: 1200,
+          height: 630,
+          alt: 'Sheikh Shop - Premium Natural Products',
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: 'Pure Honey, Premium Dates, Saffron | Sheikh Shop',
+      description: '100% Natural Mountain Honey, Majdool & Piarom Dates, Premium Saffron. Free Worldwide Shipping.',
+      images: [`${baseUrl}/og-image.jpg`],
+    },
+  };
+}
+
 export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-950 via-stone-900 to-amber-950 relative">
@@ -135,7 +180,7 @@ export default function Home() {
                 </div>
                 {/* Thin gradient separator */}
                 <div className="mx-auto mb-4 h-px w-16 bg-gradient-to-r from-amber-300 via-yellow-300 to-orange-300/70" />
-                <h3 className="text-xl max-[400px]:text-sm min-[500px]:text-base lg:text-xl font-semibold text-white mb-2">Premium Quality</h3>
+                <h2 className="text-xl max-[400px]:text-sm min-[500px]:text-base lg:text-xl font-semibold text-white mb-2">Premium Quality</h2>
                 <p className="text-gray-300 text-sm max-[400px]:text-xs min-[500px]:text-xs lg:text-sm">
                   Curated selection of the finest products with exceptional craftsmanship
                 </p>
@@ -147,7 +192,7 @@ export default function Home() {
                   <span className="text-2xl max-[400px]:text-xl min-[500px]:text-xl lg:text-2xl">🚚</span>
                 </div>
                 <div className="mx-auto mb-4 h-px w-16 bg-gradient-to-r from-amber-300 via-yellow-300 to-orange-300/70" />
-                <h3 className="text-xl max-[400px]:text-sm min-[500px]:text-base lg:text-xl font-semibold text-white mb-2">Fast Delivery</h3>
+                <h2 className="text-xl max-[400px]:text-sm min-[500px]:text-base lg:text-xl font-semibold text-white mb-2">Fast Delivery</h2>
                 <p className="text-gray-300 text-sm max-[400px]:text-xs min-[500px]:text-xs lg:text-sm">
                   Swift and secure delivery to your doorstep with premium packaging
                 </p>
@@ -159,7 +204,7 @@ export default function Home() {
                   <span className="text-2xl max-[400px]:text-xl min-[500px]:text-xl lg:text-2xl">💎</span>
                 </div>
                 <div className="mx-auto mb-4 h-px w-16 bg-gradient-to-r from-amber-300 via-yellow-300 to-orange-300/70" />
-                <h3 className="text-xl max-[400px]:text-sm min-[500px]:text-base lg:text-xl font-semibold text-white mb-2">Exclusive Collection</h3>
+                <h2 className="text-xl max-[400px]:text-sm min-[500px]:text-base lg:text-xl font-semibold text-white mb-2">Exclusive Collection</h2>
                 <p className="text-gray-300 text-sm max-[400px]:text-xs min-[500px]:text-xs lg:text-sm">
                   Limited edition items and exclusive deals for our valued customers
                 </p>

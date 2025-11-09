@@ -216,7 +216,7 @@ export default function MiniCartDrawer({ isOpen, onClose }: MiniCartDrawerProps)
                       {crossSellProducts.slice(0, 2).map((product) => (
                         <Link
                           key={product.id}
-                          href={`/products/${product.id}`}
+                          href={`/products/${(product as any).slug || product.id}`}
                           className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-lg transition-colors"
                           onClick={onClose}
                         >

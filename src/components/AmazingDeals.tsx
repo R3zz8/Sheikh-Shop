@@ -319,7 +319,7 @@ export default function AmazingDeals() {
                     whileHover="hover"
                     className="group h-full"
                   >
-                    <Link href={`/product/${product.id}`} className="block h-full">
+                    <Link href={`/products/${product.slug || product.id}`} className="block h-full">
                       <div className="bg-gradient-to-br from-amber-900/40 via-stone-800/40 to-amber-800/40 rounded-xl border border-amber-500/20 shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden h-full flex flex-col">
                         {/* Product Image */}
                         <div className="relative aspect-square overflow-hidden">

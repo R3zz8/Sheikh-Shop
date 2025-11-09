@@ -13,6 +13,7 @@ import { generateSEO } from '@/lib/seo/metadata';
 import AccessibilityEnhancements from '@/components/accessibility/AccessibilityEnhancements';
 import ShoppingChatbot from '@/components/ai/ShoppingChatbot';
 import EnhancedAISearch from '@/components/ai/EnhancedAISearch';
+import AMPHead from '@/components/seo/AMPHead';
 import Link from 'next/link';
 
 // === فونت‌ها از @fontsource (بدون localFont) ===
@@ -98,6 +99,7 @@ export default function RootLayout({
         <WebsiteJsonLd />
       </head>
       <body className="antialiased font-sans">
+        <AMPHead />
         <AccessibilityEnhancements />
         <ErrorBoundary>
           <ReactQueryProvider>

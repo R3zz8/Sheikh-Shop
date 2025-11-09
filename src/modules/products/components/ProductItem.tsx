@@ -110,7 +110,7 @@ export default function ProductItem({
     return (
       <div className="relative bg-white/8 backdrop-blur-sm border border-amber-200/20 rounded-2xl overflow-hidden p-6">
         <div className="text-center">
-          <h3 className="text-white font-bold text-lg mb-2">{product.name}</h3>
+          <h2 className="text-white font-bold text-lg mb-2">{product.name}</h2>
           <p className="text-gray-300 text-sm mb-3">{product.description}</p>
           <p className="text-amber-300 font-semibold">${product.basePrice}</p>
           <p className="text-gray-400 text-xs mt-2">Units: {availableUnits.length}</p>
