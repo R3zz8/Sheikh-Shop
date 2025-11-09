@@ -13,6 +13,11 @@ export type Product = Prisma.ProductGetPayload<{
   slug?: string | null;
   seoTitle?: string | null;
   seoDescription?: string | null;
+  h1Override?: string | null;
+  shortDescription?: string | null;
+  ogTitle?: string | null;
+  ogDescription?: string | null;
+  schemaMarkup?: any;
   metaKeywords?: string[];
   canonicalUrl?: string | null;
   ogImage?: string | null;

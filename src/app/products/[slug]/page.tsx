@@ -1,12 +1,14 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
-import { generateProductMetadata } from '@/lib/seo/metadata';
-import { ProductOfferJsonLd } from '@/components/seo/JsonLd';
+import { generateProductMetadata as generateProductMetadataNew } from '@/components/seo/ProductSEO';
+import { ProductOfferJsonLd, BreadcrumbJsonLd } from '@/components/seo/JsonLd';
 import FAQSchema from '@/components/seo/FAQSchema';
 import ProductDetailPage from '@/components/product/ProductDetailPage';
 import ProductStructuredData from '@/components/seo/ProductStructuredData';
+import { ProductSchemaMarkup } from '@/components/seo/ProductSEO';
 import { getProductByIdOrSlug } from '@/modules/products/services';
+import { getProductSEO } from '@/lib/seo/product-seo';
 import type { ProductsWithImages, ProductUnit } from '@/types';
 import { formatPrice } from '@/lib/currency';
 import { buildLanguageAlternates, getBaseUrl } from '@/lib/seo/hreflang';
@@ -18,7 +20,7 @@ export const revalidate = 300;
 const CURRENCY = 'EUR';
 
 /**
- * Generate metadata for product detail page
+ * Generate metadata for product detail page using new SEO generator
  */
 export async function generateMetadata({
   params,
@@ -26,7 +28,18 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const product = await getProductByIdOrSlug(slug) as ProductsWithImages;
+  const product = await getProductByIdOrSlug(slug) as ProductsWithImages & {
+    seoTitle?: string | null;
+    seoDescription?: string | null;
+    h1Override?: string | null;
+    shortDescription?: string | null;
+    ogTitle?: string | null;
+    ogDescription?: string | null;
+    ogImage?: string | null;
+    schemaMarkup?: any;
+    canonicalUrl?: string | null;
+    metaKeywords?: string[];
+  };
   
   if (!product) {
     return {
@@ -35,20 +48,14 @@ export async function generateMetadata({
     };
   }
 
-  const metadata = generateProductMetadata(product as any);
-  
-  // Ensure hreflang is included
-  const canonicalPath = `/products/${product.slug || product.id}`;
   const baseUrl = getBaseUrl();
+  const metadata = generateProductMetadataNew(product, {
+    baseUrl,
+    currency: CURRENCY,
+    includeSchema: true,
+  });
   
-  return {
-    ...metadata,
-    alternates: {
-      ...metadata.alternates,
-      canonical: `${baseUrl}${canonicalPath}`,
-      languages: buildLanguageAlternates(canonicalPath),
-    },
-  };
+  return metadata;
 }
 
 // Helper function to serialize product (same as /product/[id])
@@ -224,10 +231,27 @@ export default async function ProductPage({
     const displayPrice = formatPrice(basePrice, CURRENCY);
     const lowestPriceFormatted = formatPrice(lowestPrice, CURRENCY);
 
+    // Generate SEO data for schema markup
+    const seoData = getProductSEO(product, {
+      baseUrl: getBaseUrl(),
+      currency: CURRENCY,
+      includeSchema: true,
+    });
+
+    // Generate breadcrumb schema
+    const breadcrumbItems = [
+      { name: 'Home', url: '/' },
+      { name: 'Products', url: '/products' },
+      { name: product.category, url: `/categories/${product.category.toLowerCase()}` },
+      { name: product.name, url: `/products/${product.slug || product.id}` },
+    ];
+
     return (
       <>
+        <BreadcrumbJsonLd breadcrumbs={breadcrumbItems} />
         <ProductOfferJsonLd product={product} currency={CURRENCY} rating={rating} />
         <ProductStructuredData product={product} />
+        <ProductSchemaMarkup product={product} seoData={seoData} />
         <FAQSchema
           faqs={[
             { question: 'What is the origin of this product?', answer: 'We source directly from trusted farms with strict quality standards.' },

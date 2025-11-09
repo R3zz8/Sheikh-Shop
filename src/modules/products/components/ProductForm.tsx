@@ -21,10 +21,11 @@ import {
 } from '@/components/ui';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
-import { upsertProduct } from '../services';
+import { upsertProduct as serverUpsertProduct } from '../actions';
 import UploadImage from './UploadImage';
 import { useState, useEffect } from 'react';
 import { Plus, Trash2, Package } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface ProductUnitForm {
   id?: string;
@@ -40,6 +41,7 @@ interface ProductUnitForm {
 
 const ProductForm = (props: { product: Product | null }) => {
   const { product } = props;
+  const router = useRouter();
   const { register, handleSubmit, setValue } = useForm<Product>();
   const [uploading, setUploading] = useState(false);
   const [tempImageUrl, setTempImageUrl] = useState<string | null>(null);
@@ -95,21 +97,58 @@ const ProductForm = (props: { product: Product | null }) => {
   };
 
   const onSubmitForm = async (data: any) => {
-    const _product = {
-      ...data,
-      id: product?.id,
-      basePrice: parseFloat(data?.basePrice?.toString() || '0'),
-      quantity: parseInt(data?.quantity?.toString() || '0'),
-      // imageUrl is set via handleUpload if provided
-    } as any;
+    // Prepare FormData for server action
+    const formData = new FormData();
     
-    // First save the product
-    const savedProduct = await upsertProduct(_product);
+    // Basic fields
+    if (product?.id) formData.append('id', product.id);
+    formData.append('name', data.name || '');
+    formData.append('category', data.category || ProductCategory.OTHERS);
+    formData.append('description', data.description || '');
+    formData.append('price', (data.basePrice || 0).toString());
+    formData.append('quantity', (data.quantity || 0).toString());
+    formData.append('status', data.status || 'ACTIVE');
+    formData.append('categoryType', data.categoryType || ProductCategoryType.SheikhFood);
+    
+    // SEO fields
+    if (data.slug) formData.append('slug', data.slug);
+    if (data.seoTitle) formData.append('seoTitle', data.seoTitle);
+    if (data.seoDescription) formData.append('seoDescription', data.seoDescription);
+    if (data.h1Override) formData.append('h1Override', data.h1Override);
+    if (data.shortDescription) formData.append('shortDescription', data.shortDescription);
+    if (data.ogTitle) formData.append('ogTitle', data.ogTitle);
+    if (data.ogDescription) formData.append('ogDescription', data.ogDescription);
+    if (data.ogImage) formData.append('ogImage', data.ogImage);
+    if (data.canonicalUrl) formData.append('canonicalUrl', data.canonicalUrl);
+    if (data.metaKeywords) formData.append('metaKeywords', data.metaKeywords);
+    
+    // Use server action
+    const result = await serverUpsertProduct(
+      { data: product, error: null },
+      formData
+    );
+    
+    if (result.error) {
+      console.error('Product save error:', result.error);
+      alert('Failed to save product: ' + (result.error.general || 'Unknown error'));
+      return;
+    }
+    
+    const savedProduct = result.data;
+    
+    if (!savedProduct) {
+      alert('Failed to save product');
+      return;
+    }
     
     // Then save/update product units
-    if (savedProduct && productUnits.length > 0) {
+    if (productUnits.length > 0) {
       await saveProductUnits(savedProduct.id);
     }
+    
+    // Redirect to product list
+    router.push('/dashboard/products');
+    router.refresh();
   };
 
   const saveProductUnits = async (productId: string) => {
@@ -440,6 +479,157 @@ const ProductForm = (props: { product: Product | null }) => {
                 ))}
               </div>
             )}
+          </div>
+
+          {/* SEO Fields Section */}
+          <div className="my-6 border-t pt-6">
+            <h3 className="text-lg font-semibold mb-4">SEO Settings</h3>
+            <div className="space-y-4">
+              {/* Slug */}
+              <div>
+                <Label htmlFor="slug">URL Slug</Label>
+                <Input
+                  {...register('slug')}
+                  id="slug"
+                  placeholder="auto-generated-from-name"
+                  defaultValue={product?.slug || ''}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Leave empty to auto-generate from product name. Only lowercase letters, numbers, and hyphens.
+                </p>
+              </div>
+
+              {/* SEO Title */}
+              <div>
+                <Label htmlFor="seoTitle">SEO Title (max 60 chars)</Label>
+                <Input
+                  {...register('seoTitle')}
+                  id="seoTitle"
+                  maxLength={60}
+                  defaultValue={product?.seoTitle || ''}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Used in search results. If empty, will use product name.
+                </p>
+              </div>
+
+              {/* SEO Description */}
+              <div>
+                <Label htmlFor="seoDescription">SEO Description (max 160 chars)</Label>
+                <Textarea
+                  {...register('seoDescription')}
+                  id="seoDescription"
+                  maxLength={160}
+                  rows={2}
+                  defaultValue={product?.seoDescription || ''}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Meta description for search engines. If empty, will use short description or product description.
+                </p>
+              </div>
+
+              {/* Short Description */}
+              <div>
+                <Label htmlFor="shortDescription">Short Description (max 300 chars)</Label>
+                <Textarea
+                  {...register('shortDescription')}
+                  id="shortDescription"
+                  maxLength={300}
+                  rows={2}
+                  defaultValue={(product as any)?.shortDescription || ''}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Brief summary used in listings and as fallback for meta description.
+                </p>
+              </div>
+
+              {/* H1 Override */}
+              <div>
+                <Label htmlFor="h1Override">H1 Override (max 100 chars)</Label>
+                <Input
+                  {...register('h1Override')}
+                  id="h1Override"
+                  maxLength={100}
+                  defaultValue={(product as any)?.h1Override || ''}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Custom H1 text for product detail page. If empty, will use SEO title or product name.
+                </p>
+              </div>
+
+              {/* Open Graph Title */}
+              <div>
+                <Label htmlFor="ogTitle">Open Graph Title (max 60 chars)</Label>
+                <Input
+                  {...register('ogTitle')}
+                  id="ogTitle"
+                  maxLength={60}
+                  defaultValue={(product as any)?.ogTitle || ''}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Title for social media sharing. If empty, will use SEO title.
+                </p>
+              </div>
+
+              {/* Open Graph Description */}
+              <div>
+                <Label htmlFor="ogDescription">Open Graph Description (max 160 chars)</Label>
+                <Textarea
+                  {...register('ogDescription')}
+                  id="ogDescription"
+                  maxLength={160}
+                  rows={2}
+                  defaultValue={(product as any)?.ogDescription || ''}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Description for social media sharing. If empty, will use SEO description.
+                </p>
+              </div>
+
+              {/* Open Graph Image */}
+              <div>
+                <Label htmlFor="ogImage">Open Graph Image URL</Label>
+                <Input
+                  {...register('ogImage')}
+                  id="ogImage"
+                  type="url"
+                  placeholder="https://example.com/image.jpg"
+                  defaultValue={product?.ogImage || ''}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Image URL for social media sharing (1200x630px recommended). If empty, will use product image.
+                </p>
+              </div>
+
+              {/* Canonical URL */}
+              <div>
+                <Label htmlFor="canonicalUrl">Canonical URL</Label>
+                <Input
+                  {...register('canonicalUrl')}
+                  id="canonicalUrl"
+                  type="url"
+                  placeholder="https://sheikhshops.com/products/product-slug"
+                  defaultValue={product?.canonicalUrl || ''}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Canonical URL for this product. If empty, will auto-generate from slug.
+                </p>
+              </div>
+
+              {/* Meta Keywords */}
+              <div>
+                <Label htmlFor="metaKeywords">Meta Keywords (comma-separated)</Label>
+                <Input
+                  {...register('metaKeywords')}
+                  id="metaKeywords"
+                  placeholder="premium, luxury, authentic, arabian"
+                  defaultValue={(product as any)?.metaKeywords?.join(', ') || ''}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Comma-separated keywords for SEO. If empty, will auto-generate from product name and category.
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Image upload for new product */}

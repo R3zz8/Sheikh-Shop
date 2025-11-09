@@ -83,9 +83,9 @@ export default function ProductCard({ product, className = '', onClick }: Produc
           )}
         </div>
         <div className="p-4 flex flex-col flex-grow min-h-0">
-          <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 text-base leading-tight">
+          <h2 className="font-semibold text-gray-900 mb-2 line-clamp-2 text-base leading-tight">
             {product.name}
-          </h3>
+          </h2>
           <p className="text-sm text-gray-600 mb-2 line-clamp-2 leading-relaxed">
             {product.description}
           </p>

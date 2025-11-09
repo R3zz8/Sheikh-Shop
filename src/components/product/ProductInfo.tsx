@@ -14,12 +14,15 @@ import { useUnits } from '@/hooks/useUnits';
 import { useUserBehavior } from '@/hooks/useUserBehavior';
 import { useState, useMemo, useEffect } from 'react';
 import ARProductViewer from '@/components/ar/ARProductViewer';
+import { getProductH1Content } from '@/components/seo/ProductSEO';
 
 interface ProductInfoProps {
     product: ProductsWithImages & {
         displayPrice: string;
         lowestPrice?: string;
         basePrice: number;
+        h1Override?: string | null;
+        seoTitle?: string | null;
     };
 }
 
@@ -123,11 +126,18 @@ export default function ProductInfo({ product }: ProductInfoProps) {
     const currentStock = getCurrentStock();
     const stockStatus = getStockStatus(currentStock);
 
+    // Get H1 content: h1Override > seoTitle > product.name
+    const h1Content = getProductH1Content({
+        h1Override: product.h1Override,
+        seoTitle: product.seoTitle,
+        name: product.name,
+    });
+
     return (
         <div className="space-y-4 md:space-y-8">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}>
                 <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent leading-tight">
-                    {product.name}
+                    {h1Content}
                 </h1>
             </motion.div>
 

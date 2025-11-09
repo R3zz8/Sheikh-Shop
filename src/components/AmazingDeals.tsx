@@ -351,9 +351,9 @@ export default function AmazingDeals() {
                         {/* Product Info */}
                         <div className="p-3 md:p-4 space-y-2 md:space-y-3 flex-grow flex flex-col">
                           {/* Product Name */}
-                          <h3 className="text-xs md:text-sm font-semibold text-white group-hover:text-amber-200 transition-colors duration-300 leading-tight truncate md:line-clamp-2">
+                          <h2 className="text-xs md:text-sm font-semibold text-white group-hover:text-amber-200 transition-colors duration-300 leading-tight truncate md:line-clamp-2">
                             {product.name}
-                          </h3>
+                          </h2>
 
                           {/* Price Section */}
                           <div className="space-y-1">

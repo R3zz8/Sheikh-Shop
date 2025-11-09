@@ -8,8 +8,15 @@ import { z } from 'zod';
 import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 import { checkAccess } from '@/lib/checkAccess';
+import {
+  sanitizeProductName,
+  sanitizeProductDescription,
+  sanitizeSeoField,
+  validateProductData,
+} from '@/lib/seo/sanitize';
+import { generateProductSlug } from '@/lib/utils/slug';
 
-// Enhanced validation schema with status
+// Enhanced validation schema with status and SEO fields
 const productSchema = z.object({
   name: z.string()
     .min(1, 'Product name is required')
@@ -30,6 +37,48 @@ const productSchema = z.object({
   category: z.enum(Object.values(ProductCategory) as [string, ...string[]]),
   status: z.enum(Object.values(ProductStatus) as [string, ...string[]]).optional(),
   categoryType: z.enum(['SheikhFood', 'SheikhTech']).optional(),
+  // SEO fields
+  slug: z.string()
+    .max(255, 'Slug must be less than 255 characters')
+    .regex(/^[a-z0-9-]+$/, 'Slug can only contain lowercase letters, numbers, and hyphens')
+    .optional()
+    .nullable(),
+  seoTitle: z.string()
+    .max(60, 'SEO title must be less than 60 characters')
+    .optional()
+    .nullable(),
+  seoDescription: z.string()
+    .max(160, 'SEO description must be less than 160 characters')
+    .optional()
+    .nullable(),
+  h1Override: z.string()
+    .max(100, 'H1 override must be less than 100 characters')
+    .optional()
+    .nullable(),
+  shortDescription: z.string()
+    .max(300, 'Short description must be less than 300 characters')
+    .optional()
+    .nullable(),
+  ogTitle: z.string()
+    .max(60, 'OG title must be less than 60 characters')
+    .optional()
+    .nullable(),
+  ogDescription: z.string()
+    .max(160, 'OG description must be less than 160 characters')
+    .optional()
+    .nullable(),
+  ogImage: z.string()
+    .max(500, 'OG image URL must be less than 500 characters')
+    .url('OG image must be a valid URL')
+    .optional()
+    .nullable(),
+  canonicalUrl: z.string()
+    .max(500, 'Canonical URL must be less than 500 characters')
+    .url('Canonical URL must be a valid URL')
+    .optional()
+    .nullable(),
+  metaKeywords: z.array(z.string()).optional().default([]),
+  schemaMarkup: z.any().optional().nullable(),
 });
 
 // Bulk operations schema
@@ -125,6 +174,22 @@ export const upsertProduct = async (
       quantity: parseInt(formData.get('quantity') as string),
       status: (formData.get('status') as string) || 'ACTIVE',
       categoryType: formData.get('categoryType') as 'SheikhFood' | 'SheikhTech',
+      // SEO fields
+      slug: formData.get('slug') as string || null,
+      seoTitle: formData.get('seoTitle') as string || null,
+      seoDescription: formData.get('seoDescription') as string || null,
+      h1Override: formData.get('h1Override') as string || null,
+      shortDescription: formData.get('shortDescription') as string || null,
+      ogTitle: formData.get('ogTitle') as string || null,
+      ogDescription: formData.get('ogDescription') as string || null,
+      ogImage: formData.get('ogImage') as string || null,
+      canonicalUrl: formData.get('canonicalUrl') as string || null,
+      metaKeywords: formData.get('metaKeywords') 
+        ? (formData.get('metaKeywords') as string).split(',').map(k => k.trim()).filter(Boolean)
+        : [],
+      schemaMarkup: formData.get('schemaMarkup') 
+        ? JSON.parse(formData.get('schemaMarkup') as string)
+        : null,
     };
 
     // Find category by slug and get both enum and ID
@@ -173,6 +238,72 @@ export const upsertProduct = async (
 
     const validatedData = validationResult.data;
 
+    // Sanitize and process SEO fields
+    const sanitizedData: any = {
+      ...validatedData,
+    };
+
+    // Sanitize all text fields
+    if (sanitizedData.name) {
+      sanitizedData.name = sanitizeProductName(sanitizedData.name);
+    }
+    if (sanitizedData.description !== undefined) {
+      sanitizedData.description = sanitizeProductDescription(sanitizedData.description);
+    }
+    if (sanitizedData.seoTitle !== undefined) {
+      sanitizedData.seoTitle = sanitizeSeoField(sanitizedData.seoTitle, 60);
+    }
+    if (sanitizedData.seoDescription !== undefined) {
+      sanitizedData.seoDescription = sanitizeSeoField(sanitizedData.seoDescription, 160);
+    }
+    if (sanitizedData.h1Override !== undefined) {
+      sanitizedData.h1Override = sanitizeSeoField(sanitizedData.h1Override, 100);
+    }
+    if (sanitizedData.shortDescription !== undefined) {
+      sanitizedData.shortDescription = sanitizeSeoField(sanitizedData.shortDescription, 300);
+    }
+    if (sanitizedData.ogTitle !== undefined) {
+      sanitizedData.ogTitle = sanitizeSeoField(sanitizedData.ogTitle, 60);
+    }
+    if (sanitizedData.ogDescription !== undefined) {
+      sanitizedData.ogDescription = sanitizeSeoField(sanitizedData.ogDescription, 160);
+    }
+
+    // Auto-generate slug if not provided
+    if (sanitizedData.name && !sanitizedData.slug) {
+      const existingProducts = await prisma.product.findMany({
+        select: { slug: true, id: true },
+      });
+      const existingSlugs = existingProducts
+        .map(p => p.slug)
+        .filter((slug): slug is string => slug !== null && slug !== undefined);
+      
+      sanitizedData.slug = generateProductSlug(
+        sanitizedData.name,
+        existingSlugs,
+        id || undefined
+      );
+    }
+
+    // Validate product data for HTML
+    const htmlValidation = validateProductData({
+      name: sanitizedData.name,
+      description: sanitizedData.description,
+      seoTitle: sanitizedData.seoTitle,
+      seoDescription: sanitizedData.seoDescription,
+      h1Override: sanitizedData.h1Override,
+      shortDescription: sanitizedData.shortDescription,
+      ogTitle: sanitizedData.ogTitle,
+      ogDescription: sanitizedData.ogDescription,
+    });
+
+    if (!htmlValidation.isValid) {
+      return {
+        data: prevData.data,
+        error: { general: `Validation failed: ${htmlValidation.errors.join(', ')}` }
+      };
+    }
+
     // Additional business logic validation
     if (id) {
       // Update existing product
@@ -190,14 +321,14 @@ export const upsertProduct = async (
 
       const result = await prisma.product.update({
         where: { id },
-        data: validatedData as any,
+        data: sanitizedData as any,
       });
 
       // Audit logging
       await logAuditEvent(userId, 'PRODUCT_UPDATED', {
         productId: id,
         productName: result.name,
-        changes: validatedData,
+        changes: sanitizedData,
       });
 
       revalidatePath('/dashboard/products');
@@ -205,14 +336,14 @@ export const upsertProduct = async (
     } else {
       // Create new product
       const result = await prisma.product.create({
-        data: validatedData as any,
+        data: sanitizedData as any,
       });
 
       // Audit logging
       await logAuditEvent(userId, 'PRODUCT_CREATED', {
         productId: result.id,
         productName: result.name,
-        data: validatedData,
+        data: sanitizedData,
       });
 
       revalidatePath('/dashboard/products');

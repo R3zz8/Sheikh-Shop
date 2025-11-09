@@ -3,6 +3,12 @@ import { prisma } from '@/lib/prisma';
 import type { Product } from '@prisma/client';
 import { redirect } from 'next/navigation';
 import { generateProductSlug } from '@/lib/utils/slug';
+import {
+  sanitizeProductName,
+  sanitizeProductDescription,
+  sanitizeSeoField,
+  validateProductData,
+} from '@/lib/seo/sanitize';
 
 export const getProducts = async () => {
   const result = await prisma.product.findMany({ include: { images: true } });
@@ -166,27 +172,124 @@ export const getProductByIdOrSlug = async (identifier: string) => {
   }
 };
 
-export const upsertProduct = async (product: Product & { name?: string; slug?: string | null }) => {
+export const upsertProduct = async (
+  product: Product & { 
+    name?: string; 
+    slug?: string | null;
+    description?: string | null;
+    seoTitle?: string | null;
+    seoDescription?: string | null;
+    h1Override?: string | null;
+    shortDescription?: string | null;
+    ogTitle?: string | null;
+    ogDescription?: string | null;
+  }
+) => {
   const { id } = product;
   
-  // Prepare product data
+  // Validate and sanitize product data
+  const validation = validateProductData({
+    name: product.name,
+    description: product.description,
+    seoTitle: product.seoTitle,
+    seoDescription: product.seoDescription,
+    h1Override: product.h1Override,
+    shortDescription: product.shortDescription,
+    ogTitle: product.ogTitle,
+    ogDescription: product.ogDescription,
+  });
+  
+  if (!validation.isValid) {
+    throw new Error(`Product data validation failed: ${validation.errors.join(', ')}`);
+  }
+  
+  // Prepare product data with sanitization
   const productData: any = { ...product };
   
+  // Sanitize all text fields
+  if (productData.name) {
+    productData.name = sanitizeProductName(productData.name);
+  }
+  
+  if (productData.description !== undefined) {
+    productData.description = sanitizeProductDescription(productData.description);
+  }
+  
+  if (productData.seoTitle !== undefined) {
+    productData.seoTitle = sanitizeSeoField(productData.seoTitle, 60);
+  }
+  
+  if (productData.seoDescription !== undefined) {
+    productData.seoDescription = sanitizeSeoField(productData.seoDescription, 160);
+  }
+  
+  if (productData.h1Override !== undefined) {
+    productData.h1Override = sanitizeSeoField(productData.h1Override, 100);
+  }
+  
+  if (productData.shortDescription !== undefined) {
+    productData.shortDescription = sanitizeSeoField(productData.shortDescription, 300);
+  }
+  
+  if (productData.ogTitle !== undefined) {
+    productData.ogTitle = sanitizeSeoField(productData.ogTitle, 60);
+  }
+  
+  if (productData.ogDescription !== undefined) {
+    productData.ogDescription = sanitizeSeoField(productData.ogDescription, 160);
+  }
+  
   // Auto-generate slug if not provided and name exists
-  if (product.name && !product.slug) {
+  if (productData.name && !productData.slug) {
     // Get all existing slugs to ensure uniqueness
     const existingProducts = await prisma.product.findMany({
-      select: { slug: true },
+      select: { slug: true, id: true },
     });
     const existingSlugs = existingProducts
       .map(p => p.slug)
       .filter((slug): slug is string => slug !== null && slug !== undefined);
     
     productData.slug = generateProductSlug(
-      product.name,
+      productData.name,
       existingSlugs,
       id || undefined
     );
+    
+    // Ensure slug uniqueness - check if generated slug already exists for another product
+    const existingProductWithSlug = existingProducts.find(
+      p => p.slug === productData.slug && p.id !== id
+    );
+    
+    if (existingProductWithSlug) {
+      // Generate a unique slug by appending a number
+      let counter = 1;
+      let uniqueSlug = `${productData.slug}-${counter}`;
+      
+      while (existingSlugs.includes(uniqueSlug)) {
+        counter++;
+        uniqueSlug = `${productData.slug}-${counter}`;
+        
+        if (counter > 1000) {
+          // Fallback to timestamp if too many attempts
+          uniqueSlug = `${productData.slug}-${Date.now()}`;
+          break;
+        }
+      }
+      
+      productData.slug = uniqueSlug;
+    }
+  } else if (productData.slug) {
+    // Validate slug uniqueness if provided
+    const existingProductWithSlug = await prisma.product.findFirst({
+      where: {
+        slug: productData.slug,
+        ...(id ? { id: { not: id } } : {}),
+      },
+    });
+    
+    if (existingProductWithSlug) {
+      throw new Error(`Slug "${productData.slug}" already exists for another product`);
+    }
   }
   
   let result;
