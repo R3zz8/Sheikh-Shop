@@ -14,6 +14,7 @@ import AccessibilityEnhancements from '@/components/accessibility/AccessibilityE
 import ShoppingChatbot from '@/components/ai/ShoppingChatbot';
 import EnhancedAISearch from '@/components/ai/EnhancedAISearch';
 import AMPHead from '@/components/seo/AMPHead';
+import Script from 'next/script';
 import Link from 'next/link';
 
 // === فونت‌ها از @fontsource (بدون localFont) ===
@@ -95,6 +96,25 @@ export default function RootLayout({
         <meta name="theme-color" content="#451a03" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
         <meta name="p:domain_verify" content="211124b09592c994a2df8c1c9dfce648" />
+        <Script
+          id="ga4-loader"
+          strategy="afterInteractive"
+          src="https://www.googletagmanager.com/gtag/js?id=G-BMHE9T3G35"
+        />
+        <Script
+          id="ga4-init"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-BMHE9T3G35', {
+                page_path: window.location.pathname,
+              });
+            `,
+          }}
+        />
         <OrganizationJsonLd />
         <WebsiteJsonLd />
       </head>
