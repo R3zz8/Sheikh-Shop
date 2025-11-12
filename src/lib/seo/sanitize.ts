@@ -1,7 +1,10 @@
 /**
  * HTML Sanitization Utilities
- * Prevents HTML tags from being stored in database fields
+ * Prevents unsafe HTML tags from being stored in database fields
+ * Allows Markdown/HTML in description field (sanitized on render)
  */
+
+import { generateExcerpt } from '@/lib/markdown';
 
 /**
  * Strips all HTML tags from a string
@@ -48,14 +51,20 @@ export function sanitizeProductName(name: string | null | undefined): string {
 }
 
 /**
- * Sanitizes product description - removes HTML and trims
- * @param description - Product description to sanitize
- * @returns Clean product description
+ * Sanitizes product description - allows Markdown/HTML (will be sanitized on render)
+ * @param description - Product description (can contain Markdown/HTML)
+ * @returns Description as-is (sanitization happens on render)
  */
 export function sanitizeProductDescription(description: string | null | undefined): string | null {
   if (!description) return null;
   
-  const cleaned = stripHtmlTags(description);
+  // Description can contain Markdown/HTML - we'll sanitize it on render
+  // Just remove script tags and event handlers for basic safety
+  const cleaned = description
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
+    .replace(/javascript:/gi, '');
+  
   return cleaned || null;
 }
 
@@ -78,6 +87,63 @@ export function sanitizeSeoField(
 }
 
 /**
+ * Sanitizes excerpt field - plain text only
+ * @param excerpt - Excerpt text
+ * @returns Clean excerpt or null
+ */
+export function sanitizeExcerpt(excerpt: string | null | undefined): string | null {
+  if (!excerpt) return null;
+  
+  const cleaned = stripHtmlTags(excerpt);
+  return cleaned || null;
+}
+
+/**
+ * Auto-generates excerpt from description if excerpt is empty
+ * @param description - Product description
+ * @param existingExcerpt - Existing excerpt (if any)
+ * @returns Excerpt (existing or generated)
+ */
+export function getOrGenerateExcerpt(
+  description: string | null | undefined,
+  existingExcerpt: string | null | undefined
+): string | null {
+  if (existingExcerpt) {
+    return sanitizeExcerpt(existingExcerpt);
+  }
+  
+  if (description) {
+    return generateExcerpt(description, 200);
+  }
+  
+  return null;
+}
+
+/**
+ * Sanitizes new e-commerce fields
+ */
+export function sanitizeBrand(brand: string | null | undefined): string | null {
+  if (!brand) return null;
+  return stripHtmlTags(brand).substring(0, 100) || null;
+}
+
+export function sanitizeSku(sku: string | null | undefined): string | null {
+  if (!sku) return null;
+  // SKU should be alphanumeric with dashes/underscores
+  return sku.trim().substring(0, 100) || null;
+}
+
+export function sanitizeWarranty(warranty: string | null | undefined): string | null {
+  if (!warranty) return null;
+  return stripHtmlTags(warranty).substring(0, 200) || null;
+}
+
+export function sanitizeOrigin(origin: string | null | undefined): string | null {
+  if (!origin) return null;
+  return stripHtmlTags(origin).substring(0, 100) || null;
+}
+
+/**
  * Validates product data for HTML content
  * @param product - Product data to validate
  * @returns Object with validation results
@@ -88,9 +154,13 @@ export function validateProductData(product: {
   seoTitle?: string | null;
   seoDescription?: string | null;
   h1Override?: string | null;
-  shortDescription?: string | null;
+  excerpt?: string | null;
   ogTitle?: string | null;
   ogDescription?: string | null;
+  brand?: string | null;
+  sku?: string | null;
+  warranty?: string | null;
+  origin?: string | null;
 }): { isValid: boolean; errors: string[] } {
   const errors: string[] = [];
   
@@ -98,8 +168,9 @@ export function validateProductData(product: {
     errors.push('Product name contains HTML tags');
   }
   
-  if (product.description && !hasNoHtmlTags(product.description)) {
-    errors.push('Product description contains HTML tags');
+  // Description can contain Markdown/HTML - just check for scripts
+  if (product.description && /<script/i.test(product.description)) {
+    errors.push('Product description contains script tags');
   }
   
   if (product.seoTitle && !hasNoHtmlTags(product.seoTitle)) {
@@ -114,8 +185,8 @@ export function validateProductData(product: {
     errors.push('H1 override contains HTML tags');
   }
   
-  if (product.shortDescription && !hasNoHtmlTags(product.shortDescription)) {
-    errors.push('Short description contains HTML tags');
+  if (product.excerpt && !hasNoHtmlTags(product.excerpt)) {
+    errors.push('Excerpt contains HTML tags');
   }
   
   if (product.ogTitle && !hasNoHtmlTags(product.ogTitle)) {
@@ -124,6 +195,18 @@ export function validateProductData(product: {
   
   if (product.ogDescription && !hasNoHtmlTags(product.ogDescription)) {
     errors.push('OG description contains HTML tags');
+  }
+  
+  if (product.brand && !hasNoHtmlTags(product.brand)) {
+    errors.push('Brand contains HTML tags');
+  }
+  
+  if (product.warranty && !hasNoHtmlTags(product.warranty)) {
+    errors.push('Warranty contains HTML tags');
+  }
+  
+  if (product.origin && !hasNoHtmlTags(product.origin)) {
+    errors.push('Origin contains HTML tags');
   }
   
   return {

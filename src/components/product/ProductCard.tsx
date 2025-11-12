@@ -87,7 +87,7 @@ export default function ProductCard({ product, className = '', onClick }: Produc
             {product.name}
           </h2>
           <p className="text-sm text-gray-600 mb-2 line-clamp-2 leading-relaxed">
-            {product.description}
+            {(product as any).excerpt || product.description || 'Premium quality product'}
           </p>
           <div className="space-y-2">
             {/* Price and Unit Selector Row */}

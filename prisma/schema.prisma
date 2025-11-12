@@ -9,38 +9,52 @@ datasource db {
 }
 
 model Product {
-  id               String              @id @default(uuid())
-  name             String              @unique @db.VarChar(255)
-  category         ProductCategory
-  description      String?
-  basePrice        Float               @default(0.0)
-  baseUnitId       String
-  quantity         Int                 @default(0)
-  status           ProductStatus       @default(ACTIVE)
-  isNew            Boolean             @default(false)
-  isBestSeller     Boolean             @default(false)
-  isAmazing        Boolean             @default(false)
-  createdAt        DateTime            @default(now())
-  updatedAt        DateTime            @updatedAt
-  categoryId       String?
-  categoryType     ProductCategoryType @default(SheikhFood)
-  slug             String?             @db.VarChar(255)
-  seoTitle         String?             @db.VarChar(60)
-  seoDescription   String?             @db.VarChar(160)
-  metaKeywords     String[]            @default([])
-  canonicalUrl     String?             @db.VarChar(500)
-  ogImage          String?             @db.VarChar(500)
-  h1Override       String?             @db.VarChar(100)
-  shortDescription String?             @db.VarChar(300)
-  ogTitle          String?             @db.VarChar(60)
-  ogDescription    String?             @db.VarChar(160)
-  schemaMarkup     Json?
-  cartItems        CartItem[]
-  discounts        Discount[]
-  images           Image[]
-  baseUnit         Unit                @relation(fields: [baseUnitId], references: [id])
-  Category         Category?           @relation(fields: [categoryId], references: [id])
-  units            ProductUnit[]
+  id             String              @id @default(uuid())
+  name           String              @unique @db.VarChar(255)
+  category       ProductCategory
+  description    String?
+  basePrice      Float               @default(0.0)
+  baseUnitId     String
+  quantity       Int                 @default(0)
+  status         ProductStatus       @default(ACTIVE)
+  isNew          Boolean             @default(false)
+  isBestSeller   Boolean             @default(false)
+  isAmazing      Boolean             @default(false)
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  categoryId     String?
+  categoryType   ProductCategoryType @default(SheikhFood)
+  slug           String?             @db.VarChar(255)
+  seoTitle       String?             @db.VarChar(60)
+  seoDescription String?             @db.VarChar(160)
+  metaKeywords   String[]            @default([])
+  canonicalUrl   String?             @db.VarChar(500)
+  ogImage        String?             @db.VarChar(500)
+  h1Override     String?             @db.VarChar(100)
+  excerpt        String?
+  ogTitle        String?             @db.VarChar(60)
+  ogDescription  String?             @db.VarChar(160)
+  schemaMarkup   Json?
+  brand          String?             @db.VarChar(100)
+  sku            String?             @db.VarChar(100)
+  features       String[]            @default([])
+  technicalSpecs Json?
+  tags           String[]            @default([])
+  weight         Float?
+  weightUnit     String?             @default("kg") @db.VarChar(10)
+  dimensions     Json?
+  materials      String[]            @default([])
+  warranty       String?             @db.VarChar(200)
+  origin         String?             @db.VarChar(100)
+  color          String?             @db.VarChar(50)
+  scent          String?             @db.VarChar(50)
+  flavor         String?             @db.VarChar(50)
+  cartItems      CartItem[]
+  discounts      Discount[]
+  images         Image[]
+  baseUnit       Unit                @relation(fields: [baseUnitId], references: [id])
+  Category       Category?           @relation(fields: [categoryId], references: [id])
+  units          ProductUnit[]
 
   @@index([category])
   @@index([basePrice])
@@ -55,6 +69,9 @@ model Product {
   @@index([categoryId])
   @@index([slug])
   @@index([name, status], map: "idx_product_name_status")
+  @@index([tags], map: "idx_product_tags_gin", type: Gin)
+  @@index([features], map: "idx_product_features_gin", type: Gin)
+  @@index([materials], map: "idx_product_materials_gin", type: Gin)
 }
 
 model Unit {

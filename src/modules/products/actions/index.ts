@@ -12,7 +12,13 @@ import {
   sanitizeProductName,
   sanitizeProductDescription,
   sanitizeSeoField,
+  sanitizeExcerpt,
+  sanitizeBrand,
+  sanitizeSku,
+  sanitizeWarranty,
+  sanitizeOrigin,
   validateProductData,
+  getOrGenerateExcerpt,
 } from '@/lib/seo/sanitize';
 import { generateProductSlug } from '@/lib/utils/slug';
 
@@ -55,8 +61,7 @@ const productSchema = z.object({
     .max(100, 'H1 override must be less than 100 characters')
     .optional()
     .nullable(),
-  shortDescription: z.string()
-    .max(300, 'Short description must be less than 300 characters')
+  excerpt: z.string()
     .optional()
     .nullable(),
   ogTitle: z.string()
@@ -79,6 +84,21 @@ const productSchema = z.object({
     .nullable(),
   metaKeywords: z.array(z.string()).optional().default([]),
   schemaMarkup: z.any().optional().nullable(),
+  // New e-commerce fields
+  brand: z.string().max(100).optional().nullable(),
+  sku: z.string().max(100).optional().nullable(),
+  features: z.array(z.string()).optional().default([]),
+  technicalSpecs: z.any().optional().nullable(),
+  tags: z.array(z.string()).optional().default([]),
+  weight: z.number().positive().optional().nullable(),
+  weightUnit: z.string().max(10).optional().nullable(),
+  dimensions: z.any().optional().nullable(),
+  materials: z.array(z.string()).optional().default([]),
+  warranty: z.string().max(200).optional().nullable(),
+  origin: z.string().max(100).optional().nullable(),
+  color: z.string().max(50).optional().nullable(),
+  scent: z.string().max(50).optional().nullable(),
+  flavor: z.string().max(50).optional().nullable(),
 });
 
 // Bulk operations schema
@@ -179,7 +199,7 @@ export const upsertProduct = async (
       seoTitle: formData.get('seoTitle') as string || null,
       seoDescription: formData.get('seoDescription') as string || null,
       h1Override: formData.get('h1Override') as string || null,
-      shortDescription: formData.get('shortDescription') as string || null,
+      excerpt: formData.get('excerpt') as string || null,
       ogTitle: formData.get('ogTitle') as string || null,
       ogDescription: formData.get('ogDescription') as string || null,
       ogImage: formData.get('ogImage') as string || null,
@@ -190,6 +210,66 @@ export const upsertProduct = async (
       schemaMarkup: formData.get('schemaMarkup') 
         ? JSON.parse(formData.get('schemaMarkup') as string)
         : null,
+      // New e-commerce fields
+      brand: formData.get('brand') as string || null,
+      sku: formData.get('sku') as string || null,
+      features: (() => {
+        const featuresStr = formData.get('features') as string;
+        if (!featuresStr) return [];
+        try {
+          return JSON.parse(featuresStr);
+        } catch {
+          return [];
+        }
+      })(),
+      technicalSpecs: (() => {
+        const specsStr = formData.get('technicalSpecs') as string;
+        if (!specsStr) return null;
+        try {
+          return JSON.parse(specsStr);
+        } catch {
+          return null;
+        }
+      })(),
+      tags: (() => {
+        const tagsStr = formData.get('tags') as string;
+        if (!tagsStr) return [];
+        try {
+          return JSON.parse(tagsStr);
+        } catch {
+          return [];
+        }
+      })(),
+      weight: (() => {
+        const weightStr = formData.get('weight') as string;
+        if (!weightStr) return null;
+        const parsed = parseFloat(weightStr);
+        return isNaN(parsed) ? null : parsed;
+      })(),
+      weightUnit: formData.get('weightUnit') as string || null,
+      dimensions: (() => {
+        const dimsStr = formData.get('dimensions') as string;
+        if (!dimsStr) return null;
+        try {
+          return JSON.parse(dimsStr);
+        } catch {
+          return null;
+        }
+      })(),
+      materials: (() => {
+        const materialsStr = formData.get('materials') as string;
+        if (!materialsStr) return [];
+        try {
+          return JSON.parse(materialsStr);
+        } catch {
+          return [];
+        }
+      })(),
+      warranty: formData.get('warranty') as string || null,
+      origin: formData.get('origin') as string || null,
+      color: formData.get('color') as string || null,
+      scent: formData.get('scent') as string || null,
+      flavor: formData.get('flavor') as string || null,
     };
 
     // Find category by slug and get both enum and ID
@@ -259,8 +339,8 @@ export const upsertProduct = async (
     if (sanitizedData.h1Override !== undefined) {
       sanitizedData.h1Override = sanitizeSeoField(sanitizedData.h1Override, 100);
     }
-    if (sanitizedData.shortDescription !== undefined) {
-      sanitizedData.shortDescription = sanitizeSeoField(sanitizedData.shortDescription, 300);
+    if (sanitizedData.excerpt !== undefined) {
+      sanitizedData.excerpt = sanitizeExcerpt(sanitizedData.excerpt);
     }
     if (sanitizedData.ogTitle !== undefined) {
       sanitizedData.ogTitle = sanitizeSeoField(sanitizedData.ogTitle, 60);
@@ -285,6 +365,25 @@ export const upsertProduct = async (
       );
     }
 
+    // Sanitize new e-commerce fields
+    if (sanitizedData.brand !== undefined) {
+      sanitizedData.brand = sanitizeBrand(sanitizedData.brand);
+    }
+    if (sanitizedData.sku !== undefined) {
+      sanitizedData.sku = sanitizeSku(sanitizedData.sku);
+    }
+    if (sanitizedData.warranty !== undefined) {
+      sanitizedData.warranty = sanitizeWarranty(sanitizedData.warranty);
+    }
+    if (sanitizedData.origin !== undefined) {
+      sanitizedData.origin = sanitizeOrigin(sanitizedData.origin);
+    }
+    
+    // Auto-generate excerpt if not provided
+    if (!sanitizedData.excerpt && sanitizedData.description) {
+      sanitizedData.excerpt = getOrGenerateExcerpt(sanitizedData.description, null);
+    }
+
     // Validate product data for HTML
     const htmlValidation = validateProductData({
       name: sanitizedData.name,
@@ -292,9 +391,13 @@ export const upsertProduct = async (
       seoTitle: sanitizedData.seoTitle,
       seoDescription: sanitizedData.seoDescription,
       h1Override: sanitizedData.h1Override,
-      shortDescription: sanitizedData.shortDescription,
+      excerpt: sanitizedData.excerpt,
       ogTitle: sanitizedData.ogTitle,
       ogDescription: sanitizedData.ogDescription,
+      brand: sanitizedData.brand,
+      sku: sanitizedData.sku,
+      warranty: sanitizedData.warranty,
+      origin: sanitizedData.origin,
     });
 
     if (!htmlValidation.isValid) {

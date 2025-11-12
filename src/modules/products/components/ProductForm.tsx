@@ -115,7 +115,75 @@ const ProductForm = (props: { product: Product | null }) => {
     if (data.seoTitle) formData.append('seoTitle', data.seoTitle);
     if (data.seoDescription) formData.append('seoDescription', data.seoDescription);
     if (data.h1Override) formData.append('h1Override', data.h1Override);
-    if (data.shortDescription) formData.append('shortDescription', data.shortDescription);
+    if (data.excerpt) formData.append('excerpt', data.excerpt);
+    
+    // New e-commerce fields
+    if (data.brand) formData.append('brand', data.brand);
+    if (data.sku) formData.append('sku', data.sku);
+    
+    // Parse features from textarea (one per line)
+    if (data.features) {
+      const featuresArray = typeof data.features === 'string' 
+        ? data.features.split('\n').filter((f: string) => f.trim())
+        : (Array.isArray(data.features) ? data.features : []);
+      if (featuresArray.length > 0) {
+        formData.append('features', JSON.stringify(featuresArray));
+      }
+    }
+    
+    // Parse tags from comma-separated string
+    if (data.tags) {
+      const tagsArray = typeof data.tags === 'string'
+        ? data.tags.split(',').map((t: string) => t.trim()).filter((t: string) => t)
+        : (Array.isArray(data.tags) ? data.tags : []);
+      if (tagsArray.length > 0) {
+        formData.append('tags', JSON.stringify(tagsArray));
+      }
+    }
+    
+    // Parse materials from comma-separated string
+    if (data.materials) {
+      const materialsArray = typeof data.materials === 'string'
+        ? data.materials.split(',').map((m: string) => m.trim()).filter((m: string) => m)
+        : (Array.isArray(data.materials) ? data.materials : []);
+      if (materialsArray.length > 0) {
+        formData.append('materials', JSON.stringify(materialsArray));
+      }
+    }
+    
+    // Parse JSON fields
+    if (data.technicalSpecs) {
+      try {
+        const specs = typeof data.technicalSpecs === 'string' 
+          ? JSON.parse(data.technicalSpecs) 
+          : data.technicalSpecs;
+        formData.append('technicalSpecs', JSON.stringify(specs));
+      } catch (e) {
+        console.error('Invalid technicalSpecs JSON:', e);
+      }
+    }
+    
+    if (data.dimensions) {
+      try {
+        const dims = typeof data.dimensions === 'string'
+          ? JSON.parse(data.dimensions)
+          : data.dimensions;
+        formData.append('dimensions', JSON.stringify(dims));
+      } catch (e) {
+        console.error('Invalid dimensions JSON:', e);
+      }
+    }
+    
+    if (data.weight !== undefined && data.weight !== null && data.weight !== '') {
+      formData.append('weight', data.weight.toString());
+    }
+    if (data.weightUnit) formData.append('weightUnit', data.weightUnit);
+    if (data.warranty) formData.append('warranty', data.warranty);
+    if (data.origin) formData.append('origin', data.origin);
+    if (data.color) formData.append('color', data.color);
+    if (data.scent) formData.append('scent', data.scent);
+    if (data.flavor) formData.append('flavor', data.flavor);
+    
     if (data.ogTitle) formData.append('ogTitle', data.ogTitle);
     if (data.ogDescription) formData.append('ogDescription', data.ogDescription);
     if (data.ogImage) formData.append('ogImage', data.ogImage);
@@ -524,22 +592,21 @@ const ProductForm = (props: { product: Product | null }) => {
                   defaultValue={product?.seoDescription || ''}
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Meta description for search engines. If empty, will use short description or product description.
+                  Meta description for search engines. If empty, will use excerpt or product description.
                 </p>
               </div>
 
-              {/* Short Description */}
+              {/* Excerpt */}
               <div>
-                <Label htmlFor="shortDescription">Short Description (max 300 chars)</Label>
+                <Label htmlFor="excerpt">Excerpt (auto-generated if empty)</Label>
                 <Textarea
-                  {...register('shortDescription')}
-                  id="shortDescription"
-                  maxLength={300}
-                  rows={2}
-                  defaultValue={(product as any)?.shortDescription || ''}
+                  {...register('excerpt' as any)}
+                  id="excerpt"
+                  rows={3}
+                  defaultValue={(product as any)?.excerpt || ''}
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Brief summary used in listings and as fallback for meta description.
+                  Brief summary (160-240 chars). Used in listings and as fallback for meta description. Auto-generated from description if empty.
                 </p>
               </div>
 
@@ -629,6 +696,199 @@ const ProductForm = (props: { product: Product | null }) => {
                   Comma-separated keywords for SEO. If empty, will auto-generate from product name and category.
                 </p>
               </div>
+            </div>
+          </div>
+
+          {/* E-Commerce Fields Section */}
+          <div className="space-y-4 mt-6">
+            <h3 className="text-lg font-semibold">E-Commerce Details</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Brand */}
+              <div>
+                <Label htmlFor="brand">Brand</Label>
+                <Input
+                  {...register('brand' as any)}
+                  id="brand"
+                  maxLength={100}
+                  placeholder="Brand name"
+                  defaultValue={(product as any)?.brand || ''}
+                />
+              </div>
+
+              {/* SKU */}
+              <div>
+                <Label htmlFor="sku">SKU (Stock Keeping Unit)</Label>
+                <Input
+                  {...register('sku' as any)}
+                  id="sku"
+                  maxLength={100}
+                  placeholder="PROD-001"
+                  defaultValue={(product as any)?.sku || ''}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Unique product identifier
+                </p>
+              </div>
+
+              {/* Origin */}
+              <div>
+                <Label htmlFor="origin">Country of Origin</Label>
+                <Input
+                  {...register('origin' as any)}
+                  id="origin"
+                  maxLength={100}
+                  placeholder="Iran, Saudi Arabia, etc."
+                  defaultValue={(product as any)?.origin || ''}
+                />
+              </div>
+
+              {/* Weight */}
+              <div>
+                <Label htmlFor="weight">Weight</Label>
+                <div className="flex gap-2">
+                  <Input
+                    {...register('weight' as any, { valueAsNumber: true })}
+                    id="weight"
+                    type="number"
+                    step="0.01"
+                    placeholder="1.5"
+                    defaultValue={(product as any)?.weight || ''}
+                  />
+                  <Select
+                    onValueChange={(value) => setValue('weightUnit' as any, value)}
+                    defaultValue={(product as any)?.weightUnit || 'kg'}
+                  >
+                    <SelectTrigger className="w-24">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="kg">kg</SelectItem>
+                      <SelectItem value="g">g</SelectItem>
+                      <SelectItem value="lb">lb</SelectItem>
+                      <SelectItem value="oz">oz</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Color */}
+              <div>
+                <Label htmlFor="color">Color</Label>
+                <Input
+                  {...register('color' as any)}
+                  id="color"
+                  maxLength={50}
+                  placeholder="Red, Blue, etc."
+                  defaultValue={(product as any)?.color || ''}
+                />
+              </div>
+
+              {/* Scent */}
+              <div>
+                <Label htmlFor="scent">Scent</Label>
+                <Input
+                  {...register('scent' as any)}
+                  id="scent"
+                  maxLength={50}
+                  placeholder="Rose, Lavender, etc."
+                  defaultValue={(product as any)?.scent || ''}
+                />
+              </div>
+
+              {/* Flavor */}
+              <div>
+                <Label htmlFor="flavor">Flavor</Label>
+                <Input
+                  {...register('flavor' as any)}
+                  id="flavor"
+                  maxLength={50}
+                  placeholder="Vanilla, Chocolate, etc."
+                  defaultValue={(product as any)?.flavor || ''}
+                />
+              </div>
+
+              {/* Warranty */}
+              <div className="md:col-span-2">
+                <Label htmlFor="warranty">Warranty</Label>
+                <Input
+                  {...register('warranty' as any)}
+                  id="warranty"
+                  maxLength={200}
+                  placeholder="1 year manufacturer warranty"
+                  defaultValue={(product as any)?.warranty || ''}
+                />
+              </div>
+            </div>
+
+            {/* Features */}
+            <div>
+              <Label htmlFor="features">Features (one per line)</Label>
+              <Textarea
+                {...register('features' as any)}
+                id="features"
+                rows={4}
+                placeholder="Premium quality materials&#10;Comfortable and durable design&#10;Perfect for everyday use"
+                defaultValue={(product as any)?.features?.join('\n') || ''}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Enter one feature per line. These will be displayed as a bullet list.
+              </p>
+            </div>
+
+            {/* Tags */}
+            <div>
+              <Label htmlFor="tags">Tags (comma-separated)</Label>
+              <Input
+                {...register('tags' as any)}
+                id="tags"
+                placeholder="premium, organic, handmade, luxury"
+                defaultValue={(product as any)?.tags?.join(', ') || ''}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Comma-separated tags for search and filtering
+              </p>
+            </div>
+
+            {/* Materials */}
+            <div>
+              <Label htmlFor="materials">Materials (comma-separated)</Label>
+              <Input
+                {...register('materials' as any)}
+                id="materials"
+                placeholder="Cotton, Silk, Wool"
+                defaultValue={(product as any)?.materials?.join(', ') || ''}
+              />
+            </div>
+
+            {/* Technical Specs */}
+            <div>
+              <Label htmlFor="technicalSpecs">Technical Specifications (JSON)</Label>
+              <Textarea
+                {...register('technicalSpecs' as any)}
+                id="technicalSpecs"
+                rows={6}
+                placeholder='{"length": "10cm", "width": "5cm", "height": "3cm", "unit": "cm"}'
+                defaultValue={(product as any)?.technicalSpecs ? JSON.stringify((product as any).technicalSpecs, null, 2) : ''}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Enter as JSON object. Example: {"{"}"length": "10cm", "width": "5cm"{"}"}
+              </p>
+            </div>
+
+            {/* Dimensions */}
+            <div>
+              <Label htmlFor="dimensions">Dimensions (JSON)</Label>
+              <Textarea
+                {...register('dimensions' as any)}
+                id="dimensions"
+                rows={4}
+                placeholder='{"length": 10, "width": 5, "height": 3, "unit": "cm"}'
+                defaultValue={(product as any)?.dimensions ? JSON.stringify((product as any).dimensions, null, 2) : ''}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Enter as JSON object with length, width, height, and unit.
+              </p>
             </div>
           </div>
 

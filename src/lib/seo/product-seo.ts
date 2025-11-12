@@ -7,6 +7,7 @@ import type { Product } from '@prisma/client';
 import type { ProductsWithImages } from '@/types';
 import { getBaseUrl } from './hreflang';
 import { stripHtmlTags } from './sanitize';
+import { generateExcerpt } from '@/lib/markdown';
 
 export interface ProductSEOData {
   // Core SEO fields
@@ -33,7 +34,7 @@ export interface ProductSEOData {
   
   // Additional metadata
   keywords: string[];
-  shortDescription: string | null;
+  excerpt: string | null;
 }
 
 export interface ProductSEOOptions {
@@ -53,13 +54,15 @@ export function getProductSEO(
     seoTitle?: string | null;
     seoDescription?: string | null;
     h1Override?: string | null;
-    shortDescription?: string | null;
+    excerpt?: string | null;
     ogTitle?: string | null;
     ogDescription?: string | null;
     ogImage?: string | null;
     schemaMarkup?: any;
     canonicalUrl?: string | null;
     metaKeywords?: string[];
+    brand?: string | null;
+    sku?: string | null;
   },
   options: ProductSEOOptions = {}
 ): ProductSEOData {
@@ -81,11 +84,15 @@ export function getProductSEO(
     `${cleanName} - Premium ${product.category} | Sheikh Shop`
   ).substring(0, 60);
   
-  // Meta Description: seoDescription > shortDescription > description > generated
+  // Meta Description: seoDescription > excerpt > description (truncated) > generated
+  // Auto-generate excerpt if not provided
+  const excerpt = product.excerpt || 
+    (product.description ? generateExcerpt(product.description, 200) : null);
+  
   const metaDescription = stripHtmlTags(
     product.seoDescription ||
-    product.shortDescription ||
-    product.description ||
+    excerpt ||
+    (product.description ? generateExcerpt(product.description, 160) : null) ||
     `Discover premium ${cleanName} at Sheikh Shop. Exceptional quality ${product.category.toLowerCase()} with authentic Arabian heritage.`
   ).substring(0, 160);
   
@@ -96,9 +103,9 @@ export function getProductSEO(
     cleanName
   );
   
-  // Short Description
-  const shortDescription = product.shortDescription 
-    ? stripHtmlTags(product.shortDescription).substring(0, 300)
+  // Excerpt (for UI display)
+  const excerptForUI = excerpt 
+    ? stripHtmlTags(excerpt).substring(0, 300)
     : null;
   
   // Open Graph Title: ogTitle > seoTitle > metaTitle
@@ -159,12 +166,16 @@ export function getProductSEO(
             ? img.image 
             : `${baseUrl}${img.image}`
         ) || [ogImageUrl],
-        brand: {
+        brand: product.brand ? {
+          '@type': 'Brand',
+          name: product.brand,
+        } : {
           '@type': 'Brand',
           name: 'Sheikh Shop',
         },
         category: product.category,
-        sku: product.id,
+        sku: product.sku || product.id,
+        mpn: product.sku || product.id, // Manufacturer Part Number
         offers: {
           '@type': 'Offer',
           price: product.basePrice,
@@ -208,7 +219,7 @@ export function getProductSEO(
     twitterImage: ogImageUrl,
     schemaMarkup,
     keywords,
-    shortDescription,
+    excerpt: excerptForUI,
   };
 }
 

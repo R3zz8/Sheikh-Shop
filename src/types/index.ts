@@ -14,13 +14,28 @@ export type Product = Prisma.ProductGetPayload<{
   seoTitle?: string | null;
   seoDescription?: string | null;
   h1Override?: string | null;
-  shortDescription?: string | null;
+  excerpt?: string | null; // Replaced shortDescription
   ogTitle?: string | null;
   ogDescription?: string | null;
   schemaMarkup?: any;
   metaKeywords?: string[];
   canonicalUrl?: string | null;
   ogImage?: string | null;
+  // New e-commerce fields
+  brand?: string | null;
+  sku?: string | null;
+  features?: string[];
+  technicalSpecs?: any;
+  tags?: string[];
+  weight?: number | null;
+  weightUnit?: string | null;
+  dimensions?: any;
+  materials?: string[];
+  warranty?: string | null;
+  origin?: string | null;
+  color?: string | null;
+  scent?: string | null;
+  flavor?: string | null;
 };
 
 export type Unit = Prisma.UnitGetPayload<{}>;

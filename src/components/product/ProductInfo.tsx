@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Star, Package, Tag, Smartphone } from 'lucide-react';
+import { Star, Package, Tag, Smartphone, Building2, Hash, MapPin, Award, Ruler, Weight, Shield, Info } from 'lucide-react';
 import type { ProductsWithImages, Unit, ProductUnit } from '@/types';
 import AddToCartButton from './AddToCartButton';
 import UnitSelector from '@/components/ui/UnitSelector';
@@ -15,6 +15,9 @@ import { useUserBehavior } from '@/hooks/useUserBehavior';
 import { useState, useMemo, useEffect } from 'react';
 import ARProductViewer from '@/components/ar/ARProductViewer';
 import { getProductH1Content } from '@/components/seo/ProductSEO';
+import MarkdownDescription from './MarkdownDescription';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { generateExcerpt } from '@/lib/markdown';
 
 interface ProductInfoProps {
     product: ProductsWithImages & {
@@ -23,6 +26,17 @@ interface ProductInfoProps {
         basePrice: number;
         h1Override?: string | null;
         seoTitle?: string | null;
+        excerpt?: string | null;
+        brand?: string | null;
+        sku?: string | null;
+        origin?: string | null;
+        features?: string[];
+        technicalSpecs?: any;
+        materials?: string[];
+        warranty?: string | null;
+        weight?: number | null;
+        weightUnit?: string | null;
+        dimensions?: any;
     };
 }
 
@@ -216,10 +230,31 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                 </motion.div>
             )}
 
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.4 }}>
-                <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2">
-                    <Tag className="w-4 h-4 text-amber-400" />
-                    <span className="text-gray-200 font-medium">{product.category}</span>
+            {/* Product Meta Information */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.4 }} className="space-y-3">
+                <div className="flex flex-wrap items-center gap-3">
+                    <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2">
+                        <Tag className="w-4 h-4 text-amber-400" />
+                        <span className="text-gray-200 font-medium">{product.category}</span>
+                    </div>
+                    {product.brand && (
+                        <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2">
+                            <Building2 className="w-4 h-4 text-amber-400" />
+                            <span className="text-gray-200 font-medium">{product.brand}</span>
+                        </div>
+                    )}
+                    {product.sku && (
+                        <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2">
+                            <Hash className="w-4 h-4 text-amber-400" />
+                            <span className="text-gray-200 font-medium text-sm">SKU: {product.sku}</span>
+                        </div>
+                    )}
+                    {product.origin && (
+                        <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2">
+                            <MapPin className="w-4 h-4 text-amber-400" />
+                            <span className="text-gray-200 font-medium">{product.origin}</span>
+                        </div>
+                    )}
                 </div>
             </motion.div>
 
@@ -394,22 +429,137 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                 )}
             </motion.div>
 
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.6 }} className="space-y-3">
-                <h3 className="text-xl font-semibold text-white">Description</h3>
-                <p className="text-gray-300 leading-relaxed text-base md:text-lg max-w-prose">
-                    {product.description || 'No description available for this product.'}
-                </p>
-            </motion.div>
+            {/* Excerpt (above the fold) */}
+            {(product.excerpt || product.description) && (
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.5 }} className="space-y-2">
+                    <p className="text-gray-300 leading-relaxed text-base md:text-lg max-w-prose">
+                        {product.excerpt || (product.description ? generateExcerpt(product.description, 200) : null) || 'No description available.'}
+                    </p>
+                </motion.div>
+            )}
 
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.7 }} className="space-y-3">
-                <h3 className="text-xl font-semibold text-white">Features</h3>
-                <ul className="space-y-2 text-gray-300">
-                    <li className="flex items-center gap-2"><div className="w-2 h-2 bg-amber-400 rounded-full" /> Premium quality materials</li>
-                    <li className="flex items-center gap-2"><div className="w-2 h-2 bg-amber-400 rounded-full" /> Comfortable and durable design</li>
-                    <li className="flex items-center gap-2"><div className="w-2 h-2 bg-amber-400 rounded-full" /> Perfect for everyday use</li>
-                    <li className="flex items-center gap-2"><div className="w-2 h-2 bg-amber-400 rounded-full" /> Easy to maintain and clean</li>
-                </ul>
-            </motion.div>
+            {/* Features List */}
+            {product.features && product.features.length > 0 && (
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.55 }} className="space-y-3">
+                    <h3 className="text-xl font-semibold text-white">Key Features</h3>
+                    <ul className="space-y-2 text-gray-300">
+                        {product.features.map((feature, index) => (
+                            <li key={index} className="flex items-start gap-2">
+                                <div className="w-2 h-2 bg-amber-400 rounded-full mt-2 flex-shrink-0" />
+                                <span>{feature}</span>
+                            </li>
+                        ))}
+                    </ul>
+                </motion.div>
+            )}
+
+            {/* Full Description */}
+            {product.description && (
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.6 }} className="space-y-3">
+                    <h2 className="text-2xl font-semibold text-white">Description</h2>
+                    <MarkdownDescription content={product.description} />
+                </motion.div>
+            )}
+
+            {/* Collapsible Sections */}
+            {(product.technicalSpecs || product.materials?.length || product.warranty || product.weight || product.dimensions) && (
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.65 }} className="space-y-4">
+                    <Accordion type="single" collapsible className="w-full space-y-3">
+                        {/* Technical Specifications */}
+                        {product.technicalSpecs && (
+                            <AccordionItem value="specs" className="border border-amber-200/20 rounded-xl overflow-hidden bg-white/5 backdrop-blur-sm">
+                                <AccordionTrigger className="px-6 py-4 hover:bg-white/10 transition-colors">
+                                    <div className="flex items-center gap-3">
+                                        <Info className="w-5 h-5 text-amber-400" />
+                                        <span className="text-lg font-semibold text-white">Technical Specifications</span>
+                                    </div>
+                                </AccordionTrigger>
+                                <AccordionContent className="px-6 pb-6">
+                                    <div className="space-y-2 text-gray-300">
+                                        {typeof product.technicalSpecs === 'object' ? (
+                                            Object.entries(product.technicalSpecs).map(([key, value]) => (
+                                                <div key={key} className="flex justify-between py-2 border-b border-white/10">
+                                                    <span className="font-medium capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}:</span>
+                                                    <span>{String(value)}</span>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <p>{String(product.technicalSpecs)}</p>
+                                        )}
+                                    </div>
+                                </AccordionContent>
+                            </AccordionItem>
+                        )}
+
+                        {/* Materials */}
+                        {product.materials && product.materials.length > 0 && (
+                            <AccordionItem value="materials" className="border border-amber-200/20 rounded-xl overflow-hidden bg-white/5 backdrop-blur-sm">
+                                <AccordionTrigger className="px-6 py-4 hover:bg-white/10 transition-colors">
+                                    <div className="flex items-center gap-3">
+                                        <Package className="w-5 h-5 text-amber-400" />
+                                        <span className="text-lg font-semibold text-white">Materials</span>
+                                    </div>
+                                </AccordionTrigger>
+                                <AccordionContent className="px-6 pb-6">
+                                    <ul className="space-y-2 text-gray-300">
+                                        {product.materials.map((material, index) => (
+                                            <li key={index} className="flex items-center gap-2">
+                                                <div className="w-2 h-2 bg-amber-400 rounded-full" />
+                                                <span>{material}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </AccordionContent>
+                            </AccordionItem>
+                        )}
+
+                        {/* Weight & Dimensions */}
+                        {(product.weight || product.dimensions) && (
+                            <AccordionItem value="dimensions" className="border border-amber-200/20 rounded-xl overflow-hidden bg-white/5 backdrop-blur-sm">
+                                <AccordionTrigger className="px-6 py-4 hover:bg-white/10 transition-colors">
+                                    <div className="flex items-center gap-3">
+                                        <Ruler className="w-5 h-5 text-amber-400" />
+                                        <span className="text-lg font-semibold text-white">Weight & Dimensions</span>
+                                    </div>
+                                </AccordionTrigger>
+                                <AccordionContent className="px-6 pb-6">
+                                    <div className="space-y-3 text-gray-300">
+                                        {product.weight && (
+                                            <div className="flex items-center gap-2">
+                                                <Weight className="w-4 h-4 text-amber-400" />
+                                                <span>Weight: {product.weight} {product.weightUnit || 'kg'}</span>
+                                            </div>
+                                        )}
+                                        {product.dimensions && typeof product.dimensions === 'object' && (
+                                            <div className="flex items-center gap-2">
+                                                <Ruler className="w-4 h-4 text-amber-400" />
+                                                <span>
+                                                    Dimensions: {product.dimensions.length || 'N/A'} × {product.dimensions.width || 'N/A'} × {product.dimensions.height || 'N/A'} {product.dimensions.unit || 'cm'}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </AccordionContent>
+                            </AccordionItem>
+                        )}
+
+                        {/* Warranty */}
+                        {product.warranty && (
+                            <AccordionItem value="warranty" className="border border-amber-200/20 rounded-xl overflow-hidden bg-white/5 backdrop-blur-sm">
+                                <AccordionTrigger className="px-6 py-4 hover:bg-white/10 transition-colors">
+                                    <div className="flex items-center gap-3">
+                                        <Shield className="w-5 h-5 text-amber-400" />
+                                        <span className="text-lg font-semibold text-white">Warranty</span>
+                                    </div>
+                                </AccordionTrigger>
+                                <AccordionContent className="px-6 pb-6">
+                                    <p className="text-gray-300">{product.warranty}</p>
+                                </AccordionContent>
+                            </AccordionItem>
+                        )}
+                    </Accordion>
+                </motion.div>
+            )}
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.8 }} className="pt-4">
                 <div className="w-full flex">

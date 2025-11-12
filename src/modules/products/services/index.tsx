@@ -7,6 +7,11 @@ import {
   sanitizeProductName,
   sanitizeProductDescription,
   sanitizeSeoField,
+  sanitizeExcerpt,
+  sanitizeBrand,
+  sanitizeSku,
+  sanitizeWarranty,
+  sanitizeOrigin,
   validateProductData,
 } from '@/lib/seo/sanitize';
 
@@ -180,9 +185,23 @@ export const upsertProduct = async (
     seoTitle?: string | null;
     seoDescription?: string | null;
     h1Override?: string | null;
-    shortDescription?: string | null;
+    excerpt?: string | null;
     ogTitle?: string | null;
     ogDescription?: string | null;
+    brand?: string | null;
+    sku?: string | null;
+    features?: string[];
+    technicalSpecs?: any;
+    tags?: string[];
+    weight?: number | null;
+    weightUnit?: string | null;
+    dimensions?: any;
+    materials?: string[];
+    warranty?: string | null;
+    origin?: string | null;
+    color?: string | null;
+    scent?: string | null;
+    flavor?: string | null;
   }
 ) => {
   const { id } = product;
@@ -194,9 +213,13 @@ export const upsertProduct = async (
     seoTitle: product.seoTitle,
     seoDescription: product.seoDescription,
     h1Override: product.h1Override,
-    shortDescription: product.shortDescription,
+    excerpt: product.excerpt,
     ogTitle: product.ogTitle,
     ogDescription: product.ogDescription,
+    brand: product.brand,
+    sku: product.sku,
+    warranty: product.warranty,
+    origin: product.origin,
   });
   
   if (!validation.isValid) {
@@ -227,8 +250,8 @@ export const upsertProduct = async (
     productData.h1Override = sanitizeSeoField(productData.h1Override, 100);
   }
   
-  if (productData.shortDescription !== undefined) {
-    productData.shortDescription = sanitizeSeoField(productData.shortDescription, 300);
+  if (productData.excerpt !== undefined) {
+    productData.excerpt = sanitizeExcerpt(productData.excerpt);
   }
   
   if (productData.ogTitle !== undefined) {
@@ -237,6 +260,20 @@ export const upsertProduct = async (
   
   if (productData.ogDescription !== undefined) {
     productData.ogDescription = sanitizeSeoField(productData.ogDescription, 160);
+  }
+  
+  // Sanitize new e-commerce fields
+  if (productData.brand !== undefined) {
+    productData.brand = sanitizeBrand(productData.brand);
+  }
+  if (productData.sku !== undefined) {
+    productData.sku = sanitizeSku(productData.sku);
+  }
+  if (productData.warranty !== undefined) {
+    productData.warranty = sanitizeWarranty(productData.warranty);
+  }
+  if (productData.origin !== undefined) {
+    productData.origin = sanitizeOrigin(productData.origin);
   }
   
   // Auto-generate slug if not provided and name exists

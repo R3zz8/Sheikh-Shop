@@ -32,7 +32,7 @@ export async function generateMetadata({
     seoTitle?: string | null;
     seoDescription?: string | null;
     h1Override?: string | null;
-    shortDescription?: string | null;
+    excerpt?: string | null;
     ogTitle?: string | null;
     ogDescription?: string | null;
     ogImage?: string | null;
