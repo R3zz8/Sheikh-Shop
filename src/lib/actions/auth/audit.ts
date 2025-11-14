@@ -232,6 +232,11 @@ async function triggerSecurityAlert(
 
 // Security: Clean up old audit logs
 export async function cleanupOldAuditLogs(): Promise<void> {
+  // Skip cleanup during build time
+  if (process.env.NEXT_PHASE === 'phase-production-build') {
+    return;
+  }
+
   try {
     const cutoffDate = new Date(Date.now() - AUDIT_CONFIG.MAX_LOG_AGE);
     
@@ -243,7 +248,10 @@ export async function cleanupOldAuditLogs(): Promise<void> {
       },
     });
   } catch (error) {
-    console.error('Failed to cleanup old audit logs:', error);
+    // Silently fail during build - database may not be available
+    if (process.env.NEXT_PHASE !== 'phase-production-build') {
+      console.error('Failed to cleanup old audit logs:', error);
+    }
   }
 }
 
@@ -300,7 +308,7 @@ export async function scheduleAuditCleanup() {
 }
 
 // Security: Initialize audit cleanup on module load
-if (typeof window === 'undefined') {
-  // Only run on server side
+if (typeof window === 'undefined' && process.env.NEXT_PHASE !== 'phase-production-build') {
+  // Only run on server side, not during build
   scheduleAuditCleanup();
 }

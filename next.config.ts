@@ -106,6 +106,7 @@ const nextConfig: NextConfig = {
         ...config.resolve.fallback,
         natural: false,
         'webworker-threads': false,
+        aws4: false,
       };
     }
 

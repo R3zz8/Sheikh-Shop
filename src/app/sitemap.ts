@@ -83,38 +83,59 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
 
     // === 2. Categories (بدون status — فقط slug و updatedAt) ===
-    const categories = await prisma.category.findMany({
-      select: { slug: true, updatedAt: true },
-      take: 1000,
-    });
+    try {
+      const categories = await prisma.category.findMany({
+        select: { slug: true, updatedAt: true },
+        take: 1000,
+      });
 
-    for (const cat of categories) {
-      if (!cat.slug) continue;
-      const lastmod = cat.updatedAt ? new Date(cat.updatedAt) : now;
-      entries.push(...createHreflangEntries(`/categories/${cat.slug}`, lastmod, 0.9, 'weekly'));
+      for (const cat of categories) {
+        if (!cat.slug) continue;
+        const lastmod = cat.updatedAt ? new Date(cat.updatedAt) : now;
+        entries.push(...createHreflangEntries(`/categories/${cat.slug}`, lastmod, 0.9, 'weekly'));
+      }
+    } catch (error) {
+      // Database may not be available during build - continue with static pages
+      if (process.env.NEXT_PHASE !== 'phase-production-build') {
+        console.warn('Failed to fetch categories for sitemap:', error);
+      }
     }
 
     // === 3. Products ===
-    const products = await getProducts();
-    if (Array.isArray(products)) {
-      for (const p of products) {
-        if (!p?.id) continue;
-        const lastmod = p.updatedAt ? new Date(p.updatedAt) : now;
-        entries.push(...createHreflangEntries(`/products/${p.id}`, lastmod, 0.7, 'weekly'));
+    try {
+      const products = await getProducts();
+      if (Array.isArray(products)) {
+        for (const p of products) {
+          if (!p?.id) continue;
+          const lastmod = p.updatedAt ? new Date(p.updatedAt) : now;
+          entries.push(...createHreflangEntries(`/products/${p.id}`, lastmod, 0.7, 'weekly'));
+        }
+      }
+    } catch (error) {
+      // Database may not be available during build - continue with static pages
+      if (process.env.NEXT_PHASE !== 'phase-production-build') {
+        console.warn('Failed to fetch products for sitemap:', error);
       }
     }
 
     // === 4. Articles ===
-    const articles = await prisma.article.findMany({
-      where: { status: 'PUBLISHED' }, // این احتمالاً درسته
-      select: { slug: true, updatedAt: true },
-      take: 5000,
-    });
+    try {
+      const articles = await prisma.article.findMany({
+        where: { status: 'PUBLISHED' }, // این احتمالاً درسته
+        select: { slug: true, updatedAt: true },
+        take: 5000,
+      });
 
-    for (const a of articles) {
-      if (!a?.slug) continue;
-      const lastmod = a.updatedAt ? new Date(a.updatedAt) : now;
-      entries.push(...createHreflangEntries(`/article/${a.slug}`, lastmod, 0.6, 'monthly'));
+      for (const a of articles) {
+        if (!a?.slug) continue;
+        const lastmod = a.updatedAt ? new Date(a.updatedAt) : now;
+        entries.push(...createHreflangEntries(`/article/${a.slug}`, lastmod, 0.6, 'monthly'));
+      }
+    } catch (error) {
+      // Database may not be available during build - continue with static pages
+      if (process.env.NEXT_PHASE !== 'phase-production-build') {
+        console.warn('Failed to fetch articles for sitemap:', error);
+      }
     }
 
     // === 5. Dedupe ===
@@ -131,7 +152,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     return deduped.slice(0, 50000);
 
   } catch (error) {
-    console.error('Sitemap generation failed:', error);
+    // Fallback to static pages only if everything fails
+    if (process.env.NEXT_PHASE !== 'phase-production-build') {
+      console.error('Sitemap generation failed:', error);
+    }
     return createHreflangEntries('/', now, 1.0, 'daily');
   }
 }

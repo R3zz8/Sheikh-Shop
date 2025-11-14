@@ -27,6 +27,11 @@ function generateDeviceFingerprint(fingerprint: DeviceFingerprint): string {
 
 // Security: Clean up expired sessions
 export async function cleanupExpiredSessions(): Promise<void> {
+  // Skip cleanup during build time
+  if (process.env.NEXT_PHASE === 'phase-production-build') {
+    return;
+  }
+
   try {
     await prisma.session.deleteMany({
       where: {
@@ -36,7 +41,10 @@ export async function cleanupExpiredSessions(): Promise<void> {
       },
     });
   } catch (error) {
-    console.error('Failed to cleanup expired sessions:', error);
+    // Silently fail during build - database may not be available
+    if (process.env.NEXT_PHASE !== 'phase-production-build') {
+      console.error('Failed to cleanup expired sessions:', error);
+    }
   }
 }
 
@@ -397,8 +405,8 @@ function scheduleSessionCleanup() {
 }
 
 // Security: Initialize session cleanup on module load
-if (typeof window === 'undefined') {
-  // Only run on server side
+if (typeof window === 'undefined' && process.env.NEXT_PHASE !== 'phase-production-build') {
+  // Only run on server side, not during build
   scheduleSessionCleanup();
 }
 

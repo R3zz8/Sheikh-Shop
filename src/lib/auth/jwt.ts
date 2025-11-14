@@ -165,6 +165,11 @@ export async function blacklistToken(token: string, expiresAt?: Date): Promise<v
 
 // Security: Clean up expired blacklisted tokens
 export async function cleanupExpiredBlacklistedTokens(): Promise<void> {
+  // Skip cleanup during build time
+  if (process.env.NEXT_PHASE === 'phase-production-build' || process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL) {
+    return;
+  }
+
   try {
     const { prisma } = await import('@/lib/prisma');
     const result = await prisma.blacklistedToken.deleteMany({
@@ -179,12 +184,15 @@ export async function cleanupExpiredBlacklistedTokens(): Promise<void> {
       console.log(`[JWT] Cleaned up ${result.count} expired blacklisted tokens`);
     }
   } catch (error) {
-    console.error('[JWT] Failed to cleanup expired blacklisted tokens:', error);
+    // Silently fail during build - database may not be available
+    if (process.env.NEXT_PHASE !== 'phase-production-build') {
+      console.error('[JWT] Failed to cleanup expired blacklisted tokens:', error);
+    }
   }
 }
 
 // Security: Schedule cleanup of expired blacklisted tokens
-if (typeof window === 'undefined') {
+if (typeof window === 'undefined' && process.env.NEXT_PHASE !== 'phase-production-build') {
   // Run cleanup every hour
   const CLEANUP_INTERVAL = 60 * 60 * 1000; // 1 hour
   
@@ -196,10 +204,15 @@ if (typeof window === 'undefined') {
     }
   }, CLEANUP_INTERVAL);
   
-  // Run initial cleanup on server start
-  cleanupExpiredBlacklistedTokens().catch(error => {
-    console.error('[JWT] Initial cleanup failed:', error);
-  });
+  // Run initial cleanup on server start (only if not building)
+  if (process.env.NEXT_PHASE !== 'phase-production-build') {
+    cleanupExpiredBlacklistedTokens().catch(error => {
+      // Only log if not during build
+      if (process.env.NEXT_PHASE !== 'phase-production-build') {
+        console.error('[JWT] Initial cleanup failed:', error);
+      }
+    });
+  }
 }
 
 // Add missing functions that are being imported

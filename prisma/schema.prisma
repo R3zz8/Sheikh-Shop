@@ -544,3 +544,18 @@ enum OrderStatus {
   COMPLETED
   CANCELLED
 }
+
+model Transaction {
+  id          String   @id @default(cuid())
+  authority   String   @unique
+  reference   String?
+  amount      Float
+  status      String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([authority])
+  @@index([status])
+  @@index([createdAt])
+}
