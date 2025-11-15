@@ -10,6 +10,7 @@ import { useCart } from '@/hooks/useCart';
 import { cn } from '@/lib/utils';
 import { formatPrice, convertCurrency } from '@/lib/currency';
 import { useCurrencySafe } from '@/providers/CurrencyProvider';
+import { getOrGenerateExcerpt, stripHtmlTags } from '@/lib/seo/sanitize';
 
 interface QuickViewModalProps {
   product: ProductsWithImages;
@@ -149,7 +150,20 @@ export const QuickViewModal = ({ product, children }: QuickViewModalProps) => {
                 <div>
                   <h3 className="text-xl font-semibold text-white mb-3">Description</h3>
                   <p className="text-gray-200 leading-relaxed text-base">
-                    {product?.description || 'No description available.'}
+                    {(() => {
+                      // For quick view modal, show excerpt (sanitized) for listing-like display
+                      const rawExcerpt = getOrGenerateExcerpt(
+                        product?.description || null,
+                        (product as any)?.excerpt || null
+                      );
+                      
+                      // Always strip HTML tags and collapse whitespace
+                      const cleanText = stripHtmlTags(rawExcerpt || product?.description || '')
+                        .replace(/\s+/g, ' ')
+                        .trim();
+                      
+                      return cleanText || 'No description available.';
+                    })()}
                   </p>
                 </div>
               </div>

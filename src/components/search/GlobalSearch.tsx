@@ -5,6 +5,7 @@ import { Search, X, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useDebounce } from '@/hooks/useDebounce';
 import { cn } from '@/lib/utils';
+import { getOrGenerateExcerpt, stripHtmlTags } from '@/lib/seo/sanitize';
 
 interface SearchResult {
   id: string;
@@ -203,11 +204,18 @@ export default function GlobalSearch({
                         {result.type}
                       </span>
                     </div>
-                    {result.description && (
-                      <p className="text-xs text-gray-500 mt-1 line-clamp-2">
-                        {result.description}
-                      </p>
-                    )}
+                    {(() => {
+                      if (!result.description) return null;
+                      // Sanitize description for search results (listing-like display)
+                      const cleanText = stripHtmlTags(result.description)
+                        .replace(/\s+/g, ' ')
+                        .trim();
+                      return cleanText ? (
+                        <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                          {cleanText}
+                        </p>
+                      ) : null;
+                    })()}
                   </div>
                 </button>
               ))}

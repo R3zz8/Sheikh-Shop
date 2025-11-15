@@ -6,6 +6,7 @@ import { calculateFinalPricing } from '@/lib/pricing';
 import { formatPrice } from '@/lib/currency';
 import DiscountBadge from '@/components/ui/DiscountBadge';
 import CompactProductUnitSelector from '@/components/ui/CompactProductUnitSelector';
+import { getOrGenerateExcerpt, stripHtmlTags } from '@/lib/seo/sanitize';
 
 interface ProductCardProps {
   product: ProductsWithImages;
@@ -87,7 +88,20 @@ export default function ProductCard({ product, className = '', onClick }: Produc
             {product.name}
           </h2>
           <p className="text-sm text-gray-600 mb-2 line-clamp-2 leading-relaxed">
-            {(product as any).excerpt || product.description || 'Premium quality product'}
+            {(() => {
+              // Get excerpt or generate from description
+              const rawExcerpt = getOrGenerateExcerpt(
+                product.description || null,
+                (product as any).excerpt || null
+              );
+              
+              // Always strip HTML tags and collapse whitespace for plain text display
+              const cleanText = stripHtmlTags(rawExcerpt || product.description || 'Premium quality product')
+                .replace(/\s+/g, ' ') // Collapse multiple spaces into single space
+                .trim();
+              
+              return cleanText || 'Premium quality product';
+            })()}
           </p>
           <div className="space-y-2">
             {/* Price and Unit Selector Row */}

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui';
+import { getOrGenerateExcerpt, stripHtmlTags } from '@/lib/seo/sanitize';
 
 interface Product {
     id: string;
@@ -81,11 +82,24 @@ export default function CategoryProducts({ products, categoryName, categorySlug 
                                         {product.name}
                                     </h3>
 
-                                    {product.description && (
+                                    {(() => {
+                                      // Get excerpt or generate from description, then sanitize HTML
+                                      const rawExcerpt = getOrGenerateExcerpt(
+                                        product.description || null,
+                                        null
+                                      );
+                                      
+                                      // Always strip HTML tags and collapse whitespace for plain text display
+                                      const cleanText = stripHtmlTags(rawExcerpt || product.description || '')
+                                        .replace(/\s+/g, ' ') // Collapse multiple spaces into single space
+                                        .trim();
+                                      
+                                      return cleanText ? (
                                         <p className="text-gray-300 text-sm mb-3 line-clamp-2">
-                                            {product.description}
+                                          {cleanText}
                                         </p>
-                                    )}
+                                      ) : null;
+                                    })()}
 
                                     <div className="flex items-center justify-center space-x-2">
                                         <span className="text-2xl font-bold text-amber-400">

@@ -100,20 +100,33 @@ export function sanitizeExcerpt(excerpt: string | null | undefined): string | nu
 
 /**
  * Auto-generates excerpt from description if excerpt is empty
+ * ALWAYS returns plain text (no HTML, no Markdown)
  * @param description - Product description
  * @param existingExcerpt - Existing excerpt (if any)
- * @returns Excerpt (existing or generated)
+ * @returns Plain text excerpt (existing or generated), or null
  */
 export function getOrGenerateExcerpt(
   description: string | null | undefined,
   existingExcerpt: string | null | undefined
 ): string | null {
   if (existingExcerpt) {
-    return sanitizeExcerpt(existingExcerpt);
+    // Sanitize existing excerpt to ensure no HTML
+    const sanitized = sanitizeExcerpt(existingExcerpt);
+    if (sanitized) {
+      // Double-check: strip HTML again and collapse whitespace
+      return stripHtmlTags(sanitized)
+        .replace(/\s+/g, ' ')
+        .trim() || null;
+    }
   }
   
   if (description) {
-    return generateExcerpt(description, 200);
+    // generateExcerpt already strips HTML, but ensure it's clean
+    const generated = generateExcerpt(description, 200);
+    // Final safety check: strip any remaining HTML and normalize
+    return stripHtmlTags(generated)
+      .replace(/\s+/g, ' ')
+      .trim() || null;
   }
   
   return null;

@@ -14,6 +14,7 @@ import DiscountBadge from '@/components/ui/DiscountBadge';
 import ProductBadge from '@/components/ui/ProductBadge';
 import CompactProductUnitSelector from '@/components/ui/CompactProductUnitSelector';
 import { calculateFinalPricing, formatPrice as formatPriceUtil } from '@/lib/pricing';
+import { getOrGenerateExcerpt, stripHtmlTags } from '@/lib/seo/sanitize';
 
 // ProductDescription component for read more/less functionality
 function ProductDescription({ description }: { description: string }) {
@@ -21,13 +22,18 @@ function ProductDescription({ description }: { description: string }) {
   const [showToggle, setShowToggle] = useState(false);
   const textRef = useRef<HTMLParagraphElement>(null);
 
+  // Sanitize description to plain text (strip HTML, collapse whitespace)
+  const cleanDescription = stripHtmlTags(description)
+    .replace(/\s+/g, ' ')
+    .trim();
+
   useEffect(() => {
     if (textRef.current) {
       const lineHeight = parseInt(getComputedStyle(textRef.current).lineHeight);
       const maxHeight = lineHeight * 3;
       setShowToggle(textRef.current.scrollHeight > maxHeight);
     }
-  }, [description]);
+  }, [cleanDescription]);
 
   return (
     <div>
@@ -38,7 +44,7 @@ function ProductDescription({ description }: { description: string }) {
           !isExpanded && 'line-clamp-3'
         )}
       >
-        {description}
+        {cleanDescription}
       </p>
       {showToggle && (
         <button
@@ -111,7 +117,11 @@ export default function ProductItem({
       <div className="relative bg-white/8 backdrop-blur-sm border border-amber-200/20 rounded-2xl overflow-hidden p-6">
         <div className="text-center">
           <h2 className="text-white font-bold text-lg mb-2">{product.name}</h2>
-          <p className="text-gray-300 text-sm mb-3">{product.description}</p>
+          <p className="text-gray-300 text-sm mb-3">
+            {stripHtmlTags(product.description || '')
+              .replace(/\s+/g, ' ')
+              .trim() || 'Premium quality product'}
+          </p>
           <p className="text-amber-300 font-semibold">${product.basePrice}</p>
           <p className="text-gray-400 text-xs mt-2">Units: {availableUnits.length}</p>
         </div>
@@ -235,7 +245,20 @@ export default function ProductItem({
           </Link>
 
           <p className="text-amber-200/80 text-sm mb-3 line-clamp-2 leading-relaxed">
-            {product?.description || 'Premium quality product with exceptional features.'}
+            {(() => {
+              // Get excerpt or generate from description, then sanitize HTML
+              const rawExcerpt = getOrGenerateExcerpt(
+                product.description || null,
+                (product as any).excerpt || null
+              );
+              
+              // Always strip HTML tags and collapse whitespace for plain text display
+              const cleanText = stripHtmlTags(rawExcerpt || product.description || 'Premium quality product with exceptional features.')
+                .replace(/\s+/g, ' ') // Collapse multiple spaces into single space
+                .trim();
+              
+              return cleanText || 'Premium quality product with exceptional features.';
+            })()}
           </p>
 
           {/* Star Rating */}

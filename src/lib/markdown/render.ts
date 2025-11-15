@@ -186,8 +186,11 @@ export function renderMarkdownDescription(markdown: string | null | undefined): 
 export function generateExcerpt(description: string | null | undefined, maxLength: number = 200): string {
   if (!description) return '';
 
+  // First, strip all HTML tags completely (most important step)
+  let text = description.replace(/<[^>]+>/g, '');
+
   // Remove Markdown syntax
-  let text = description
+  text = text
     .replace(/^#+\s+/gm, '') // Headers
     .replace(/\*\*(.*?)\*\*/g, '$1') // Bold
     .replace(/\*(.*?)\*/g, '$1') // Italic
@@ -198,10 +201,20 @@ export function generateExcerpt(description: string | null | undefined, maxLengt
     .replace(/^\d+\.\s+/gm, '') // Ordered list items
     .replace(/^>\s+/gm, '') // Blockquotes
     .replace(/\n+/g, ' ') // Newlines to spaces
+    .replace(/\s+/g, ' ') // Collapse multiple spaces
     .trim();
 
-  // Remove HTML tags if any
-  text = text.replace(/<[^>]+>/g, '');
+  // Decode HTML entities
+  text = text
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&[a-zA-Z]+;/g, '') // Remove other HTML entities
+    .replace(/\s+/g, ' ') // Collapse spaces again after entity replacement
+    .trim();
 
   // Truncate to maxLength
   if (text.length > maxLength) {
