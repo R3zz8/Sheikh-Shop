@@ -471,6 +471,22 @@ model AffiliateTransaction {
   @@index([createdAt])
 }
 
+model Transaction {
+  id          String   @id @default(cuid())
+  authority   String   @unique @db.VarChar(255)
+  reference   String?  @db.VarChar(255)
+  amount      Float
+  status      String   @db.VarChar(50)
+  description String?  @db.VarChar(500)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([authority])
+  @@index([status])
+  @@index([createdAt])
+  @@index([reference])
+}
+
 model Category {
   id          String    @id @default(cuid())
   name        String    @unique @db.VarChar(100)
@@ -543,19 +559,4 @@ enum OrderStatus {
   PENDING
   COMPLETED
   CANCELLED
-}
-
-model Transaction {
-  id          String   @id @default(cuid())
-  authority   String   @unique
-  reference   String?
-  amount      Float
-  status      String
-  description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([authority])
-  @@index([status])
-  @@index([createdAt])
 }

@@ -136,7 +136,7 @@ export async function GET(request: NextRequest) {
     // Generate export based on format
     if (format === 'csv') {
       const csvContent = generateCSV(
-        transactions.map(t => ({
+        transactions.map((t: Transaction) => ({
           ...t,
           createdAt: t.createdAt instanceof Date ? t.createdAt.toISOString() : t.createdAt,
         })),
