@@ -9,6 +9,7 @@ import Image from 'next/image';
 import { useCart } from '@/hooks/useCart';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { CartWithProduct } from '@/types';
+import { formatPrice } from '@/lib/currency';
 
 interface MiniCartDrawerProps {
   isOpen: boolean;
@@ -60,12 +61,6 @@ export default function MiniCartDrawer({ isOpen, onClose }: MiniCartDrawerProps)
     }
   };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(price);
-  };
 
   return (
     <AnimatePresence>

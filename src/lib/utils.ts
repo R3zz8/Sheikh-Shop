@@ -6,13 +6,6 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 // Enhanced utility functions for the design system
-export function formatPrice(price: number | null | undefined, currency = 'EUR'): string {
-  if (price == null) return '€0.00';
-  return new Intl.NumberFormat('en-EU', {
-    style: 'currency',
-    currency,
-  }).format(price);
-}
 
 export function truncateText(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text;

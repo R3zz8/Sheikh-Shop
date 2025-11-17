@@ -7,13 +7,14 @@ import { Button } from '@/components/ui';
 import { Star, ShoppingCart, Zap, ChevronDown, ChevronUp } from 'lucide-react';
 import type { ProductsWithImages, Unit, ProductUnit } from '@/types';
 import { useCart } from '@/hooks/useCart';
-import { cn, formatPrice } from '@/lib/utils';
+import { cn } from '@/lib/utils';
+import { formatPrice } from '@/lib/currency';
 import FlyToCartAnimation from '@/components/cart/FlyToCartAnimation';
 import UnitSelector from '@/components/ui/UnitSelector';
 import DiscountBadge from '@/components/ui/DiscountBadge';
 import ProductBadge from '@/components/ui/ProductBadge';
 import CompactProductUnitSelector from '@/components/ui/CompactProductUnitSelector';
-import { calculateFinalPricing, formatPrice as formatPriceUtil } from '@/lib/pricing';
+import { calculateFinalPricing } from '@/lib/pricing';
 import { getOrGenerateExcerpt, stripHtmlTags } from '@/lib/seo/sanitize';
 
 // ProductDescription component for read more/less functionality
@@ -282,7 +283,7 @@ export default function ProductItem({
             {pricing.hasDiscount && (
               <div className="flex items-center gap-2">
                 <p className="text-sm text-gray-400 line-through font-medium">
-                  {formatPriceUtil(pricing.originalPrice)}
+                  {formatPrice(pricing.originalPrice, 'EUR')}
                 </p>
                 <span className="text-xs bg-red-500/20 text-red-300 px-2 py-0.5 rounded-full font-semibold">
                   -{Math.round(pricing.discountPercentage)}%
@@ -293,7 +294,7 @@ export default function ProductItem({
             <div className="flex items-center justify-between gap-2">
               <div className="flex flex-col flex-1">
                 <p className="text-xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
-                  {formatPriceUtil(pricing.finalPrice)}
+                  {formatPrice(pricing.finalPrice, 'EUR')}
                 </p>
                 <p className="text-xs text-amber-200/60">
                   per {useProductUnits && selectedProductUnit ? selectedProductUnit.name : selectedUnit.symbol}

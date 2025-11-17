@@ -7,8 +7,7 @@ import type { ProductsWithImages, Unit, ProductPricing, ProductUnit } from '@/ty
 import { useCart } from '@/hooks/useCart';
 import { useUserBehavior } from '@/hooks/useUserBehavior';
 import { motion, AnimatePresence } from 'framer-motion';
-import { formatPrice, convertCurrency } from '@/lib/currency';
-import { useCurrencySafe } from '@/providers/CurrencyProvider';
+import { formatPrice } from '@/lib/currency';
 import UpsellSuggestions from './UpsellSuggestions';
 
 interface AddToCartButtonProps {
@@ -26,7 +25,6 @@ export default function AddToCartButton({
     selectedProductUnit,
     pricing 
 }: AddToCartButtonProps) {
-    const { currency } = useCurrencySafe();
     const { addToCartMutation } = useCart();
     const { trackAddToCart } = useUserBehavior();
     const [showSuccess, setShowSuccess] = useState(false);
@@ -143,8 +141,8 @@ export default function AddToCartButton({
                         <span className="text-gray-300">Price per unit:</span>
                         <span className="text-amber-200 font-medium">
                             {selectedProductUnit 
-                                ? formatPrice(convertCurrency(Number(selectedProductUnit.price), 'EUR', currency), currency)
-                                : formatPrice(convertCurrency(pricing.finalPrice / selectedQuantity, 'EUR', currency), currency)
+                                ? formatPrice(Number(selectedProductUnit.price), 'EUR')
+                                : formatPrice(pricing.finalPrice / selectedQuantity, 'EUR')
                             }
                         </span>
                     </div>
@@ -153,7 +151,7 @@ export default function AddToCartButton({
                         <>
                             <div className="flex justify-between text-green-400">
                                 <span>Discount:</span>
-                                <span>-{formatPrice(convertCurrency(pricing.discountAmount, 'EUR', currency), currency)}</span>
+                                <span>-{formatPrice(pricing.discountAmount, 'EUR')}</span>
                             </div>
                             <div className="flex justify-between text-green-400">
                                 <span>You Save:</span>
@@ -166,7 +164,7 @@ export default function AddToCartButton({
                         <div className="flex justify-between">
                             <span className="text-white font-semibold">Total:</span>
                             <span className="text-xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
-                                {formatPrice(convertCurrency(pricing.finalPrice, 'EUR', currency), currency)}
+                                {formatPrice(pricing.finalPrice, 'EUR')}
                             </span>
                         </div>
                     </div>
@@ -178,7 +176,7 @@ export default function AddToCartButton({
                 <UpsellSuggestions 
                     product={product} 
                     selectedUnit={selectedProductUnit} 
-                    currency={currency}
+                    currency={'EUR'}
                 />
             )}
 

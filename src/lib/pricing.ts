@@ -92,17 +92,6 @@ export function calculateFinalPricing(
   };
 }
 
-/**
- * Format price with currency
- */
-export function formatPrice(price: number, currency: string = 'EUR'): string {
-  return new Intl.NumberFormat('en-EU', {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(price);
-}
 
 /**
  * Format unit display
