@@ -4,8 +4,6 @@ import { motion } from 'framer-motion';
 import type { ProductsWithImages } from '@/types';
 import ImageGallery from './ImageGallery';
 import ProductInfo from './ProductInfo';
-import ProductRecommendations from '@/components/recommendations/ProductRecommendations';
-import BundleRecommendations from '@/components/recommendations/BundleRecommendations';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import ProductDetailSkeleton from '@/components/ui/ProductDetailSkeleton';
 
@@ -91,43 +89,6 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
                         </div>
                     </motion.div>
 
-                    {/* Recommendations */}
-                    {allProducts.length > 0 && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 50 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.8, delay: 0.4 }}
-                            className="container mx-auto px-4 py-12"
-                        >
-                            <div className="space-y-12">
-                                <ErrorBoundary fallback={
-                                    <div className="bg-white/5 rounded-lg p-8 text-center">
-                                        <p className="text-gray-300">Failed to load bundle recommendations</p>
-                                    </div>
-                                }>
-                                    <BundleRecommendations
-                                        currentProduct={product}
-                                        products={allProducts}
-                                        limit={2}
-                                    />
-                                </ErrorBoundary>
-
-                                <ErrorBoundary fallback={
-                                    <div className="bg-white/5 rounded-lg p-8 text-center">
-                                        <p className="text-gray-300">Failed to load personalized recommendations</p>
-                                    </div>
-                                }>
-                                    <ProductRecommendations
-                                        currentProduct={product}
-                                        products={allProducts}
-                                        type="personalized"
-                                        limit={6}
-                                        title="Recommended for You"
-                                    />
-                                </ErrorBoundary>
-                            </div>
-                        </motion.div>
-                    )}
                 </div>
             </div>
         </ErrorBoundary>

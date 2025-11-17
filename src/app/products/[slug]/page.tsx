@@ -145,25 +145,6 @@ async function getProduct(identifier: string) {
   }
 }
 
-async function getAllProducts() {
-  try {
-    const products = await prisma.product.findMany({
-      where: { status: 'ACTIVE' },
-      include: { 
-        images: true,
-        baseUnit: true,
-        units: true,
-        discounts: true,
-      },
-      take: 50,
-    });
-
-    return products.map(serializeProduct);
-  } catch (error) {
-    console.error('Error fetching products:', error);
-    return [];
-  }
-}
 
 /**
  * Product detail page using SEO-friendly slug
@@ -180,10 +161,7 @@ export default async function ProductPage({
   try {
     console.log('Product page: Fetching product with identifier:', slug);
 
-    const [product, allProducts] = await Promise.all([
-      getProduct(slug),
-      getAllProducts()
-    ]);
+    const product = await getProduct(slug);
 
     if (!product) {
       console.error('Product page: Product not found for identifier:', slug);
@@ -270,8 +248,7 @@ export default async function ProductPage({
               ...u,
               price: getFinalPrice(toNumber(u.price))
             })) || []
-          }} 
-          allProducts={allProducts} 
+          }}
         />
       </>
     );
