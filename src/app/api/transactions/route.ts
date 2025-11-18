@@ -77,10 +77,9 @@ export async function GET(request: NextRequest) {
     }
 
     // Build orderBy clause
-    const orderBy: any = {};
     const validSortFields = ['createdAt', 'amount', 'status', 'authority'];
     const sortField = validSortFields.includes(sortBy) ? sortBy : 'createdAt';
-    orderBy[sortField] = sortOrder === 'asc' ? 'asc' : 'desc';
+    const orderBy = { [sortField]: sortOrder === 'asc' ? 'asc' : 'desc' };
 
     // Execute queries in parallel
     const [transactions, total] = await Promise.all([
