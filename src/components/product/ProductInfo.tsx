@@ -494,14 +494,22 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                 </motion.div>
             )}
 
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.9 }} className="grid grid-cols-2 gap-4 pt-6 border-t border-white/10">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.9 }} className="grid grid-cols-4 gap-2 md:gap-4 pt-6 border-t border-white/10">
                 <div className="text-center">
-                    <div className="text-2xl font-bold text-amber-400">Free</div>
-                    <div className="text-sm text-gray-400">Shipping</div>
+                    <div className="text-sm font-semibold text-amber-400">Free Shipping</div>
+                    <div className="text-xs text-gray-400 mt-1">Worldwide Shipping Available</div>
                 </div>
                 <div className="text-center">
-                    <div className="text-2xl font-bold text-amber-400">30 Days</div>
-                    <div className="text-sm text-gray-400">Returns</div>
+                    <div className="text-sm font-semibold text-amber-400">Estimated Delivery</div>
+                    <div className="text-xs text-gray-400 mt-1">5–10 Business Days</div>
+                </div>
+                <div className="text-center">
+                    <div className="text-sm font-semibold text-amber-400">Premium Quality</div>
+                    <div className="text-xs text-gray-400 mt-1">100% Authentic Product</div>
+                </div>
+                <div className="text-center">
+                    <div className="text-sm font-semibold text-amber-400">Secure Packaging</div>
+                    <div className="text-xs text-gray-400 mt-1">Fresh & Safe Delivery</div>
                 </div>
             </motion.div>
 
