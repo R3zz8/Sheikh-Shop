@@ -105,10 +105,10 @@ export async function GET(request: NextRequest) {
     // Calculate summary
     const totalTransactions = transactions.length;
     const successfulTransactions = transactions.filter(
-      (t: { status: string }) => t.status === 'COMPLETED' || t.status === 'SUCCESS'
+      (t: Transaction) => t.status === 'COMPLETED' || t.status === 'SUCCESS'
     );
     const totalAmount = successfulTransactions.reduce(
-      (sum: number, t: { amount: number }) => sum + t.amount,
+      (sum: number, t: Transaction) => sum + t.amount,
       0
     );
     const successRate =

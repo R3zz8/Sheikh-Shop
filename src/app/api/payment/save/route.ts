@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
-import type { Transaction } from '@prisma/client';
 
 // Request payload validation schema
 const saveTransactionSchema = z.object({

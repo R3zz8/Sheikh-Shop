@@ -121,14 +121,14 @@ export async function GET(request: NextRequest) {
     // Calculate statistics
     const totalTransactions = allTransactions.length;
     const successfulTransactions = allTransactions.filter(
-      (t: { status: string }) => t.status === 'COMPLETED' || t.status === 'SUCCESS'
+      (t: Transaction) => t.status === 'COMPLETED' || t.status === 'SUCCESS'
     );
     const failedTransactions = allTransactions.filter(
-      (t: { status: string }) => t.status === 'FAILED'
+      (t: Transaction) => t.status === 'FAILED'
     );
 
     const totalAmount = successfulTransactions.reduce(
-      (sum: number, t: { amount: number }) => sum + t.amount,
+      (sum: number, t: Transaction) => sum + t.amount,
       0
     );
     const successRate =
