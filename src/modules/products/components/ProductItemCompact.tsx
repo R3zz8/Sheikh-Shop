@@ -7,11 +7,12 @@ import { Button } from '@/components/ui';
 import { ShoppingCart, Star } from 'lucide-react';
 import type { ProductsWithImages, Unit } from '@/types';
 import { useCart } from '@/hooks/useCart';
-import { cn, formatPrice } from '@/lib/utils';
+import { cn } from '@/lib/utils';
+import { formatPrice } from '@/lib/currency';
 import FlyToCartAnimation from '@/components/cart/FlyToCartAnimation';
 import DiscountBadge from '@/components/ui/DiscountBadge';
 import ProductBadge from '@/components/ui/ProductBadge';
-import { calculateFinalPricing, formatPrice as formatPriceUtil } from '@/lib/pricing';
+import { calculateFinalPricing } from '@/lib/pricing';
 
 export default function ProductItemCompact({ 
   product, 
@@ -155,11 +156,11 @@ export default function ProductItemCompact({
             {/* Price */}
           <div className="text-center mb-3">
                 <p className="text-lg font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
-                  {formatPriceUtil(pricing.finalPrice)}
+                  {formatPrice(pricing.finalPrice)}
                 </p>
                 {pricing.hasDiscount && (
                   <p className="text-xs text-gray-400 line-through">
-                    {formatPriceUtil(pricing.originalPrice)}
+                    {formatPrice(pricing.originalPrice)}
                   </p>
                 )}
               </div>
