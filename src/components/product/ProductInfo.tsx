@@ -8,7 +8,7 @@ import UnitSelector from '@/components/ui/UnitSelector';
 import DiscountBadge from '@/components/ui/DiscountBadge';
 import ProductBadge from '@/components/ui/ProductBadge';
 import CompactProductUnitSelector from '@/components/ui/CompactProductUnitSelector';
-import { calculateFinalPricing } from '@/lib/pricing';
+import { resolveProductPrice } from '@/lib/product-pricing';
 import { formatPrice } from '@/lib/currency';
 import { useUnits } from '@/hooks/useUnits';
 import { useUserBehavior } from '@/hooks/useUserBehavior';
@@ -20,29 +20,10 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { generateExcerpt } from '@/lib/markdown';
 
 interface ProductInfoProps {
-    product: ProductsWithImages & {
-        displayPrice: string;
-        lowestPrice?: string;
-        basePrice: number;
-        h1Override?: string | null;
-        seoTitle?: string | null;
-        excerpt?: string | null;
-        brand?: string | null;
-        sku?: string | null;
-        origin?: string | null;
-        features?: string[];
-        technicalSpecs?: any;
-        materials?: string[];
-        warranty?: string | null;
-        weight?: number | null;
-        weightUnit?: string | null;
-        dimensions?: any;
-    };
+    product: ProductsWithImages;
 }
 
 export default function ProductInfo({ product }: ProductInfoProps) {
-    const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null);
-    const [selectedProductUnit, setSelectedProductUnit] = useState<ProductUnit | null>(null);
     const [selectedQuantity, setSelectedQuantity] = useState(1);
     const [arAvailable, setArAvailable] = useState(false);
     const [showAR, setShowAR] = useState(false);
@@ -59,48 +40,6 @@ export default function ProductInfo({ product }: ProductInfoProps) {
         );
     }
 
-    const defaultUnit = product?.baseUnit ?? product?.units?.[0] ?? null;
-
-    useEffect(() => {
-        if (defaultUnit && !selectedUnit) {
-            setSelectedUnit(defaultUnit);
-        }
-    }, [defaultUnit, selectedUnit]);
-
-    if (!product.baseUnit && (!product.units || product.units.length === 0)) {
-        console.error('ProductInfo: Product has no baseUnit or units', product);
-        return (
-            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-6 text-center">
-                <p className="text-red-300">Product has no available units</p>
-            </div>
-        );
-    }
-
-    useEffect(() => {
-        trackProductView(product.id, product.category);
-    }, [product.id, product.category, trackProductView]);
-
-    useEffect(() => {
-        let isMounted = true;
-        const checkModels = async () => {
-            try {
-                const productModel = `/models/${product.id}.gltf`;
-                const categoryModel = `/models/${String(product.category || '').toLowerCase()}.glb`;
-                const [res1, res2] = await Promise.allSettled([
-                    fetch(productModel, { method: 'HEAD' }),
-                    fetch(categoryModel, { method: 'HEAD' }),
-                ]);
-                const ok1 = res1.status === 'fulfilled' && (res1 as PromiseFulfilledResult<Response>).value.ok;
-                const ok2 = res2.status === 'fulfilled' && (res2 as PromiseFulfilledResult<Response>).value.ok;
-                if (isMounted) setArAvailable(Boolean(ok1 || ok2));
-            } catch {
-                if (isMounted) setArAvailable(false);
-            }
-        };
-        checkModels();
-        return () => { isMounted = false; };
-    }, [product.id, product.category]);
-
     const availableProductUnits = useMemo(() => {
         const units = product.units?.filter((unit: ProductUnit) => unit.isActive) || [];
         return units.sort((a: ProductUnit, b: ProductUnit) => {
@@ -110,19 +49,18 @@ export default function ProductInfo({ product }: ProductInfoProps) {
         });
     }, [product.units]);
 
-    const useProductUnits = availableProductUnits.length > 0;
-
-    // محاسبه pricing با basePrice خام
-    const pricing = calculateFinalPricing(
-        useProductUnits && selectedProductUnit ? Number(selectedProductUnit.price) : product.basePrice,
-        selectedUnit || defaultUnit,
-        selectedQuantity,
-        product.discounts
+    const [selectedProductUnit, setSelectedProductUnit] = useState<ProductUnit | null>(
+        availableProductUnits.length > 0 ? availableProductUnits[0] ?? null : null
     );
 
-    // فقط از displayPrice استفاده کن
-    const finalPrice = product.displayPrice;
-    const originalPrice = product.lowestPrice && product.lowestPrice !== finalPrice ? product.lowestPrice : null;
+    useEffect(() => {
+        if (availableProductUnits.length > 0 && !selectedProductUnit) {
+            setSelectedProductUnit(availableProductUnits[0] ?? null);
+        }
+    }, [availableProductUnits, selectedProductUnit]);
+
+    const useProductUnits = availableProductUnits.length > 0;
+    const pricing = resolveProductPrice(product, selectedProductUnit);
 
     const getStockStatus = (quantity: number) => {
         if (quantity === 0) return { text: 'Out of Stock', color: 'text-red-400' };
@@ -166,17 +104,17 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                 <div className="space-y-3">
                     <div className="flex items-baseline gap-3 flex-wrap">
                         <span className="text-3xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
-                            {finalPrice}
+                            {formatPrice(pricing.price)}
                         </span>
-                        {originalPrice && (
+                        {pricing.oldPrice && (
                             <span className="text-lg text-gray-400 line-through">
-                                {originalPrice}
+                                {formatPrice(pricing.oldPrice)}
                             </span>
                         )}
                     </div>
                     <div className="flex items-center justify-between gap-4">
                         <p className="text-sm md:text-lg text-amber-200/80">
-                            per {useProductUnits && selectedProductUnit ? selectedProductUnit.name : (selectedUnit?.symbol || defaultUnit?.symbol || 'unit')}
+                            per {useProductUnits && selectedProductUnit ? selectedProductUnit.name : (product.baseUnit?.name || 'unit')}
                         </p>
                         {useProductUnits && (
                             <CompactProductUnitSelector
@@ -190,16 +128,9 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                     </div>
                 </div>
 
-                {originalPrice && (
+                {pricing.hasDiscount && (
                     <DiscountBadge 
-                        discount={{
-                            type: product.discounts?.[0]?.discountType || 'PERCENTAGE',
-                            value: product.discounts?.[0]?.value || 0,
-                            amount: 0,
-                            percentage: pricing.discountPercentage,
-                            endDate: product.discounts?.[0]?.endDate || new Date(),
-                            isActive: true,
-                        }}
+                        discountPercentage={pricing.discountPercentage}
                         showCountdown={true}
                         className="text-base"
                     />
@@ -396,36 +327,9 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                         )}
                     </div>
                 ) : (
-                    unitsLoading ? (
-                        <div className="bg-white/5 backdrop-blur-sm border border-amber-200/20 rounded-lg p-6">
-                            <div className="animate-pulse">
-                                <div className="h-4 bg-amber-200/20 rounded w-1/4 mb-4"></div>
-                                <div className="h-8 bg-amber-200/20 rounded w-1/2 mb-2"></div>
-                                <div className="h-4 bg-amber-200/20 rounded w-3/4"></div>
-                            </div>
-                        </div>
-                    ) : unitsError ? (
-                        <div className="bg-red-500/10 backdrop-blur-sm border border-red-500/20 rounded-lg p-4">
-                            <p className="text-red-300 text-sm">Error loading units: {unitsError}. Using default units.</p>
-                        </div>
-                    ) : (
-                        defaultUnit ? (
-                            <UnitSelector
-                                units={availableUnits}
-                                basePrice={product.basePrice}
-                                baseUnit={defaultUnit}
-                                selectedUnit={selectedUnit || defaultUnit}
-                                selectedQuantity={selectedQuantity}
-                                onUnitChange={setSelectedUnit}
-                                onQuantityChange={setSelectedQuantity}
-                                showPriceCalculation={true}
-                            />
-                        ) : (
-                            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
-                                <p className="text-red-300 text-sm">No units available for this product</p>
-                            </div>
-                        )
-                    )
+                    <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
+                        <p className="text-red-300 text-sm">No units available for this product</p>
+                    </div>
                 )}
             </motion.div>
 
@@ -566,7 +470,6 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                     <div className="w-full max-w-sm mx-auto">
                         <AddToCartButton 
                             product={product} 
-                            selectedUnit={selectedUnit || defaultUnit}
                             selectedQuantity={selectedQuantity}
                             selectedProductUnit={selectedProductUnit}
                             pricing={pricing}

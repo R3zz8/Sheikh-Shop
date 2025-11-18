@@ -76,6 +76,7 @@ function serializeProduct(product: any) {
     createdAt: product.createdAt?.toISOString() || null,
     updatedAt: product.updatedAt?.toISOString() || null,
     basePrice: toNumber(product.basePrice),
+    oldPrice: product.oldPrice ? toNumber(product.oldPrice) : null,
     images: Array.isArray(product.images)
       ? product.images.map((img: any) => ({
           ...img,
@@ -87,6 +88,7 @@ function serializeProduct(product: any) {
       ? product.units.map((u: any) => ({
           ...u,
           price: toNumber(u.price),
+          oldPrice: u.oldPrice ? toNumber(u.oldPrice) : null,
           createdAt: u.createdAt?.toISOString() || null,
           updatedAt: u.updatedAt?.toISOString() || null,
         }))
@@ -198,40 +200,7 @@ export default async function ProductPage({
 
     const rating = product.isBestSeller ? { ratingValue: 4.8, reviewCount: 127 } : undefined;
 
-    // Convert Decimal to number before use (same as /product/[id])
-    const toNumber = (value: any): number => {
-      if (value === null || value === undefined) return 0;
-      if (typeof value === 'number') return value;
-      if (typeof value === 'object' && 'toNumber' in value) {
-        return (value as any).toNumber();
-      }
-      return Number(value);
-    };
-
-    // Calculate final price with discounts (same as /product/[id])
-    const getFinalPrice = (price: number) => {
-      const discount = product.discounts?.[0];
-      if (discount && discount.discountType === 'PERCENTAGE') {
-        return price * (1 - discount.value / 100);
-      }
-      return price;
-    };
-
-    // Convert basePrice and unit prices
-    const basePriceRaw = toNumber(product.basePrice);
-    const basePrice = getFinalPrice(basePriceRaw);
-
-    const unitPrices = product.units?.map((u: ProductUnit) => {
-      const price = toNumber(u.price);
-      return getFinalPrice(price);
-    }) || [];
-
-    const lowestPrice = unitPrices.length > 0 ? Math.min(...unitPrices) : basePrice;
-
-    const displayPrice = formatPrice(basePrice, CURRENCY);
-    const lowestPriceFormatted = formatPrice(lowestPrice, CURRENCY);
-
-    // Generate SEO data for schema markup
+    // SEO data generation remains the same.
     const seoData = getProductSEO(product, {
       baseUrl: getBaseUrl(),
       currency: CURRENCY,
@@ -261,16 +230,7 @@ export default async function ProductPage({
         />
 
         <ProductDetailPage 
-          product={{
-            ...product,
-            basePrice: basePrice,
-            displayPrice: displayPrice,
-            lowestPrice: lowestPriceFormatted,
-            units: product.units?.map((u: ProductUnit) => ({
-              ...u,
-              price: getFinalPrice(toNumber(u.price))
-            })) || []
-          }} 
+          product={product}
           allProducts={allProducts} 
         />
       </>

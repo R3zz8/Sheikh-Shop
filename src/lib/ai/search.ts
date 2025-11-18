@@ -1,4 +1,5 @@
 import type { ProductsWithImages } from '@/types';
+import { resolveProductPrice } from '@/lib/product-pricing';
 
 export interface SearchResult {
   product: ProductsWithImages;
@@ -348,13 +349,8 @@ export class AISearchEngine {
 
   // Get product price (lowest from units or base price)
   private getProductPrice(product: ProductsWithImages): number {
-    if (product.units && product.units.length > 0) {
-      const activeUnits = product.units.filter(u => u.isActive && u.stock > 0);
-      if (activeUnits.length > 0) {
-        return Math.min(...activeUnits.map(u => Number(u.price)));
-      }
-    }
-    return product.basePrice;
+    const pricing = resolveProductPrice(product);
+    return pricing.price;
   }
 
   // Check if product is in stock

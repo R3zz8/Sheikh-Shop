@@ -1,14 +1,29 @@
 import type { Prisma } from '@prisma/client';
 
-// Use Prisma-generated types
-export type Product = Prisma.ProductGetPayload<{
+// Use Prisma-generated types, but override decimal fields with numbers for client-side use
+type PrismaProductUnitPayload = Prisma.ProductUnitGetPayload<{}>;
+export type ProductUnit = Omit<PrismaProductUnitPayload, 'price' | 'oldPrice'> & {
+  price: number;
+  oldPrice: number | null;
+  isFeatured?: boolean;
+  discountPercentage?: number;
+  discountStartDate?: string;
+  discountEndDate?: string;
+};
+
+type PrismaProductPayload = Prisma.ProductGetPayload<{
   include: {
     images: true;
     baseUnit: true;
     discounts: true;
-    units: true; // Include ProductUnits
+    units: true; // This will be Prisma's ProductUnitPayload
   };
-}> & {
+}>;
+
+export type Product = Omit<PrismaProductPayload, 'basePrice' | 'oldPrice' | 'units'> & {
+  basePrice: number;
+  oldPrice: number | null;
+  units: ProductUnit[]; // This uses my overridden ProductUnit type
   // Ensure slug and SEO fields are properly typed
   slug?: string | null;
   seoTitle?: string | null;
@@ -38,13 +53,8 @@ export type Product = Prisma.ProductGetPayload<{
   flavor?: string | null;
 };
 
+
 export type Unit = Prisma.UnitGetPayload<{}>;
-export type ProductUnit = Prisma.ProductUnitGetPayload<{}> & {
-  isFeatured?: boolean;
-  discountPercentage?: number;
-  discountStartDate?: string;
-  discountEndDate?: string;
-};
 export type Discount = Prisma.DiscountGetPayload<{}>;
 export type Image = Prisma.ImageGetPayload<{}>;
 export type User = Prisma.UserGetPayload<{}>;

@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getBaseUrl } from '@/lib/seo/hreflang';
 import { getProductBySlug } from '@/modules/products/services';
+import { resolveProductPrice } from '@/lib/product-pricing';
+import { formatPrice } from '@/lib/currency';
 
 export async function GET(
   request: Request,
@@ -14,6 +16,8 @@ export async function GET(
     return new NextResponse('Product not found', { status: 404 });
   }
   
+  const pricing = resolveProductPrice(product);
+
   const ampHtml = `<!doctype html>
 <html ⚡ lang="en">
 <head>
@@ -102,7 +106,10 @@ export async function GET(
         ></amp-img>
       </div>
       <div class="product-info">
-        <div class="product-price">$${product.basePrice.toFixed(2)}</div>
+        <div class="product-price">
+          ${pricing.hasDiscount && pricing.oldPrice ? `<span style="text-decoration: line-through; color: #9ca3af; font-size: 1.5rem; margin-right: 10px;">${formatPrice(pricing.oldPrice)}</span>` : ''}
+          ${formatPrice(pricing.price)}
+        </div>
         <div style="margin-bottom: 20px;">
           <span style="
             background: rgba(255, 255, 255, 0.2);

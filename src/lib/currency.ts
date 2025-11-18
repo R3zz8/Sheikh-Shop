@@ -106,3 +106,25 @@ export function parseCurrency(value: string | null | undefined): CurrencyCode | 
   const upperValue = value.toUpperCase();
   return isSupportedCurrency(upperValue) ? upperValue : null;
 }
+
+/**
+ * Safely convert a Decimal-like object to a number.
+ * Handles null, undefined, and various object structures.
+ * @param value - The value to convert.
+ * @returns The converted number, or 0 if conversion is not possible.
+ */
+export function toNumber(value: any): number {
+  if (value === null || value === undefined) {
+    return 0;
+  }
+  if (typeof value === 'number') {
+    return value;
+  }
+  // Handle Prisma Decimal objects
+  if (typeof value === 'object' && value !== null && 'toNumber' in value) {
+    return value.toNumber();
+  }
+  // Handle string representations of numbers
+  const num = Number(value);
+  return isNaN(num) ? 0 : num;
+}

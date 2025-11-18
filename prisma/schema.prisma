@@ -14,6 +14,7 @@ model Product {
   category       ProductCategory
   description    String?
   basePrice      Float               @default(0.0)
+  oldPrice       Float?
   baseUnitId     String
   quantity       Int                 @default(0)
   status         ProductStatus       @default(ACTIVE)
@@ -96,6 +97,7 @@ model ProductUnit {
   productId String
   name      String   @db.VarChar(100)
   price     Decimal  @db.Decimal(10, 2)
+  oldPrice  Decimal? @db.Decimal(10, 2)
   stock     Int      @default(0)
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())

@@ -9,28 +9,12 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 import ProductDetailSkeleton from '@/components/ui/ProductDetailSkeleton';
 
 interface ProductDetailPageProps {
-    product: ProductsWithImages & {
-        displayPrice: string;
-        lowestPrice?: string;
-        basePrice: number;
-    };
+    product: ProductsWithImages;
     allProducts?: ProductsWithImages[];
 }
 
 export default function ProductDetailPage({ product, allProducts = [] }: ProductDetailPageProps) {
-    // لاگ برای دیباگ
-    console.log('ProductDetailPage: Received product data:', {
-        id: product?.id,
-        name: product?.name,
-        basePrice: product?.basePrice,
-        displayPrice: product?.displayPrice,
-        lowestPrice: product?.lowestPrice,
-        units: product?.units?.length || 0,
-        images: product?.images?.length || 0
-    });
-
     if (!product) {
-        console.error('ProductDetailPage: Product is null or undefined');
         return <ProductDetailSkeleton />;
     }
 

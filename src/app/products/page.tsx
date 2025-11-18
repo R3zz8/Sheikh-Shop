@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { prisma } from '@/lib/prisma';
 import ProductListView from '@/modules/products/views/ProductListView';
+import { toNumber } from '@/lib/currency';
 import React from 'react';
 import { getProductsByCategory } from '@/lib/data/products';
 import { ProductCategoryType } from '@prisma/client';
@@ -60,6 +61,20 @@ export async function generateMetadata(): Promise<Metadata> {
 // Use ISR for better performance instead of force-dynamic
 export const revalidate = 3600; // Revalidate every hour
 
+function serializeProducts(products: any[]) {
+  if (!products) return [];
+  return products.map(product => ({
+    ...product,
+    basePrice: toNumber(product.basePrice),
+    oldPrice: product.oldPrice ? toNumber(product.oldPrice) : null,
+    units: product.units.map((u: any) => ({
+      ...u,
+      price: toNumber(u.price),
+      oldPrice: u.oldPrice ? toNumber(u.oldPrice) : null,
+    })),
+  }));
+}
+
 export default async function Products() {
   try {
     const [data, units] = await Promise.all([
@@ -80,9 +95,11 @@ export default async function Products() {
       throw new Error('Invalid data format received');
     }
 
+    const serializedProducts = serializeProducts(data);
+
     return (
       <div className="min-h-screen">
-        <ProductListView products={data} units={units} />
+        <ProductListView products={serializedProducts} units={units} />
       </div>
     );
   } catch (error) {

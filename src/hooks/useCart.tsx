@@ -3,6 +3,7 @@
 import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useUser } from './useUser';
+import { resolveProductPrice } from '@/lib/product-pricing';
 
 // Types for cart operations
 interface AddToCartParams {
@@ -354,8 +355,12 @@ export const useCart = () => {
   const cartTotals = cart ? {
     itemCount: cart.reduce((total: number, item: any) => total + item.quantity, 0),
     subtotal: cart.reduce((total: number, item: any) => {
-      // Use unitPrice if available, otherwise fallback to product basePrice
-      const price = item.unitPrice || item.product?.basePrice || 0;
+      let price = item.unitPrice;
+      if (price === null || price === undefined) {
+        console.warn('`unitPrice` is missing for cart item:', item);
+        const resolvedPrice = resolveProductPrice(item.product, item.unit);
+        price = resolvedPrice.price;
+      }
       return total + (price * item.quantity);
     }, 0),
     uniqueItems: cart.length,
