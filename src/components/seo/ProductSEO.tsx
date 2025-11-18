@@ -7,6 +7,7 @@ import type { Metadata } from 'next';
 import type { ProductsWithImages } from '@/types';
 import { getProductSEO, type ProductSEOData } from '@/lib/seo/product-seo';
 import { buildLanguageAlternates } from '@/lib/seo/hreflang';
+import { resolveProductPrice } from '@/lib/product-pricing';
 import { stripHtmlTags } from '@/lib/seo/sanitize';
 import JsonLd from './JsonLd';
 
@@ -99,10 +100,6 @@ export function generateProductMetadata(
         'max-image-preview': 'large',
         'max-snippet': -1,
       },
-    },
-    other: {
-      'product:price:amount': product.basePrice.toString(),
-      'product:price:currency': options?.currency || 'EUR',
     },
   };
 }

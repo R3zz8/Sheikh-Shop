@@ -1,11 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { createShoppingAssistant, type ChatContext, type ChatMessage } from '@/lib/ai/chatbot';
+import { toNumber } from '@/lib/currency';
 import { withRateLimit } from '@/lib/rateLimiter';
 import { apiRateLimiter } from '@/lib/rateLimiter';
 
 // Rate limit chatbot requests
 const rateLimitedChatbot = withRateLimit(apiRateLimiter);
+
+function serializeProductForChatbot(product: any) {
+  if (!product) return null;
+  return {
+    ...product,
+    basePrice: toNumber(product.basePrice),
+    oldPrice: product.oldPrice ? toNumber(product.oldPrice) : null,
+    units: product.units.map((u: any) => ({
+      ...u,
+      price: toNumber(u.price),
+      oldPrice: u.oldPrice ? toNumber(u.oldPrice) : null,
+    })),
+  };
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -31,7 +46,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Fetch products from database
-    const products = await prisma.product.findMany({
+    const rawProducts = await prisma.product.findMany({
       where: { status: 'ACTIVE' },
       include: {
         images: true,
@@ -41,6 +56,8 @@ export async function POST(request: NextRequest) {
       },
       take: 1000, // Limit for performance
     });
+
+    const products = rawProducts.map(serializeProductForChatbot).filter(Boolean);
 
     // Create shopping assistant
     const assistant = createShoppingAssistant(products);

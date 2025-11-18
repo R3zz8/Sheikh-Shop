@@ -1,5 +1,6 @@
 
 import type { ProductsWithImages } from '@/types';
+import { resolveProductPrice } from '@/lib/product-pricing';
 
 export interface VRStoreVisit {
   id: string;
@@ -255,6 +256,7 @@ export class VRManager {
       const x = (index % gridSize) * 2 - (gridSize - 1);
       const z = Math.floor(index / gridSize) * 2 - (gridSize - 1);
 
+      const pricing = resolveProductPrice(product);
       return {
         id: product.id,
         name: product.name,
@@ -263,7 +265,7 @@ export class VRManager {
         rotation: { x: 0, y: 0, z: 0 },
         scale: { x: 1, y: 1, z: 1 },
         modelUrl: `/models/${product.id}.glb`,
-        price: product.basePrice,
+        price: pricing.price,
         isARReady: true,
         isVRReady: true,
       };

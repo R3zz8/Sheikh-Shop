@@ -1,9 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { createEnhancedAISearchEngine, type EnhancedSearchQuery } from '@/lib/ai/enhanced-search';
+import { toNumber } from '@/lib/currency';
 import { withRateLimit } from '@/lib/rateLimiter';
 import { apiRateLimiter } from '@/lib/rateLimiter';
 import { withCache } from '@/lib/cache';
+
+function serializeProductForSearch(product: any) {
+  if (!product) return null;
+  return {
+    ...product,
+    basePrice: toNumber(product.basePrice),
+    oldPrice: product.oldPrice ? toNumber(product.oldPrice) : null,
+    units: product.units.map((u: any) => ({
+      ...u,
+      price: toNumber(u.price),
+      oldPrice: u.oldPrice ? toNumber(u.oldPrice) : null,
+    })),
+  };
+}
 
 // Cache search results for 5 minutes
 const searchWithCache = withCache({
@@ -45,7 +60,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch products from database
-    const products = await prisma.product.findMany({
+    const rawProducts = await prisma.product.findMany({
       where: { status: 'ACTIVE' },
       include: {
         images: true,
@@ -55,6 +70,8 @@ export async function GET(request: NextRequest) {
       },
       take: 1000, // Limit for performance
     });
+
+    const products = rawProducts.map(serializeProductForSearch).filter(Boolean);
 
     // Create enhanced search engine
     const searchEngine = createEnhancedAISearchEngine(products);
@@ -150,7 +167,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Fetch products from database
-    const products = await prisma.product.findMany({
+    const rawProducts = await prisma.product.findMany({
       where: { status: 'ACTIVE' },
       include: {
         images: true,
@@ -160,6 +177,8 @@ export async function POST(request: NextRequest) {
       },
       take: 1000, // Limit for performance
     });
+
+    const products = rawProducts.map(serializeProductForSearch).filter(Boolean);
 
     // Create enhanced search engine
     const searchEngine = createEnhancedAISearchEngine(products);

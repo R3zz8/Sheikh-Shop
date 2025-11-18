@@ -3,7 +3,8 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui';
 import { ShoppingCart, Check, Loader2 } from 'lucide-react';
-import type { ProductsWithImages, Unit, ProductPricing, ProductUnit } from '@/types';
+import type { ProductsWithImages, Unit, ProductUnit } from '@/types';
+import { type ResolvedPrice } from '@/lib/product-pricing';
 import { useCart } from '@/hooks/useCart';
 import { useUserBehavior } from '@/hooks/useUserBehavior';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -12,15 +13,13 @@ import UpsellSuggestions from './UpsellSuggestions';
 
 interface AddToCartButtonProps {
     product: ProductsWithImages;
-    selectedUnit: Unit;
     selectedQuantity: number;
     selectedProductUnit?: ProductUnit | null;
-    pricing: ProductPricing;
+    pricing: ResolvedPrice;
 }
 
 export default function AddToCartButton({ 
     product, 
-    selectedUnit, 
     selectedQuantity, 
     selectedProductUnit,
     pricing 
@@ -128,7 +127,7 @@ export default function AddToCartButton({
                     <div className="flex justify-between">
                         <span className="text-gray-300">Size:</span>
                         <span className="text-white font-medium">
-                            {selectedProductUnit?.name || selectedUnit.symbol}
+                            {selectedProductUnit?.name || product.baseUnit?.name || 'unit'}
                         </span>
                     </div>
                     
@@ -140,22 +139,19 @@ export default function AddToCartButton({
                     <div className="flex justify-between">
                         <span className="text-gray-300">Price per unit:</span>
                         <span className="text-amber-200 font-medium">
-                            {selectedProductUnit 
-                                ? formatPrice(Number(selectedProductUnit.price), 'EUR')
-                                : formatPrice(pricing.finalPrice / selectedQuantity, 'EUR')
-                            }
+                            {formatPrice(pricing.price, 'EUR')}
                         </span>
                     </div>
                     
-                    {pricing.hasDiscount && (
+                    {pricing.hasDiscount && pricing.oldPrice && (
                         <>
                             <div className="flex justify-between text-green-400">
                                 <span>Discount:</span>
-                                <span>-{formatPrice(pricing.discountAmount, 'EUR')}</span>
+                                <span>-{formatPrice(pricing.oldPrice - pricing.price, 'EUR')}</span>
                             </div>
                             <div className="flex justify-between text-green-400">
                                 <span>You Save:</span>
-                                <span>{pricing.discountPercentage.toFixed(1)}%</span>
+                                <span>{pricing.discountPercentage}%</span>
                             </div>
                         </>
                     )}
@@ -164,7 +160,7 @@ export default function AddToCartButton({
                         <div className="flex justify-between">
                             <span className="text-white font-semibold">Total:</span>
                             <span className="text-xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
-                                {formatPrice(pricing.finalPrice, 'EUR')}
+                                {formatPrice(pricing.price * selectedQuantity, 'EUR')}
                             </span>
                         </div>
                     </div>

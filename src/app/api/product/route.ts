@@ -1,10 +1,25 @@
 import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 import { formatProductUnitResponse } from '@/lib/pricing';
+import { toNumber } from '@/lib/currency';
 import type { ProductWithUnits } from '@/types';
 
 // Force dynamic rendering for this API route
 export const dynamic = 'force-dynamic';
+
+function serializeProductForProductAPI(product: any) {
+  if (!product) return null;
+  return {
+    ...product,
+    basePrice: toNumber(product.basePrice),
+    oldPrice: product.oldPrice ? toNumber(product.oldPrice) : null,
+    units: product.units.map((u: any) => ({
+      ...u,
+      price: toNumber(u.price),
+      oldPrice: u.oldPrice ? toNumber(u.oldPrice) : null,
+    })),
+  };
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -86,9 +101,11 @@ export async function GET(req: NextRequest) {
     const totalPages = Math.ceil(total / limit);
 
     // Transform products to include formatted units
-    const productsWithUnits = products.map(product => ({
+    const serializedProducts = products.map(serializeProductForProductAPI).filter(Boolean);
+
+    const productsWithUnits = serializedProducts.map(product => ({
       ...product,
-      units: product.units.map(unit => formatProductUnitResponse(unit)),
+      units: product.units.map((unit: any) => formatProductUnitResponse(unit)),
     }));
 
     return NextResponse.json({
