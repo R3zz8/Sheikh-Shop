@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, Filter, SortAsc, Sparkles, TrendingUp, Brain, Zap, Target, Lightbulb } from 'lucide-react';
 import type { ProductsWithImages } from '@/types';
@@ -33,13 +34,15 @@ interface EnhancedAISearchProps {
   placeholder?: string;
   className?: string;
   showAdvancedOptions?: boolean;
+  showVRStoreButton?: boolean;
 }
 
 export default function EnhancedAISearch({ 
   onResultClick, 
   placeholder = "Search with AI intelligence...",
   className = "",
-  showAdvancedOptions = true
+  showAdvancedOptions = true,
+  showVRStoreButton = false
 }: EnhancedAISearchProps) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<EnhancedSearchResult[]>([]);
@@ -269,6 +272,15 @@ export default function EnhancedAISearch({
             <Brain className="w-4 h-4" />
             AI Options
           </button>
+        )}
+
+        {showVRStoreButton && (
+            <Link
+                href="/vr-store"
+                className="flex items-center gap-1 px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+            >
+                <span>VR Store</span>
+            </Link>
         )}
       </div>
 
