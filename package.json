@@ -164,6 +164,7 @@
     "@types/webpack": "^5.28.5",
     "@types/webpack-bundle-analyzer": "^4.7.0",
     "chrome-launcher": "^1.2.0",
+    "@playwright/test": "^1.56.1",
     "dotenv-cli": "^10.0.0",
     "eslint": "^9",
     "eslint-config-next": "15.1.6",

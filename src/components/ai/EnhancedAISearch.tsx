@@ -235,30 +235,46 @@ export default function EnhancedAISearch({
       </div>
 
       {/* Controls */}
-      <div className="flex items-center gap-2 mt-2">
+      <div className="flex flex-wrap items-center gap-2 mt-2">
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm transition-colors ${
-            showFilters 
-              ? 'bg-amber-100 text-amber-800 border border-amber-200' 
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-          }`}
+          className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300
+            border border-solid
+            ${ showFilters
+              ? 'bg-gradient-to-br from-amber-400 to-yellow-500 text-white shadow-md border-amber-500 ring-2 ring-amber-300/50'
+              : 'bg-transparent text-amber-200 border-amber-500/50 hover:bg-amber-500/10 hover:border-amber-500/80'
+            }`}
         >
           <Filter className="w-4 h-4" />
-          Filters
+          <span>Filters</span>
         </button>
         
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value as any)}
-          className="flex items-center gap-1 px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-600 hover:bg-gray-200 border-0 focus:ring-2 focus:ring-amber-500"
+          className="appearance-none flex items-center gap-1 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300
+            border border-solid border-amber-500/50 bg-transparent text-amber-200
+            hover:bg-amber-500/10 hover:border-amber-500/80
+            focus:outline-none focus:ring-2 focus:ring-amber-300/50"
+          style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23D4AF37' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: 'right 0.5rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.5em 1.5em' }}
         >
-          <option value="relevance">Relevance</option>
-          <option value="price">Price</option>
-          <option value="rating">Rating</option>
-          <option value="newest">Newest</option>
-          <option value="popularity">Popularity</option>
+          <option className="bg-stone-800 text-white" value="relevance">Relevance</option>
+          <option className="bg-stone-800 text-white" value="price">Price</option>
+          <option className="bg-stone-800 text-white" value="rating">Rating</option>
+          <option className="bg-stone-800 text-white" value="newest">Newest</option>
+          <option className="bg-stone-800 text-white" value="popularity">Popularity</option>
         </select>
+
+        {showVRStoreButton && (
+          <Link
+            href="/vr-store"
+            className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300
+              border border-solid border-amber-500/50 bg-transparent text-amber-200
+              hover:bg-amber-500/10 hover:border-amber-500/80"
+          >
+            <span>VR Store</span>
+          </Link>
+        )}
 
         {showAdvancedOptions && (
           <button
@@ -272,15 +288,6 @@ export default function EnhancedAISearch({
             <Brain className="w-4 h-4" />
             AI Options
           </button>
-        )}
-
-        {showVRStoreButton && (
-            <Link
-                href="/vr-store"
-                className="flex items-center gap-1 px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
-            >
-                <span>VR Store</span>
-            </Link>
         )}
       </div>
 
