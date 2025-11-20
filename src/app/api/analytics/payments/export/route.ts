@@ -107,8 +107,11 @@ export async function GET(request: NextRequest) {
     const successfulTransactions = transactions.filter(
       (t: Transaction) => t.status === 'COMPLETED' || t.status === 'SUCCESS'
     );
+    // BUILD FIX: Ensure 't.amount' is treated as a number in the reduce function.
+    // Explicitly casting to Number prevents potential type conflicts with Prisma's Decimal type,
+    // which can cause build failures in some environments.
     const totalAmount = successfulTransactions.reduce(
-      (sum: number, t: Transaction) => sum + t.amount,
+      (sum: number, t: Transaction) => sum + Number(t.amount),
       0
     );
     const successRate =

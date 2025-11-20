@@ -99,13 +99,23 @@ const nextConfig: NextConfig = {
   ): WebpackConfig => {
     const { dev, isServer } = context;
 
+    // BUILD FIX: Exclude 'webworker-threads' from the server bundle using IgnorePlugin.
+    // The 'natural' package has a dependency on this module, which is not
+    // compatible with the Next.js environment. This plugin prevents it from
+    // being bundled.
+    config.plugins = config.plugins || [];
+    config.plugins.push(
+      new (require('webpack').IgnorePlugin)({
+        resourceRegExp: /webworker-threads/,
+      })
+    );
+
     // حذف ماژول‌های غیرضروری از کلاینت
     if (!isServer) {
       config.resolve = config.resolve || {};
       config.resolve.fallback = {
         ...config.resolve.fallback,
         natural: false,
-        'webworker-threads': false,
         aws4: false,
       };
     }

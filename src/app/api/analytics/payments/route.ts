@@ -127,8 +127,9 @@ export async function GET(request: NextRequest) {
       (t: Transaction) => t.status === 'FAILED'
     );
 
+    // BUILD FIX: Ensure 't.amount' is treated as a number in the reduce function.
     const totalAmount = successfulTransactions.reduce(
-      (sum: number, t: Transaction) => sum + t.amount,
+      (sum: number, t: Transaction) => sum + Number(t.amount),
       0
     );
     const successRate =
@@ -151,10 +152,11 @@ export async function GET(request: NextRequest) {
       const existing = trendMap.get(dateKey) || { count: 0, amount: 0 };
       trendMap.set(dateKey, {
         count: existing.count + 1,
+        // BUILD FIX: Ensure 'transaction.amount' is treated as a number.
         amount:
           existing.amount +
           (transaction.status === 'COMPLETED' || transaction.status === 'SUCCESS'
-            ? transaction.amount
+            ? Number(transaction.amount)
             : 0),
       });
     });
@@ -180,10 +182,11 @@ export async function GET(request: NextRequest) {
       const existing = monthlyMap.get(monthKey) || { count: 0, amount: 0 };
       monthlyMap.set(monthKey, {
         count: existing.count + 1,
+        // BUILD FIX: Ensure 'transaction.amount' is treated as a number.
         amount:
           existing.amount +
           (transaction.status === 'COMPLETED' || transaction.status === 'SUCCESS'
-            ? transaction.amount
+            ? Number(transaction.amount)
             : 0),
       });
     });
