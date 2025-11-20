@@ -14,7 +14,6 @@ model Product {
   category       ProductCategory
   description    String?
   basePrice      Float               @default(0.0)
-  oldPrice       Float?
   baseUnitId     String
   quantity       Int                 @default(0)
   status         ProductStatus       @default(ACTIVE)
@@ -97,7 +96,6 @@ model ProductUnit {
   productId String
   name      String   @db.VarChar(100)
   price     Decimal  @db.Decimal(10, 2)
-  oldPrice  Decimal? @db.Decimal(10, 2)
   stock     Int      @default(0)
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
@@ -474,19 +472,18 @@ model AffiliateTransaction {
 }
 
 model Transaction {
-  id          String   @id @default(cuid())
-  authority   String   @unique @db.VarChar(255)
-  reference   String?  @db.VarChar(255)
+  id          String    @id @default(cuid())
+  authority   String    @unique @db.VarChar(255)
+  reference   String?   @db.VarChar(255)
   amount      Float
-  status      String   @db.VarChar(50)
-  description String?  @db.VarChar(500)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  status      String    @db.VarChar(50)
+  description String?   @db.VarChar(500)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  @@index([authority])
-  @@index([status])
-  @@index([createdAt])
-  @@index([reference])
+  @@index([status], map: "Transaction_status_idx")
+  @@index([createdAt], map: "Transaction_createdAt_idx")
+  @@index([reference], map: "Transaction_reference_idx")
 }
 
 model Category {
