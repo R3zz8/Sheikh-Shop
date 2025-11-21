@@ -142,7 +142,7 @@ export default function ProductList({
                     showNavigation={false}
                   />
                 ) : (
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4">
                     {filteredProducts.map((product, index) => (
                       <ProductItemResponsive 
                         key={product.id} 

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui';
 import { getOrGenerateExcerpt, stripHtmlTags } from '@/lib/seo/sanitize';
+import { formatEUR } from '@/lib/currency';
 
 interface Product {
     id: string;
@@ -56,15 +57,15 @@ export default function CategoryProducts({ products, categoryName, categorySlug 
 
                 {/* Products Grid */}
                 {products.length > 0 ? (
-                    <div className="responsive-grid gap-6 md:gap-8">
+                    <div className="grid grid-cols-2 gap-4 sm:gap-5 md:grid-cols-3 xl:grid-cols-4 lg:gap-8">
                         {products.map((product) => (
                             <Link
                                 key={product.id}
                                 href={`/product/${product.id}`}
-                                className="group card p-4 hover:shadow-2xl transition-all duration-300 hover:scale-105"
+                                className="group card p-3 sm:p-4 hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] h-full"
                             >
                                 {/* Product Image */}
-                                <div className="relative w-full aspect-square rounded-full overflow-hidden mb-4">
+                                <div className="relative w-full aspect-square rounded-full overflow-hidden mb-3 sm:mb-4 max-w-[150px] mx-auto">
                                     <Image
                                         src={product.images[0]?.image || '/noImage.jpg'}
                                         alt={product.name}
@@ -102,8 +103,8 @@ export default function CategoryProducts({ products, categoryName, categorySlug 
                                     })()}
 
                                     <div className="flex items-center justify-center space-x-2">
-                                        <span className="text-2xl font-bold text-amber-400">
-                                            ${product.basePrice.toFixed(2)}
+                                        <span className="text-xl sm:text-2xl font-bold text-amber-400">
+                                            {formatEUR(product.basePrice)}
                                         </span>
                                     </div>
                                 </div>

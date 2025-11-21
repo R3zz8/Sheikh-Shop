@@ -8,7 +8,7 @@ import { Star, ShoppingCart, Zap, ChevronDown, ChevronUp } from 'lucide-react';
 import type { ProductsWithImages, Unit, ProductUnit } from '@/types';
 import { useCart } from '@/hooks/useCart';
 import { cn } from '@/lib/utils';
-import { formatPrice } from '@/lib/currency';
+import { formatEUR } from '@/lib/currency';
 import FlyToCartAnimation from '@/components/cart/FlyToCartAnimation';
 import UnitSelector from '@/components/ui/UnitSelector';
 import DiscountBadge from '@/components/ui/DiscountBadge';
@@ -123,7 +123,7 @@ export default function ProductItem({
               .replace(/\s+/g, ' ')
               .trim() || 'Premium quality product'}
           </p>
-          <p className="text-amber-300 font-semibold">${product.basePrice}</p>
+          <p className="text-amber-300 font-semibold">{formatEUR(product.basePrice)}</p>
           <p className="text-gray-400 text-xs mt-2">Units: {availableUnits.length}</p>
         </div>
       </div>
@@ -283,7 +283,7 @@ export default function ProductItem({
             {pricing.hasDiscount && (
               <div className="flex items-center gap-2">
                 <p className="text-sm text-gray-400 line-through font-medium">
-                  {formatPrice(pricing.originalPrice, 'EUR')}
+                  {formatEUR(pricing.originalPrice)}
                 </p>
                 <span className="text-xs bg-red-500/20 text-red-300 px-2 py-0.5 rounded-full font-semibold">
                   -{Math.round(pricing.discountPercentage)}%
@@ -294,7 +294,7 @@ export default function ProductItem({
             <div className="flex items-center justify-between gap-2">
               <div className="flex flex-col flex-1">
                 <p className="text-xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
-                  {formatPrice(pricing.finalPrice, 'EUR')}
+                  {formatEUR(pricing.finalPrice)}
                 </p>
                 <p className="text-xs text-amber-200/60">
                   per {useProductUnits && selectedProductUnit ? selectedProductUnit.name : selectedUnit.symbol}

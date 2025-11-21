@@ -8,7 +8,7 @@ import { ShoppingCart, Star } from 'lucide-react';
 import type { ProductsWithImages, Unit } from '@/types';
 import { useCart } from '@/hooks/useCart';
 import { cn } from '@/lib/utils';
-import { formatPrice } from '@/lib/currency';
+import { formatEUR } from '@/lib/currency';
 import FlyToCartAnimation from '@/components/cart/FlyToCartAnimation';
 import DiscountBadge from '@/components/ui/DiscountBadge';
 import ProductBadge from '@/components/ui/ProductBadge';
@@ -44,7 +44,7 @@ export default function ProductItemCompact({
       <div className="relative bg-white/8 backdrop-blur-sm border border-amber-200/20 rounded-xl overflow-hidden aspect-square">
         <div className="flex flex-col items-center justify-center h-full p-4 text-center">
           <h2 className="text-white font-bold text-sm mb-2 line-clamp-2">{product.name}</h2>
-          <p className="text-amber-300 font-semibold text-lg">${product.basePrice}</p>
+          <p className="text-amber-300 font-semibold text-lg">{formatEUR(product.basePrice)}</p>
         </div>
       </div>
     );
@@ -102,11 +102,11 @@ export default function ProductItemCompact({
 
         {/* Product Image - Circular, centered at top */}
         <Link href={`/products/${product.slug || product.id}`} className="block">
-          <div className="relative w-full h-32 bg-gradient-to-br from-amber-950/20 via-stone-900/20 to-amber-950/20 backdrop-blur-sm flex items-center justify-center p-4 cursor-pointer hover:bg-gradient-to-br hover:from-amber-950/30 hover:via-stone-900/30 hover:to-amber-950/30 transition-all duration-300">
+          <div className="relative w-full h-28 sm:h-32 bg-gradient-to-br from-amber-950/20 via-stone-900/20 to-amber-950/20 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 cursor-pointer hover:bg-gradient-to-br hover:from-amber-950/30 hover:via-stone-900/30 hover:to-amber-950/30 transition-all duration-300">
             {!isImageLoaded && (
               <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-yellow-500/10 animate-pulse rounded-full" />
             )}
-            <div className="relative w-20 h-20 rounded-full overflow-hidden">
+            <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden">
             <Image
               src={product?.images[0]?.image || '/assets/noImage.jpg'}
               alt={`${product?.name || 'Product'} - Premium ${product?.category || 'product'} from Sheikh Shop`}
@@ -129,7 +129,7 @@ export default function ProductItemCompact({
         </Link>
 
         {/* Product Content - Flexible content area */}
-        <div className="relative z-10 p-3 flex flex-col flex-grow">
+        <div className="relative z-10 p-2.5 sm:p-3 flex flex-col flex-grow">
           {/* Product Name */}
           <Link href={`/products/${product.slug || product.id}`} className="block mb-2">
             <h2 className="text-sm font-semibold text-white group-hover:text-amber-200 transition-colors duration-300 cursor-pointer line-clamp-2 leading-tight text-center">
@@ -155,12 +155,12 @@ export default function ProductItemCompact({
 
             {/* Price */}
           <div className="text-center mb-3">
-                <p className="text-lg font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
-                  {formatPrice(pricing.finalPrice)}
+                <p className="text-base sm:text-lg font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
+                  {formatEUR(pricing.finalPrice)}
                 </p>
                 {pricing.hasDiscount && (
                   <p className="text-xs text-gray-400 line-through">
-                    {formatPrice(pricing.originalPrice)}
+                    {formatEUR(pricing.originalPrice)}
                   </p>
                 )}
               </div>

@@ -1,161 +1,175 @@
-// app/sitemap.ts
-import { getProducts } from '@/modules/products/services';
-import { prisma } from '@/lib/prisma';
 import type { MetadataRoute } from 'next';
-import { getBaseUrl } from '@/lib/seo/sitemapUtils';
+import { prisma } from '@/lib/prisma';
+import {
+  buildAbsoluteUrl,
+  dedupeKeepNewest,
+  enforceSitemapUrlLimit,
+  getBaseUrl,
+  normalizePath,
+} from '@/lib/seo/sitemapUtils';
 
-// نوع‌های دقیق
-type ChangeFrequency = 'always' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'never';
+export const revalidate = 3600; // 1 hour
 
-interface SitemapEntry {
-  url: string;
-  lastModified: Date | string;
-  changeFrequency: ChangeFrequency;
+type ChangeFrequency = NonNullable<MetadataRoute.Sitemap[number]['changeFrequency']>;
+
+interface StaticRouteConfig {
+  path: string;
   priority: number;
-  alternates?: {
-    languages: Record<string, string>;
+  changeFrequency: ChangeFrequency;
+}
+
+const STATIC_ROUTES: StaticRouteConfig[] = [
+  { path: '/', priority: 1.0, changeFrequency: 'daily' },
+  { path: '/about-us', priority: 0.8, changeFrequency: 'monthly' },
+  { path: '/article', priority: 0.7, changeFrequency: 'weekly' },
+  { path: '/categories', priority: 0.7, changeFrequency: 'weekly' },
+  { path: '/contact', priority: 0.8, changeFrequency: 'monthly' },
+  { path: '/faq', priority: 0.6, changeFrequency: 'monthly' },
+  { path: '/affiliate', priority: 0.6, changeFrequency: 'monthly' },
+  { path: '/leaderboard', priority: 0.5, changeFrequency: 'weekly' },
+  { path: '/mobile-demo', priority: 0.4, changeFrequency: 'monthly' },
+  { path: '/privacy', priority: 0.3, changeFrequency: 'yearly' },
+  { path: '/terms', priority: 0.3, changeFrequency: 'yearly' },
+  { path: '/products', priority: 0.9, changeFrequency: 'daily' },
+  { path: '/products/catalog', priority: 0.7, changeFrequency: 'weekly' },
+  { path: '/search', priority: 0.4, changeFrequency: 'weekly' },
+  { path: '/success', priority: 0.5, changeFrequency: 'monthly' },
+  { path: '/tech-products', priority: 0.6, changeFrequency: 'monthly' },
+  { path: '/vr-store', priority: 0.5, changeFrequency: 'monthly' },
+  { path: '/payment/callback', priority: 0.4, changeFrequency: 'monthly' },
+];
+
+const LANGUAGE_ALIASES: Array<{ code: string; prefix: string }> = [
+  { code: 'en', prefix: '' },
+  { code: 'ar', prefix: '/ar' },
+];
+
+function buildAlternates(path: string, baseUrl: string) {
+  const normalized = normalizePath(path);
+  const base = baseUrl.replace(/\/$/, '');
+  const defaultUrl = `${base}${normalized}`;
+
+  const languages: Record<string, string> = {
+    'x-default': defaultUrl,
+  };
+
+  for (const { code, prefix } of LANGUAGE_ALIASES) {
+    const localizedPath = normalized === '/' ? prefix || '/' : `${prefix}${normalized}`;
+    languages[code] = `${base}${localizedPath || '/'}`;
+  }
+
+  return { languages };
+}
+
+function createEntry(
+  path: string,
+  lastModified: Date,
+  priority: number,
+  changeFrequency: ChangeFrequency,
+  baseUrl: string
+): MetadataRoute.Sitemap[number] {
+  return {
+    url: buildAbsoluteUrl(baseUrl, path),
+    lastModified,
+    changeFrequency,
+    priority,
+    alternates: buildAlternates(path, baseUrl),
   };
 }
 
-const LANGUAGES = ['en', 'ar'] as const;
-const DEFAULT_LANG = 'en';
+async function getCategoryEntries(baseUrl: string, fallbackDate: Date): Promise<MetadataRoute.Sitemap> {
+  const categories = await prisma.category.findMany({
+    where: { isActive: true },
+    select: { slug: true, updatedAt: true },
+    orderBy: { updatedAt: 'desc' },
+    take: 2000,
+  });
 
-// تابع کمکی
-function createHreflangEntries(
-  path: string,
-  lastmod: Date,
-  priority: number,
-  freq: ChangeFrequency
-): SitemapEntry[] {
-  const baseUrl = getBaseUrl().replace(/\/$/, '');
-  const entries: SitemapEntry[] = [];
+  return categories
+    .filter((category) => category.slug)
+    .map((category) =>
+      createEntry(
+        `/categories/${category.slug!.toLowerCase()}`,
+        category.updatedAt ?? fallbackDate,
+        0.8,
+        'weekly',
+        baseUrl
+      )
+    );
+}
 
-  for (const lang of LANGUAGES) {
-    const localizedPath = lang === DEFAULT_LANG ? path : `/${lang}${path}`;
-    const url = `${baseUrl}${localizedPath}`;
+async function getProductEntries(baseUrl: string, fallbackDate: Date): Promise<MetadataRoute.Sitemap> {
+  const products = await prisma.product.findMany({
+    where: { status: 'ACTIVE' },
+    select: { slug: true, id: true, updatedAt: true },
+    orderBy: { updatedAt: 'desc' },
+    take: 5000,
+  });
 
-    const alternates: Record<string, string> = {};
-    for (const altLang of LANGUAGES) {
-      const altPath = altLang === DEFAULT_LANG ? path : `/${altLang}${path}`;
-      alternates[altLang] = `${baseUrl}${altPath}`;
-    }
-    alternates['x-default'] = `${baseUrl}${path}`;
+  return products
+    .filter((product) => product.slug || product.id)
+    .map((product) =>
+      createEntry(
+        `/products/${product.slug ?? product.id}`,
+        product.updatedAt ?? fallbackDate,
+        0.7,
+        'weekly',
+        baseUrl
+      )
+    );
+}
 
-    entries.push({
-      url,
-      lastModified: lastmod,
-      changeFrequency: freq,
-      priority,
-      alternates: { languages: alternates },
-    });
-  }
+async function getArticleEntries(baseUrl: string, fallbackDate: Date): Promise<MetadataRoute.Sitemap> {
+  const articles = await prisma.article.findMany({
+    where: { status: 'PUBLISHED' },
+    select: { slug: true, updatedAt: true },
+    orderBy: { updatedAt: 'desc' },
+    take: 5000,
+  });
 
-  return entries;
+  return articles
+    .filter((article) => article.slug)
+    .map((article) =>
+      createEntry(`/article/${article.slug}`, article.updatedAt ?? fallbackDate, 0.6, 'monthly', baseUrl)
+    );
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
-  const entries: SitemapEntry[] = [];
+  const baseUrl = getBaseUrl();
 
-  try {
-    // === 1. Static Pages ===
-    const staticPages: Array<{
-      path: string;
-      priority: number;
-      freq: ChangeFrequency;
-    }> = [
-      { path: '/', priority: 1.0, freq: 'daily' },
-      { path: '/products', priority: 0.9, freq: 'daily' },
-      { path: '/about-us', priority: 0.8, freq: 'monthly' },
-      { path: '/article', priority: 0.8, freq: 'weekly' },
-      { path: '/faq', priority: 0.7, freq: 'monthly' },
-      { path: '/affiliate', priority: 0.7, freq: 'monthly' },
-      { path: '/contact', priority: 0.8, freq: 'monthly' },
-      { path: '/privacy', priority: 0.3, freq: 'yearly' },
-      { path: '/terms', priority: 0.3, freq: 'yearly' },
-      { path: '/checkout', priority: 0.5, freq: 'weekly' },
-      { path: '/register', priority: 0.4, freq: 'monthly' },
-      { path: '/login', priority: 0.4, freq: 'monthly' },
-    ];
+  const staticEntries: MetadataRoute.Sitemap = STATIC_ROUTES.map((route) =>
+    createEntry(route.path, now, route.priority, route.changeFrequency, baseUrl)
+  );
 
-    for (const { path, priority, freq } of staticPages) {
-      entries.push(...createHreflangEntries(path, now, priority, freq));
-    }
+  const [categoriesResult, productsResult, articlesResult] = await Promise.allSettled([
+    getCategoryEntries(baseUrl, now),
+    getProductEntries(baseUrl, now),
+    getArticleEntries(baseUrl, now),
+  ]);
 
-    // === 2. Categories (بدون status — فقط slug و updatedAt) ===
-    try {
-      const categories = await prisma.category.findMany({
-        select: { slug: true, updatedAt: true },
-        take: 1000,
-      });
+  const dynamicEntries: MetadataRoute.Sitemap = [];
 
-      for (const cat of categories) {
-        if (!cat.slug) continue;
-        const lastmod = cat.updatedAt ? new Date(cat.updatedAt) : now;
-        entries.push(...createHreflangEntries(`/categories/${cat.slug}`, lastmod, 0.9, 'weekly'));
-      }
-    } catch (error) {
-      // Database may not be available during build - continue with static pages
-      if (process.env.NEXT_PHASE !== 'phase-production-build') {
-        console.warn('Failed to fetch categories for sitemap:', error);
-      }
-    }
-
-    // === 3. Products ===
-    try {
-      const products = await getProducts();
-      if (Array.isArray(products)) {
-        for (const p of products) {
-          if (!p?.id) continue;
-          const lastmod = p.updatedAt ? new Date(p.updatedAt) : now;
-          entries.push(...createHreflangEntries(`/products/${p.id}`, lastmod, 0.7, 'weekly'));
-        }
-      }
-    } catch (error) {
-      // Database may not be available during build - continue with static pages
-      if (process.env.NEXT_PHASE !== 'phase-production-build') {
-        console.warn('Failed to fetch products for sitemap:', error);
-      }
-    }
-
-    // === 4. Articles ===
-    try {
-      const articles = await prisma.article.findMany({
-        where: { status: 'PUBLISHED' }, // این احتمالاً درسته
-        select: { slug: true, updatedAt: true },
-        take: 5000,
-      });
-
-      for (const a of articles) {
-        if (!a?.slug) continue;
-        const lastmod = a.updatedAt ? new Date(a.updatedAt) : now;
-        entries.push(...createHreflangEntries(`/article/${a.slug}`, lastmod, 0.6, 'monthly'));
-      }
-    } catch (error) {
-      // Database may not be available during build - continue with static pages
-      if (process.env.NEXT_PHASE !== 'phase-production-build') {
-        console.warn('Failed to fetch articles for sitemap:', error);
-      }
-    }
-
-    // === 5. Dedupe ===
-    const seen = new Set<string>();
-    const deduped: SitemapEntry[] = [];
-    for (const entry of entries) {
-      if (!seen.has(entry.url)) {
-        seen.add(entry.url);
-        deduped.push(entry);
-      }
-    }
-
-    // === 6. Limit to 50k ===
-    return deduped.slice(0, 50000);
-
-  } catch (error) {
-    // Fallback to static pages only if everything fails
-    if (process.env.NEXT_PHASE !== 'phase-production-build') {
-      console.error('Sitemap generation failed:', error);
-    }
-    return createHreflangEntries('/', now, 1.0, 'daily');
+  if (categoriesResult.status === 'fulfilled') {
+    dynamicEntries.push(...categoriesResult.value);
+  } else if (process.env.NEXT_PHASE !== 'phase-production-build') {
+    console.warn('Sitemap: category query failed', categoriesResult.reason);
   }
+
+  if (productsResult.status === 'fulfilled') {
+    dynamicEntries.push(...productsResult.value);
+  } else if (process.env.NEXT_PHASE !== 'phase-production-build') {
+    console.warn('Sitemap: product query failed', productsResult.reason);
+  }
+
+  if (articlesResult.status === 'fulfilled') {
+    dynamicEntries.push(...articlesResult.value);
+  } else if (process.env.NEXT_PHASE !== 'phase-production-build') {
+    console.warn('Sitemap: article query failed', articlesResult.reason);
+  }
+
+  const ordered = [...staticEntries, ...dynamicEntries].sort((a, b) => a.url.localeCompare(b.url));
+  const deduped = dedupeKeepNewest(ordered);
+
+  return enforceSitemapUrlLimit(deduped);
 }

@@ -1,48 +1,55 @@
 import type { MetadataRoute } from 'next';
+import { getBaseUrl, normalizePath } from '@/lib/seo/sitemapUtils';
 
-const getBaseUrl = () => {
-  if (process.env.NODE_ENV === 'production') {
-    return 'https://sheikhshops.com';
-  }
-  return process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-};
+const SENSITIVE_DIRECTORIES = [
+  '/api',
+  '/admin',
+  '/dashboard',
+  '/affiliate/dashboard',
+  '/system',
+  '/user',
+  '/cart',
+  '/checkout',
+];
+
+const SENSITIVE_SINGLE_PAGES = [
+  '/system-login',
+  '/login',
+  '/register',
+  '/reset-password',
+  '/forgot-password',
+  '/test-userbadge',
+];
+
+function buildDisallowList(): string[] {
+  const directoryRules = SENSITIVE_DIRECTORIES.flatMap((dir) => {
+    const clean = normalizePath(dir);
+    return [`${clean}/`, `${clean}/*`];
+  });
+
+  const pageRules = SENSITIVE_SINGLE_PAGES.map((page) => normalizePath(page));
+
+  return Array.from(new Set([...directoryRules, ...pageRules]));
+}
 
 export default function robots(): MetadataRoute.Robots {
+  const baseUrl = getBaseUrl().replace(/\/$/, '');
+  const disallow = buildDisallowList();
+
   return {
     rules: [
       {
         userAgent: '*',
         allow: '/',
-        disallow: [
-          '/dashboard/',
-          '/admin/',
-          '/api/',
-          '/private/',
-          '/temp/',
-          ],
+        disallow,
       },
       {
-        userAgent: 'Googlebot',
+        userAgent: 'AdsBot-Google',
         allow: '/',
-        disallow: [
-          '/dashboard/',
-          '/admin/',
-          '/api/',
-          '/private/',
-        ],
-      },
-      {
-        userAgent: 'Bingbot',
-        allow: '/',
-        disallow: [
-          '/dashboard/',
-          '/admin/',
-          '/api/',
-          '/private/',
-        ],
+        disallow,
       },
     ],
-    sitemap: `${getBaseUrl()}/sitemap.xml`,
-    host: getBaseUrl(),
+    sitemap: [`${baseUrl}/sitemap.xml`],
+    host: baseUrl,
   };
 }

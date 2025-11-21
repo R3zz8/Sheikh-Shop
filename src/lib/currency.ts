@@ -88,6 +88,19 @@ export function formatPriceWithSymbol(amount: number, currency?: CurrencyCode): 
 }
 
 /**
+ * Lightweight helper to ensure EUR formatting in UI grids
+ */
+export function formatEUR(value: number): string {
+  const safeValue = typeof value === 'number' && !Number.isNaN(value) ? value : 0;
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'EUR',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(safeValue);
+}
+
+/**
  * Get multiple currency prices for a given EUR amount
  */
 export function getMultiCurrencyPrices(eurAmount: number): Record<CurrencyCode, number> {
