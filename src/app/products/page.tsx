@@ -99,7 +99,12 @@ export default async function Products() {
 
     return (
       <div className="min-h-screen">
-        <ProductListView products={serializedProducts} units={units} />
+        <ProductListView
+          products={serializedProducts}
+          units={units}
+          title="Sheikh Food"
+          subtitle="Explore our premium selection of gourmet dates, nuts, and high-quality food items sourced with exceptional care."
+        />
       </div>
     );
   } catch (error) {

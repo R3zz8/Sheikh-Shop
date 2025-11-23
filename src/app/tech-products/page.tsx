@@ -46,7 +46,12 @@ export default async function TechProducts() {
 
     return (
       <div className="min-h-screen">
-        <ProductListView products={serializedProducts} units={units} />
+        <ProductListView
+          products={serializedProducts}
+          units={units}
+          title="Sheikh Tech"
+          subtitle="Discover an exclusive collection of stylish gadgets, elegant decorative pieces, and visually striking tech accessories."
+        />
       </div>
     );
   } catch (error) {
