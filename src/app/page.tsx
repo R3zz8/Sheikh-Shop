@@ -81,7 +81,7 @@ export default function Home() {
 
       <div className="relative z-10">
         {/* Hero Section with 3D Palm Tree - Always Horizontal */}
-        <section className="container-fluid section-padding">
+        <section className="container-fluid pt-4 md:pt-8 pb-4 md:pb-8">
           <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
             {/* Grid with 2 columns that never wrap - scales proportionally */}
             <div 
@@ -89,7 +89,7 @@ export default function Home() {
               style={{
                 gridTemplateColumns: '1fr 1fr',
                 gap: 'clamp(0.5rem, 3vw, 2rem)',
-                minHeight: 'clamp(400px, 85vh, 700px)',
+                minHeight: 'clamp(320px, 60vh, 700px)',
                 width: '100%',
               }}
             >
@@ -145,8 +145,8 @@ export default function Home() {
               <div 
                 className="relative w-full flex items-center justify-center overflow-hidden"
                 style={{ 
-                  height: 'clamp(250px, 45vw, 600px)',
-                  minHeight: '250px',
+                  height: 'clamp(200px, 40vw, 600px)',
+                  minHeight: '200px',
                 }}
               >
                 <OptimizedPalmTree
