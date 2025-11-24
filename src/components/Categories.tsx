@@ -38,10 +38,10 @@ export default function Categories() {
             <div className="max-w-6xl mx-auto">
                 {/* Section Header */}
                 <div className="text-center mb-12">
-                    <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent mb-4">
+                    <h2 style={{ opacity: 1 }} className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent mb-4">
                         Main Categories
                     </h2>
-                    <p className="text-gray-300 text-lg max-w-2xl mx-auto">
+                    <p style={{ opacity: 1 }} className="text-gray-300 text-lg max-w-2xl mx-auto">
                         Explore our premium collection of authentic products from the finest sources
                     </p>
                 </div>
@@ -73,7 +73,7 @@ export default function Categories() {
 
                             {/* Category Name */}
                             <div className="text-center">
-                                <h3 className="text-lg md:text-xl font-semibold text-white group-hover:text-amber-200 transition-colors duration-300">
+                                <h3 style={{ opacity: 1 }} className="text-lg md:text-xl font-semibold text-white group-hover:text-amber-200 transition-colors duration-300">
                                     {category.name}
                                 </h3>
                                 <div className="w-0 group-hover:w-8 h-0.5 bg-gradient-to-r from-amber-400 to-orange-400 mx-auto transition-all duration-300 mt-2" />
