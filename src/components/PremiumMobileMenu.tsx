@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type ComponentType } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -19,13 +19,13 @@ import { cn } from '@/lib/utils';
 interface SubMenuItem {
   name: string;
   href: string;
-  icon: React.ElementType;
+  icon: ComponentType<{ className?: string }>;
 }
 
 interface NavigationItem {
   name: string;
   href: string;
-  icon: React.ElementType;
+  icon: ComponentType<{ className?: string }>;
   subItems?: SubMenuItem[];
 }
 
