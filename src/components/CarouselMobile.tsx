@@ -26,50 +26,43 @@ type CarouselImage = {
   ctaLink?: string;
 };
 
-// Mock data matching the design reference
-const mockImages: CarouselImage[] = [
-  {
-    id: 1,
-    url: '/dates.jpg',
-    alt: 'Artisan Dates',
-    title: 'Artisan Dates',
-    ctaText: 'Discover',
-    ctaLink: '/categories/dates'
-  },
-  {
-    id: 2,
-    url: '/honey.jpg',
-    alt: 'Pure Honey',
-    title: 'Pure Honey',
-    ctaText: 'Shop Now',
-    ctaLink: '/categories/honey'
-  },
-  {
-    id: 3,
-    url: '/saffron.jpg',
-    alt: 'Saffron Collection',
-    title: 'Saffron Collection',
-    ctaText: 'Explore',
-    ctaLink: '/categories/saffron'
-  }
-];
+import { useQuery } from '@tanstack/react-query';
 
 // Fallback placeholder image for failed loads
 const FALLBACK_IMAGE = '/noImage.jpg';
 
 interface MobileCarouselProps {
-  images?: CarouselImage[];
   autoPlayInterval?: number;
   showPagination?: boolean;
   showNavigation?: boolean;
 }
 
+const fetchCarouselData = async (): Promise<CarouselImage[]> => {
+  const res = await fetch('/api/mobile-carousel');
+  if (!res.ok) {
+    throw new Error('Failed to fetch carousel data');
+  }
+  const data = await res.json();
+  return data.map((slide: any) => ({
+    id: slide.id,
+    url: slide.image,
+    alt: slide.title,
+    title: slide.title,
+    ctaText: 'Shop Now',
+    ctaLink: slide.link
+  }));
+};
+
 export default function MobileCarousel({ 
-  images = mockImages, 
   autoPlayInterval = 5000,
   showPagination = true,
   showNavigation = false
 }: MobileCarouselProps) {
+  const { data: images = [], isLoading, isError } = useQuery({
+    queryKey: ['mobileCarousel'],
+    queryFn: fetchCarouselData
+  });
+
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -89,6 +82,26 @@ export default function MobileCarousel({
       window.location.href = link;
     }
   }, []);
+
+  if (isLoading) {
+    return (
+      <div className="w-full block md:hidden" aria-hidden={false}>
+        <div className="relative overflow-hidden rounded-2xl shadow-2xl bg-black mx-auto max-w-sm sm:max-w-md h-[220px] sm:h-[280px] flex items-center justify-center">
+          <p className="text-white">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isError || images.length === 0) {
+    return (
+      <div className="w-full block md:hidden" aria-hidden={false}>
+        <div className="relative overflow-hidden rounded-2xl shadow-2xl bg-black mx-auto max-w-sm sm:max-w-md h-[220px] sm:h-[280px] flex items-center justify-center">
+          <p className="text-white">Could not load slides.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     // Strictly mobile-only visibility
