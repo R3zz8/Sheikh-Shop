@@ -141,9 +141,9 @@ export default function Footer() {
               <span className="text-gray-300 text-sm font-medium mb-4 block">Follow our journey</span>
               <div className="flex items-center justify-center gap-4">
                 {[
-                  { icon: Instagram, href: '#', label: 'Instagram', hoverColor: 'hover:text-pink-400' },
+                  { icon: Instagram, href: 'https://www.instagram.com/sheikh._.shops?igsh=MW41bXhqcmlxNG82Mw==', label: 'Instagram', hoverColor: 'hover:text-pink-400' },
                   { icon: Twitter, href: '#', label: 'Twitter', hoverColor: 'hover:text-blue-400' },
-                  { icon: Youtube, href: '#', label: 'YouTube', hoverColor: 'hover:text-red-400' },
+                  { icon: Youtube, href: 'https://www.youtube.com/@Fuzzel_Fun', label: 'YouTube', hoverColor: 'hover:text-red-400' },
                   { icon: MessageCircle, href: '#', label: 'WhatsApp', hoverColor: 'hover:text-green-400' },
                 ].map((social) => (
                   <a
@@ -244,7 +244,7 @@ export default function Footer() {
                   { name: 'Shipping Information', href: '#' },
                   { name: 'Returns & Exchanges', href: '#' },
                   { name: 'Size Guide', href: '#' },
-                  { name: 'FAQ', href: '#' },
+                  { name: 'FAQ', href: '/faq' },
                 ].map((item) => (
                   <li key={item.name}>
                     <a
@@ -270,7 +270,7 @@ export default function Footer() {
               </div>
               <ul className="space-y-3 mb-8">
                 {[
-                  { name: 'About Us', href: '#' },
+                  { name: 'About Us', href: '/about-us' },
                   { name: 'Our Story', href: '#' },
                   { name: 'Sustainability', href: '#' },
                   { name: 'Careers', href: '#' },
@@ -295,11 +295,11 @@ export default function Footer() {
               <div className="space-y-3">
                 <div className="flex items-center gap-3 text-gray-300 text-sm">
                   <Phone className="w-4 h-4 text-amber-300" />
-                  <span>+1 (555) 123-4567</span>
+                  <span>+212 (753) 862-853</span>
                 </div>
                 <div className="flex items-center gap-3 text-gray-300 text-sm">
                   <Mail className="w-4 h-4 text-amber-300" />
-                  <span>hello@sheikhshop.com</span>
+                  <span>sheikhshops.com@gmail.com</span>
                 </div>
                 <div className="flex items-center gap-3 text-gray-300 text-sm">
                   <MapPin className="w-4 h-4 text-amber-300" />
