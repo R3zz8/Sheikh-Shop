@@ -5,6 +5,8 @@ import { z } from 'zod';
 import { getUserFromToken } from '@/lib/jwt';
 import { prisma } from '@/utils/prisma';
 
+export const dynamic = "force-dynamic";
+
 const carouselSchema = z.object({
   title: z.string().min(1, 'Title is required').optional(),
   image: z.string().url('Image must be a valid URL').optional(),
@@ -13,6 +15,10 @@ const carouselSchema = z.object({
 });
 
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`Health-check log: PUT /api/admin/mobile-carousel/${params.id}`);
+  }
+
   try {
     const user = getUserFromToken(req);
 
@@ -48,6 +54,10 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`Health-check log: DELETE /api/admin/mobile-carousel/${params.id}`);
+  }
+
   try {
     const user = getUserFromToken(req);
 
