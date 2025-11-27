@@ -1,8 +1,8 @@
 // src/app/api/admin/mobile-carousel/route.ts
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { UserRole } from '@prisma/client';
 import { z } from 'zod';
-import { getCurrentUser } from '@/lib/auth/utils';
+import { getUserFromToken } from '@/lib/jwt';
 import { prisma } from '@/utils/prisma';
 
 const carouselSchema = z.object({
@@ -12,9 +12,9 @@ const carouselSchema = z.object({
   order: z.number().int().optional(),
 });
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const user = await getCurrentUser();
+    const user = getUserFromToken(req);
 
     if (!user || user.role !== UserRole.SUPERADMIN) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
@@ -33,9 +33,9 @@ export async function GET() {
   }
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const user = await getCurrentUser();
+    const user = getUserFromToken(req);
 
     if (!user || user.role !== UserRole.SUPERADMIN) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
