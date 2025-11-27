@@ -8,17 +8,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { CarouselSlide } from '../views/MobileCarouselDashboardView';
+import type { CarouselSlide } from '../views/MobileCarouselDashboardView';
 
 const slideSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   subtitle: z.string().optional(),
   image: z.string().min(1, 'Image is required').url('Image must be a valid URL'),
   link: z.string().min(1, 'Link is required').url('Link must be a valid URL'),
-  order: z.preprocess(
-    (a) => parseInt(z.string().parse(a), 10),
-    z.number().int().min(0, 'Order must be a non-negative number')
-  ),
+  order: z.coerce.number().int().min(0, 'Order must be a non-negative number'),
 });
 
 type SlideFormValues = z.infer<typeof slideSchema>;
@@ -89,7 +86,11 @@ export default function MobileCarouselForm({ slide, onSubmit, onClose }: MobileC
   };
 
   const onFormSubmit = (data: SlideFormValues) => {
-    onSubmit(data);
+    const slideData = {
+      ...data,
+      subtitle: data.subtitle || null,
+    };
+    onSubmit(slideData);
   };
 
   return (

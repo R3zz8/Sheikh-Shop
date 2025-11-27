@@ -22,7 +22,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { toast } from 'sonner';
-import { CarouselSlide } from '../views/MobileCarouselDashboardView';
+import type { CarouselSlide } from '../views/MobileCarouselDashboardView';
 import MobileCarouselForm from './MobileCarouselForm';
 
 const createCarouselSlide = async (newSlide: Omit<CarouselSlide, 'id'>) => {
