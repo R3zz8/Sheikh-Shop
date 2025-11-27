@@ -1,0 +1,41 @@
+{
+  "name": "Sheikh Shops – Premium Food & Tech Store",
+  "short_name": "SheikhShops",
+  "description": "Discover a curated selection of premium goods at Sheikh Shops. From the purest honey and finest dates to cutting-edge technology, we deliver quality and luxury worldwide. Experience seamless shopping with our progressive web app.",
+  "lang": "en",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#451a03",
+  "background_color": "#ffffff",
+  "scope": "/",
+  "categories": ["shopping", "food", "lifestyle", "tech"],
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/icons/icon-16x16.png",
+      "sizes": "16x16",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
