@@ -31,8 +31,8 @@ import Link from 'next/link';
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { cart, cartTotals, isLoading } = useCart();
-  const { data: user } = useUser();
+  const { cart, cartTotals, isLoading: isCartLoading } = useCart();
+  const { data: user, isLoading: isUserLoading } = useUser();
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -41,13 +41,14 @@ export default function CheckoutPage() {
     phone: '',
     address: '',
     city: '',
-    state: '',
     zipCode: '',
     country: '',
-    saveInfo: false
+    saveInfo: false,
   });
 
   const [paymentMethod, setPaymentMethod] = useState('credit-card');
+  const [isLoadingApi, setIsLoadingApi] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Pre-fill form with user data if available
   useEffect(() => {
@@ -59,12 +60,13 @@ export default function CheckoutPage() {
     }
   }, [user]);
 
-  // Redirect if cart is empty
+  // Redirect if cart is empty, but only after loading is complete
   useEffect(() => {
-    if (!isLoading && (!cart || cart.length === 0)) {
+    const doneLoading = !isUserLoading && !isCartLoading;
+    if (doneLoading && (!cart || cart.length === 0)) {
       router.push('/cart');
     }
-  }, [cart, isLoading, router]);
+  }, [cart, isCartLoading, isUserLoading, router]);
 
   // Calculate totals using actual cart data
   const subtotal = cartTotals.subtotal || 0;
@@ -80,28 +82,79 @@ export default function CheckoutPage() {
     }));
   };
 
-  const handlePlaceOrder = () => {
-    // Validate form
-    if (!formData.firstName || !formData.lastName || !formData.email || 
-        !formData.phone || !formData.address || !formData.city || 
-        !formData.zipCode || !formData.country) {
-      alert('Please fill in all required fields');
+  const handlePlaceOrder = async () => {
+    setError(null);
+
+    // Basic client-side validation
+    const requiredFields: (keyof typeof formData)[] = [
+      'firstName', 'lastName', 'email', 'phone',
+      'address', 'city', 'zipCode', 'country'
+    ];
+
+    const missingField = requiredFields.find(field => !formData[field]);
+    if (missingField) {
+      setError(`Please fill in the ${missingField.replace(/([A-Z])/g, ' $1').toLowerCase()} field.`);
       return;
     }
 
     if (!cart || cart.length === 0) {
-      alert('Your cart is empty');
+      setError('Your cart is empty.');
       router.push('/cart');
       return;
     }
 
-    // Handle order placement logic here
-    console.log('Order placed:', { formData, paymentMethod, cart, total });
-    // TODO: Implement order creation API call
+    setIsLoadingApi(true);
+
+    // --- CURRENCY CONSTANTS ---
+    const CURRENCY_IRR = 2; // Using the appropriate code for IRR
+
+    // Construct payload for the API
+    const payload = {
+      amount: total,
+      currencyFrom: CURRENCY_IRR,
+      currencyTo: CURRENCY_IRR,
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      email: formData.email,
+      mobile: formData.phone, // Map phone to mobile
+      address: formData.address,
+      postalCode: formData.zipCode, // Map zipCode to postalCode
+      country: formData.country,
+      city: formData.city,
+      description: `Order from Sheikh-Shop for ${cartTotals.itemCount} items.`,
+    };
+
+    try {
+      const response = await fetch('/api/payment/request', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // Redirect to payment gateway
+        router.push(data.paymentUrl);
+      } else {
+        // Handle API error
+        const errorMessage = data.description || data.error || 'An unexpected error occurred.';
+        setError(errorMessage);
+        console.error('Payment request failed:', data);
+      }
+    } catch (err) {
+      // Handle network or unexpected errors
+      setError('Failed to connect to the payment service. Please try again later.');
+      console.error('Network or unexpected error:', err);
+    } finally {
+      setIsLoadingApi(false);
+    }
   };
 
   // Show loading or empty state
-  if (isLoading) {
+  if (isUserLoading || isCartLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-950 via-stone-900 to-black flex items-center justify-center">
         <div className="text-white text-xl">Loading cart...</div>
@@ -252,7 +305,7 @@ export default function CheckoutPage() {
                         </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
+                    <div>
                       <Label htmlFor="city" className="text-gray-300">City *</Label>
                       <Input
                         id="city"
@@ -261,20 +314,20 @@ export default function CheckoutPage() {
                         onChange={handleInputChange}
                         className="mt-1 bg-white/10 border-amber-200/20 text-white placeholder-gray-400 focus:border-amber-400"
                         placeholder="City"
-                                    />
-                                </div>
-                                    <div>
-                      <Label htmlFor="state" className="text-gray-300">State *</Label>
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="country" className="text-gray-300">Country *</Label>
                       <Input
-                        id="state"
-                        name="state"
-                        value={formData.state}
+                        id="country"
+                        name="country"
+                        value={formData.country}
                         onChange={handleInputChange}
                         className="mt-1 bg-white/10 border-amber-200/20 text-white placeholder-gray-400 focus:border-amber-400"
-                        placeholder="State"
-                                        />
-                                    </div>
-                                    <div>
+                        placeholder="Country"
+                      />
+                    </div>
+                    <div>
                       <Label htmlFor="zipCode" className="text-gray-300">ZIP Code *</Label>
                       <Input
                         id="zipCode"
@@ -283,9 +336,9 @@ export default function CheckoutPage() {
                         onChange={handleInputChange}
                         className="mt-1 bg-white/10 border-amber-200/20 text-white placeholder-gray-400 focus:border-amber-400"
                         placeholder="ZIP"
-                                        />
-                                    </div>
-                                </div>
+                      />
+                    </div>
+                  </div>
 
                   <div className="flex items-center space-x-2">
                     <Checkbox
@@ -478,6 +531,18 @@ export default function CheckoutPage() {
                   </div>
 
                   {/* Place Order Button */}
+                  {/* Error Message */}
+                  {error && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-center"
+                    >
+                      <p className="text-red-400 text-sm">{error}</p>
+                    </motion.div>
+                  )}
+
+                  {/* Place Order Button */}
                   <motion.div
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
@@ -485,11 +550,21 @@ export default function CheckoutPage() {
                   >
                     <Button
                       onClick={handlePlaceOrder}
-                      className="w-full bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 hover:from-amber-600 hover:via-yellow-600 hover:to-orange-600 text-black font-bold text-lg py-6 rounded-xl shadow-lg hover:shadow-xl hover:shadow-amber-500/25 transition-all duration-300 group"
+                      disabled={isLoadingApi}
+                      className="w-full bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 hover:from-amber-600 hover:via-yellow-600 hover:to-orange-600 text-black font-bold text-lg py-6 rounded-xl shadow-lg hover:shadow-xl hover:shadow-amber-500/25 transition-all duration-300 group disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <Lock className="w-5 h-5 mr-2" />
-                      Place Order
-                      <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+                      {isLoadingApi ? (
+                        <>
+                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black mr-3"></div>
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          <Lock className="w-5 h-5 mr-2" />
+                          Place Order
+                          <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+                        </>
+                      )}
                     </Button>
                   </motion.div>
 
