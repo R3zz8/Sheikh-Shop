@@ -1,6 +1,6 @@
 // src/app/(private)/dashboard/mobile-carousel/page.tsx
 import { requireSuperAdmin } from '@/lib/auth/server-auth';
-import MobileCarouselClient from './_components/MobileCarouselClient';
+import MobileCarouselDashboardView from '@/modules/mobile-carousel/views/MobileCarouselDashboardView';
 import React from 'react';
 
 export const dynamic = 'force-dynamic';
@@ -10,7 +10,7 @@ export default async function DashboardMobileCarouselPage() {
 
   return (
     <div>
-      <MobileCarouselClient />
+      <MobileCarouselDashboardView />
     </div>
   );
 }
