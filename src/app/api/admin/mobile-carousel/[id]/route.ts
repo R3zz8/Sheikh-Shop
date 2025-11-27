@@ -1,8 +1,8 @@
 // src/app/api/admin/mobile-carousel/[id]/route.ts
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { UserRole } from '@prisma/client';
 import { z } from 'zod';
-import { getCurrentUser } from '@/lib/auth/utils';
+import { getUserFromToken } from '@/lib/jwt';
 import { prisma } from '@/utils/prisma';
 
 const carouselSchema = z.object({
@@ -12,9 +12,9 @@ const carouselSchema = z.object({
   order: z.number().int().optional(),
 });
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const user = await getCurrentUser();
+    const user = getUserFromToken(req);
 
     if (!user || user.role !== UserRole.SUPERADMIN) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
@@ -47,9 +47,9 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   }
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const user = await getCurrentUser();
+    const user = getUserFromToken(req);
 
     if (!user || user.role !== UserRole.SUPERADMIN) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
