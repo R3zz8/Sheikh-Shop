@@ -473,17 +473,17 @@ model AffiliateTransaction {
 
 model Transaction {
   id          String   @id @default(cuid())
-  authority   String   @unique @db.VarChar(255)
-  reference   String?  @db.VarChar(255)
+  authority   String   @unique
+  reference   String?
   amount      Int
-  status      String   @db.VarChar(50)
-  description String?  @db.VarChar(500)
+  status      String
+  description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  @@index([status], map: "Transaction_status_idx")
-  @@index([createdAt], map: "Transaction_createdAt_idx")
-  @@index([reference], map: "Transaction_reference_idx")
+  @@index([status])
+  @@index([createdAt])
+  @@index([reference])
 }
 
 model Category {
