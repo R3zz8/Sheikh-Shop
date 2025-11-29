@@ -7,7 +7,6 @@ import MobileCarouselTable from '../components/MobileCarouselTable';
 export type CarouselSlide = {
   id: string;
   title: string;
-  subtitle: string | null;
   image: string;
   link: string;
   order: number;

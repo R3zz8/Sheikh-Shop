@@ -12,7 +12,6 @@ import type { CarouselSlide } from '../views/MobileCarouselDashboardView';
 
 const slideSchema = z.object({
   title: z.string().min(1, 'Title is required'),
-  subtitle: z.string().optional(),
   image: z.string().min(1, 'Image is required').url('Image must be a valid URL'),
   link: z.string().min(1, 'Link is required').url('Link must be a valid URL'),
   order: z.coerce.number().int().min(0, 'Order must be a non-negative number'),
@@ -37,7 +36,6 @@ export default function MobileCarouselForm({ slide, onSubmit, onClose }: MobileC
     resolver: zodResolver(slideSchema),
     defaultValues: {
       title: slide?.title || '',
-      subtitle: slide?.subtitle || '',
       image: slide?.image || '',
       link: slide?.link || '',
       order: slide?.order || 0,
@@ -50,7 +48,6 @@ export default function MobileCarouselForm({ slide, onSubmit, onClose }: MobileC
   useEffect(() => {
     if (slide) {
       setValue('title', slide.title);
-      setValue('subtitle', slide.subtitle || '');
       setValue('image', slide.image);
       setValue('link', slide.link);
       setValue('order', slide.order);
@@ -86,11 +83,7 @@ export default function MobileCarouselForm({ slide, onSubmit, onClose }: MobileC
   };
 
   const onFormSubmit = (data: SlideFormValues) => {
-    const slideData = {
-      ...data,
-      subtitle: data.subtitle || null,
-    };
-    onSubmit(slideData);
+    onSubmit(data);
   };
 
   return (
@@ -99,11 +92,6 @@ export default function MobileCarouselForm({ slide, onSubmit, onClose }: MobileC
         <Label htmlFor="title">Title</Label>
         <Input id="title" {...register('title')} />
         {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title.message}</p>}
-      </div>
-       <div>
-        <Label htmlFor="subtitle">Subtitle (Optional)</Label>
-        <Input id="subtitle" {...register('subtitle')} />
-        {errors.subtitle && <p className="text-red-500 text-sm mt-1">{errors.subtitle.message}</p>}
       </div>
       <div>
         <Label htmlFor="image">Image</Label>

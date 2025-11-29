@@ -124,7 +124,7 @@ export class JWTManager {
     }
 
     // Check cookies
-    const cookieToken = req.cookies.get('access_token')?.value;
+    const cookieToken = req.cookies.get('access-token')?.value;
     if (cookieToken) {
       return cookieToken;
     }
