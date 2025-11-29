@@ -25,31 +25,6 @@ import { toast } from 'sonner';
 import type { CarouselSlide } from '../views/MobileCarouselDashboardView';
 import MobileCarouselForm from './MobileCarouselForm';
 
-const createCarouselSlide = async (newSlide: Omit<CarouselSlide, 'id'>) => {
-  const res = await fetch('/api/admin/mobile-carousel', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(newSlide),
-  });
-  if (!res.ok) {
-    const errorData = await res.json();
-    throw new Error(errorData.message || 'Failed to create carousel slide');
-  }
-  return res.json();
-};
-
-const updateCarouselSlide = async (updatedSlide: Partial<CarouselSlide> & { id: string }) => {
-  const res = await fetch(`/api/admin/mobile-carousel/${updatedSlide.id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(updatedSlide),
-  });
-  if (!res.ok) {
-    const errorData = await res.json();
-    throw new Error(errorData.message || 'Failed to update carousel slide');
-  }
-  return res.json();
-};
 
 const deleteCarouselSlide = async (id: string) => {
   const res = await fetch(`/api/admin/mobile-carousel/${id}`, {
@@ -72,32 +47,6 @@ export default function MobileCarouselTable({ slides }: MobileCarouselTableProps
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [slideToDelete, setSlideToDelete] = useState<string | null>(null);
 
-  const createMutation = useMutation({
-    mutationFn: createCarouselSlide,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['carouselSlides'] });
-      toast.success('Slide created successfully');
-      setIsFormOpen(false);
-      setSelectedSlide(null);
-    },
-    onError: (error: Error) => {
-      toast.error(error.message);
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: updateCarouselSlide,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['carouselSlides'] });
-      toast.success('Slide updated successfully');
-      setIsFormOpen(false);
-      setSelectedSlide(null);
-    },
-    onError: (error: Error) => {
-      toast.error(error.message);
-    },
-  });
-
   const deleteMutation = useMutation({
     mutationFn: deleteCarouselSlide,
     onSuccess: () => {
@@ -119,14 +68,6 @@ export default function MobileCarouselTable({ slides }: MobileCarouselTableProps
   const handleDelete = (id: string) => {
     setSlideToDelete(id);
     setIsDeleteConfirmOpen(true);
-  };
-
-  const handleFormSubmit = (values: Omit<CarouselSlide, 'id'>) => {
-    if (selectedSlide) {
-      updateMutation.mutate({ ...values, id: selectedSlide.id });
-    } else {
-      createMutation.mutate(values);
-    }
   };
 
   return (
@@ -197,8 +138,11 @@ export default function MobileCarouselTable({ slides }: MobileCarouselTableProps
           </DialogHeader>
           <MobileCarouselForm
             slide={selectedSlide}
-            onSubmit={handleFormSubmit}
             onClose={() => setIsFormOpen(false)}
+            onSuccess={() => {
+              setIsFormOpen(false);
+              setSelectedSlide(null);
+            }}
           />
         </DialogContent>
       </Dialog>

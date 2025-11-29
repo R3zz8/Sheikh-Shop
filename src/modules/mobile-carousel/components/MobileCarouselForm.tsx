@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
@@ -19,13 +20,40 @@ const slideSchema = z.object({
 
 type SlideFormValues = z.infer<typeof slideSchema>;
 
-type MobileCarouselFormProps = {
-  slide: CarouselSlide | null;
-  onSubmit: (values: Omit<CarouselSlide, 'id'>) => void;
-  onClose: () => void;
+const createCarouselSlide = async (newSlide: Omit<CarouselSlide, 'id'>) => {
+  const res = await fetch('/api/admin/mobile-carousel', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(newSlide),
+  });
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.message || 'Failed to create carousel slide');
+  }
+  return res.json();
 };
 
-export default function MobileCarouselForm({ slide, onSubmit, onClose }: MobileCarouselFormProps) {
+const updateCarouselSlide = async (updatedSlide: Partial<CarouselSlide> & { id: string }) => {
+  const res = await fetch(`/api/admin/mobile-carousel/${updatedSlide.id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(updatedSlide),
+  });
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.message || 'Failed to update carousel slide');
+  }
+  return res.json();
+};
+
+type MobileCarouselFormProps = {
+  slide: CarouselSlide | null;
+  onClose: () => void;
+  onSuccess: () => void;
+};
+
+export default function MobileCarouselForm({ slide, onClose, onSuccess }: MobileCarouselFormProps) {
+  const queryClient = useQueryClient();
   const {
     register,
     handleSubmit,
@@ -44,6 +72,30 @@ export default function MobileCarouselForm({ slide, onSubmit, onClose }: MobileC
 
   const [uploading, setUploading] = useState(false);
   const imageUrl = watch('image');
+
+  const createMutation = useMutation({
+    mutationFn: createCarouselSlide,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['carouselSlides'] });
+      toast.success('Slide created successfully');
+      onSuccess();
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: updateCarouselSlide,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['carouselSlides'] });
+      toast.success('Slide updated successfully');
+      onSuccess();
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
+    },
+  });
 
   useEffect(() => {
     if (slide) {
@@ -83,11 +135,22 @@ export default function MobileCarouselForm({ slide, onSubmit, onClose }: MobileC
   };
 
   const onFormSubmit = (data: SlideFormValues) => {
-    onSubmit(data);
+    if (slide) {
+      updateMutation.mutate({ ...data, id: slide.id });
+    } else {
+      createMutation.mutate(data);
+    }
   };
 
+  const onFormError = (errors: any) => {
+    console.error('Form validation errors:', errors);
+    toast.error('Please check the form for errors.');
+  };
+
+  const isSaving = createMutation.isPending || updateMutation.isPending;
+
   return (
-    <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
+    <form onSubmit={handleSubmit(onFormSubmit, onFormError)} className="space-y-4">
       <div>
         <Label htmlFor="title">Title</Label>
         <Input id="title" {...register('title')} />
@@ -95,7 +158,7 @@ export default function MobileCarouselForm({ slide, onSubmit, onClose }: MobileC
       </div>
       <div>
         <Label htmlFor="image">Image</Label>
-        <Input id="image-upload" type="file" onChange={handleImageUpload} disabled={uploading} />
+        <Input id="image-upload" type="file" onChange={handleImageUpload} disabled={uploading || isSaving} />
         {uploading && <p className="text-sm mt-1">Uploading...</p>}
         {errors.image && <p className="text-red-500 text-sm mt-1">{errors.image.message}</p>}
         {imageUrl && <img src={imageUrl} alt="preview" className="mt-2 h-20 w-auto object-cover rounded-md" />}
@@ -112,8 +175,10 @@ export default function MobileCarouselForm({ slide, onSubmit, onClose }: MobileC
         {errors.order && <p className="text-red-500 text-sm mt-1">{errors.order.message}</p>}
       </div>
       <div className="flex justify-end space-x-2">
-        <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-        <Button type="submit">Save</Button>
+        <Button type="button" variant="outline" onClick={onClose} disabled={isSaving || uploading}>Cancel</Button>
+        <Button type="submit" disabled={isSaving || uploading}>
+          {isSaving ? 'Saving...' : 'Save'}
+        </Button>
       </div>
     </form>
   );
