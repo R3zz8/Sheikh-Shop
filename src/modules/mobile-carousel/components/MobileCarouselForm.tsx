@@ -13,7 +13,7 @@ import type { CarouselSlide } from '../views/MobileCarouselDashboardView';
 
 const slideSchema = z.object({
   title: z.string().min(1, 'Title is required'),
-  image: z.string(),
+  image: z.string().min(1, 'Image is required'),
   link: z.string().min(1, 'Link is required').url('Link must be a valid URL'),
   order: z.coerce.number().int().min(0, 'Order must be a non-negative number'),
 });
@@ -135,11 +135,6 @@ export default function MobileCarouselForm({ slide, onClose, onSuccess }: Mobile
   };
 
   const onFormSubmit = (data: SlideFormValues) => {
-    // FIXED: Manually validate the image field
-    if (!data.image) {
-      toast.error('Image is required');
-      return;
-    }
     if (slide) {
       updateMutation.mutate({ ...data, id: slide.id });
     } else {
