@@ -92,3 +92,4 @@ Desktop.ini
 
 # Build reports
 /.reports/
+test-results/

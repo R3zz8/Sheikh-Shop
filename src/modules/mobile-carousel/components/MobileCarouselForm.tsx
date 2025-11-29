@@ -13,7 +13,7 @@ import type { CarouselSlide } from '../views/MobileCarouselDashboardView';
 
 const slideSchema = z.object({
   title: z.string().min(1, 'Title is required'),
-  image: z.string().min(1, 'Image is required').url('Image must be a valid URL'),
+  image: z.string(),
   link: z.string().min(1, 'Link is required').url('Link must be a valid URL'),
   order: z.coerce.number().int().min(0, 'Order must be a non-negative number'),
 });
@@ -135,6 +135,11 @@ export default function MobileCarouselForm({ slide, onClose, onSuccess }: Mobile
   };
 
   const onFormSubmit = (data: SlideFormValues) => {
+    // FIXED: Manually validate the image field
+    if (!data.image) {
+      toast.error('Image is required');
+      return;
+    }
     if (slide) {
       updateMutation.mutate({ ...data, id: slide.id });
     } else {
@@ -157,7 +162,7 @@ export default function MobileCarouselForm({ slide, onClose, onSuccess }: Mobile
         {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title.message}</p>}
       </div>
       <div>
-        <Label htmlFor="image">Image</Label>
+        <Label htmlFor="image-upload">Image</Label>
         <Input id="image-upload" type="file" onChange={handleImageUpload} disabled={uploading || isSaving} />
         {uploading && <p className="text-sm mt-1">Uploading...</p>}
         {errors.image && <p className="text-red-500 text-sm mt-1">{errors.image.message}</p>}
