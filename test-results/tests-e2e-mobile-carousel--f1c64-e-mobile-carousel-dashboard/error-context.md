@@ -1,0 +1,268 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - navigation [ref=e6]:
+        - generic [ref=e7]:
+          - img [ref=e9]
+          - link "Sheikh Shop" [ref=e12] [cursor=pointer]:
+            - /url: /
+        - generic [ref=e13]:
+          - link "Home" [ref=e14] [cursor=pointer]:
+            - /url: /
+            - img [ref=e15]
+            - text: Home
+          - link "Products" [ref=e18] [cursor=pointer]:
+            - /url: /products
+            - img [ref=e19]
+            - text: Products
+          - link "About Us" [ref=e23] [cursor=pointer]:
+            - /url: /about-us
+            - img [ref=e24]
+            - text: About Us
+            - img [ref=e29]
+          - link "Article" [ref=e31] [cursor=pointer]:
+            - /url: /article
+            - img [ref=e32]
+            - text: Article
+        - generic [ref=e35]:
+          - button "€ EUR" [ref=e37] [cursor=pointer]:
+            - generic [ref=e38]: €
+            - generic [ref=e39]: EUR
+            - img [ref=e40]
+          - button [ref=e42] [cursor=pointer]:
+            - img
+          - generic [ref=e43]:
+            - link "Sign In" [ref=e44] [cursor=pointer]:
+              - /url: /login
+              - button "Sign In" [ref=e45]
+            - link "Get Started" [ref=e46] [cursor=pointer]:
+              - /url: /register
+              - button "Get Started" [ref=e47]
+    - generic [ref=e51]:
+      - generic [ref=e52]:
+        - generic:
+          - img
+        - textbox "Search with AI intelligence..." [ref=e53]
+      - generic [ref=e55]:
+        - button "Filters" [ref=e56] [cursor=pointer]:
+          - img [ref=e57]
+          - generic [ref=e59]: Filters
+        - combobox [ref=e60]:
+          - option "Relevance" [selected]
+          - option "Price"
+          - option "Rating"
+          - option "Newest"
+          - option "Popularity"
+        - link "VR Store" [ref=e61] [cursor=pointer]:
+          - /url: /vr-store
+          - generic [ref=e62]: VR Store
+    - main [ref=e63]:
+      - generic [ref=e69]:
+        - generic [ref=e70]:
+          - img [ref=e71]
+          - generic [ref=e73]: Sheikh Shop
+        - generic [ref=e74]:
+          - heading "Welcome back" [level=1] [ref=e75]
+          - paragraph [ref=e76]: Sign in to continue
+        - form "Login form" [ref=e78]:
+          - generic [ref=e79]:
+            - text: Email
+            - generic [ref=e80]:
+              - img [ref=e81]
+              - textbox "Email" [ref=e84]:
+                - /placeholder: you@example.com
+          - generic [ref=e85]:
+            - text: Password
+            - generic [ref=e86]:
+              - img [ref=e87]
+              - textbox "Password Show password" [ref=e90]:
+                - /placeholder: Your secure password
+              - button "Show password" [ref=e91] [cursor=pointer]:
+                - img [ref=e92]
+          - generic [ref=e96]:
+            - checkbox "Remember me" [ref=e97]
+            - text: Remember me
+          - button "Sign in" [disabled] [ref=e98]:
+            - generic [ref=e99]: Sign in
+            - img [ref=e100]
+          - generic [ref=e106]: Or continue with
+        - generic [ref=e108]:
+          - generic [ref=e109]:
+            - link "Forgot password?" [ref=e110] [cursor=pointer]:
+              - /url: /forgot-password
+            - generic [ref=e111]:
+              - text: Don't have an account?
+              - link "Register here" [ref=e112] [cursor=pointer]:
+                - /url: /register
+          - generic [ref=e113]:
+            - text: By signing in, you agree to our
+            - link "Terms of Service" [ref=e114] [cursor=pointer]:
+              - /url: /terms
+            - text: and
+            - link "Privacy Policy" [ref=e115] [cursor=pointer]:
+              - /url: /privacy
+    - contentinfo [ref=e116]:
+      - generic [ref=e120]:
+        - generic [ref=e121]:
+          - generic [ref=e122]:
+            - img [ref=e123]
+            - heading "Need Premium Consultation?" [level=3] [ref=e125]
+          - paragraph [ref=e126]: Experience personalized guidance from our luxury product experts
+        - button "Get Consultation" [ref=e127] [cursor=pointer]:
+          - img
+          - text: Get Consultation
+      - generic [ref=e129]:
+        - generic [ref=e130]:
+          - generic [ref=e131]:
+            - generic [ref=e132]:
+              - img [ref=e133]
+              - heading "Sheikh Shop" [level=3] [ref=e135]
+            - paragraph [ref=e136]: Curating the world's finest premium products with exceptional quality and craftsmanship. Experience luxury redefined.
+            - generic [ref=e137]:
+              - img [ref=e138]
+              - generic [ref=e140]: Premium Quality Guaranteed
+          - generic [ref=e141]:
+            - generic [ref=e142]:
+              - img [ref=e143]
+              - heading "Shop" [level=4] [ref=e146]
+            - list [ref=e147]:
+              - listitem [ref=e148]:
+                - link "Premium Drinks" [ref=e149] [cursor=pointer]:
+                  - /url: "#"
+                  - img [ref=e150]
+                  - text: Premium Drinks
+              - listitem [ref=e152]:
+                - link "Luxury Supplements" [ref=e153] [cursor=pointer]:
+                  - /url: "#"
+                  - img [ref=e154]
+                  - text: Luxury Supplements
+              - listitem [ref=e156]:
+                - link "Artisan Spices" [ref=e157] [cursor=pointer]:
+                  - /url: "#"
+                  - img [ref=e158]
+                  - text: Artisan Spices
+              - listitem [ref=e160]:
+                - link "Exclusive Collections" [ref=e161] [cursor=pointer]:
+                  - /url: "#"
+                  - img [ref=e162]
+                  - text: Exclusive Collections
+              - listitem [ref=e164]:
+                - link "Limited Editions" [ref=e165] [cursor=pointer]:
+                  - /url: "#"
+                  - img [ref=e166]
+                  - text: Limited Editions
+          - generic [ref=e168]:
+            - generic [ref=e169]:
+              - img [ref=e170]
+              - heading "Help & Support" [level=4] [ref=e173]
+            - list [ref=e174]:
+              - listitem [ref=e175]:
+                - link "Customer Service" [ref=e176] [cursor=pointer]:
+                  - /url: "#"
+                  - img [ref=e177]
+                  - text: Customer Service
+              - listitem [ref=e179]:
+                - link "Shipping Information" [ref=e180] [cursor=pointer]:
+                  - /url: "#"
+                  - img [ref=e181]
+                  - text: Shipping Information
+              - listitem [ref=e183]:
+                - link "Returns & Exchanges" [ref=e184] [cursor=pointer]:
+                  - /url: "#"
+                  - img [ref=e185]
+                  - text: Returns & Exchanges
+              - listitem [ref=e187]:
+                - link "Size Guide" [ref=e188] [cursor=pointer]:
+                  - /url: "#"
+                  - img [ref=e189]
+                  - text: Size Guide
+              - listitem [ref=e191]:
+                - link "FAQ" [ref=e192] [cursor=pointer]:
+                  - /url: /faq
+                  - img [ref=e193]
+                  - text: FAQ
+          - generic [ref=e195]:
+            - generic [ref=e196]:
+              - img [ref=e197]
+              - heading "Company" [level=4] [ref=e202]
+            - list [ref=e203]:
+              - listitem [ref=e204]:
+                - link "About Us" [ref=e205] [cursor=pointer]:
+                  - /url: /about-us
+                  - img [ref=e206]
+                  - text: About Us
+              - listitem [ref=e208]:
+                - link "Our Story" [ref=e209] [cursor=pointer]:
+                  - /url: "#"
+                  - img [ref=e210]
+                  - text: Our Story
+              - listitem [ref=e212]:
+                - link "Sustainability" [ref=e213] [cursor=pointer]:
+                  - /url: "#"
+                  - img [ref=e214]
+                  - text: Sustainability
+              - listitem [ref=e216]:
+                - link "Careers" [ref=e217] [cursor=pointer]:
+                  - /url: "#"
+                  - img [ref=e218]
+                  - text: Careers
+              - listitem [ref=e220]:
+                - link "Press" [ref=e221] [cursor=pointer]:
+                  - /url: "#"
+                  - img [ref=e222]
+                  - text: Press
+            - generic [ref=e224]:
+              - generic [ref=e225]:
+                - img [ref=e226]
+                - generic [ref=e228]: +212 (753) 862-853
+              - generic [ref=e229]:
+                - img [ref=e230]
+                - generic [ref=e233]: sheikhshops.com@gmail.com
+              - generic [ref=e234]:
+                - img [ref=e235]
+                - generic [ref=e238]: Luxury District, Premium City
+        - generic [ref=e240]:
+          - generic [ref=e241]:
+            - generic [ref=e242]: "Follow our journey:"
+            - generic [ref=e243]:
+              - link "Instagram" [ref=e244] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e245]
+              - link "Twitter" [ref=e248] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e249]
+              - link "YouTube" [ref=e251] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e252]
+              - link "WhatsApp" [ref=e255] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e256]
+          - generic [ref=e258]:
+            - generic [ref=e259]:
+              - img [ref=e260]
+              - generic [ref=e263]: Stay updated with luxury insights
+            - button "Subscribe" [ref=e264] [cursor=pointer]
+        - generic [ref=e266]:
+          - generic [ref=e267]:
+            - generic [ref=e268]: © 2025 Sheikh Shop. All rights reserved.
+            - generic [ref=e269]:
+              - link "Privacy Policy" [ref=e270] [cursor=pointer]:
+                - /url: "#"
+              - link "Terms of Service" [ref=e271] [cursor=pointer]:
+                - /url: "#"
+              - link "Cookie Policy" [ref=e272] [cursor=pointer]:
+                - /url: "#"
+          - generic [ref=e273]:
+            - img [ref=e274]
+            - generic [ref=e276]: Secure & Trusted
+            - generic [ref=e277]: •
+            - img [ref=e278]
+            - generic [ref=e280]: Crafted with Excellence
+  - region "Notifications alt+T"
+  - generic [ref=e281]:
+    - button:
+      - img
+```
