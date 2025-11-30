@@ -61,8 +61,6 @@
     "db:deploy:safe": "npm run db:health && dotenv -e .env.local -- npx prisma migrate deploy --schema prisma/schema.prisma"
   },
   "dependencies": {
-    "@fontsource/inter": "^5.2.8",
-    "@fontsource/tajawal": "^5.2.7",
     "@hookform/resolvers": "^5.2.2",
     "@huggingface/inference": "^4.9.0",
     "@json2csv/plainjs": "^7.0.6",
