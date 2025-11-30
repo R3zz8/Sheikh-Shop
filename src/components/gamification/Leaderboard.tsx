@@ -171,6 +171,7 @@ export default function Leaderboard({ className = '' }: LeaderboardProps) {
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value as LeaderboardCategory)}
             className="px-3 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+            aria-label="Select leaderboard category"
           >
             {categories.map((category) => (
               <option key={category.value} value={category.value}>
@@ -186,6 +187,7 @@ export default function Leaderboard({ className = '' }: LeaderboardProps) {
             value={selectedPeriod}
             onChange={(e) => setSelectedPeriod(e.target.value as LeaderboardPeriod)}
             className="px-3 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+            aria-label="Select leaderboard period"
           >
             {periods.map((period) => (
               <option key={period.value} value={period.value}>

@@ -257,6 +257,7 @@ export default function EnhancedAISearch({
             hover:bg-amber-500/10 hover:border-amber-500/80
             focus:outline-none focus:ring-2 focus:ring-amber-300/50"
           style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23D4AF37' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: 'right 0.5rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.5em 1.5em' }}
+          aria-label="Sort by"
         >
           <option className="bg-stone-800 text-white" value="relevance">Relevance</option>
           <option className="bg-stone-800 text-white" value="price">Price</option>
@@ -309,6 +310,7 @@ export default function EnhancedAISearch({
                   value={filters.category}
                   onChange={(e) => handleFilterChange('category', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                  aria-label="Filter by category"
                 >
                   <option value="">All Categories</option>
                   <option value="ELECTRONICS">Electronics</option>

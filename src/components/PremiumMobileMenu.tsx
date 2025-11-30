@@ -114,6 +114,7 @@ export default function PremiumMobileMenu({
           </div>
           <motion.button
             onClick={onClose}
+            aria-label="Close menu"
             className="absolute top-6 right-6 z-50 w-12 h-12 rounded-full bg-[#4a3728] border border-amber-600 flex items-center justify-center text-amber-200 hover:bg-[#5a4535]"
             whileHover={{ scale: 1.1, rotate: 90 }}
             whileTap={{ scale: 0.9 }}

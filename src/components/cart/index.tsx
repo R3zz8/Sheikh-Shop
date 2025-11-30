@@ -30,6 +30,7 @@ export default function CartDropdown() {
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
+          aria-label="Open cart"
           className={cn(
             'relative w-10 h-10 rounded-xl bg-white/8 backdrop-blur-sm',
             'border border-white/20 text-gray-300 hover:text-white',
@@ -134,6 +135,7 @@ export default function CartDropdown() {
                       variant="ghost"
                       size="sm"
                       onClick={() => decrementQuantity(Number(item.id))}
+                      aria-label="Decrement quantity"
                       className="w-6 h-6 p-0 rounded-md bg-white/8 backdrop-blur-sm border border-white/20 text-gray-400 hover:text-white hover:bg-white/12"
                     >
                       <Minus className="w-3 h-3" />
@@ -147,6 +149,7 @@ export default function CartDropdown() {
                       variant="ghost"
                       size="sm"
                       onClick={() => incrementQuantity(Number(item.id))}
+                      aria-label="Increment quantity"
                       className="w-6 h-6 p-0 rounded-md bg-white/8 backdrop-blur-sm border border-white/20 text-gray-400 hover:text-white hover:bg-white/12"
                     >
                       <Plus className="w-3 h-3" />
@@ -165,6 +168,7 @@ export default function CartDropdown() {
                     variant="ghost"
                     size="sm"
                     onClick={() => removeCartItemById(Number(item.id))}
+                    aria-label="Remove item"
                     className={cn(
                       'w-6 h-6 p-0 rounded-md bg-white/8 backdrop-blur-sm',
                       'border border-white/20 text-gray-400 hover:text-red-400',

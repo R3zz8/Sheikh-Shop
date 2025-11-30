@@ -213,6 +213,7 @@ export default function AISearch({
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value as any)}
           className="flex items-center gap-1 px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-600 hover:bg-gray-200 border-0 focus:ring-2 focus:ring-amber-500"
+          aria-label="Sort by"
         >
           <option value="relevance">Relevance</option>
           <option value="price">Price</option>
@@ -239,6 +240,7 @@ export default function AISearch({
                   value={filters.category}
                   onChange={(e) => handleFilterChange('category', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                  aria-label="Filter by category"
                 >
                   <option value="">All Categories</option>
                   <option value="ELECTRONICS">Electronics</option>

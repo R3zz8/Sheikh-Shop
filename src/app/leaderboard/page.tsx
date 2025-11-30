@@ -90,6 +90,7 @@ export default function LeaderboardPage() {
                   value={period}
                   onChange={(e) => setPeriod(e.target.value as LeaderboardPeriod)}
                   className="px-4 py-2 border border-amber-300 rounded-lg bg-white focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                  aria-label="Select leaderboard period"
                 >
                   <option value="DAILY">Daily</option>
                   <option value="WEEKLY">Weekly</option>
@@ -101,6 +102,7 @@ export default function LeaderboardPage() {
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
                   className="px-4 py-2 border border-amber-300 rounded-lg bg-white focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                  aria-label="Select leaderboard category"
                 >
                   <option value="XP">Experience Points</option>
                   <option value="PURCHASES">Purchases</option>

@@ -227,6 +227,7 @@ export default function ClientHeader() {
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 className="lg:hidden w-12 h-12 rounded-xl flex items-center justify-center bg-white/8 backdrop-blur-sm border border-white/20 text-white"
+                aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
               >
                 {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>
