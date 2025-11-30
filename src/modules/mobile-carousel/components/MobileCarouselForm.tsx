@@ -142,7 +142,7 @@ export default function MobileCarouselForm({ slide, onClose, onSuccess }: Mobile
     if (slide) {
       updateMutation.mutate({ ...data, id: slide.id });
     } else {
-      createMutation.mutate(data);
+      createMutation.mutate({ ...data, image: data.image ?? '' });
     }
   };
 
