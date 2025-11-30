@@ -82,15 +82,21 @@ export function useScrollAnimation(options: UseScrollAnimationOptions = {}) {
 // Parallax scroll hook
 export function useParallaxScroll(speed = 0.5) {
   const [offset, setOffset] = useState(0);
+  const frame = useRef(0);
 
   useEffect(() => {
     const handleScroll = () => {
-      const scrolled = window.pageYOffset;
-      setOffset(scrolled * speed);
+      cancelAnimationFrame(frame.current);
+      frame.current = requestAnimationFrame(() => {
+        setOffset(window.pageYOffset * speed);
+      });
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      cancelAnimationFrame(frame.current);
+    };
   }, [speed]);
 
   return offset;
