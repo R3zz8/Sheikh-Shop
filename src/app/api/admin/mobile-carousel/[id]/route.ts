@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 const carouselSchema = z.object({
   title: z.string().min(1, 'Title is required').optional(),
-  image: z.string().url('Image must be a valid URL').optional(),
+  image: z.string().url().optional().or(z.literal('')),
   link: z.string().url('Link must be a valid URL').optional(),
   order: z.number().int().optional(),
 });
