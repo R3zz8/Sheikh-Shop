@@ -13,7 +13,7 @@ import type { CarouselSlide } from '../views/MobileCarouselDashboardView';
 
 const slideSchema = z.object({
   title: z.string().min(1, 'Title is required'),
-  image: z.string().min(1, 'Image is required'),
+  image: z.string().optional(),
   link: z.string().min(1, 'Link is required').url('Link must be a valid URL'),
   order: z.coerce.number().int().min(0, 'Order must be a non-negative number'),
 });
@@ -135,6 +135,10 @@ export default function MobileCarouselForm({ slide, onClose, onSuccess }: Mobile
   };
 
   const onFormSubmit = (data: SlideFormValues) => {
+    // The `data` object is provided by react-hook-form after successful validation.
+    // Because the `image` field in the Zod schema is optional, `data` is valid
+    // whether an image is present or not. The API endpoint is designed to handle
+    // an optional `image` field gracefully.
     if (slide) {
       updateMutation.mutate({ ...data, id: slide.id });
     } else {
@@ -144,7 +148,7 @@ export default function MobileCarouselForm({ slide, onClose, onSuccess }: Mobile
 
   const onFormError = (errors: any) => {
     console.error('Form validation errors:', errors);
-    toast.error('Please check the form for errors.');
+    // Inline errors are displayed, so no toast is needed
   };
 
   const isSaving = createMutation.isPending || updateMutation.isPending;
