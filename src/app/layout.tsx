@@ -130,6 +130,11 @@ export default function RootLayout({
         <meta name="theme-color" content="#451a03" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
         <meta name="p:domain_verify" content="211124b09592c994a2df8c1c9dfce648" />
+        <script
+          data-cfasync="false"
+          src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"
+          defer>
+        </script>
         <Script
           id="ga4-loader"
           strategy="afterInteractive"

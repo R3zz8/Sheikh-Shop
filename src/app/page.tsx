@@ -8,8 +8,6 @@ import CarouselMobile from '@/components/CarouselMobile';
 import type { Metadata } from 'next';
 import { generateSEO } from '@/lib/seo/metadata';
 import { buildLanguageAlternates } from '@/lib/seo/hreflang';
-import '@fontsource/inter/400.css';     // Regular
-import '@fontsource/tajawal/400.css';    // Regular
 import SheikhScene from '@/components/sheikhui/SheikhScene';
 
 export async function generateMetadata(): Promise<Metadata> {
