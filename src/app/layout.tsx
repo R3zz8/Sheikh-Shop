@@ -16,10 +16,39 @@ import EnhancedAISearch from '@/components/ai/EnhancedAISearch';
 import AMPHead from '@/components/seo/AMPHead';
 import Script from 'next/script';
 import Link from 'next/link';
+import { Inter, Tajawal, Poppins, JetBrains_Mono } from 'next/font/google';
 
-// === فونت‌ها از @fontsource (بدون localFont) ===
-import '@fontsource/inter/400.css';
-import '@fontsource/tajawal/400.css';
+// FIXED: Optimized font loading to eliminate render-blocking CSS.
+// Using next/font automatically self-hosts fonts and inlines the critical font-face CSS,
+// which is the modern, recommended approach for performance in Next.js.
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
+  weights: ['300', '400', '500', '600', '700', '800', '900'],
+});
+
+const tajawal = Tajawal({
+  subsets: ['arabic'],
+  display: 'swap',
+  variable: '--font-tajawal',
+  weight: ['400', '700'],
+});
+
+const poppins = Poppins({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-poppins',
+  weight: ['300', '400', '500', '600', '700', '800', '900'],
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-jetbrains-mono',
+  weight: ['400', '500', '600'],
+});
+
 
 // === generateMetadata ===
 export async function generateMetadata(): Promise<Metadata> {
@@ -123,7 +152,9 @@ export default function RootLayout({
         <OrganizationJsonLd />
         <WebsiteJsonLd />
       </head>
-      <body className="antialiased font-sans">
+      <body
+        className={`${inter.variable} ${tajawal.variable} ${poppins.variable} ${jetbrainsMono.variable} antialiased font-sans`}
+      >
         <AMPHead />
         <AccessibilityEnhancements />
         <ErrorBoundary>
