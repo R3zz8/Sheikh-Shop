@@ -90,6 +90,7 @@ export default function CurrencySwitcher({
         className="flex items-center gap-2 px-3 py-2 text-sm font-medium bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/80 transition-colors"
         aria-expanded={isOpen}
         aria-haspopup="true"
+        aria-label="Select currency"
       >
         <span>{currentDisplay.symbol}</span>
         <span>{selectedCurrency}</span>

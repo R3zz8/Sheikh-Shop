@@ -308,6 +308,7 @@ const ProductTable = (props: {
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
             className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            aria-label="Filter by category"
           >
             <option value="all">All Categories</option>
             <option value="HONEY">Honey</option>
@@ -320,6 +321,7 @@ const ProductTable = (props: {
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
             className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            aria-label="Filter by status"
           >
             <option value="all">All Status</option>
             <option value="ACTIVE">Active</option>

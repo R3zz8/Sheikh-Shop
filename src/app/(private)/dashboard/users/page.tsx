@@ -82,7 +82,11 @@ export default function AdminUsersPage() {
               <tr key={user.id} className={user.disabled ? 'bg-red-50' : ''}>
                 <td className="p-2 font-mono">{user.email}</td>
                 <td className="p-2">
+                  <label htmlFor={`role-select-${user.id}`} className="sr-only">
+                    Role for {user.email}
+                  </label>
                   <select
+                    id={`role-select-${user.id}`}
                     value={user.role}
                     onChange={e => handleRoleChange(user.id, e.target.value)}
                     disabled={updating === user.id}

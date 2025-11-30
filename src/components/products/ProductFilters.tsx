@@ -90,11 +90,12 @@ export default function ProductFilters({ onFiltersChange, className = '' }: Prod
         <div className="p-4 space-y-6">
           {/* Sort By */}
           <div>
-            <h3 className="text-sm font-medium text-gray-900 mb-3">Sort By</h3>
+            <h3 id="sort-by-label" className="text-sm font-medium text-gray-900 mb-3">Sort By</h3>
             <select
               value={filters.sortBy || 'name'}
               onChange={(e) => updateFilters({ sortBy: e.target.value as 'name' | 'price_asc' | 'price_desc' | 'newest' | 'popular' })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+              aria-labelledby="sort-by-label"
             >
               {sortOptions.map((option) => (
                 <option key={option.value} value={option.value}>
