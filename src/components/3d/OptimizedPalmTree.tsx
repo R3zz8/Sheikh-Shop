@@ -32,7 +32,7 @@ export default function OptimizedPalmTree({
   autoRotate = true,
   intensity = 1.2,
   className = '',
-  posterImage = '/palm-tree-poster.jpg',
+  posterImage = '/tree3d.jpeg',
 }: OptimizedPalmTreeProps) {
   const [shouldLoad, setShouldLoad] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);

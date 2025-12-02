@@ -156,7 +156,7 @@ export default function Home() {
                   autoRotate={true}
                   intensity={1.2}
                   className="rounded-2xl"
-                  posterImage="/palm-tree-poster.jpg"
+                  posterImage="/tree3d.jpeg"
                 />
               </div>
             </div>
