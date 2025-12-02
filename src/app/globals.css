@@ -1,8 +1,3 @@
-/*
-  FIXED: Removed Google Fonts @import.
-  All fonts are now loaded and optimized via `next/font` in `layout.tsx` to prevent render-blocking CSS.
-*/
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
