@@ -40,12 +40,10 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: '*',
-        allow: '/',
         disallow,
       },
       {
         userAgent: 'AdsBot-Google',
-        allow: '/',
         disallow,
       },
     ],
