@@ -220,6 +220,7 @@ export default function ShoppingChatbot({
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setIsOpen(true)}
+          aria-label="Open chatbot"
           className="w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-full shadow-2xl hover:shadow-green-500/50 transition-all duration-200 flex items-center justify-center border-4 border-white/30"
         >
           <Bot className="w-9 h-9" />
