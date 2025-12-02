@@ -21,6 +21,7 @@ const SENSITIVE_SINGLE_PAGES = [
   '/test-userbadge',
 ];
 
+// Build final disallow list
 function buildDisallowList(): string[] {
   const directoryRules = SENSITIVE_DIRECTORIES.flatMap((dir) => {
     const clean = normalizePath(dir);
@@ -40,14 +41,18 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: '*',
+        allow: '/',
         disallow,
       },
       {
         userAgent: 'AdsBot-Google',
+        allow: '/',
         disallow,
       },
     ],
-    sitemap: [`${baseUrl}/sitemap.xml`],
+
+    // Important: Cloudflare CANNOT override this because it's SSR-rendered
+    sitemap: `${baseUrl}/sitemap.xml`,
     host: baseUrl,
   };
 }
