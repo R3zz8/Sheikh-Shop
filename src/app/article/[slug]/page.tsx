@@ -6,6 +6,7 @@ import Image from 'next/image';
 import type { ArticleWithAuthor } from '@/types';
 import { generateArticleMetadata } from '@/lib/seo/metadata';
 import { generateCompleteArticleSchema, extractFAQsFromContent } from '@/lib/seo/generateArticleSchema';
+import { getSEOValue, sanitizeDescription } from '@/lib/seo/helpers';
 import { Suspense } from 'react';
 import ArticleLoadingSkeleton from './_components/ArticleLoadingSkeleton';
 import RelatedArticles from './_components/RelatedArticles';
@@ -39,9 +40,37 @@ export async function generateMetadata({ params, searchParams }: ArticlePageProp
     const currentPath = `/article/${params.slug}`;
     const currentLanguage = getLanguageFromPath(currentPath);
 
-    // Use database SEO fields if available, fallback to generated metadata
-    const metaTitle = article.metaTitle || article.title;
-    const metaDescription = article.metaDescription || article.summary;
+    // SEO Fallback Logic
+    let titleSource: string;
+    let descriptionSource: string;
+
+    const metaTitle = getSEOValue(article.metaTitle, article.title);
+    if (article.metaTitle) {
+      titleSource = 'SEO';
+    } else {
+      titleSource = 'fallback';
+    }
+
+    const metaDescription = getSEOValue(
+      article.metaDescription,
+      article.summary,
+      sanitizeDescription(article.content, 150)
+    );
+
+    if (article.metaDescription) {
+      descriptionSource = 'SEO';
+    } else if (article.summary) {
+      descriptionSource = 'fallback (excerpt)';
+    } else {
+      descriptionSource = 'auto (sanitized body)';
+    }
+
+    if (process.env.NODE_ENV === 'development') {
+        console.log(`[SEO Debug] Article "${article.title}" metadata generated:`);
+        console.log(`  - Title: Using ${titleSource} layer.`);
+        console.log(`  - Description: Using ${descriptionSource} layer.`);
+    }
+
     const keywords = article.keywords && article.keywords.length > 0 ? article.keywords : article.tags || [];
 
     // Generate hreflang for multi-language SEO
