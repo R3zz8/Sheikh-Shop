@@ -14,7 +14,7 @@ import { useUnits } from '@/hooks/useUnits';
 import { useUserBehavior } from '@/hooks/useUserBehavior';
 import { useState, useMemo, useEffect } from 'react';
 import ARProductViewer from '@/components/ar/ARProductViewer';
-import { getProductH1Content } from '@/components/seo/ProductSEO';
+import { sanitizeHeading } from '@/lib/seo/heading-manager';
 import MarkdownDescription from './MarkdownDescription';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { generateExcerpt } from '@/lib/markdown';
@@ -79,11 +79,8 @@ export default function ProductInfo({ product }: ProductInfoProps) {
     const stockStatus = getStockStatus(currentStock);
 
     // Get H1 content: h1Override > seoTitle > product.name
-    const h1Content = getProductH1Content({
-        h1Override: product.h1Override,
-        seoTitle: product.seoTitle,
-        name: product.name,
-    });
+    const h1Text = product.h1Override || product.seoTitle || product.name;
+    const h1Content = sanitizeHeading(h1Text);
 
     return (
         <div className="space-y-4 md:space-y-8">
@@ -360,7 +357,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
             {/* Full Description */}
             {product.description && (
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.6 }} className="space-y-3">
-                    <h2 className="text-2xl font-semibold text-white">Description</h2>
+                    <h3 className="text-2xl font-semibold text-white">Description</h3>
                     <MarkdownDescription content={product.description} />
                 </motion.div>
             )}
