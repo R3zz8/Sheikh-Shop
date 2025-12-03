@@ -19,10 +19,14 @@ export function sanitizeHeading(text: string): string {
 
   // Remove repeated keywords
   const words = sanitized.split(/\s+/);
-  const uniqueWords = words.filter((word, index) => {
-    // a word is a repeat if it's the same as the one before it, case-insensitively
-    return index === 0 || word.toLowerCase() !== words[index - 1].toLowerCase();
-  });
+  // FIXED: Replaced filter with reduce for more robust handling of consecutive duplicates.
+  const uniqueWords = words.reduce((acc, currentWord) => {
+    const lastWord = acc.length > 0 ? acc[acc.length - 1] : null;
+    if (!lastWord || lastWord.toLowerCase() !== currentWord.toLowerCase()) {
+      acc.push(currentWord);
+    }
+    return acc;
+  }, [] as string[]);
   sanitized = uniqueWords.join(' ');
 
   // Truncate to max length

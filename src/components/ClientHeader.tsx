@@ -27,8 +27,10 @@ export default function ClientHeader() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
+  const [isProductsOpen, setIsProductsOpen] = useState(false);
   const pathname = usePathname();
   const aboutRef = useRef<HTMLDivElement>(null);
+  const productsRef = useRef<HTMLDivElement>(null);
 
   // Handle scroll effect
   useEffect(() => {
@@ -67,11 +69,11 @@ export default function ClientHeader() {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (
-        aboutRef.current &&
-        !aboutRef.current.contains(e.target as Node)
-      ) {
+      if (aboutRef.current && !aboutRef.current.contains(e.target as Node)) {
         setIsAboutOpen(false);
+      }
+      if (productsRef.current && !productsRef.current.contains(e.target as Node)) {
+        setIsProductsOpen(false);
       }
     };
     document.addEventListener('mousedown', handler);
@@ -86,7 +88,15 @@ export default function ClientHeader() {
 
   const navigation = [
     { name: 'Home', href: '/', icon: Home },
-    { name: 'Products', href: '/products', icon: ShoppingBag },
+    {
+      name: 'Products',
+      href: '/products',
+      icon: ShoppingBag,
+      subItems: [
+        { name: 'Sheikh Food', href: '/products' },
+        { name: 'Sheikh Tech', href: '/tech-products' },
+      ],
+    },
     {
       name: 'About Us',
       href: '/about-us',
@@ -152,6 +162,48 @@ export default function ClientHeader() {
                       <Icon className="w-4 h-4" />
                       {item.name}
                     </Link>
+                  );
+                }
+
+                if (item.name === 'Products') {
+                  return (
+                    <div
+                      ref={productsRef}
+                      key={item.name}
+                      className="relative group"
+                      onMouseEnter={() => setIsProductsOpen(true)}
+                    >
+                      <Link
+                        href={item.href}
+                        className={cn(
+                          'relative px-6 py-3 rounded-xl flex items-center gap-2 text-sm cursor-pointer',
+                          active || isProductsOpen
+                            ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-lg shadow-amber-500/30'
+                            : 'text-gray-300 hover:bg-white/8 backdrop-blur-sm'
+                        )}
+                      >
+                        <Icon className="w-4 h-4" />
+                        {item.name}
+                        <ChevronDown className="w-4 h-4" />
+                      </Link>
+
+                      {isProductsOpen && (
+                        <div
+                          onMouseLeave={() => setIsProductsOpen(false)}
+                          className="absolute left-0 mt-2 w-[140px] bg-gradient-to-r from-amber-600 to-orange-600 backdrop-blur-xl border border-amber-600 rounded-2xl shadow-2xl z-50 animate-fadeIn py-2"
+                        >
+                          {item.subItems.map((subItem) => (
+                            <Link
+                              key={subItem.name}
+                              href={subItem.href}
+                              className="flex items-center gap-2 px-4 py-2 text-white hover:bg-amber-800/50 rounded-lg text-xs"
+                            >
+                              {subItem.name}
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   );
                 }
 
