@@ -86,7 +86,7 @@ export default function PremiumMobileMenu({
       subItems: [
         // --- MODIFIED: Sub-items now have icons ---
         { name: 'Sheikh Food', href: '/products', icon: Beef },
-        { name: 'Sheikh Tech', href: '/tech_products', icon: Cpu },
+        { name: 'Sheikh Tech', href: '/tech-products', icon: Cpu },
       ]
     },
     { name: 'About Us',    href: '/about-us',  icon: Users },
