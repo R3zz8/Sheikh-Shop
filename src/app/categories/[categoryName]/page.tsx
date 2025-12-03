@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import CategoryProducts from './_components/CategoryProducts';
-import { generateCategoryMetadata } from '@/lib/seo/metadata';
+import { generateCategoryMetadata } from '@/lib/seo';
 
 // Force dynamic rendering to prevent build-time database queries
 export const dynamic = 'force-dynamic';

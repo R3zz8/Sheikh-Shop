@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
-import { generateProductMetadata } from '@/lib/seo/metadata';
+import { generateProductMetadata } from '@/lib/seo';
 import { ProductOfferJsonLd } from '@/components/seo/JsonLd';
 import FAQSchema from '@/components/seo/FAQSchema';
 import Breadcrumbs from '@/components/seo/Breadcrumbs';
@@ -37,7 +37,7 @@ export async function generateMetadata({
 
     return generateProductMetadata({
       ...product,
-      description: product.description || undefined,
+      description: product.description ?? null,
     });
 }
 

@@ -4,7 +4,6 @@ import { Calendar, User, ArrowLeft, Clock, Share2, MessageCircle, Tag, ChevronRi
 import Link from 'next/link';
 import Image from 'next/image';
 import type { ArticleWithAuthor } from '@/types';
-import { generateArticleMetadata } from '@/lib/seo/metadata';
 import { generateCompleteArticleSchema, extractFAQsFromContent } from '@/lib/seo/generateArticleSchema';
 import { sanitizeDescription } from '@/lib/seo/helpers';
 import { Suspense } from 'react';
@@ -42,23 +41,23 @@ export async function generateMetadata({ params }: ArticlePageProps) {
     const canonicalPath = `/article/${article.slug}`;
 
     // SEO Fallback Logic
-    const title = article.seoTitle || article.title;
-    const description = article.seoDescription || article.summary || sanitizeDescription(article.content, 150);
+    const title = article.metaTitle || article.title;
+    const description = article.metaDescription || article.summary || sanitizeDescription(article.content, 150);
     const keywords = article.keywords && article.keywords.length > 0 ? article.keywords : article.tags || [];
 
     if (process.env.NODE_ENV === 'development') {
         console.log(`[SEO Debug] Generating metadata for article: "${article.title}"`);
-        if (!article.seoTitle) console.log(`  - Title: Fallback to article title.`);
-        if (!article.seoDescription) console.log(`  - Description: Fallback to summary or content.`);
+        if (!article.metaTitle) console.log(`  - Title: Fallback to article title.`);
+        if (!article.metaDescription) console.log(`  - Description: Fallback to summary or content.`);
     }
 
     const baseSEO = generatePageSEO({
         title,
         description,
         keywords,
-        ogTitle: article.ogTitle,
-        ogDescription: article.ogDescription,
-        ogImage: article.ogImage || article.imageUrl,
+        ogTitle: article.metaTitle || title,
+        ogDescription: article.metaDescription || description,
+        ogImage: article.imageUrl || '',
         canonical: canonicalPath,
     });
 

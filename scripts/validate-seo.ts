@@ -27,6 +27,8 @@ async function main() {
       include: {
         images: true,
         baseUnit: true,
+        discounts: true,
+        units: true,
       },
     });
 
@@ -36,7 +38,12 @@ async function main() {
     let warningCount = 0;
 
     for (const product of products) {
-      const seoData = getProductSEO(product, { logFallbacks: true });
+      const transformedProduct = {
+        ...product,
+        oldPrice: null,
+        units: product.units.map(unit => ({ ...unit, oldPrice: null, price: unit.price.toNumber() })),
+      };
+      const seoData = getProductSEO(transformedProduct, { logFallbacks: true });
       const validation = validateProductSEO(seoData);
 
       if (!validation.isValid || validation.warnings.length > 0) {

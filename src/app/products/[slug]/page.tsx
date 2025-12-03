@@ -67,7 +67,7 @@ export async function generateMetadata({
     ...baseSEO,
     openGraph: {
         ...baseSEO.openGraph,
-        type: 'product',
+        type: 'website',
     },
     alternates: {
         ...baseSEO.alternates,

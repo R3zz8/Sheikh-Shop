@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import Categories from '@/components/Categories';
 import FAQSchema from '@/components/seo/FAQSchema';
 import type { Metadata } from 'next';
-import { generateSEO } from '@/lib/seo/metadata';
 import { buildLanguageAlternates } from '@/lib/seo/hreflang';
 import {
   OptimizedPalmTree,
