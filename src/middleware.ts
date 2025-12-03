@@ -165,7 +165,8 @@ export async function middleware(request: NextRequest) {
       pathname.startsWith('/api/csrf') ||
       pathname.startsWith('/api/amazing-deals') ||
       pathname.startsWith('/api/units') ||
-      pathname.startsWith('/api/og')
+      pathname.startsWith('/api/og') ||
+      pathname.startsWith('/api/mobile-carousel') // FIXED: Exempt public carousel API from auth
     )
   ) {
     const response = NextResponse.next();
