@@ -11,8 +11,7 @@ import { CurrencyProvider } from '@/providers/CurrencyProvider';
 import { OrganizationJsonLd, WebsiteJsonLd } from '@/components/seo/JsonLd';
 import { generateSEO } from '@/lib/seo/metadata';
 import AccessibilityEnhancements from '@/components/accessibility/AccessibilityEnhancements';
-import ShoppingChatbot from '@/components/ai/ShoppingChatbot';
-import EnhancedAISearch from '@/components/ai/EnhancedAISearch';
+import { ShoppingChatbot, EnhancedAISearch } from '@/components/DynamicClientComponents';
 import AMPHead from '@/components/seo/AMPHead';
 import Script from 'next/script';
 import Link from 'next/link';
@@ -48,7 +47,6 @@ const jetbrainsMono = JetBrains_Mono({
   variable: '--font-jetbrains-mono',
   weight: ['400', '500', '600'],
 });
-
 
 // === generateMetadata ===
 export async function generateMetadata(): Promise<Metadata> {
