@@ -15,6 +15,7 @@ import TableOfContents from './_components/TableOfContents';
 import JsonLd from '@/components/seo/JsonLd';
 import { getLanguageFromPath, generateHreflangPaths, supportedLanguages } from '@/i18n.config';
 import { generatePageSEO } from '@/lib/seo/core';
+import { manageHeadings } from '@/lib/seo/heading-manager';
 
 // Enable ISR with 60-second revalidation
 export const revalidate = 60;
@@ -146,6 +147,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         organizationName: 'Sheikh Shop'
     });
 
+    const processedContent = manageHeadings(article.content);
+
     return (
         <>
             {/* JSON-LD Structured Data */}
@@ -266,7 +269,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                                     <div className="prose prose-invert prose-lg max-w-none">
                                         <div
                                             className="text-gray-300 leading-relaxed space-y-6"
-                                            dangerouslySetInnerHTML={{ __html: article.content }}
+                                            dangerouslySetInnerHTML={{ __html: processedContent }}
                                         />
                                     </div>
                                 </div>
