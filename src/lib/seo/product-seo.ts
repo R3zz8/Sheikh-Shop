@@ -52,6 +52,7 @@ export interface ProductSEOOptions {
  */
 export function getProductSEO(
   product: ProductsWithImages & {
+    oldPrice?: number | null;
     seoTitle?: string | null;
     seoDescription?: string | null;
     h1Override?: string | null;
@@ -94,7 +95,7 @@ export function getProductSEO(
   const metaDescription = getSEOValue(
     product.seoDescription,
     product.excerpt, // excerpt is used as shortDescription
-    sanitizeDescription(product.description, 150)
+    sanitizeDescription(product.description || '', 150)
   );
 
   if (product.seoDescription) {
@@ -119,8 +120,8 @@ export function getProductSEO(
   );
   
   // Excerpt (for UI display)
-  const excerptForUI = excerpt 
-    ? stripHtmlTags(excerpt).substring(0, 300)
+  const excerptForUI = product.excerpt
+    ? stripHtmlTags(product.excerpt).substring(0, 300)
     : null;
   
   // Open Graph Title: ogTitle > seoTitle > metaTitle

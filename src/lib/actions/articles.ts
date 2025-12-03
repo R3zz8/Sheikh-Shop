@@ -573,7 +573,7 @@ export async function getArticleById(id: string) {
 export async function getArticleBySlug(slug: string) {
     try {
         const article = await prisma.article.findUnique({
-            where: { 
+            where: {
                 slug,
                 status: 'PUBLISHED' // Only show published articles to public
             },
