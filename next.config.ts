@@ -127,17 +127,17 @@ const nextConfig: NextConfig = {
     }
 
     // آنالیز باندل فقط در dev
-    // if (dev && !isServer) {
-    //   const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer') as typeof import('webpack-bundle-analyzer');
-    //   config.plugins = config.plugins || [];
-    //   config.plugins.push(
-    //     new BundleAnalyzerPlugin({
-    //       analyzerMode: 'static',
-    //       openAnalyzer: false,
-    //       reportFilename: '../.reports/bundle-analyzer-report.html',
-    //     })
-    //   );
-    // }
+    if (!dev && !isServer) {
+      const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer') as typeof import('webpack-bundle-analyzer');
+      config.plugins = config.plugins || [];
+      config.plugins.push(
+        new BundleAnalyzerPlugin({
+          analyzerMode: 'static',
+          openAnalyzer: false,
+          reportFilename: '../.reports/bundle-analyzer-report.html',
+        })
+      );
+    }
 
     return config;
   },

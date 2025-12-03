@@ -1,14 +1,16 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import OptimizedPalmTree from '@/components/3d/OptimizedPalmTree';
 import Categories from '@/components/Categories';
-import AmazingDeals from '@/components/AmazingDeals';
 import FAQSchema from '@/components/seo/FAQSchema';
-import CarouselMobile from '@/components/CarouselMobile';
 import type { Metadata } from 'next';
 import { generateSEO } from '@/lib/seo/metadata';
 import { buildLanguageAlternates } from '@/lib/seo/hreflang';
-import SheikhScene from '@/components/sheikhui/SheikhScene';
+import {
+  OptimizedPalmTree,
+  SheikhScene,
+  AmazingDeals,
+  CarouselMobile,
+} from '@/components/DynamicClientComponents';
 
 export async function generateMetadata(): Promise<Metadata> {
   const baseUrl = process.env.NODE_ENV === 'production' 
