@@ -31,78 +31,10 @@ interface ProductSEOProps {
   };
 }
 
-/**
- * Generates Next.js Metadata for a product page
- * @param product - Product with SEO fields
- * @param options - SEO generation options
- * @returns Next.js Metadata object
- */
-export function generateProductMetadata(
-  product: ProductSEOProps['product'],
-  options: ProductSEOProps['options'] = {}
-): Metadata {
-  const seoData = getProductSEO(product, options);
-  const baseUrl = options?.baseUrl || process.env.NEXT_PUBLIC_APP_URL || 'https://sheikhshops.com';
-  
-  return {
-    title: {
-      default: seoData.metaTitle,
-      template: '%s | Sheikh Shop',
-    },
-    description: seoData.metaDescription,
-    keywords: seoData.keywords,
-    authors: [{ name: 'Sheikh Shop Team' }],
-    creator: 'Sheikh Shop',
-    publisher: 'Sheikh Shop',
-    formatDetection: {
-      email: false,
-      address: false,
-      telephone: false,
-    },
-    metadataBase: new URL(baseUrl),
-    alternates: {
-      canonical: seoData.canonicalUrl,
-      languages: buildLanguageAlternates(
-        product.canonicalUrl || `/products/${product.slug || product.id}`
-      ),
-    },
-    openGraph: {
-      type: 'website',
-      locale: 'en_US',
-      url: seoData.canonicalUrl,
-      title: seoData.ogTitle,
-      description: seoData.ogDescription,
-      siteName: 'Sheikh Shop',
-      images: [
-        {
-          url: seoData.ogImage,
-          width: 1200,
-          height: 630,
-          alt: seoData.ogTitle,
-        },
-      ],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: seoData.twitterTitle,
-      description: seoData.twitterDescription,
-      images: [seoData.twitterImage],
-      creator: '@sheikhshops',
-      site: '@sheikhshops',
-    },
-    robots: {
-      index: true,
-      follow: true,
-      googleBot: {
-        index: true,
-        follow: true,
-        'max-video-preview': -1,
-        'max-image-preview': 'large',
-        'max-snippet': -1,
-      },
-    },
-  };
-}
+// The generateProductMetadata function has been removed from this file.
+// Its functionality is now centralized in the new `generatePageSEO` helper
+// located in `src/lib/seo/core.ts`. This change was made to eliminate
+// hardcoded title suffixes and consolidate SEO logic across the application.
 
 /**
  * Client component to inject JSON-LD schema markup
