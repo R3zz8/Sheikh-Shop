@@ -6,7 +6,7 @@ import Image from 'next/image';
 import type { ArticleWithAuthor } from '@/types';
 import { generateArticleMetadata } from '@/lib/seo/metadata';
 import { generateCompleteArticleSchema, extractFAQsFromContent } from '@/lib/seo/generateArticleSchema';
-import { getSEOValue, sanitizeDescription } from '@/lib/seo/helpers';
+import { sanitizeDescription } from '@/lib/seo/helpers';
 import { Suspense } from 'react';
 import ArticleLoadingSkeleton from './_components/ArticleLoadingSkeleton';
 import RelatedArticles from './_components/RelatedArticles';
@@ -15,6 +15,7 @@ import Breadcrumbs from './_components/Breadcrumbs';
 import TableOfContents from './_components/TableOfContents';
 import JsonLd from '@/components/seo/JsonLd';
 import { getLanguageFromPath, generateHreflangPaths, supportedLanguages } from '@/i18n.config';
+import { generatePageSEO } from '@/lib/seo/core';
 
 // Enable ISR with 60-second revalidation
 export const revalidate = 60;
@@ -26,99 +27,57 @@ interface ArticlePageProps {
     searchParams?: { [key: string]: string | string[] | undefined };
 }
 
-export async function generateMetadata({ params, searchParams }: ArticlePageProps) {
+export async function generateMetadata({ params }: ArticlePageProps) {
     const result = await getArticleBySlug(params.slug);
     
     if (!result.success || !result.data) {
-        return {
-            title: 'Article Not Found - Sheikh Shop',
+        return generatePageSEO({
+            title: 'Article Not Found',
             description: 'The requested article could not be found.',
-        };
+            noIndex: true,
+        });
     }
 
     const article = result.data;
-    const currentPath = `/article/${params.slug}`;
-    const currentLanguage = getLanguageFromPath(currentPath);
+    const canonicalPath = `/article/${article.slug}`;
 
     // SEO Fallback Logic
-    let titleSource: string;
-    let descriptionSource: string;
-
-    const metaTitle = getSEOValue(article.metaTitle, article.title);
-    if (article.metaTitle) {
-      titleSource = 'SEO';
-    } else {
-      titleSource = 'fallback';
-    }
-
-    const metaDescription = getSEOValue(
-      article.metaDescription,
-      article.summary,
-      sanitizeDescription(article.content, 150)
-    );
-
-    if (article.metaDescription) {
-      descriptionSource = 'SEO';
-    } else if (article.summary) {
-      descriptionSource = 'fallback (excerpt)';
-    } else {
-      descriptionSource = 'auto (sanitized body)';
-    }
-
-    if (process.env.NODE_ENV === 'development') {
-        console.log(`[SEO Debug] Article "${article.title}" metadata generated:`);
-        console.log(`  - Title: Using ${titleSource} layer.`);
-        console.log(`  - Description: Using ${descriptionSource} layer.`);
-    }
-
+    const title = article.seoTitle || article.title;
+    const description = article.seoDescription || article.summary || sanitizeDescription(article.content, 150);
     const keywords = article.keywords && article.keywords.length > 0 ? article.keywords : article.tags || [];
 
-    // Generate hreflang for multi-language SEO
-    const hreflangPaths = generateHreflangPaths(currentPath);
+    if (process.env.NODE_ENV === 'development') {
+        console.log(`[SEO Debug] Generating metadata for article: "${article.title}"`);
+        if (!article.seoTitle) console.log(`  - Title: Fallback to article title.`);
+        if (!article.seoDescription) console.log(`  - Description: Fallback to summary or content.`);
+    }
 
+    const baseSEO = generatePageSEO({
+        title,
+        description,
+        keywords,
+        ogTitle: article.ogTitle,
+        ogDescription: article.ogDescription,
+        ogImage: article.ogImage || article.imageUrl,
+        canonical: canonicalPath,
+    });
+
+    // Enhance with article-specific metadata
     return {
-        title: metaTitle,
-        description: metaDescription,
-        keywords: keywords,
+        ...baseSEO,
         authors: [{ name: formatAuthorName(article.author) }],
         openGraph: {
-            title: metaTitle,
-            description: metaDescription,
-            images: article.imageUrl ? [
-                {
-                    url: article.imageUrl,
-                    width: 1200,
-                    height: 630,
-                    alt: metaTitle,
-                }
-            ] : undefined,
+            ...baseSEO.openGraph,
             type: 'article',
             publishedTime: article.publishedAt?.toISOString(),
             modifiedTime: article.updatedAt.toISOString(),
             authors: [formatAuthorName(article.author)],
             section: article.category,
             tags: keywords,
-            locale: supportedLanguages.find(lang => lang.code === currentLanguage)?.locale || 'en_US',
-        },
-        twitter: {
-            card: 'summary_large_image',
-            title: metaTitle,
-            description: metaDescription,
-            images: article.imageUrl ? [article.imageUrl] : undefined,
-            creator: '@sheikhshops',
-            site: '@sheikhshops',
         },
         alternates: {
-            canonical: `https://sheikhshops.com${currentPath}`,
-            languages: hreflangPaths,
-        },
-        other: {
-            'article:author': formatAuthorName(article.author),
-            'article:published_time': article.publishedAt?.toISOString(),
-            'article:modified_time': article.updatedAt.toISOString(),
-            'article:section': article.category || '',
-            'article:tag': keywords.join(', '),
-            'article:language': currentLanguage,
+            ...baseSEO.alternates,
+            languages: generateHreflangPaths(canonicalPath),
         },
     };
 }

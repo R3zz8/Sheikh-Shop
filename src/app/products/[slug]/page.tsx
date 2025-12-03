@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
-import { generateProductMetadata as generateProductMetadataNew } from '@/components/seo/ProductSEO';
 import { ProductOfferJsonLd, BreadcrumbJsonLd } from '@/components/seo/JsonLd';
 import FAQSchema from '@/components/seo/FAQSchema';
 import ProductDetailPage from '@/components/product/ProductDetailPage';
@@ -12,6 +11,8 @@ import { getProductSEO } from '@/lib/seo/product-seo';
 import type { ProductsWithImages, ProductUnit } from '@/types';
 import { formatPrice } from '@/lib/currency';
 import { buildLanguageAlternates, getBaseUrl } from '@/lib/seo/hreflang';
+import { generatePageSEO } from '@/lib/seo/core';
+import { sanitizeDescription } from '@/lib/seo/helpers';
 
 // Cache product pages for 5 minutes (same as /product/[id])
 export const revalidate = 300;
@@ -20,42 +21,59 @@ export const revalidate = 300;
 const CURRENCY = 'EUR';
 
 /**
- * Generate metadata for product detail page using new SEO generator
+ * Generate metadata for product detail page using the new central SEO helper.
  */
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: { slug: string };
 }): Promise<Metadata> {
-  const { slug } = await params;
-  const product = await getProductByIdOrSlug(slug) as ProductsWithImages & {
-    seoTitle?: string | null;
-    seoDescription?: string | null;
-    h1Override?: string | null;
-    excerpt?: string | null;
-    ogTitle?: string | null;
-    ogDescription?: string | null;
-    ogImage?: string | null;
-    schemaMarkup?: any;
-    canonicalUrl?: string | null;
-    metaKeywords?: string[];
-  };
+  const { slug } = params;
+  const product = await getProductByIdOrSlug(slug);
   
   if (!product) {
-    return {
-      title: 'Product Not Found | Sheikh Shop',
-      description: 'The requested product could not be found.',
-    };
+    return generatePageSEO({
+        title: 'Product Not Found',
+        description: 'The requested product could not be found.',
+        noIndex: true,
+    });
   }
 
-  const baseUrl = getBaseUrl();
-  const metadata = generateProductMetadataNew(product, {
-    baseUrl,
-    currency: CURRENCY,
-    includeSchema: true,
+  const canonicalPath = `/products/${product.slug || product.id}`;
+
+  // Use the existing strong fallback logic
+  const title = product.seoTitle || product.name;
+  const description = product.seoDescription || product.excerpt || sanitizeDescription(product.description, 150);
+  const keywords = product.metaKeywords || [];
+
+  if (process.env.NODE_ENV === 'development') {
+      console.log(`[SEO Debug] Generating metadata for product: "${product.name}"`);
+      if (!product.seoTitle) console.log(`  - Title: Fallback to product name.`);
+      if (!product.seoDescription) console.log(`  - Description: Fallback to excerpt or description.`);
+  }
+
+  const baseSEO = generatePageSEO({
+      title,
+      description,
+      keywords,
+      ogTitle: product.ogTitle,
+      ogDescription: product.ogDescription,
+      ogImage: product.ogImage,
+      canonical: canonicalPath,
   });
   
-  return metadata;
+  // Enhance with product-specific metadata
+  return {
+    ...baseSEO,
+    openGraph: {
+        ...baseSEO.openGraph,
+        type: 'product',
+    },
+    alternates: {
+        ...baseSEO.alternates,
+        languages: buildLanguageAlternates(canonicalPath),
+    },
+  };
 }
 
 // Helper function to serialize product (same as /product/[id])

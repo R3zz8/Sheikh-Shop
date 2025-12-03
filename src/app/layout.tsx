@@ -9,7 +9,7 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 import ReactQueryProvider from '@/providers/ReactQuery';
 import { CurrencyProvider } from '@/providers/CurrencyProvider';
 import { OrganizationJsonLd, WebsiteJsonLd } from '@/components/seo/JsonLd';
-import { generateSEO } from '@/lib/seo/metadata';
+import { generatePageSEO } from '@/lib/seo/core';
 import AccessibilityEnhancements from '@/components/accessibility/AccessibilityEnhancements';
 import { ShoppingChatbot, EnhancedAISearch } from '@/components/DynamicClientComponents';
 import AMPHead from '@/components/seo/AMPHead';
@@ -50,55 +50,12 @@ const jetbrainsMono = JetBrains_Mono({
 
 // === generateMetadata ===
 export async function generateMetadata(): Promise<Metadata> {
-  // Root layout doesn't receive params in Next.js 15
-  // Use default metadata for homepage
-  const lang = 'en';
-  const isArabic = false;
-  const cleanPath = '/';
-
-  const seoMap: Record<string, { en: string; ar: string }> = {
-    '/': {
-      en: 'Pure Honey, Premium Dates, Saffron | Sheikh Shop',
-      ar: 'عسل جبلي طبيعي، تمر فاخر، زعفران سوبر نجين | شيخ شوب',
-    },
-    '/products': {
-      en: 'Natural Honey, Dates & Saffron | Sheikh Shop',
-      ar: 'عسل طبيعي، تمر فاخر، زعفران | شيخ شوب',
-    },
-    '/categories/honey': {
-      en: 'Pure Natural Honey | 100% Raw & Organic | Sheikh Shop',
-      ar: 'عسل جبلي طبيعي 100% | خام وعضوي | شيخ شوب',
-    },
-    '/categories/dates': {
-      en: 'Premium Majdool & Piarom Dates | Fresh Harvest',
-      ar: 'تمور المجدول والپیاروم الفاخرة | محصول طازج',
-    },
-    '/categories/saffron': {
-      en: 'Super Negin Saffron | Lab-Tested & Certified',
-      ar: 'زعفران سوبر نجين | فحص مخبري وشهادة جودة',
-    },
-    '/categories/others': {
-      en: 'Natural & Organic Products | Sheikh Shop',
-      ar: 'منتجات طبيعية وعضوية | شيخ شوب',
-    },
-  };
-
-  const defaultSEO = seoMap['/'] || { en: 'Sheikh Shop', ar: 'شيخ شوب' };
-  const pageSEO = seoMap[cleanPath] || defaultSEO;
-
-  const title = isArabic ? pageSEO.ar : pageSEO.en;
-  const description = isArabic
-    ? 'عسل طبيعي 100%، تمور المجدول والپیاروم، زعفران سوبر نجين مع شحن مجاني عالمي.'
-    : '100% Natural Mountain Honey, Majdool & Piarom Dates, Premium Saffron. Free Worldwide Shipping.';
-
-  return generateSEO({
-    title,
-    description,
-    keywords: isArabic
-      ? ['عسل طبيعي', 'تمر فاخر', 'زعفران', 'شيخ شوب', 'شحن مجاني']
-      : ['natural honey', 'premium dates', 'saffron', 'sheikh shop', 'free shipping'],
-    canonical: cleanPath,
-    ogImage: `/og-${lang}.jpg`,
+  // The root layout now provides a default, brand-focused metadata object.
+  // Page-specific metadata will override this, ensuring titles and descriptions
+  // are not duplicated or incorrectly applied globally.
+  return generatePageSEO({
+    title: 'Sheikh Shop | Premium Honey, Dates, and Saffron',
+    description: 'Discover the finest selection of 100% natural mountain honey, premium Majdool dates, and Super Negin saffron. Sheikh Shop offers authentic, high-quality products with free worldwide shipping.',
   });
 }
 
