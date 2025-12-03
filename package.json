@@ -34,6 +34,7 @@
     "db:push": "dotenv -e .env.local -- npx prisma db push",
     "db:seed": "dotenv -e .env.local -- npx prisma db seed",
     "db:verify-seed": "tsx scripts/verify-seed.ts",
+    "validate-seo": "tsx scripts/validate-seo.ts",
     "db:reset": "npx prisma migrate reset",
     "reset-db": "tsx scripts/reset-database.ts",
     "test-auth": "tsx scripts/test-auth.ts",

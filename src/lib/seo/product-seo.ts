@@ -41,6 +41,7 @@ export interface ProductSEOOptions {
   baseUrl?: string;
   currency?: string;
   includeSchema?: boolean;
+  logFallbacks?: boolean;
 }
 
 /**
@@ -69,6 +70,7 @@ export function getProductSEO(
   const baseUrl = options.baseUrl || getBaseUrl();
   const currency = options.currency || 'EUR';
   const includeSchema = options.includeSchema !== false;
+  const logFallbacks = options.logFallbacks || false;
   
   // Ensure product name is clean (no HTML)
   const cleanName = stripHtmlTags(product.name);
@@ -79,22 +81,44 @@ export function getProductSEO(
   const canonicalUrl = `${baseUrl}${canonicalPath}`;
   
   // Meta Title: seoTitle > product.name
-  const metaTitle = stripHtmlTags(
-    product.seoTitle || 
-    `${cleanName} - Premium ${product.category} | Sheikh Shop`
-  ).substring(0, 60);
+  let metaTitle: string;
+  if (product.seoTitle) {
+    metaTitle = stripHtmlTags(product.seoTitle).substring(0, 60);
+  } else {
+    if (logFallbacks) {
+      console.warn(`[SEO Fallback] Product ID ${product.id} is missing seoTitle. Falling back to generated title.`);
+    }
+    metaTitle = stripHtmlTags(
+      `${cleanName} - Premium ${product.category} | Sheikh Shop`
+    ).substring(0, 60);
+  }
   
   // Meta Description: seoDescription > excerpt > description (truncated) > generated
   // Auto-generate excerpt if not provided
   const excerpt = product.excerpt || 
     (product.description ? generateExcerpt(product.description, 200) : null);
   
-  const metaDescription = stripHtmlTags(
-    product.seoDescription ||
-    excerpt ||
-    (product.description ? generateExcerpt(product.description, 160) : null) ||
-    `Discover premium ${cleanName} at Sheikh Shop. Exceptional quality ${product.category.toLowerCase()} with authentic Arabian heritage.`
-  ).substring(0, 160);
+  let metaDescription: string;
+  if (product.seoDescription) {
+    metaDescription = stripHtmlTags(product.seoDescription).substring(0, 160);
+  } else if (excerpt) {
+    if (logFallbacks) {
+      console.warn(`[SEO Fallback] Product ID ${product.id} is missing seoDescription. Falling back to excerpt.`);
+    }
+    metaDescription = stripHtmlTags(excerpt).substring(0, 160);
+  } else if (product.description) {
+    if (logFallbacks) {
+      console.warn(`[SEO Fallback] Product ID ${product.id} is missing seoDescription and excerpt. Falling back to truncated description.`);
+    }
+    metaDescription = stripHtmlTags(generateExcerpt(product.description, 160)).substring(0, 160);
+  } else {
+    if (logFallbacks) {
+      console.warn(`[SEO Fallback] Product ID ${product.id} is missing all description sources. Falling back to generic description.`);
+    }
+    metaDescription = stripHtmlTags(
+      `Discover premium ${cleanName} at Sheikh Shop. Exceptional quality ${product.category.toLowerCase()} with authentic Arabian heritage.`
+    ).substring(0, 160);
+  }
   
   // H1 Content: h1Override > seoTitle > product.name
   const h1Content = stripHtmlTags(
