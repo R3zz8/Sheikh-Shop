@@ -1,31 +1,37 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination, EffectCoverflow } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/effect-coverflow';
 import 'swiper/css/pagination';
-import Image from 'next/image';
 
 interface Slide {
   id: number;
   title: string;
-  image: string; // مسیر عکس
+  image: string;
 }
 
-const slides: Slide[] = [
-  { id: 1, title: 'A Class', image: '/images/carousel/a.jpg' },
-  { id: 2, title: 'B Class', image: '/images/carousel/b.jpg' },
-  { id: 3, title: 'C Class', image: '/images/carousel/c.jpg' },
-  { id: 4, title: 'D Class', image: '/images/carousel/d.jpg' },
-  { id: 5, title: 'E Class', image: '/images/carousel/e.jpg' },
-  { id: 6, title: 'G Class', image: '/images/carousel/g.jpg' },
+const images = [
+  '/assets/carousel/carousel1.jpg',
+  '/assets/carousel/carousel2.jpg',
+  '/assets/carousel/carousel3.jpg',
+  '/assets/carousel/carousel4.jpg',
+  '/assets/carousel/carousel5.jpg',
 ];
+
+const slides: Slide[] = images.map((image, index) => ({
+  id: index + 1,
+  title: `Class ${String.fromCharCode(65 + index)}`, // A, B, C, ...
+  image,
+}));
 
 export default function BMWCarousel() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-[#171f21] to-[#3e5b69] p-4">
+    <div
+      className="min-h-screen flex items-center justify-center p-4"
+      style={{ backgroundColor: '#3E1F0F' }}
+    >
       <div className="w-full max-w-6xl">
         <Swiper
           effect="coverflow"
@@ -54,10 +60,9 @@ export default function BMWCarousel() {
                 <div
                   className="relative h-96 rounded-2xl overflow-hidden filter grayscale-[0.6] bg-cover bg-center flex flex-col justify-end items-center pb-20"
                   style={{
-                    backgroundImage: `linear-gradient(to top, #0f2027, #203a4300, #2c536400), url('${slide.image}')`,
+                    backgroundImage: `url('${slide.image}')`,
                   }}
                 >
-                  {/* متن فقط روی اسلاید فعال */}
                   <div
                     className={`text-center transition-opacity duration-300 ${
                       isActive ? 'opacity-100' : 'opacity-0'
@@ -79,7 +84,6 @@ export default function BMWCarousel() {
           ))}
         </Swiper>
 
-        {/* پیجینیشن سفارشی */}
         <div className="custom-pagination flex justify-center gap-2 mt-8 scale-150"></div>
       </div>
     </div>
