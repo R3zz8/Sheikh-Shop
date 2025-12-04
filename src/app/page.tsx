@@ -10,6 +10,7 @@ import {
   AmazingDeals,
   CarouselMobile,
 } from '@/components/DynamicClientComponents';
+import BMWCarousel from '@/components/BMWCarousel';
 
 export async function generateMetadata(): Promise<Metadata> {
   const baseUrl = process.env.NODE_ENV === 'production' 
@@ -71,6 +72,8 @@ export default function Home() {
 
       {/* Amazing Deals Section */}
       <AmazingDeals />
+
+      <BMWCarousel />
 
       {/* Inject FAQ JSON-LD for common homepage questions */}
       <FAQSchema
