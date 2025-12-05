@@ -1,5 +1,6 @@
 'use client';
 
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination, EffectCoverflow } from 'swiper/modules';
 import 'swiper/css';
@@ -27,9 +28,15 @@ const slides: Slide[] = images.map((image, index) => ({
 }));
 
 export default function BMWCarousel() {
+  const isDesktop = useMediaQuery('(min-width: 1024px)');
+
+  if (!isDesktop) {
+    return null;
+  }
+
   return (
     <div
-      className="min-h-screen flex items-center justify-center p-4"
+      className="hidden lg:flex min-h-screen items-center justify-center p-4"
       style={{ backgroundColor: '#3E1F0F' }}
     >
       <div className="w-full max-w-6xl">
