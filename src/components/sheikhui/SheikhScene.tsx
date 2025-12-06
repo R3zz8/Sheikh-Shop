@@ -6,7 +6,7 @@ import FloatingFlags from "./FloatingFlags";
 
 export default function SheikhScene() {
   return (
-    <div className="relative flex flex-col items-center justify-center w-full min-h-[80vh] overflow-hidden bg-gradient-to-b from-black via-zinc-900 to-amber-950">
+    <div className="relative flex flex-col items-center justify-center w-full min-h-[80vh] overflow-hidden bg-[radial-gradient(ellipse_at_center,_#78350f_0%,_#0c0a09_70%)]">
       {/* شیخ */}
       <motion.div
         initial={{ opacity: 0, scale: 0.9, y: 40 }}
