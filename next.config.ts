@@ -17,10 +17,6 @@ interface WebpackContext {
 const nextConfig: NextConfig = {
   output: 'standalone',
 
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-
   async headers() {
     return [
       {

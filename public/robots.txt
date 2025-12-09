@@ -1,0 +1,41 @@
+# *
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /affiliate/dashboard/
+Disallow: /system/
+Disallow: /user/
+Disallow: /cart/
+Disallow: /checkout/
+Disallow: /system-login
+Disallow: /login
+Disallow: /register
+Disallow: /reset-password
+Disallow: /forgot-password
+Disallow: /test-userbadge
+
+# AdsBot-Google
+User-agent: AdsBot-Google
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /affiliate/dashboard/
+Disallow: /system/
+Disallow: /user/
+Disallow: /cart/
+Disallow: /checkout/
+Disallow: /system-login
+Disallow: /login
+Disallow: /register
+Disallow: /reset-password
+Disallow: /forgot-password
+Disallow: /test-userbadge
+
+# Host
+Host: https://sheikhshops.com
+
+# Sitemaps
+Sitemap: https://sheikhshops.com/sitemap.xml
