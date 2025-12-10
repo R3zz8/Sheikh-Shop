@@ -342,6 +342,9 @@ importers:
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
+      web-streams-polyfill:
+        specifier: ^4.2.0
+        version: 4.2.0
       webpack:
         specifier: ^5.102.1
         version: 5.102.1(@swc/core@1.13.21)
@@ -6770,6 +6773,10 @@ packages:
   weaviate-ts-client@2.2.0:
     resolution: {integrity: sha512-sOvX1Gt8+u9wIVmiYii26N4KSpZ8jM5fM4DMmtRL6yPNO9u8elsvg5g7eJOwmrICsn1Zt2efxhxuSChI0M8FzQ==}
     engines: {node: '>=16.0.0'}
+
+  web-streams-polyfill@4.2.0:
+    resolution: {integrity: sha512-0rYDzGOh9EZpig92umN5g5D/9A1Kff7k0/mzPSSCY8jEQeYkgRMoY7LhbXtUCWzLCMX0TUE9aoHkjFNB7D9pfA==}
+    engines: {node: '>= 8'}
 
   webdriver-bidi-protocol@0.2.11:
     resolution: {integrity: sha512-Y9E1/oi4XMxcR8AT0ZC4OvYntl34SPgwjmELH+owjBr0korAX4jKgZULBWILGCVGdVCQ0dodTToIETozhG8zvA==}
@@ -14239,6 +14246,8 @@ snapshots:
     transitivePeerDependencies:
       - encoding
       - graphql
+
+  web-streams-polyfill@4.2.0: {}
 
   webdriver-bidi-protocol@0.2.11: {}
 

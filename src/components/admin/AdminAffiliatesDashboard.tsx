@@ -98,7 +98,7 @@ const AdminAffiliatesDashboard = () => {
             <div className="bg-gray-800 p-6 rounded-lg">
                 <h2 className="text-2xl font-bold mb-4 text-gray-300">Top Performers</h2>
                 <ul>
-                    {dashboardData?.topPerformers.map((affiliate) => (
+                    {dashboardData?.topPerformers?.map((affiliate) => (
                         <li key={affiliate.id} className="flex justify-between items-center py-2 border-b border-gray-700">
                             <span>{affiliate.user.firstName} {affiliate.user.lastName}</span>
                             <span>${affiliate.commissionEarned}</span>
@@ -109,7 +109,7 @@ const AdminAffiliatesDashboard = () => {
             <div className="bg-gray-800 p-6 rounded-lg">
                 <h2 className="text-2xl font-bold mb-4 text-gray-300">Recent Payouts</h2>
                 <ul>
-                    {dashboardData?.payoutLogs.map((log) => (
+                    {dashboardData?.payoutLogs?.map((log) => (
                         <li key={log.id} className="flex justify-between items-center py-2 border-b border-gray-700">
                             <span>{log.affiliate.user.firstName} {log.affiliate.user.lastName}</span>
                             <span>${log.amount}</span>
@@ -132,7 +132,7 @@ const AdminAffiliatesDashboard = () => {
                 </tr>
               </thead>
               <tbody>
-                {affiliates.map((affiliate) => (
+                {Array.isArray(affiliates) && affiliates.map((affiliate) => (
                   <tr key={affiliate.id}>
                     <td className="py-2 px-4 border-b border-gray-700">{affiliate.user.firstName} {affiliate.user.lastName}</td>
                     <td className="py-2 px-4 border-b border-gray-700">{affiliate.user.email}</td>
