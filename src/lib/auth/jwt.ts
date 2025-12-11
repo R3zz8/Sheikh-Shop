@@ -9,19 +9,34 @@ if (process.env.NODE_ENV !== 'production') {
   console.log('[debug] JWT_SECRET present:', Boolean(process.env.JWT_SECRET), 'length:', (process.env.JWT_SECRET || '').length);
 }
 
-// Security: Accessor to read and validate JWT secret on demand (avoid top-level throws during build)
-function getJwtSecret(): string {
-  const secret = process.env.JWT_SECRET || '';
-  if (!secret) {
-    throw new Error('JWT_SECRET environment variable is not set');
-  }
-  if (secret.length < 32) {
-    throw new Error('JWT_SECRET must be at least 32 characters long');
-  }
-  if (secret === 'dev-secret-key' || secret === 'changeme' || secret.includes('dev-secret')) {
-    throw new Error('JWT_SECRET cannot use development or default values');
-  }
-  return secret;
+// Security: Accessor to read and validate JWT secrets for rotation
+function getJwtSecrets(): string[] {
+    const secretsEnv = process.env.JWT_SECRETS || process.env.JWT_SECRET || '';
+    if (!secretsEnv) {
+        throw new Error('JWT_SECRETS environment variable is not set');
+    }
+
+    const secrets = secretsEnv.split(',').map(s => s.trim()).filter(Boolean);
+
+    if (secrets.length === 0) {
+        throw new Error('JWT_SECRETS environment variable is empty or invalid');
+    }
+
+    for (const secret of secrets) {
+        if (secret.length < 32) {
+            throw new Error('All JWT secrets must be at least 32 characters long');
+        }
+        if (secret === 'dev-secret-key' || secret === 'changeme' || secret.includes('dev-secret')) {
+            throw new Error('JWT_SECRETS cannot contain development or default values');
+        }
+    }
+
+    return secrets;
+}
+
+// Gets the primary secret (the first in the list) for signing new tokens.
+function getPrimaryJwtSecret(): string {
+    return getJwtSecrets()[0];
 }
 
 // Security: Define JWT payload interface
@@ -51,8 +66,8 @@ export function signJwtToken(
   expiresIn: StringValue | number = '7d',
 ): string {
   try {
-    const JWT_SECRET = getJwtSecret();
-    return jwt.sign(payload, JWT_SECRET, {
+    const primarySecret = getPrimaryJwtSecret();
+    return jwt.sign(payload, primarySecret, {
       ...JWT_OPTIONS,
       expiresIn,
     });
@@ -61,12 +76,11 @@ export function signJwtToken(
   }
 }
 
-// Security: Enhanced JWT verification with proper error handling and blacklist check
+// Security: Enhanced JWT verification with secret rotation support
 export async function verifyJwtToken(token: string): Promise<JWTPayload | null> {
-  try {
-    const JWT_SECRET = getJwtSecret();
-    
-    // Security: Check if token is blacklisted
+    const secrets = getJwtSecrets();
+
+    // Security: Check if token is blacklisted first
     if (await isTokenBlacklisted(token)) {
       if (process.env.NODE_ENV === 'development') {
         console.warn('[JWT] Token is blacklisted');
@@ -74,34 +88,32 @@ export async function verifyJwtToken(token: string): Promise<JWTPayload | null> 
       return null;
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET, {
-      algorithms: ['HS256'],
-      issuer: 'sheikh-shop',
-      audience: 'sheikh-shop-users',
-    }) as unknown as JWTPayload;
-
-    return decoded;
-  } catch (error) {
-    // Security: Enhanced error logging with specific error types
-    if (error instanceof jwt.TokenExpiredError) {
-      if (process.env.NODE_ENV === 'development') {
-        console.warn('[JWT] Token expired:', error.expiredAt);
-      }
-    } else if (error instanceof jwt.JsonWebTokenError) {
-      if (process.env.NODE_ENV === 'development') {
-        console.warn('[JWT] Token verification failed:', error.message);
-      }
-    } else if (error instanceof jwt.NotBeforeError) {
-      if (process.env.NODE_ENV === 'development') {
-        console.warn('[JWT] Token not active yet:', error.date);
-      }
-    } else {
-      if (process.env.NODE_ENV === 'development') {
-        console.warn('[JWT] Verification failed:', error instanceof Error ? error.message : 'Unknown error');
-      }
+    for (const secret of secrets) {
+        try {
+            const decoded = jwt.verify(token, secret, {
+                algorithms: ['HS256'],
+                issuer: 'sheikh-shop',
+                audience: 'sheikh-shop-users',
+            }) as unknown as JWTPayload;
+            return decoded; // Return decoded payload on first successful verification
+        } catch (error) {
+            // Ignore errors and try the next secret
+            if (error instanceof jwt.TokenExpiredError) {
+                // If token is expired, no need to check other secrets
+                if (process.env.NODE_ENV === 'development') {
+                    console.warn('[JWT] Token expired:', error.expiredAt);
+                }
+                return null;
+            }
+        }
     }
+
+    // If no secret worked, log the final error
+    if (process.env.NODE_ENV === 'development') {
+        console.warn('[JWT] Token verification failed with all available secrets.');
+    }
+
     return null;
-  }
 }
 
 // Security: Generate system user token with extended expiry

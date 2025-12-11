@@ -1,9 +1,7 @@
 #!/usr/bin/env tsx
 
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/utils/prisma';
 import bcrypt from 'bcrypt';
-
-const prisma = new PrismaClient();
 
 async function testDatabaseConnection() {
   console.log('🔍 Testing database connection...');

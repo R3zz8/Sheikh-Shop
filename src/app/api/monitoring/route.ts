@@ -1,26 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { monitoringSystem } from '@/lib/monitoring';
-import { withRole } from '@/lib/jwt';
+import { withRole } from '@/lib/auth/withRole';
+import { JWTPayload } from '@/lib/auth/jwt';
+import { UserRole } from '@prisma/client';
 import { withRateLimit } from '@/lib/rateLimiter';
 import { apiRateLimiter } from '@/lib/rateLimiter';
 
-// Apply rate limiting and admin role check
-const rateLimitedHandler = withRateLimit(apiRateLimiter);
-const adminHandler = withRole('ADMIN');
-
-export async function GET(request: NextRequest) {
+const getHandler = async (request: NextRequest, user: JWTPayload) => {
   try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
     // Apply rate limiting
     const rateLimitResponse = apiRateLimiter(request);
     if (rateLimitResponse && rateLimitResponse.status === 429) {
@@ -102,18 +89,8 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST endpoint for resolving events and anomalies
-export async function POST(request: NextRequest) {
+const postHandler = async (request: NextRequest, user: JWTPayload) => {
   try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
     // Apply rate limiting
     const rateLimitResponse = apiRateLimiter(request);
     if (rateLimitResponse && rateLimitResponse.status === 429) {
@@ -183,3 +160,9 @@ function getTimeRangeMs(timeRange: string): number {
   return timeRangeMap[timeRange] || 60 * 60 * 1000; // Default to 1 hour
 }
 
+// Apply rate limiting and admin role check
+const rateLimitedGetHandler = withRateLimit(getHandler);
+const rateLimitedPostHandler = withRateLimit(postHandler);
+
+export const GET = withRole(UserRole.ADMIN)(rateLimitedGetHandler);
+export const POST = withRole(UserRole.ADMIN)(rateLimitedPostHandler);
