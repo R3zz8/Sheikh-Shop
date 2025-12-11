@@ -157,10 +157,10 @@ export async function isCommonPassword(password: string): Promise<boolean> {
 }
 
 // Security: Check password history for a user
+import { prisma } from '@/utils/prisma';
+
 export async function isPasswordInHistory(userId: string, newPassword: string): Promise<boolean> {
     try {
-        const { PrismaClient } = await import('@prisma/client');
-        const prisma = new PrismaClient();
         
         // Get recent password hashes from audit logs or password history table
         // For now, we'll check against the current password
@@ -174,7 +174,6 @@ export async function isPasswordInHistory(userId: string, newPassword: string): 
         // Check if new password matches current password
         const isCurrentPassword = await verifyPassword(newPassword, user.password);
         
-        await prisma.$disconnect();
         return isCurrentPassword;
     } catch (error) {
         console.error('Password history check failed:', error);

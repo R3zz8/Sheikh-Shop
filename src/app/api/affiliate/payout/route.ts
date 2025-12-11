@@ -1,13 +1,11 @@
 // src/app/api/affiliate/payout/route.ts
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/utils/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { Ratelimit } from "@upstash/ratelimit";
 import { kv } from "@vercel/kv";
 import { paypalClient } from '@/lib/paypalClient';
-
-const prisma = new PrismaClient();
 
 const ratelimit = new Ratelimit({
   redis: kv,
