@@ -118,6 +118,14 @@ YANDEX_VERIFICATION_CODE="your-yandex-verification-code"
 YAHOO_VERIFICATION_CODE="your-yahoo-verification-code"
 
 # =============================================================================
+# FEATURE FLAGS
+# =============================================================================
+
+# Next.js 16 Upgrade Flag (OPTIONAL)
+# Set to "true" to enable experimental features and changes during the upgrade process.
+NEXT_UPGRADE_IN_PROGRESS="false"
+
+# =============================================================================
 # E-COMMERCE CONFIGURATION (OPTIONAL)
 # =============================================================================
 
