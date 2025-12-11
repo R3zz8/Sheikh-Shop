@@ -19,7 +19,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "npm run generate && next build --ignore-ts-errors",
+    "build": "npm run generate && next build",
     "start": "next start",
     "prod": "next build && next start",
     "lint": "next lint",
@@ -47,7 +47,6 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "clean": "rm -rf .next out dist build",
-    "prebuild": "npm run type-check",
     "postbuild": "next-sitemap",
     "postinstall": "npm run generate",
     "performance:monitor": "node scripts/performance-monitor.js",
@@ -167,6 +166,7 @@
     "@types/speakeasy": "^2.0.10",
     "@types/webpack": "^5.28.5",
     "@types/webpack-bundle-analyzer": "^4.7.0",
+    "babel-plugin-react-compiler": "^1.0.0",
     "chrome-launcher": "^1.2.0",
     "dotenv-cli": "^10.0.0",
     "eslint": "^9",
@@ -182,9 +182,9 @@
     "ts-node": "^10.9.2",
     "tsx": "^4.20.3",
     "typescript": "^5.9.3",
+    "web-streams-polyfill": "^4.2.0",
     "webpack": "^5.102.1",
-    "webpack-bundle-analyzer": "^4.10.2",
-    "web-streams-polyfill": "^4.2.0"
+    "webpack-bundle-analyzer": "^4.10.2"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

@@ -93,3 +93,6 @@ Desktop.ini
 # Build reports
 /.reports/
 test-results/
+
+# sitemap files
+public/sitemap*.xml

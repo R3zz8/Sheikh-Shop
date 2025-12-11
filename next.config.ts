@@ -16,6 +16,7 @@ interface WebpackContext {
 // === NextConfig اصلی ===
 const nextConfig: NextConfig = {
   output: 'standalone',
+  reactCompiler: true,
 
   async headers() {
     return [
