@@ -1,5 +1,6 @@
-import { PrismaClient } from '@prisma/client';
+// src/lib/prisma.ts
 import type * as PrismaType from '@prisma/client';
+import { prisma } from '@/utils/prisma';
 
-export const prisma = new PrismaClient();
+export { prisma };
 export type { PrismaType };

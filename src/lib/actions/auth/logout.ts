@@ -110,10 +110,9 @@ export async function logoutAllSessions() {
 }
 
 // Security: Invalidate all user sessions (for security incidents)
-export async function logoutAllUserSessions(userId: string) {
-  const { PrismaClient } = await import('@prisma/client');
-  const prisma = new PrismaClient();
+import { prisma } from '@/utils/prisma';
 
+export async function logoutAllUserSessions(userId: string) {
   try {
     // Security: Get all sessions to blacklist tokens
     const sessions = await prisma.session.findMany({
@@ -133,6 +132,5 @@ export async function logoutAllUserSessions(userId: string) {
 
     await logAudit(userId, 'all_sessions_invalidated');
   } finally {
-    await prisma.$disconnect();
   }
 }
