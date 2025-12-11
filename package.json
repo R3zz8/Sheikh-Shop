@@ -19,7 +19,9 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "npm run generate && next build",
+    "dev:turbo": "next dev --turbo",
+    "build": "npm run generate && next build --turbo",
+    "build:webpack": "npm run generate && next build",
     "start": "next start",
     "prod": "next build && next start",
     "lint": "next lint",
