@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { UserRole } from '@prisma/client';
 import { z } from 'zod';
-import { getUserFromToken } from '@/lib/jwt';
+import { getUserFromRequest } from '@/lib/auth/utils';
 import { prisma } from '@/utils/prisma';
 
 export const dynamic = "force-dynamic";
@@ -20,7 +20,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 
   try {
-    const user = getUserFromToken(req);
+    const user = await getUserFromRequest(req);
 
     if (!user || user.role !== UserRole.SUPERADMIN) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
@@ -59,7 +59,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
   }
 
   try {
-    const user = getUserFromToken(req);
+    const user = await getUserFromRequest(req);
 
     if (!user || user.role !== UserRole.SUPERADMIN) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });

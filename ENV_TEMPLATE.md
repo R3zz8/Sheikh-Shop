@@ -31,9 +31,13 @@ DATABASE_URL="postgresql://postgres:password@localhost:5432/sheikh_shop"
 # AUTHENTICATION & SECURITY (JWT + NEXTAUTH)
 # =============================================================================
 
-# JWT Secret Key (REQUIRED - Must be at least 32 characters)
-# Used for signing and verifying JWT tokens
-JWT_SECRET="your-super-secure-32+character-jwt-secret-key-change-this-in-production"
+# JWT Secret Keys for Rotation (REQUIRED - Each must be at least 32 characters)
+# Comma-separated list of secrets. The first is used for signing, all are used for verification.
+# To rotate, add a new secret at the beginning of the list.
+JWT_SECRETS="new-secret-key,old-secret-key"
+
+# Legacy JWT_SECRET (still supported for backward compatibility, but JWT_SECRETS is preferred)
+JWT_SECRET=""
 
 # NextAuth Configuration (REQUIRED)
 # Secret for NextAuth session encryption
