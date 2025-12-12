@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { verifyJwtToken } from '@/lib/auth/jwt';
+import { verifyJwtToken, type JWTPayload } from '@/lib/auth/jwt';
 
 /**
  * @deprecated This function is being replaced by the more comprehensive getUserFromRequest.

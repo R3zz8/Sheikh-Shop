@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { UserCircle2, User2, Smile, Crown, Shield, Settings, LogOut, Sparkles, Trophy } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect } from 'react';
-import { createGamificationEngine } from '@/lib/gamification/gamification-engine';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -111,12 +110,15 @@ export default function UserBadge({
   // Load gamification summary lazily when dropdown opens
   useEffect(() => {
     let mounted = true;
-    (async () => {
+    const fetchProfile = async () => {
       if (!isOpen) return;
       try {
-        const engine = createGamificationEngine();
-        // Using profile ensures we don't break if backend tables are missing; guarded by try/catch
-        const profile = await engine.getUserProfile(user.id);
+        const response = await fetch(`/api/user/profile/${user.id}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch profile');
+        }
+        const profile = await response.json();
+
         if (mounted && profile) {
           setXp(profile.experiencePoints ?? 0);
           setLevel(profile.level ?? 1);
@@ -127,7 +129,8 @@ export default function UserBadge({
           setLevel(null);
         }
       }
-    })();
+    };
+    fetchProfile();
     return () => { mounted = false; };
   }, [isOpen, user.id]);
 

@@ -1,7 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, Table, TableHead, TableRow, TableHeader, TableBody, TableCell, Badge } from '@/components/ui';
-import { createGamificationEngine } from '@/lib/gamification/gamification-engine';
 import { Crown, Trophy, Medal, Award, Sparkles, Users, Calendar, Filter } from 'lucide-react';
 import Link from 'next/link';
 
@@ -22,20 +21,25 @@ export default function LeaderboardPage() {
 
   useEffect(() => {
     let mounted = true;
-    (async () => {
+    const fetchLeaderboard = async () => {
       try {
         setLoading(true);
-        const engine = createGamificationEngine();
-        const list = await engine.getLeaderboard(category, period, 50);
+        const response = await fetch(`/api/leaderboard?category=${category}&period=${period}&limit=50`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch leaderboard');
+        }
+        const data = await response.json();
         if (mounted) {
-          setEntries(list as any);
+          setEntries(data);
         }
       } catch {
         if (mounted) setEntries([]);
       } finally {
         if (mounted) setLoading(false);
       }
-    })();
+    };
+
+    fetchLeaderboard();
     return () => { mounted = false; };
   }, [period, category]);
 

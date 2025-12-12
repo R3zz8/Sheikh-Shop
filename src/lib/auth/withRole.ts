@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { UserRole } from '@prisma/client';
 import { getUserFromRequest } from './utils';
-import { JWTPayload } from './jwt';
+import type { JWTPayload } from './jwt';
 
 type AuthenticatedHandler = (req: NextRequest, user: JWTPayload) => Promise<NextResponse>;
 

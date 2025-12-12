@@ -36,7 +36,11 @@ function getJwtSecrets(): string[] {
 
 // Gets the primary secret (the first in the list) for signing new tokens.
 function getPrimaryJwtSecret(): string {
-    return getJwtSecrets()[0];
+    const secrets = getJwtSecrets();
+    if (secrets.length === 0) {
+        throw new Error('JWT_SECRET is not defined');
+    }
+    return secrets[0]!;
 }
 
 // Security: Define JWT payload interface

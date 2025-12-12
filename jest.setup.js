@@ -1,3 +1,3 @@
-import { TransformStream } from 'web-streams-polyfill/dist/ponyfill.es6.js';
+import { TransformStream } from 'web-streams-polyfill';
 
 global.TransformStream = TransformStream;

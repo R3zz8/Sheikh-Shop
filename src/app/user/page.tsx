@@ -4,7 +4,6 @@ import { toast } from 'sonner';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button, Input, Label } from '@/components/ui';
 import { Crown, Sparkles, Trophy, Award } from 'lucide-react';
 import Image from 'next/image';
-import { createGamificationEngine } from '@/lib/gamification/gamification-engine';
 import Link from 'next/link';
 
 interface UserInfo {
@@ -61,20 +60,39 @@ export default function UserProfilePage() {
 
   // Load gamification summary
   useEffect(() => {
-    (async () => {
+    const fetchGamificationData = async () => {
+      if (!userInfo) return;
+
       try {
-        if (!userInfo) return;
-        const engine = createGamificationEngine();
-        const profile = await engine.getUserProfile(userInfo.id);
-        setGamLevel(profile.level ?? 1);
-        setGamXp(profile.experiencePoints ?? 0);
-        const available = await engine.getAvailableAchievements();
-        setAchievements(available as any);
-      } catch {
+        const [profileRes, achievementsRes] = await Promise.all([
+          fetch(`/api/user/profile/${userInfo.id}`),
+          fetch('/api/achievements')
+        ]);
+
+        if (profileRes.ok) {
+          const profile = await profileRes.json();
+          setGamLevel(profile.level ?? 1);
+          setGamXp(profile.experiencePoints ?? 0);
+        } else {
+          throw new Error('Failed to fetch gamification profile');
+        }
+
+        if (achievementsRes.ok) {
+          const available = await achievementsRes.json();
+          setAchievements(available);
+        } else {
+          throw new Error('Failed to fetch achievements');
+        }
+
+      } catch (error) {
+        console.error(error);
         setGamLevel(null);
         setGamXp(null);
+        setAchievements([]);
       }
-    })();
+    };
+
+    fetchGamificationData();
   }, [userInfo]);
 
   async function handleRevoke(id: string) {

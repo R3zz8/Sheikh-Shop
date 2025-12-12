@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from 'react';
 import ProductTable from '../components/ProductTable';
-import { getProductsAPI } from '../services';
 import type { ProductsWithImages } from '@/types';
 
 function ProductDashboardView() {
@@ -11,7 +10,8 @@ function ProductDashboardView() {
 
   const fetchProducts = async () => {
     try {
-      const response = await getProductsAPI();
+      const result = await fetch('/api/product');
+      const response = await result.json();
 
       if (response?.data) {
         setProducts(response.data);

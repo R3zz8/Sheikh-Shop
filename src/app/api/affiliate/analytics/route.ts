@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
-import { getUserIdFromRequest } from '@/lib/auth/utils';
+import { getUserIdOnlyFromRequest } from '@/lib/auth/utils';
 import { Parser } from '@json2csv/plainjs';
 
 const analyticsQuerySchema = z.object({
@@ -11,7 +11,7 @@ const analyticsQuerySchema = z.object({
 
 export async function GET(req: NextRequest) {
   try {
-    const userId = await getUserIdFromRequest(req);
+    const userId = await getUserIdOnlyFromRequest(req);
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
