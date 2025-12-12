@@ -1,6 +1,7 @@
 // next.config.ts
 import type { NextConfig } from 'next';
 import type { Configuration as WebpackConfig } from 'webpack';
+import { withSentryConfig } from '@sentry/nextjs';
 
 // === تایپ درست برای webpack callback در Next.js 15+ ===
 interface WebpackContext {
@@ -14,7 +15,7 @@ interface WebpackContext {
 }
 
 // === NextConfig اصلی ===
-const nextConfig: NextConfig = {
+let nextConfig: NextConfig = {
   output: 'standalone',
   reactCompiler: true,
 
@@ -85,7 +86,7 @@ const nextConfig: NextConfig = {
 
   poweredByHeader: false,
   compress: true,
-  productionBrowserSourceMaps: false,
+  productionBrowserSourceMaps: true, // Sentry: Must be true for source maps
   trailingSlash: false,
   staticPageGenerationTimeout: 120,
 
@@ -140,4 +141,19 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+const sentryWebpackPluginOptions = {
+  // Additional config options for the Sentry Webpack plugin. Keep in mind that
+  // the following options are set automatically, and overriding them is not
+  // recommended:
+  //   release, url, authToken, configFile, stripPrefix,
+  //   urlPrefix, include, ignore
+
+  silent: true, // Suppresses all logs
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  // For all available options, see:
+  // https://github.com/getsentry/sentry-webpack-plugin#options.
+};
+
+// Make sure to put Sentry last in the export so it can wrap everything else.
+export default withSentryConfig(nextConfig, sentryWebpackPluginOptions);
