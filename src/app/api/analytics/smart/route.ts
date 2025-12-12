@@ -110,13 +110,6 @@ const getHandler = async (request: NextRequest, user: JWTPayload) => {
   }
 };
 
-// Apply rate limiting and admin role check
-const rateLimitedGetHandler = withRateLimit(getHandler);
-const rateLimitedPostHandler = withRateLimit(postHandler);
-
-export const GET = withRole(UserRole.ADMIN)(rateLimitedGetHandler);
-export const POST = withRole(UserRole.ADMIN)(rateLimitedPostHandler);
-
 const postHandler = async (request: NextRequest, user: JWTPayload) => {
   try {
     const body = await request.json();
@@ -238,3 +231,9 @@ const postHandler = async (request: NextRequest, user: JWTPayload) => {
   }
 }
 
+// Apply rate limiting and admin role check
+const rateLimitedGetHandler = withRateLimit(getHandler);
+const rateLimitedPostHandler = withRateLimit(postHandler);
+
+export const GET = withRole(UserRole.ADMIN)(rateLimitedGetHandler);
+export const POST = withRole(UserRole.ADMIN)(rateLimitedPostHandler);
