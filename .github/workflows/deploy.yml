@@ -1,0 +1,203 @@
+name: Deploy to Staging and Production
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - name: Use Node.js 20
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install
+      - name: Lint
+        run: pnpm run lint
+
+  type-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - name: Use Node.js 20
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install
+      - name: Type Check
+        run: pnpm run type-check
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - name: Use Node.js 20
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install
+      - name: Test
+        run: pnpm test
+
+  build:
+    runs-on: ubuntu-latest
+    needs: [lint, type-check, test]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - name: Use Node.js 20
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install
+      - name: Build
+        run: pnpm run build
+      - name: Postbuild (Sitemap)
+        run: pnpm run postbuild
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-artifact
+          path: .next
+
+  deploy-staging:
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: staging
+      url: https://staging.your-app.com
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: build-artifact
+      - name: Deploy to Staging
+        run: |
+          echo "✅ Deployment to staging is a placeholder."
+          echo "TODO: Replace this with your actual deployment script."
+          echo "Example for Vercel: vercel --prod --token=\$VERCEL_TOKEN"
+          echo "Example for AWS S3: aws s3 sync .next s3://your-bucket"
+
+  smoke-test-staging:
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - name: Use Node.js 20
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+      - name: Run Smoke Tests on Staging
+        run: pnpm run test:smoke
+        env:
+          PLAYWRIGHT_TEST_BASE_URL: https://staging.your-app.com # TODO: Update with your real staging URL
+
+  deploy-production-canary:
+    runs-on: ubuntu-latest
+    needs: smoke-test-staging
+    environment:
+      name: production
+      url: https://your-app.com
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: build-artifact
+      - name: Deploy Canary to Production (10% traffic)
+        run: |
+          echo "✅ Canary deployment to production is a placeholder."
+          echo "TODO: Replace with your script for a partial rollout."
+          echo "This might involve deploying to a specific server pool or using traffic routing rules."
+
+  approve-full-rollout:
+    runs-on: ubuntu-latest
+    needs: deploy-production-canary
+    environment: production
+    steps:
+      - name: Manual approval for full rollout
+        uses: trstringer/manual-approval@v1
+        with:
+          secret: ${{ secrets.GITHUB_TOKEN }}
+          approvers: "user1,user2" # TODO: Replace with at least one real GitHub username or team name
+          minimum-approvals: 1
+          issue-title: "🚀 Approve Full Production Rollout"
+          issue-body: "Please review the canary deployment at ${{ needs.deploy-production-canary.environment.url }} and approve the full rollout."
+
+  deploy-production-full:
+    runs-on: ubuntu-latest
+    needs: approve-full-rollout
+    environment: production
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: build-artifact
+      - name: Full Rollout to Production
+        run: |
+          echo "✅ Full production deployment is a placeholder."
+          echo "TODO: Replace with your script to roll out to 100% of traffic."
+
+  smoke-test-production:
+    runs-on: ubuntu-latest
+    needs: deploy-production-full
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - name: Use Node.js 20
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+      - name: Run Smoke Tests on Production
+        run: pnpm run test:smoke
+        env:
+          # IMPORTANT: Create a repository secret named PRODUCTION_URL with your app's live URL.
+          PLAYWRIGHT_TEST_BASE_URL: ${{ secrets.PRODUCTION_URL }}
+
+  rollback-production:
+    runs-on: ubuntu-latest
+    if: failure() && needs.smoke-test-production.result == 'failure'
+    needs: smoke-test-production
+    steps:
+      - name: Automated Rollback Triggered
+        run: |
+          echo "🚨 Production smoke tests failed. Initiating automated rollback."
+          echo "TODO: Add your rollback script here."
+          echo "This should redeploy the last known good commit/artifact."
+          echo "Example: gcloud run deploy my-service --image gcr.io/my-project/my-service@PREVIOUS_STABLE_DIGEST"
