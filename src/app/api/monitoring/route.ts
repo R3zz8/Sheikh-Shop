@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { monitoringSystem } from '@/lib/monitoring';
 import { withRole } from '@/lib/auth/withRole';
-import { JWTPayload } from '@/lib/auth/jwt';
+import type { JWTPayload } from '@/lib/auth/jwt';
 import { UserRole } from '@prisma/client';
 import { withRateLimit } from '@/lib/rateLimiter';
 import { apiRateLimiter } from '@/lib/rateLimiter';
@@ -161,8 +161,8 @@ function getTimeRangeMs(timeRange: string): number {
 }
 
 // Apply rate limiting and admin role check
-const rateLimitedGetHandler = withRateLimit(getHandler);
-const rateLimitedPostHandler = withRateLimit(postHandler);
+const protectedGetHandler = withRole(UserRole.ADMIN)(getHandler);
+const protectedPostHandler = withRole(UserRole.ADMIN)(postHandler);
 
-export const GET = withRole(UserRole.ADMIN)(rateLimitedGetHandler);
-export const POST = withRole(UserRole.ADMIN)(rateLimitedPostHandler);
+export const GET = withRateLimit(apiRateLimiter)(protectedGetHandler);
+export const POST = withRateLimit(apiRateLimiter)(protectedPostHandler);
