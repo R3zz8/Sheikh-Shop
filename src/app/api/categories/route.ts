@@ -1,8 +1,8 @@
 import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 
-// Force dynamic rendering for this API route
-export const dynamic = 'force-dynamic';
+// Revalidate this route every hour
+export const revalidate = 3600;
 
 export async function GET(req: NextRequest) {
   try {
@@ -41,11 +41,16 @@ export async function GET(req: NextRequest) {
       }
     });
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       data: categories,
       count: categories.length
     });
+
+    // Add cache control headers
+    response.headers.set('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=7200');
+
+    return response;
   } catch (error) {
     console.error('Categories API error:', error);
     return NextResponse.json(
