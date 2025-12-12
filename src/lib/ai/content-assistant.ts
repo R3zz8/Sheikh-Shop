@@ -245,8 +245,9 @@ Please generate the complete JSON response following the exact structure specifi
 // Cache AI suggestions
 export async function cacheAISuggestions(cacheKey: string, response: ContentAssistantResponse, ttlSeconds: number = 1800) {
   try {
-    const { redis } = await import('@/lib/redis');
-    await redis.set(cacheKey, JSON.stringify(response), { ex: ttlSeconds });
+    const { getRedis } = await import('@/lib/redis');
+    const cache = getRedis();
+    cache.set(cacheKey, JSON.stringify(response), { ex: ttlSeconds });
   } catch (error) {
     console.warn('Failed to cache AI suggestions:', error);
   }
@@ -255,8 +256,9 @@ export async function cacheAISuggestions(cacheKey: string, response: ContentAssi
 // Get cached AI suggestions
 export async function getCachedAISuggestions(cacheKey: string): Promise<ContentAssistantResponse | null> {
   try {
-    const { redis } = await import('@/lib/redis');
-    const cached = await redis.get(cacheKey);
+    const { getRedis } = await import('@/lib/redis');
+    const cache = getRedis();
+    const cached = cache.get(cacheKey);
     return cached ? JSON.parse(cached) : null;
   } catch (error) {
     console.warn('Failed to get cached AI suggestions:', error);

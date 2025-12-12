@@ -1,18 +1,13 @@
-import { Redis } from 'ioredis';
+// src/lib/cache/redis.ts
+// REFACTORED: This file has been updated to use the central in-memory cache adapter
+// instead of a direct Redis client. The class-based structure is preserved
+// to maintain API compatibility with services that use it.
 
-// Redis client configuration
-const redis = new Redis({
-    host: process.env.REDIS_HOST || 'localhost',
-    port: parseInt(process.env.REDIS_PORT || '6379'),
-    password: process.env.REDIS_PASSWORD,
-    maxRetriesPerRequest: 3,
-    lazyConnect: true,
-    keepAlive: 30000,
-    connectTimeout: 10000,
-    commandTimeout: 5000,
-});
+import { getCacheClient } from './adapter';
 
-// Cache configuration
+const cache = getCacheClient();
+
+// Cache configuration (kept for reference, TTL is handled by the adapter's `set` method)
 export const CACHE_TTL = {
     PRODUCTS: 300, // 5 minutes
     CATEGORIES: 600, // 10 minutes
@@ -30,19 +25,13 @@ export const CACHE_KEYS = {
     PRODUCTS_BY_CATEGORY: (category: string) => `products:category:${category}`,
 };
 
-// Cache service class
+// Cache service class using the in-memory adapter
 export class CacheService {
-    private redis: Redis;
-
-    constructor() {
-        this.redis = redis;
-    }
-
     // Set cache with TTL
     async set(key: string, value: any, ttl: number = 300): Promise<void> {
         try {
             const serializedValue = JSON.stringify(value);
-            await this.redis.setex(key, ttl, serializedValue);
+            cache.set(key, serializedValue, { ex: ttl });
         } catch (error) {
             console.error('Cache set error:', error);
         }
@@ -51,7 +40,7 @@ export class CacheService {
     // Get cache value
     async get<T>(key: string): Promise<T | null> {
         try {
-            const value = await this.redis.get(key);
+            const value = cache.get(key);
             return value ? JSON.parse(value) : null;
         } catch (error) {
             console.error('Cache get error:', error);
@@ -62,16 +51,16 @@ export class CacheService {
     // Delete cache key
     async del(key: string): Promise<void> {
         try {
-            await this.redis.del(key);
+            cache.del(key);
         } catch (error) {
             console.error('Cache delete error:', error);
         }
     }
 
-    // Clear all cache
+    // Clear all cache (Note: This will clear the entire in-memory cache)
     async clear(): Promise<void> {
         try {
-            await this.redis.flushdb();
+            cache.clear();
         } catch (error) {
             console.error('Cache clear error:', error);
         }
@@ -83,14 +72,17 @@ export class CacheService {
             const keys = [
                 CACHE_KEYS.PRODUCTS,
                 CACHE_KEYS.CATEGORIES,
-                ...Object.values(CACHE_KEYS.PRODUCTS_BY_STATUS('ACTIVE')),
-                ...Object.values(CACHE_KEYS.PRODUCTS_BY_STATUS('INACTIVE')),
+                CACHE_KEYS.PRODUCTS_BY_STATUS('ACTIVE'),
+                CACHE_KEYS.PRODUCTS_BY_STATUS('INACTIVE'),
             ];
 
             if (productId) {
                 keys.push(CACHE_KEYS.PRODUCT_DETAIL(productId));
             }
 
+            // Note: In a real-world scenario with a more complex cache,
+            // we'd need a more sophisticated way to invalidate related keys.
+            // For now, we are just deleting specific known keys.
             await Promise.all(keys.map(key => this.del(key)));
         } catch (error) {
             console.error('Cache invalidation error:', error);
@@ -116,20 +108,14 @@ export class CacheService {
         }
     }
 
-    // Health check
+    // Health check (always true for in-memory)
     async healthCheck(): Promise<boolean> {
-        try {
-            await this.redis.ping();
-            return true;
-        } catch (error) {
-            console.error('Redis health check failed:', error);
-            return false;
-        }
+        return true;
     }
 }
 
 // Export singleton instance
 export const cacheService = new CacheService();
 
-// Export Redis instance for direct access if needed
-export { redis }; 
+// Export the raw client for direct access if needed
+export const redis = getCacheClient();

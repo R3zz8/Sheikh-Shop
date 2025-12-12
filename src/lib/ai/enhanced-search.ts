@@ -2,7 +2,7 @@ import type { ProductsWithImages } from '@/types';
 import { resolveProductPrice } from '@/lib/product-pricing';
 import * as tf from '@tensorflow/tfjs-node';
 import Fuse from 'fuse.js';
-import * as natural from 'natural';
+// import * as natural from 'natural'; // Temporarily removed
 import levenshtein from 'levenshtein';
 
 export interface EnhancedSearchResult {
@@ -50,13 +50,13 @@ export class EnhancedAISearchEngine {
   private typoCorrections: Map<string, string> = new Map();
   private fuse!: Fuse<ProductsWithImages>;
   private model: tf.LayersModel | null = null;
-  private tokenizer: natural.WordTokenizer;
-  private stemmer: any;
+  // private tokenizer: natural.WordTokenizer; // Temporarily removed
+  // private stemmer: any; // Temporarily removed
 
   constructor(products: ProductsWithImages[]) {
     this.products = products;
-    this.tokenizer = new natural.WordTokenizer();
-    this.stemmer = natural.PorterStemmer;
+    // this.tokenizer = new natural.WordTokenizer(); // Temporarily removed
+    // this.stemmer = natural.PorterStemmer; // Temporarily removed
     this.initializeFuse();
     this.buildSearchIndex();
     this.generateEmbeddings();
@@ -235,12 +235,11 @@ export class EnhancedAISearchEngine {
     return parts.join(' ').toLowerCase();
   }
 
-  // Enhanced tokenization with stemming and lemmatization
+  // Enhanced tokenization with stemming and lemmatization (Temporarily simplified)
   private tokenize(text: string): string[] {
-    const tokens = this.tokenizer.tokenize(text.toLowerCase()) || [];
+    const tokens = text.toLowerCase().split(/\s+/);
     return tokens
       .filter(token => token.length > 2)
-      .map(token => this.stemmer.stem(token))
       .filter(token => !this.isStopWord(token));
   }
 

@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 import { prisma } from '@/lib/prisma';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 export const alt = 'Sheikh Shop Product';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
