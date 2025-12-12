@@ -9,12 +9,6 @@ import { apiRateLimiter } from '@/lib/rateLimiter';
 
 const getHandler = async (request: NextRequest, user: JWTPayload) => {
   try {
-    // Apply rate limiting
-    const rateLimitResponse = apiRateLimiter(request);
-    if (rateLimitResponse && rateLimitResponse.status === 429) {
-      return rateLimitResponse;
-    }
-
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type') || 'all';
     const timeframe = searchParams.get('timeframe') || 'weekly';
@@ -125,12 +119,6 @@ export const POST = withRole(UserRole.ADMIN)(rateLimitedPostHandler);
 
 const postHandler = async (request: NextRequest, user: JWTPayload) => {
   try {
-    // Apply rate limiting
-    const rateLimitResponse = apiRateLimiter(request);
-    if (rateLimitResponse && rateLimitResponse.status === 429) {
-      return rateLimitResponse;
-    }
-
     const body = await request.json();
     const { query, filters, timeframe } = body;
 

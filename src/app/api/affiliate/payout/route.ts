@@ -3,23 +3,19 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/utils/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { Ratelimit } from "@upstash/ratelimit";
-import { kv } from "@vercel/kv";
+import { rateLimit } from '@/lib/rateLimit';
 import { paypalClient } from '@/lib/paypalClient';
 
-const ratelimit = new Ratelimit({
-  redis: kv,
-  limiter: Ratelimit.slidingWindow(5, "10 s"),
-});
-
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
   const ip = req.headers.get("x-forwarded-for") ?? "127.0.0.1";
+  const limitResult = await rateLimit(`payout:${ip}`, 5, 10);
 
-  const { success } = await ratelimit.limit(ip);
-  if (!success) {
-    return NextResponse.json({ message: 'Too many requests' }, { status: 429 });
+  if (!limitResult.allowed) {
+    const retryAfter = limitResult.retryAfter || 'unknown';
+    return NextResponse.json({ message: `Too many requests. Try again in ${retryAfter} seconds.` }, { status: 429 });
   }
+
+  const session = await getServerSession(authOptions);
 
   if (!session || session.user.role !== 'ADMIN') {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
