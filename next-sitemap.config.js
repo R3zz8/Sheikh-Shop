@@ -26,6 +26,7 @@ const SENSITIVE_PAGES = [
 
 // Combine and format rules for different uses.
 const EXCLUSION_RULES = [
+  ...SENSITIVE_DIRECTORIES,
   ...SENSITIVE_DIRECTORIES.map(dir => `${dir}/*`),
   ...SENSITIVE_PAGES,
   '/403',
