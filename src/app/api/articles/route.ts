@@ -121,12 +121,87 @@ async function canModifyArticle(articleId: string, userId: string, userRole: str
   return false;
 }
 
+// Revalidate this route every 10 minutes
+export const revalidate = 600;
+
+// Admin-only data fetching (always dynamic)
+async function getAdminArticles() {
+  const articles = await prisma.article.findMany({
+    include: {
+      author: {
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          role: true,
+        },
+      },
+      comments: {
+        select: {
+          id: true,
+          status: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+
+  return NextResponse.json({
+    success: true,
+    data: articles,
+  });
+}
+
+// Public data fetching (cached)
+async function getPublicArticles() {
+  const articles = await prisma.article.findMany({
+    where: { status: 'PUBLISHED' },
+    include: {
+      author: {
+        select: {
+          id: true,
+          username: true,
+          email: true,
+        },
+      },
+      comments: {
+        where: { status: 'APPROVED' },
+        select: {
+          id: true,
+          content: true,
+          createdAt: true,
+          author: {
+            select: {
+              username: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+
+  const response = NextResponse.json({
+    success: true,
+    data: articles,
+  });
+
+  // Add cache control headers
+  response.headers.set('Cache-Control', 'public, s-maxage=600, stale-while-revalidate=1200');
+
+  return response;
+}
+
 // GET /api/articles - Get all articles (admin) or published articles (public)
 export async function GET(req: NextRequest) {
   try {
     const url = new URL(req.url);
     const isAdmin = url.searchParams.get('admin') === 'true';
-    
+
     if (isAdmin) {
       // Admin endpoint - requires authentication and admin role
       try {
@@ -137,68 +212,10 @@ export async function GET(req: NextRequest) {
           { status: 401 }
         );
       }
-
-      const articles = await prisma.article.findMany({
-        include: {
-          author: {
-            select: {
-              id: true,
-              username: true,
-              email: true,
-              role: true,
-            },
-          },
-          comments: {
-            select: {
-              id: true,
-              status: true,
-            },
-          },
-        },
-        orderBy: {
-          createdAt: 'desc',
-        },
-      });
-
-      return NextResponse.json({
-        success: true,
-        data: articles,
-      });
+      return getAdminArticles();
     } else {
       // Public endpoint - only published articles
-      const articles = await prisma.article.findMany({
-        where: { status: 'PUBLISHED' },
-        include: {
-          author: {
-            select: {
-              id: true,
-              username: true,
-              email: true,
-            },
-          },
-          comments: {
-            where: { status: 'APPROVED' },
-            select: {
-              id: true,
-              content: true,
-              createdAt: true,
-              author: {
-                select: {
-                  username: true,
-                },
-              },
-            },
-          },
-        },
-        orderBy: {
-          createdAt: 'desc',
-        },
-      });
-
-      return NextResponse.json({
-        success: true,
-        data: articles,
-      });
+      return getPublicArticles();
     }
   } catch (error) {
     console.error('Error fetching articles:', error);

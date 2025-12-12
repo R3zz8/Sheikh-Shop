@@ -4,8 +4,8 @@ import { formatProductUnitResponse } from '@/lib/pricing';
 import { toNumber } from '@/lib/currency';
 import type { ProductWithUnits } from '@/types';
 
-// Force dynamic rendering for this API route
-export const dynamic = 'force-dynamic';
+// Revalidate this route every 60 seconds
+export const revalidate = 60;
 
 function serializeProductForProductAPI(product: any) {
   if (!product) return null;
@@ -108,7 +108,7 @@ export async function GET(req: NextRequest) {
       units: product.units.map((unit: any) => formatProductUnitResponse(unit)),
     }));
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       data: productsWithUnits,
       pagination: {
         page,
@@ -119,6 +119,11 @@ export async function GET(req: NextRequest) {
         hasPrev: page > 1,
       },
     });
+
+    // Add cache control headers
+    response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=120');
+
+    return response;
   } catch (error) {
     console.error('Product API error:', error);
     return NextResponse.json(
