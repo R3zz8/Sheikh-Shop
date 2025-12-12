@@ -81,25 +81,8 @@ module.exports = {
     // ],
   },
 
-  // Add internationalization (hreflang) support for alternate locales.
-  // This will add <xhtml:link rel="alternate" .../> tags to your sitemap entries.
-  alternateRefs: [
-    {
-      href: siteUrl,
-      hreflang: 'en',
-    },
-    {
-      href: `${siteUrl}/ar`,
-      hreflang: 'ar',
-    },
-    // The x-default hreflang is crucial for international targeting.
-    {
-        href: siteUrl,
-        hreflang: 'x-default',
-    }
-  ],
-
-  // Custom transformation function to programmatically set priority and change frequency.
+  // Custom transformation function to programmatically set priority, change frequency,
+  // and generate hreflang alternate links for internationalization.
   transform: async (config, path) => {
     let priority = 0.7; // Default priority for most pages.
     let changefreq = 'daily'; // Default change frequency.
@@ -125,13 +108,31 @@ module.exports = {
       changefreq = 'yearly';
     }
 
-    // Return the final object for the sitemap entry.
-    // `next-sitemap` will automatically handle combining this with `alternateRefs`.
+    // The path for the root Arabic page is /ar, not /ar/.
+    const arabicPath = path === '/' ? '/ar' : `/ar${path}`;
+
+    const alternateRefs = [
+      {
+        href: `${siteUrl}${path}`,
+        hreflang: 'en',
+      },
+      {
+        href: `${siteUrl}${arabicPath}`,
+        hreflang: 'ar',
+      },
+      {
+        href: `${siteUrl}${path}`,
+        hreflang: 'x-default',
+      },
+    ];
+
+    // Return the final object for the sitemap entry, including alternateRefs.
     return {
       loc: path,
       changefreq: changefreq,
       priority: priority,
       lastmod: new Date().toISOString(),
+      alternateRefs,
     };
   },
 };
