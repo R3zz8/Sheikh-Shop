@@ -26,11 +26,16 @@ export default function ClientHeader() {
   const { data: user, refetch } = useUser() as { data: any; refetch: () => void };
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isProductsOpen, setIsProductsOpen] = useState(false);
   const pathname = usePathname();
   const aboutRef = useRef<HTMLDivElement>(null);
   const productsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
 
   // Handle scroll effect
   useEffect(() => {
@@ -119,7 +124,7 @@ export default function ClientHeader() {
       <header
         className={cn(
           'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
-          isScrolled
+          hasMounted && isScrolled
             ? 'bg-amber-950/98 backdrop-blur-2xl shadow-lg'
             : 'bg-amber-950/95 backdrop-blur-xl',
           isMobileMenuOpen && 'z-40'
