@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Send, X, Bot, User, Sparkles, ShoppingCart, Search } from 'lucide-react';
+import Image from 'next/image';
 import type { ProductsWithImages } from '@/types';
 import { formatPrice, convertCurrency } from '@/lib/currency';
 import { useCurrencySafe } from '@/providers/CurrencyProvider';
@@ -295,12 +296,14 @@ export default function Chatbot({ onProductClick, className = "" }: ChatbotProps
                       className="p-3 border border-gray-200 rounded-lg hover:border-amber-300 hover:bg-amber-50 cursor-pointer transition-colors"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100">
+                        <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-gray-100">
                           {product.images && product.images.length > 0 ? (
-                            <img
+                            <Image
                               src={product.images[0]?.image || '/noImage.jpg'}
                               alt={product.name}
-                              className="w-full h-full object-cover"
+                              fill
+                              className="object-cover"
+                              sizes="48px"
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">

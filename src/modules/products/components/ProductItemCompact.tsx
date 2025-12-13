@@ -41,7 +41,7 @@ export default function ProductItemCompact({
   // Fallback if no units are available
   if (!selectedUnit || availableUnits.length === 0) {
     return (
-      <div className="relative bg-white/8 backdrop-blur-sm border border-amber-200/20 rounded-xl overflow-hidden aspect-square">
+      <div className="product-card relative bg-white/8 backdrop-blur-sm border border-amber-200/20 rounded-xl overflow-hidden aspect-square">
         <div className="flex flex-col items-center justify-center h-full p-4 text-center">
           <h2 className="text-white font-bold text-sm mb-2 line-clamp-2">{product.name}</h2>
           <p className="text-amber-300 font-semibold text-lg">{formatEUR(product.basePrice)}</p>
@@ -96,7 +96,7 @@ export default function ProductItemCompact({
 
   return (
     <>
-      <div ref={productRef} className="relative bg-white/8 backdrop-blur-sm border border-amber-200/20 rounded-xl overflow-hidden hover:border-amber-300/40 hover:bg-white/12 transition-all duration-300 group flex flex-col h-full">
+      <div ref={productRef} className="product-card relative bg-white/8 backdrop-blur-sm border border-amber-200/20 rounded-xl overflow-hidden hover:border-amber-300/40 hover:bg-white/12 transition-all duration-300 group flex flex-col h-full">
         {/* Subtle glow effect on hover */}
         <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-orange-500/3 to-yellow-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 

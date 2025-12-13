@@ -115,7 +115,7 @@ export default function ProductItem({
 
   if (!selectedUnit || availableUnits.length === 0) {
     return (
-      <div className="relative bg-white/8 backdrop-blur-sm border border-amber-200/20 rounded-2xl overflow-hidden p-6">
+      <div className="product-card relative bg-white/8 backdrop-blur-sm border border-amber-200/20 rounded-2xl overflow-hidden p-6">
         <div className="text-center">
           <h2 className="text-white font-bold text-lg mb-2">{product.name}</h2>
           <p className="text-gray-300 text-sm mb-3">
@@ -179,7 +179,7 @@ export default function ProductItem({
     <>
       <div 
         ref={productRef} 
-        className="relative bg-white/8 backdrop-blur-sm rounded-xl shadow-md hover:shadow-xl transition-transform duration-300 hover:scale-[1.01] border border-amber-200/20 hover:border-amber-300/40 hover:bg-white/12 flex flex-col h-[420px] lg:h-[440px] group overflow-hidden"
+        className="product-card relative bg-white/8 backdrop-blur-sm rounded-xl shadow-md hover:shadow-xl transition-transform duration-300 hover:scale-[1.01] border border-amber-200/20 hover:border-amber-300/40 hover:bg-white/12 flex flex-col h-[420px] lg:h-[440px] group overflow-hidden"
       >
         {/* Product Image Container with Badges */}
         <Link href={`/products/${product.slug || product.id}`} className="block relative">

@@ -16,6 +16,7 @@ import {
   Loader2,
   RefreshCw
 } from 'lucide-react';
+import Image from 'next/image';
 import type { ProductsWithImages } from '@/types';
 import { formatPrice, convertCurrency } from '@/lib/currency';
 import { useCurrencySafe } from '@/providers/CurrencyProvider';
@@ -311,9 +312,9 @@ export default function ShoppingChatbot({
                                 className="bg-white dark:bg-gray-700 rounded-lg p-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
                               >
                                 <div className="flex items-center gap-2">
-                                  <div className="w-10 h-10 rounded overflow-hidden bg-gray-100 dark:bg-gray-600">
+                                  <div className="relative w-10 h-10 rounded overflow-hidden bg-gray-100 dark:bg-gray-600">
                                     {product.images && product.images.length > 0 ? (
-                                      <img src={product.images[0]?.image || ''} alt={product.name || 'Product'} className="w-full h-full object-cover" />
+                                      <Image src={product.images[0]?.image || ''} alt={product.name || 'Product'} fill className="object-cover" sizes="40px" />
                                     ) : (
                                       <div className="w-full h-full flex items-center justify-center">
                                         <span className="text-gray-400 text-xs">No Image</span>
