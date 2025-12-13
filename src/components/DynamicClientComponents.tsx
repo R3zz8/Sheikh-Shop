@@ -35,6 +35,5 @@ export const AmazingDeals = dynamic(() => import('@/components/AmazingDeals'), {
 
 export const CarouselMobile = dynamic(() => import('@/components/CarouselMobile'), {
     ssr: false,
-    preload: false,
     loading: () => <div className="w-full h-64 bg-gray-900 animate-pulse md:hidden" />,
-} as any);
+});
