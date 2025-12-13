@@ -12,22 +12,22 @@ interface Category {
 const categories: Category[] = [
     {
         name: 'Dates',
-        image: '/dates.jpg',
+        image: '/dates.webp',
         slug: 'dates'
     },
     {
         name: 'Honey',
-        image: '/honey.jpg',
+        image: '/honey.webp',
         slug: 'honey'
     },
     {
         name: 'Saffron',
-        image: '/saffron.jpg',
+        image: '/saffron.webp',
         slug: 'saffron'
     },
     {
         name: 'Other',
-        image: '/other.jpg',
+        image: '/other.webp',
         slug: 'other'
     }
 ];
