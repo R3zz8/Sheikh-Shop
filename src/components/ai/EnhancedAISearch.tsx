@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
 import { Search, X, Filter, SortAsc, Sparkles, TrendingUp, Brain, Zap, Target, Lightbulb } from 'lucide-react';
 import type { ProductsWithImages } from '@/types';
 import { formatPrice, convertCurrency } from '@/lib/currency';
@@ -511,12 +512,14 @@ export default function EnhancedAISearch({
                       className="cursor-pointer p-3 border border-gray-100 rounded-lg hover:border-amber-200 hover:bg-amber-50 transition-colors"
                     >
                       <div className="flex items-start gap-3">
-                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                        <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                           {result.product.images && result.product.images.length > 0 ? (
-                            <img
+                            <Image
                               src={result.product.images[0]?.image || '/noImage.jpg'}
                               alt={result.product.name}
-                              className="w-full h-full object-cover"
+                              fill
+                              className="object-cover"
+                              sizes="48px"
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
