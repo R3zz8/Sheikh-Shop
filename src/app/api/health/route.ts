@@ -1,38 +1,35 @@
-import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 
+/**
+ * Provides a lightweight health check endpoint for monitoring systems.
+ *
+ * @endpoint GET /api/health
+ * @description This endpoint is designed to be a simple, fast, and reliable indicator
+ * that the Next.js server process is running and able to respond to requests.
+ * It intentionally avoids any external dependencies like database or cache connections
+ * to ensure its response time is minimal and not affected by downstream service health.
+ *
+ * A 200 OK response from this endpoint signals that the application is "alive".
+ * For deeper dependency checks (e.g., database connectivity), a separate, less frequently polled
+ * endpoint (e.g., /api/status) should be used.
+ */
 export async function GET() {
   try {
-    // Test database connection
-    await prisma.$queryRaw`SELECT 1`;
-    
-    // Test if the Product table exists and has the isAmazing field
-    const productCount = await prisma.product.count();
-    
+    // PPS-FIX: Removed database queries from the primary health check.
+    // A health check should be lightweight and only confirm the server process is responsive.
+    // It should not depend on external services like the database.
     return NextResponse.json({
       status: 'healthy',
-      database: 'connected',
-      productCount,
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error('Health check failed:', error);
-    
-    let errorMessage = 'Unknown error';
-    if (error instanceof Error) {
-      if (error.message.includes('Can\'t reach database server')) {
-        errorMessage = 'Database connection failed';
-      } else if (error.message.includes('Unknown column') || error.message.includes('does not exist')) {
-        errorMessage = 'Database schema mismatch';
-      } else {
-        errorMessage = error.message;
-      }
-    }
+    // This catch block will now only handle errors from Next.js server itself
+    // rather than database connection errors.
+    console.error('Health check failed unexpectedly:', error);
     
     return NextResponse.json({
       status: 'unhealthy',
-      database: 'disconnected',
-      error: errorMessage,
+      error: error instanceof Error ? error.message : 'An unknown server error occurred',
       timestamp: new Date().toISOString(),
     }, { status: 500 });
   }

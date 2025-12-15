@@ -159,6 +159,7 @@ export async function middleware(request: NextRequest) {
   // Skip auth for specific API routes (handled by their own logic)
   if (
     isApiRoute && (
+      pathname.startsWith('/api/health') || // PPS-FIX: Exclude health check from all middleware processing
       pathname.startsWith('/api/auth') ||
       pathname.startsWith('/api/login') ||
       pathname.startsWith('/api/register') ||
