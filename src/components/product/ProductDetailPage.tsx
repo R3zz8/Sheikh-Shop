@@ -103,24 +103,3 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
         </ErrorBoundary>
     );
 }
-
-/**
- * Mobile-only two-column layout
- */
-<style jsx global>{`
-  @media (max-width: 480px) {
-    .mobile-two-col {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      align-items: start;
-      column-gap: 12px;
-      row-gap: 12px;
-    }
-    .mobile-gallery-col {
-      grid-column: 1 / span 1;
-    }
-    .mobile-info-col {
-      grid-column: 2 / span 1;
-    }
-  }
-`}</style>

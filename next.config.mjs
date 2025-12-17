@@ -1,8 +1,12 @@
 // next.config.mjs
-import { withSentryConfig } from '@sentry/nextjs';
 
-// === NextConfig اصلی ===
-let nextConfig = {
+// NOTE: The `withSentryConfig` wrapper has been removed to align with the latest Next.js integration practices.
+// Sentry is now configured via `sentry.client.config.ts`, `sentry.server.config.ts`, and `instrumentation.ts`.
+
+import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
+
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   output: 'standalone',
 
   async headers() {
@@ -70,39 +74,26 @@ let nextConfig = {
 
   poweredByHeader: false,
   compress: true,
-  productionBrowserSourceMaps: true, // Sentry: Must be true for source maps
+  productionBrowserSourceMaps: true,
   trailingSlash: false,
   staticPageGenerationTimeout: 120,
 
-  // === Webpack با تایپ کامل (بدون ارور) ===
-  webpack: async (
-    config,
-    context
-  ) => {
-    const { dev, isServer } = context;
-
-    // The 'natural' package and its problematic dependency 'webworker-threads'
-    // have been removed, so the Webpack IgnorePlugin is no longer needed.
-
-    // حذف ماژول‌های غیرضروری از کلاینت
+  webpack: (config, { dev, isServer }) => {
     if (!isServer) {
       config.resolve = config.resolve || {};
       config.resolve.fallback = {
         ...config.resolve.fallback,
-        // natural: false, // No longer needed
         aws4: false,
       };
     }
 
-    // فشرده‌سازی در production
     if (!dev) {
       config.optimization = config.optimization || {};
       config.optimization.minimize = true;
     }
 
-    // آنالیز باندل فقط در dev
-    if (!dev && !isServer) {
-      const { BundleAnalyzerPlugin } = await import('webpack-bundle-analyzer');
+    // Use environment variable to control bundle analysis
+    if (process.env.ANALYZE && !dev && !isServer) {
       config.plugins = config.plugins || [];
       config.plugins.push(
         new BundleAnalyzerPlugin({
@@ -115,21 +106,9 @@ let nextConfig = {
 
     return config;
   },
+
+  // Added empty turbopack config to resolve bundler conflicts
+  turbopack: {},
 };
 
-const sentryWebpackPluginOptions = {
-  // Additional config options for the Sentry Webpack plugin. Keep in mind that
-  // the following options are set automatically, and overriding them is not
-  // recommended:
-  //   release, url, authToken, configFile, stripPrefix,
-  //   urlPrefix, include, ignore
-
-  silent: true, // Suppresses all logs
-  org: process.env.SENTRY_ORG,
-  project: process.env.SENTRY_PROJECT,
-  // For all available options, see:
-  // https://github.com/getsentry/sentry-webpack-plugin#options.
-};
-
-// Make sure to put Sentry last in the export so it can wrap everything else.
-export default withSentryConfig(nextConfig, sentryWebpackPluginOptions);
+export default nextConfig;

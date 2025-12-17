@@ -15,7 +15,7 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "react-jsx",
+    "jsx": "preserve",
     "incremental": true,
     "plugins": [
       {
@@ -77,6 +77,5 @@
     "compilerOptions": {
       "module": "CommonJS"
     }
-  },
-  "ignoreBuildErrors": true
+  }
 }
