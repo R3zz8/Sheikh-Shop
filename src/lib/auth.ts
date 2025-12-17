@@ -1,24 +1,20 @@
-import { NextRequest } from 'next/server';
-import { getToken } from 'next-auth/jwt';
-import type { NextAuthOptions } from 'next-auth';
+import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { prisma } from '@/lib/prisma';
 import { verifyPassword } from '@/lib/auth/password';
 
-export interface User {
-  id: string;
-  email: string;
-  name?: string;
-  role?: string;
-}
-
-export const authOptions: NextAuthOptions = {
+export const {
+  handlers: { GET, POST },
+  auth,
+  signIn,
+  signOut,
+} = NextAuth({
   providers: [
     CredentialsProvider({
       name: 'credentials',
       credentials: {
         email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' }
+        password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
@@ -27,7 +23,7 @@ export const authOptions: NextAuthOptions = {
 
         try {
           const user = await prisma.user.findUnique({
-            where: { email: credentials.email },
+            where: { email: credentials.email as string },
             select: {
               id: true,
               email: true,
@@ -36,15 +32,18 @@ export const authOptions: NextAuthOptions = {
               role: true,
               password: true,
               emailVerified: true,
-              canLogin: true
-            }
+              canLogin: true,
+            },
           });
 
           if (!user || !user.password || !user.canLogin) {
             return null;
           }
 
-          const isValidPassword = await verifyPassword(credentials.password, user.password);
+          const isValidPassword = await verifyPassword(
+            credentials.password as string,
+            user.password
+          );
           if (!isValidPassword) {
             return null;
           }
@@ -52,15 +51,17 @@ export const authOptions: NextAuthOptions = {
           return {
             id: user.id,
             email: user.email,
-            name: user.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : undefined,
-            role: user.role
+            name: user.firstName
+              ? `${user.firstName} ${user.lastName || ''}`.trim()
+              : undefined,
+            role: user.role,
           };
         } catch (error) {
           console.error('Auth error:', error);
           return null;
         }
-      }
-    })
+      },
+    }),
   ],
   session: {
     strategy: 'jwt',
@@ -79,45 +80,11 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).role = token.role as string;
       }
       return session;
-    }
+    },
   },
   pages: {
     signIn: '/login',
     error: '/login/error',
   },
   secret: process.env.NEXTAUTH_SECRET,
-};
-
-export async function getServerSession(request: NextRequest): Promise<User | null> {
-  try {
-    const token = await getToken({ req: request });
-    if (!token) return null;
-    
-    return {
-      id: token.sub || '',
-      email: token.email || '',
-      name: token.name || undefined,
-      role: token.role as string || undefined,
-    };
-  } catch (error) {
-    console.error('Error getting server session:', error);
-    return null;
-  }
-}
-
-export async function requireAuth(request: NextRequest): Promise<User> {
-  const user = await getServerSession(request);
-  if (!user) {
-    throw new Error('Authentication required');
-  }
-  return user;
-}
-
-export async function requireRole(request: NextRequest, role: string): Promise<User> {
-  const user = await requireAuth(request);
-  if (user.role !== role) {
-    throw new Error(`Role ${role} required`);
-  }
-  return user;
-}
-
+});

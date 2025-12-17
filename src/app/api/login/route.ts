@@ -13,25 +13,34 @@ const loginSchema = z.object({
   remember: z.boolean().optional(),
 });
 
-// Simplified rate limiting for development
-const loginAttempts = new Map<string, { count: number; resetTime: number }>();
+import { getCacheClient } from '@/lib/cache/adapter';
+
+const rateLimitCache = getCacheClient();
 
 function isLoginRateLimited(email: string): boolean {
   const now = Date.now();
   const windowMs = 15 * 60 * 1000; // 15 minutes
   const maxAttempts = 20; // Increased for development
+  const key = `rate-limit:login:${email}`;
 
-  const record = loginAttempts.get(email);
-  if (!record || now > record.resetTime) {
-    loginAttempts.set(email, { count: 1, resetTime: now + windowMs });
+  const record = rateLimitCache.get(key);
+  if (!record) {
+    rateLimitCache.set(key, JSON.stringify({ count: 1, resetTime: now + windowMs }), { ex: windowMs / 1000 });
     return false;
   }
 
-  if (record.count >= maxAttempts) {
+  const data = JSON.parse(record);
+  if (now > data.resetTime) {
+    rateLimitCache.set(key, JSON.stringify({ count: 1, resetTime: now + windowMs }), { ex: windowMs / 1000 });
+    return false;
+  }
+
+  if (data.count >= maxAttempts) {
     return true;
   }
 
-  record.count++;
+  data.count++;
+  rateLimitCache.set(key, JSON.stringify(data), { ex: (data.resetTime - now) / 1000 });
   return false;
 }
 
