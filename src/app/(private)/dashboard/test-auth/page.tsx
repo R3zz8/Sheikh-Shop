@@ -1,10 +1,9 @@
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
 export default async function TestAuthPage() {
-  const session = await getServerSession(authOptions);
+  const session = await auth();
   const user = session?.user;
   
   return (
@@ -29,4 +28,3 @@ export default async function TestAuthPage() {
     </div>
   );
 }
-

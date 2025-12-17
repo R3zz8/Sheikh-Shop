@@ -66,13 +66,15 @@ function setCurrencyCookieIfNeeded(request: NextRequest, response: NextResponse)
 const ALLOWED_ROLES = ['AUTHOR', 'EDITOR', 'ADMIN', 'SUPERADMIN', 'SYSTEM'] as const;
 type AllowedRole = typeof ALLOWED_ROLES[number];
 
-// Security: Simple in-memory rate limiting (use Redis in production)
-const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+import { getCacheClient } from '@/lib/cache/adapter';
+
+const rateLimitCache = getCacheClient();
 
 function isRateLimited(ip: string, userRole?: string): boolean {
   const now = Date.now();
   const windowMs = 15 * 60 * 1000; // 15 minutes
   const maxRequests = 200; // Increased from 100 for admin operations
+  const key = `rate-limit:${ip}`;
 
   console.log('[RATE_LIMIT] Checking rate limit', { ip, now, userRole });
 
@@ -82,55 +84,31 @@ function isRateLimited(ip: string, userRole?: string): boolean {
     return false;
   }
 
-  const record = rateLimitMap.get(ip);
-  if (!record || now > record.resetTime) {
-    rateLimitMap.set(ip, { count: 1, resetTime: now + windowMs });
+  const record = rateLimitCache.get(key);
+  if (!record) {
+    rateLimitCache.set(key, JSON.stringify({ count: 1, resetTime: now + windowMs }), { ex: windowMs / 1000 });
     console.log('[RATE_LIMIT] New window started', { ip, count: 1 });
     return false;
   }
 
-  if (record.count >= maxRequests) {
-    console.log('[RATE_LIMIT] Rate limit exceeded', { ip, count: record.count, maxRequests });
+  const data = JSON.parse(record);
+  if (now > data.resetTime) {
+    rateLimitCache.set(key, JSON.stringify({ count: 1, resetTime: now + windowMs }), { ex: windowMs / 1000 });
+    console.log('[RATE_LIMIT] New window started', { ip, count: 1 });
+    return false;
+  }
+
+  if (data.count >= maxRequests) {
+    console.log('[RATE_LIMIT] Rate limit exceeded', { ip, count: data.count, maxRequests });
     return true;
   }
 
-  record.count++;
-  console.log('[RATE_LIMIT] Request allowed', { ip, count: record.count, maxRequests });
+  data.count++;
+  rateLimitCache.set(key, JSON.stringify(data), { ex: (data.resetTime - now) / 1000 });
+  console.log('[RATE_LIMIT] Request allowed', { ip, count: data.count, maxRequests });
   return false;
 }
 
-// Security: Add security headers to response
-function addSecurityHeaders(response: NextResponse): NextResponse {
-  // Security: Strict security headers
-  response.headers.set('X-Frame-Options', 'DENY');
-  response.headers.set('X-Content-Type-Options', 'nosniff');
-  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-  response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
-  
-  // Security: Content Security Policy
-  response.headers.set(
-    'Content-Security-Policy',
-    [
-      "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-      "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: https:",
-      "font-src 'self'",
-      "connect-src 'self'",
-      "frame-ancestors 'none'",
-      "base-uri 'self'",
-      "form-action 'self'",
-    ].join('; ')
-  );
-  
-  // Security: Additional security headers
-  response.headers.set('X-XSS-Protection', '1; mode=block');
-  response.headers.set('X-DNS-Prefetch-Control', 'off');
-  response.headers.set('X-Download-Options', 'noopen');
-  response.headers.set('X-Permitted-Cross-Domain-Policies', 'none');
-  
-  return response;
-}
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
@@ -150,7 +128,7 @@ export async function middleware(request: NextRequest) {
     console.log('[MIDDLEWARE] Auth page, skipping auth check');
     const response = NextResponse.next();
     setCurrencyCookieIfNeeded(request, response);
-    return addSecurityHeaders(response);
+    return response;
   }
 
   // Capture IP early for later rate limiting
@@ -172,7 +150,7 @@ export async function middleware(request: NextRequest) {
   ) {
     const response = NextResponse.next();
     setCurrencyCookieIfNeeded(request, response);
-    return addSecurityHeaders(response);
+    return response;
   }
 
   // Define public routes that don't require authentication
@@ -193,7 +171,7 @@ export async function middleware(request: NextRequest) {
   if (isPublicRoute && !isApiRoute) {
     const response = NextResponse.next();
     setCurrencyCookieIfNeeded(request, response);
-    return addSecurityHeaders(response);
+    return response;
   }
 
   // Security: Get tokens from cookies
@@ -212,7 +190,7 @@ export async function middleware(request: NextRequest) {
       : NextResponse.redirect(new URL('/login', request.url));
     
     setCurrencyCookieIfNeeded(request, response);
-    return addSecurityHeaders(response);
+    return response;
   }
 
   let user: { id: string; email: string; role: string; sessionId: string } | null = null;
@@ -284,7 +262,7 @@ export async function middleware(request: NextRequest) {
         response.cookies.delete('refresh-token');
         
         setCurrencyCookieIfNeeded(request, response);
-        return addSecurityHeaders(response);
+        return response;
       }
     }
   }
@@ -300,7 +278,7 @@ export async function middleware(request: NextRequest) {
       ? NextResponse.json({ error: 'Too many requests' }, { status: 429 })
       : NextResponse.redirect(new URL('/login', request.url));
     setCurrencyCookieIfNeeded(request, response);
-    return addSecurityHeaders(response);
+    return response;
   }
 
   if (!user) {
@@ -309,7 +287,7 @@ export async function middleware(request: NextRequest) {
       : NextResponse.redirect(new URL('/login', request.url));
     
     setCurrencyCookieIfNeeded(request, response);
-    return addSecurityHeaders(response);
+    return response;
   }
 
   // Security: Role-gate only protected app areas; allow any authenticated user for API routes
@@ -317,7 +295,7 @@ export async function middleware(request: NextRequest) {
   if (requiresRole && !ALLOWED_ROLES.includes(user.role as AllowedRole)) {
     const response = NextResponse.redirect(new URL('/login', request.url));
     setCurrencyCookieIfNeeded(request, response);
-    return addSecurityHeaders(response);
+    return response;
   }
 
   // Security: Pass user context downstream
@@ -330,7 +308,7 @@ export async function middleware(request: NextRequest) {
   // Handle affiliate referral tracking
   await handleReferralTracking(request, response);
   
-  return addSecurityHeaders(response);
+  return response;
 }
 
 // Affiliate referral tracking

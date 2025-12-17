@@ -8,7 +8,7 @@ import { z } from 'zod';
 // Simplified registration validation schema for development
 const registrationSchema = z.object({
     email: z.string().email('Invalid email format'),
-    password: z.string().min(6, 'Password must be at least 6 characters'), // Further reduced for testing
+    password: z.string().min(8, 'Password must be at least 8 characters').max(128, 'Password must be at most 128 characters'),
     firstName: z.string().min(1, 'First name is required').max(100),
     lastName: z.string().min(1, 'Last name is required').max(100),
     username: z.string().min(3, 'Username must be at least 3 characters').max(50).optional(),
