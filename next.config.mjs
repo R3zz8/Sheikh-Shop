@@ -1,23 +1,9 @@
-// next.config.ts
-import type { NextConfig } from 'next';
-import type { Configuration as WebpackConfig } from 'webpack';
+// next.config.mjs
 import { withSentryConfig } from '@sentry/nextjs';
 
-// === تایپ درست برای webpack callback در Next.js 15+ ===
-interface WebpackContext {
-  dev: boolean;
-  isServer: boolean;
-  buildId: string;
-  dir: string;
-  config: NextConfig;
-  defaultLoaders: any;
-  totalPages: number;
-}
-
 // === NextConfig اصلی ===
-let nextConfig: NextConfig = {
+let nextConfig = {
   output: 'standalone',
-  reactCompiler: true,
 
   async headers() {
     return [
@@ -82,8 +68,6 @@ let nextConfig: NextConfig = {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
   },
 
-  turbopack: {},
-
   poweredByHeader: false,
   compress: true,
   productionBrowserSourceMaps: true, // Sentry: Must be true for source maps
@@ -91,10 +75,10 @@ let nextConfig: NextConfig = {
   staticPageGenerationTimeout: 120,
 
   // === Webpack با تایپ کامل (بدون ارور) ===
-  webpack: (
-    config: WebpackConfig,
-    context: WebpackContext
-  ): WebpackConfig => {
+  webpack: async (
+    config,
+    context
+  ) => {
     const { dev, isServer } = context;
 
     // The 'natural' package and its problematic dependency 'webworker-threads'
@@ -118,7 +102,7 @@ let nextConfig: NextConfig = {
 
     // آنالیز باندل فقط در dev
     if (!dev && !isServer) {
-      const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer') as typeof import('webpack-bundle-analyzer');
+      const { BundleAnalyzerPlugin } = await import('webpack-bundle-analyzer');
       config.plugins = config.plugins || [];
       config.plugins.push(
         new BundleAnalyzerPlugin({

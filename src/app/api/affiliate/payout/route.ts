@@ -1,8 +1,7 @@
 // src/app/api/affiliate/payout/route.ts
 import { NextResponse } from 'next/server';
 import { prisma } from '@/utils/prisma';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@/lib/auth/index';
 import { rateLimit } from '@/lib/rateLimit';
 import { paypalClient } from '@/lib/paypalClient';
 
@@ -15,7 +14,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: `Too many requests. Try again in ${retryAfter} seconds.` }, { status: 429 });
   }
 
-  const session = await getServerSession(authOptions);
+  const session = await auth();
 
   if (!session || session.user.role !== 'ADMIN') {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });

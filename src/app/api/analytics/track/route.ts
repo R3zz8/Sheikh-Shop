@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@/lib/auth/index';
 import { prisma } from '@/lib/prisma';
 import { analyticsRateLimiter } from '@/lib/rateLimiter';
 import { withValidation } from '@/lib/validation';
@@ -29,7 +28,7 @@ export async function POST(request: NextRequest) {
             return rateLimitResponse;
         }
 
-        const session = await getServerSession(authOptions);
+        const session = await auth();
         const event: AnalyticsEvent = await request.json();
 
     // Validate required fields
@@ -192,7 +191,7 @@ async function updateUserAnalytics(userId: string, event: AnalyticsEvent) {
 // GET endpoint to retrieve analytics data
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     
     if (!session?.user?.id) {
       return NextResponse.json(

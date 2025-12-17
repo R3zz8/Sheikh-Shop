@@ -4,7 +4,7 @@ import QRCode from 'qrcode';
 import { getCurrentUserId } from './session';
 import { logLogin } from './audit';
 import { verifyCsrfToken } from '@/lib/auth/csrf';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 
 // Security: Temporary 2FA secret storage (in production, use Redis)

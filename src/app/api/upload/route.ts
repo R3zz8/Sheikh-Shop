@@ -3,8 +3,7 @@ import { getCloudinary, pingCloudinary } from '@/lib/cloudinary-safe';
 import { checkAccess } from '@/lib/checkAccess';
 import { prisma } from '@/lib/prisma';
 import { rateLimit } from '@/lib/rateLimit';
-import { getServerSession as getNextAuthServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@/lib/auth/index';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_SIZE_BYTES = 2 * 1024 * 1024; // 2MB

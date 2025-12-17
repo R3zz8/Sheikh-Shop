@@ -306,13 +306,13 @@ export async function middleware(request: NextRequest) {
   setCurrencyCookieIfNeeded(request, response);
 
   // Handle affiliate referral tracking
-  await handleReferralTracking(request, response);
+  handleReferralTracking(request, response);
   
   return response;
 }
 
 // Affiliate referral tracking
-async function handleReferralTracking(request: NextRequest, response: NextResponse) {
+function handleReferralTracking(request: NextRequest, response: NextResponse) {
   const refCode = request.nextUrl.searchParams.get('ref');
 
   if (refCode) {
@@ -331,53 +331,13 @@ async function handleReferralTracking(request: NextRequest, response: NextRespon
       const userAgent = request.headers.get('user-agent') || 'unknown';
 
       // Use a separate async function to avoid blocking the middleware
-      (async () => {
-        try {
-          const { prisma } = await import('@/lib/prisma');
-          const affiliate = await prisma.affiliate.findUnique({ where: { referralCode: refCode } });
-
-          if (affiliate) {
-            await prisma.referral.create({
-              data: {
-                affiliateId: affiliate.id,
-                ipAddress: ip,
-                userAgent: userAgent,
-              },
-            });
-
-            // Increment total clicks
-            await prisma.affiliate.update({
-              where: { id: affiliate.id },
-              data: { totalClicks: { increment: 1 } },
-            });
-
-            // New: Update daily stats
-            const today = new Date();
-            today.setUTCHours(0, 0, 0, 0);
-
-            await prisma.affiliateDailyStat.upsert({
-              where: {
-                affiliateId_date: {
-                  affiliateId: affiliate.id,
-                  date: today,
-                },
-              },
-              update: {
-                clicks: { increment: 1 },
-              },
-              create: {
-                affiliateId: affiliate.id,
-                date: today,
-                clicks: 1,
-                sales: 0, // Sales are tracked separately
-                commissionEarned: 0, // Commission is tracked separately
-              },
-            });
-          }
-        } catch (dbError) {
-          console.error('Error logging referral visit:', dbError);
-        }
-      })();
+      fetch(new URL('/api/track-referral', request.url), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ refCode, ip, userAgent }),
+      });
 
     } catch (error) {
       console.error('Error in referral tracking:', error);
