@@ -469,12 +469,15 @@ export default function PaymentAnalyticsPage() {
                     <YAxis yAxisId="left" />
                     <YAxis yAxisId="right" orientation="right" />
                     <Tooltip
-                      formatter={(value: number, name: string) => [
-                        name === 'Amount (€)' 
-                          ? `€${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                          : value.toLocaleString(),
-                        name,
-                      ]}
+                      formatter={(value: number, name: string) => {
+                        if (value === undefined) return [0, name];
+                        return [
+                          name === 'Amount (€)'
+                            ? `€${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                            : value.toLocaleString(),
+                          name,
+                        ];
+                      }}
                       labelFormatter={(label) => formatDate(label)}
                     />
                     <Legend />

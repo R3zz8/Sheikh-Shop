@@ -1,4 +1,4 @@
-import { getServerSession } from '@/lib/auth';
+import { auth } from '@/lib/auth/index';
 import { jwtVerify } from 'jose';
 
 export async function checkAccess(req: Request, allowedRoles: string[]) {
@@ -12,9 +12,9 @@ export async function checkAccess(req: Request, allowedRoles: string[]) {
         }
 
         // Fallback: try NextAuth session
-        const session = await getServerSession(req as any);
-        if (session?.role) {
-            const role = session.role.toUpperCase();
+        const session = await auth();
+        if (session?.user?.role) {
+            const role = session.user.role.toUpperCase();
             const allowed = allowedRoles.map(r => r.toUpperCase());
             return allowed.includes(role);
         }

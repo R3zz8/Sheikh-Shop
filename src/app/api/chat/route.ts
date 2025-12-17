@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@/lib/auth/index';
 import { prisma } from '@/lib/prisma';
 import { createShoppingAssistant, type ChatContext, type ChatMessage } from '@/lib/ai/chatbot';
 import { withRateLimit } from '@/lib/rateLimiter';
@@ -8,7 +7,7 @@ import { apiRateLimiter } from '@/lib/rateLimiter';
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     
     // Apply rate limiting
     const rateLimitResponse = apiRateLimiter(request);
@@ -108,7 +107,7 @@ export async function POST(request: NextRequest) {
 // GET endpoint to retrieve chat history
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     
     if (!session?.user?.id) {
       return NextResponse.json(

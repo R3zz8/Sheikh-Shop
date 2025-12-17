@@ -183,7 +183,7 @@ export async function PATCH(req: NextRequest) {
         }
 
         // Security: Verify current password
-        const bcrypt = await import('bcrypt');
+        const bcrypt = await import('bcryptjs');
         const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
 
         if (!isCurrentPasswordValid) {
