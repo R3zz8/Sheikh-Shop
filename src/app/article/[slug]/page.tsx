@@ -16,6 +16,7 @@ import JsonLd from '@/components/seo/JsonLd';
 import { getLanguageFromPath, generateHreflangPaths, supportedLanguages } from '@/i18n.config';
 import { generatePageSEO } from '@/lib/seo/core';
 import { manageHeadings } from '@/lib/seo/heading-manager';
+import { unstable_noStore as noStore } from 'next/cache';
 
 // Enable ISR with 60-second revalidation
 export const revalidate = 60;
@@ -27,9 +28,9 @@ interface ArticlePageProps {
     searchParams?: { [key: string]: string | string[] | undefined };
 }
 
-export async function generateMetadata({ params }: ArticlePageProps) {
-    const result = await getArticleBySlug(params.slug);
-    
+export async function generateMetadata({ params: { slug } }: ArticlePageProps) {
+    const result = await getArticleBySlug(slug);
+
     if (!result.success || !result.data) {
         return generatePageSEO({
             title: 'Article Not Found',
@@ -83,6 +84,7 @@ export async function generateMetadata({ params }: ArticlePageProps) {
 }
 
 async function getArticle(slug: string): Promise<ArticleWithAuthor | null> {
+    noStore();
     try {
         const result = await getArticleBySlug(slug);
         if (result.success && result.data) {
@@ -113,8 +115,8 @@ function formatAuthorName(author: any): string {
     return author.email.split('@')[0];
 }
 
-export default async function ArticlePage({ params }: ArticlePageProps) {
-    const article = await getArticle(params.slug);
+export default async function ArticlePage({ params: { slug } }: ArticlePageProps) {
+    const article = await getArticle(slug);
 
     if (!article) {
         notFound();
