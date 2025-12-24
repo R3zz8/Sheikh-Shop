@@ -570,7 +570,10 @@ export async function getArticleById(id: string) {
     }
 }
 
+import { unstable_noStore as noStore } from 'next/cache';
+
 export async function getArticleBySlug(slug: string) {
+    noStore();
     try {
         const article = await prisma.article.findUnique({
             where: {
