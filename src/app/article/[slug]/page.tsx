@@ -18,8 +18,8 @@ import { generatePageSEO } from '@/lib/seo/core';
 import { manageHeadings } from '@/lib/seo/heading-manager';
 import { unstable_noStore as noStore } from 'next/cache';
 
-// Enable ISR with 60-second revalidation
-export const revalidate = 60;
+// Force dynamic rendering to ensure the correct article is loaded for each slug.
+export const dynamic = 'force-dynamic';
 
 interface ArticlePageProps {
     params: {
