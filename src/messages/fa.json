@@ -72,5 +72,45 @@
     "faq_payment_answer": "ما کارت‌های اعتباری اصلی و پرداخت‌های امن شخص ثالث را می‌پذیریم.",
     "faq_delivery_question": "تحویل چقدر طول می‌کشد؟",
     "faq_delivery_answer": "تحویل استاندارد بسته به منطقه شما ۳ تا ۷ روز کاری طول می‌کشد."
+  },
+  "PremiumMobileMenu": {
+    "sheikh_shop": "فروشگاه شیخ",
+    "luxury_redefined": "تجمل بازتعریف شده",
+    "home": "خانه",
+    "products": "محصولات",
+    "sheikh_food": "غذای شیخ",
+    "sheikh_tech": "تکنولوژی شیخ",
+    "about_us": "درباره ما",
+    "articles": "مقالات",
+    "faq": "سوالات متداول",
+    "affiliate": "همکاری در فروش",
+    "privacy": "حریم خصوصی",
+    "register": "ثبت نام",
+    "login": "ورود",
+    "sign_out": "خروج"
+  },
+  "CartDropdown": {
+    "shopping_cart": "سبد خرید",
+    "items": "مورد",
+    "clear_all": "پاک کردن همه",
+    "loading_cart": "در حال بارگذاری سبد خرید...",
+    "cart_is_empty": "سبد خرید شما خالی است",
+    "add_premium_products": "برای شروع، محصولات ویژه اضافه کنید",
+    "subtotal": "جمع کل",
+    "proceed_to_checkout": "ادامه برای تسویه حساب"
+  },
+  "UserBadge": {
+    "super_admin": "مدیر کل",
+    "administrator": "مدیر",
+    "moderator": "ناظر",
+    "editor": "ویرایشگر",
+    "user": "کاربر",
+    "level": "سطح",
+    "xp": "تجربه",
+    "progress_to_next_level": "پیشرفت به سطح بعدی",
+    "view_leaderboard": "مشاهده جدول امتیازات",
+    "account_settings": "تنظیمات حساب",
+    "security": "امنیت",
+    "sign_out": "خروج"
   }
 }
