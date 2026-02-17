@@ -89,3 +89,6 @@ Desktop.ini
 
 # Local development files
 *.local
+
+# Build reports
+/.reports/
