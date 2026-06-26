@@ -14,14 +14,14 @@
   "author": "Sheikh Shop Team",
   "license": "MIT",
   "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=9.0.0"
+    "node": "^20.0.0",
+    "pnpm": ">=9.0.0"
   },
   "scripts": {
     "dev": "next dev",
     "dev:turbo": "next dev --turbo",
     "build": "pnpm prisma:generate && next build",
-    "prisma:generate": "npx prisma generate",
+    "prisma:generate": "prisma generate",
     "build:webpack": "next build",
     "start": "next start",
     "prod": "next build && next start",
@@ -150,8 +150,12 @@
   "overrides": {
     "got": "^14.4.9",
     "nice-color-palettes": "^4.0.0",
-    "three-bmfont-text": "^3.0.1",
-    "webworker-threads": "0.7.17"
+    "three-bmfont-text": "^3.0.1"
+  },
+  "pnpm": {
+    "overrides": {
+      "zeptomatch": "1.1.4"
+    }
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
