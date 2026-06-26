@@ -20,7 +20,8 @@
   "scripts": {
     "dev": "next dev",
     "dev:turbo": "next dev --turbo",
-    "build": "next build",
+    "build": "pnpm prisma:generate && next build",
+    "prisma:generate": "npx prisma generate",
     "build:webpack": "next build",
     "start": "next start",
     "prod": "next build && next start",
@@ -51,7 +52,7 @@
     "test:smoke": "playwright test tests/smoke.spec.ts",
     "clean": "rm -rf .next out dist build",
     "postbuild": "next-sitemap",
-    "postinstall": "PRISMA_GENERATE_SKIP_AUTOINSTALL=true prisma generate || true",
+    "postinstall": "echo \"Prisma generate skipped in postinstall\"",
     "performance:monitor": "node scripts/performance-monitor.js",
     "performance:analyze": "node scripts/analyze-bundle.js",
     "performance:lighthouse": "lighthouse http://localhost:3000 --output=json --output-path=./lighthouse-results.json",
