@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: sheikhshops
+    runtime: node
+    plan: free
+    buildCommand: "export PRISMA_GENERATE_SKIP_AUTOINSTALL=true && pnpm install --frozen-lockfile && pnpm prisma:generate && pnpm run build"
+    startCommand: "pnpm start"
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: PRISMA_GENERATE_SKIP_AUTOINSTALL
+        value: true
+      - key: PRISMA_SKIP_POSTINSTALL_GENERATE
+        value: true
