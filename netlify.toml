@@ -1,0 +1,7 @@
+[build]
+  command = "pnpm install --frozen-lockfile && pnpm prisma:generate && pnpm run build"
+  publish = ".next"
+
+[build.environment]
+  PRISMA_GENERATE_SKIP_AUTOINSTALL = "true"
+  NODE_VERSION = "20"
