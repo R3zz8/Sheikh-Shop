@@ -16,7 +16,7 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Environment, useGLTF, Html } from '@react-three/drei';
+import { OrbitControls, Environment, useGLTF, Html as ThreeHtml } from '@react-three/drei';
 import type { ProductsWithImages } from '@/types';
 import { createARManager, type ARProductData } from '@/lib/ar/ar-manager';
 
@@ -39,12 +39,12 @@ function ProductModel({ productData }: { productData: ARProductData }) {
 
   if (!isLoaded) {
     return (
-      <Html center>
+      <ThreeHtml center>
         <div className="flex items-center gap-2 text-white">
           <Loader2 className="w-4 h-4 animate-spin" />
           <span>Loading 3D model...</span>
         </div>
-      </Html>
+      </ThreeHtml>
     );
   }
 
