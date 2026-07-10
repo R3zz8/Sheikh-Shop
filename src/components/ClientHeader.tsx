@@ -92,9 +92,9 @@ export default function ClientHeader() {
   };
 
   const navigation = [
-    { name: 'Home', href: '/', icon: Home },
+    { name: 'خانه', href: '/', icon: Home },
     {
-      name: 'Products',
+      name: 'محصولات',
       href: '/products',
       icon: ShoppingBag,
       subItems: [
@@ -103,7 +103,7 @@ export default function ClientHeader() {
       ],
     },
     {
-      name: 'About Us',
+      name: 'درباره ما',
       href: '/about-us',
       icon: Users,
       subItems: [
@@ -111,7 +111,7 @@ export default function ClientHeader() {
         { name: 'Contact Us', href: 'https://sheikhshops.com/contact' },
       ],
     },
-    { name: 'Article', href: '/article', icon: FileText },
+    { name: 'مقالات', href: '/article', icon: FileText },
   ];
 
   const isActive = (href: string) => {
@@ -122,6 +122,7 @@ export default function ClientHeader() {
   return (
     <>
       <header
+        dir="rtl"
         className={cn(
           'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
           hasMounted && isScrolled
@@ -142,7 +143,7 @@ export default function ClientHeader() {
                 <div className="absolute inset-0 blur-xl bg-amber-400 opacity-60" />
               </div>
               <Link href="/" className="font-bold text-2xl bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
-                Sheikh Shop
+                شیخ شاپ
               </Link>
             </div>
 
@@ -170,7 +171,7 @@ export default function ClientHeader() {
                   );
                 }
 
-                if (item.name === 'Products') {
+                if (item.name === 'محصولات') {
                   return (
                     <div
                       ref={productsRef}
@@ -195,7 +196,7 @@ export default function ClientHeader() {
                       {isProductsOpen && (
                         <div
                           onMouseLeave={() => setIsProductsOpen(false)}
-                          className="absolute left-0 mt-2 w-[140px] bg-gradient-to-r from-amber-600 to-orange-600 backdrop-blur-xl border border-amber-600 rounded-2xl shadow-2xl z-50 animate-fadeIn py-2"
+                          className="absolute right-0 mt-2 w-[140px] bg-gradient-to-r from-amber-600 to-orange-600 backdrop-blur-xl border border-amber-600 rounded-2xl shadow-2xl z-50 animate-fadeIn py-2"
                         >
                           {item.subItems.map((subItem) => (
                             <Link
@@ -236,7 +237,7 @@ export default function ClientHeader() {
                     {isAboutOpen && (
                       <div
                         onMouseLeave={() => setIsAboutOpen(false)}
-                        className="absolute left-0 mt-2 w-[140px] bg-gradient-to-r from-amber-600 to-orange-600 backdrop-blur-xl border border-amber-600 rounded-2xl shadow-2xl z-50 animate-fadeIn py-2"
+                        className="absolute right-0 mt-2 w-[140px] bg-gradient-to-r from-amber-600 to-orange-600 backdrop-blur-xl border border-amber-600 rounded-2xl shadow-2xl z-50 animate-fadeIn py-2"
                       >
                         {item.subItems.map((subItem) => (
                           <Link
@@ -269,13 +270,13 @@ export default function ClientHeader() {
                 <div className="hidden md:flex items-center gap-3">
                   <Link href="/login">
                     <button className="px-5 py-2.5 rounded-xl bg-amber-800/50 border border-amber-600 text-amber-100 font-medium">
-                      Sign In
+                      ورود
                     </button>
                   </Link>
 
                   <Link href="/register">
                     <button className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 text-white font-bold shadow-lg shadow-amber-500/30">
-                      Get Started
+                      ثبت نام
                     </button>
                   </Link>
                 </div>
