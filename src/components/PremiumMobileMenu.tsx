@@ -85,8 +85,8 @@ export default function PremiumMobileMenu({
       icon: ShoppingBag,
       subItems: [
         // --- MODIFIED: Sub-items now have icons ---
-        { name: 'Sheikh Food', href: '/products', icon: Beef },
-        { name: 'Sheikh Tech', href: '/tech-products', icon: Cpu },
+        { name: 'محصولات غذایی شیخ', href: '/products', icon: Beef },
+        { name: 'محصولات فناورانه شیخ', href: '/tech-products', icon: Cpu },
       ]
     },
     { name: 'درباره ما',    href: '/about-us',  icon: Users },
@@ -128,8 +128,8 @@ export default function PremiumMobileMenu({
                 <Crown className="w-12 h-12 text-amber-400" />
                 <div className="absolute inset-0 blur-xl bg-amber-400 opacity-60 animate-pulse" />
               </div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-amber-200 via-amber-100 to-orange-200 bg-clip-text text-transparent">
-                شیخ شاپ
+              <h1 className="text-[26px] md:text-[30px] font-bold bg-gradient-to-r from-amber-200 via-amber-100 to-orange-200 bg-clip-text text-transparent select-none">
+                فروشگاه شیخ
               </h1>
               <p className="text-amber-300 text-sm mt-1 font-light">تعریف دوباره شکوه</p>
             </motion.div>
@@ -252,7 +252,7 @@ export default function PremiumMobileMenu({
               {!user ? (
                 <>
                   <Link href="/register" onClick={onClose}>
-                    <motion.button className="w-full px-6 py-5 rounded-2xl bg-gradient-to-r from-amber-600 via-amber-500 to-orange-500 text-white font-bold shadow-lg shadow-amber-500/30 hover:shadow-amber-500/50 relative overflow-hidden group" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                    <motion.button className="w-full px-6 py-5 rounded-2xl bg-gradient-to-r from-amber-600 via-amber-500 to-orange-500 text-white font-bold text-[16px] md:text-[18px] shadow-lg shadow-amber-500/30 hover:shadow-amber-500/50 relative overflow-hidden group" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                       <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-full transition-transform duration-1000" />
                       <span className="relative flex items-center justify-center gap-2">
                         <Sparkles className="w-5 h-5 animate-pulse" />
@@ -261,7 +261,7 @@ export default function PremiumMobileMenu({
                     </motion.button>
                   </Link>
                   <Link href="/login" onClick={onClose}>
-                    <motion.button className="w-full px-6 py-5 rounded-2xl bg-amber-800/50 border border-amber-600 text-amber-100 font-medium hover:bg-amber-700/50" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                    <motion.button className="w-full px-6 py-5 rounded-2xl bg-amber-800/50 border border-amber-600 text-amber-100 font-medium text-[16px] md:text-[18px] hover:bg-amber-700/50" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                       ورود
                     </motion.button>
                   </Link>

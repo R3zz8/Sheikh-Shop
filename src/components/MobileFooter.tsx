@@ -24,12 +24,12 @@ export default function MobileFooter() {
   }, []);
 
   const navItems = [
-    { icon: UserRound, href: '/login', label: 'Profile' },
-    { icon: FileText, href: '/article', label: 'Articles' },
+    { icon: UserRound, href: '/login', label: 'پروفایل' },
+    { icon: FileText, href: '/article', label: 'مقالات' },
     // وسط خالی — اینجا فقط placeholder هست
     null,
-    { icon: Home, href: '/', label: 'Home' },
-    { icon: ArrowUp, label: 'Top', onClick: scrollToTop },
+    { icon: Home, href: '/', label: 'خانه' },
+    { icon: ArrowUp, label: 'بالا', onClick: scrollToTop },
   ];
 
   return (

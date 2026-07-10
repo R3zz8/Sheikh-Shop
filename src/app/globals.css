@@ -62,8 +62,8 @@
   --radius-full: 9999px;
 
   /* Typography */
-  --font-family-sans: 'Inter', system-ui, sans-serif;
-  --font-family-heading: 'Poppins', 'Inter', system-ui, sans-serif;
+  --font-family-sans: var(--font-vazirmatn), 'Inter', system-ui, sans-serif;
+  --font-family-heading: var(--font-vazirmatn), 'Poppins', 'Inter', system-ui, sans-serif;
   --font-family-mono: 'JetBrains Mono', monospace;
 
   /* Shadows */
@@ -157,6 +157,7 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-vazirmatn), var(--font-tajawal), var(--font-inter), sans-serif !important;
   }
 }
 

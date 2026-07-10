@@ -19,7 +19,6 @@ import { useUser } from '@/hooks/useUser';
 import { cn } from '@/lib/utils';
 import UserBadge from '@/components/UserBadge';
 import PremiumMobileMenu from '@/components/PremiumMobileMenu';
-import CurrencySwitcher from '@/components/CurrencySwitcher';
 import { usePathname } from 'next/navigation';
 
 export default function ClientHeader() {
@@ -98,8 +97,8 @@ export default function ClientHeader() {
       href: '/products',
       icon: ShoppingBag,
       subItems: [
-        { name: 'Sheikh Food', href: '/products' },
-        { name: 'Sheikh Tech', href: '/tech-products' },
+        { name: 'محصولات غذایی شیخ', href: '/products' },
+        { name: 'محصولات فناورانه شیخ', href: '/tech-products' },
       ],
     },
     {
@@ -107,8 +106,8 @@ export default function ClientHeader() {
       href: '/about-us',
       icon: Users,
       subItems: [
-        { name: 'Privacy Policy', href: 'https://sheikhshops.com/privacy' },
-        { name: 'Contact Us', href: 'https://sheikhshops.com/contact' },
+        { name: 'حریم خصوصی', href: 'https://sheikhshops.com/privacy' },
+        { name: 'تماس با ما', href: 'https://sheikhshops.com/contact' },
       ],
     },
     { name: 'مقالات', href: '/article', icon: FileText },
@@ -142,8 +141,8 @@ export default function ClientHeader() {
                 <Crown className="w-8 h-8 text-amber-300" />
                 <div className="absolute inset-0 blur-xl bg-amber-400 opacity-60" />
               </div>
-              <Link href="/" className="font-bold text-2xl bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
-                شیخ شاپ
+              <Link href="/" className="font-bold text-[26px] md:text-[30px] bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent select-none">
+                فروشگاه شیخ
               </Link>
             </div>
 
@@ -159,13 +158,13 @@ export default function ClientHeader() {
                       key={item.name}
                       href={item.href}
                       className={cn(
-                        'relative group px-6 py-3 rounded-xl flex items-center gap-2 text-sm',
+                        'relative group px-6 py-3 rounded-xl flex items-center gap-2 text-[18px] lg:text-[19px] xl:text-[20px] font-medium transition-all duration-200',
                         active
                           ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-lg shadow-amber-500/30'
                           : 'text-gray-300 hover:bg-white/8 backdrop-blur-sm'
                       )}
                     >
-                      <Icon className="w-4 h-4" />
+                      <Icon className="w-5 h-5" />
                       {item.name}
                     </Link>
                   );
@@ -182,27 +181,27 @@ export default function ClientHeader() {
                       <Link
                         href={item.href}
                         className={cn(
-                          'relative px-6 py-3 rounded-xl flex items-center gap-2 text-sm cursor-pointer',
+                          'relative px-6 py-3 rounded-xl flex items-center gap-2 text-[18px] lg:text-[19px] xl:text-[20px] font-medium cursor-pointer transition-all duration-200',
                           active || isProductsOpen
                             ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-lg shadow-amber-500/30'
                             : 'text-gray-300 hover:bg-white/8 backdrop-blur-sm'
                         )}
                       >
-                        <Icon className="w-4 h-4" />
+                        <Icon className="w-5 h-5" />
                         {item.name}
-                        <ChevronDown className="w-4 h-4" />
+                        <ChevronDown className="w-5 h-5" />
                       </Link>
 
                       {isProductsOpen && (
                         <div
                           onMouseLeave={() => setIsProductsOpen(false)}
-                          className="absolute right-0 mt-2 w-[140px] bg-gradient-to-r from-amber-600 to-orange-600 backdrop-blur-xl border border-amber-600 rounded-2xl shadow-2xl z-50 animate-fadeIn py-2"
+                          className="absolute right-0 mt-2 w-[160px] bg-gradient-to-r from-amber-600 to-orange-600 backdrop-blur-xl border border-amber-600 rounded-2xl shadow-2xl z-50 animate-fadeIn py-2 animate-duration-200"
                         >
                           {item.subItems.map((subItem) => (
                             <Link
                               key={subItem.name}
                               href={subItem.href}
-                              className="flex items-center gap-2 px-4 py-2 text-white hover:bg-amber-800/50 rounded-lg text-xs"
+                              className="flex items-center gap-2 px-4 py-2 text-white hover:bg-amber-800/50 rounded-lg text-sm font-medium"
                             >
                               {subItem.name}
                             </Link>
@@ -223,27 +222,27 @@ export default function ClientHeader() {
                     <Link
                       href={item.href}
                       className={cn(
-                        'relative px-6 py-3 rounded-xl flex items-center gap-2 text-sm cursor-pointer',
+                        'relative px-6 py-3 rounded-xl flex items-center gap-2 text-[18px] lg:text-[19px] xl:text-[20px] font-medium cursor-pointer transition-all duration-200',
                         active || isAboutOpen
                           ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-lg shadow-amber-500/30'
                           : 'text-gray-300 hover:bg-white/8 backdrop-blur-sm'
                       )}
                     >
-                      <Icon className="w-4 h-4" />
+                      <Icon className="w-5 h-5" />
                       {item.name}
-                      <ChevronDown className="w-4 h-4" />
+                      <ChevronDown className="w-5 h-5" />
                     </Link>
 
                     {isAboutOpen && (
                       <div
                         onMouseLeave={() => setIsAboutOpen(false)}
-                        className="absolute right-0 mt-2 w-[140px] bg-gradient-to-r from-amber-600 to-orange-600 backdrop-blur-xl border border-amber-600 rounded-2xl shadow-2xl z-50 animate-fadeIn py-2"
+                        className="absolute right-0 mt-2 w-[160px] bg-gradient-to-r from-amber-600 to-orange-600 backdrop-blur-xl border border-amber-600 rounded-2xl shadow-2xl z-50 animate-fadeIn py-2"
                       >
                         {item.subItems.map((subItem) => (
                           <Link
                             key={subItem.name}
                             href={subItem.href}
-                            className="flex items-center gap-2 px-4 py-2 text-white hover:bg-amber-800/50 rounded-lg text-xs"
+                            className="flex items-center gap-2 px-4 py-2 text-white hover:bg-amber-800/50 rounded-lg text-sm font-medium"
                           >
                             {subItem.name === 'Privacy Policy' ? (
                               <Lock className="w-4 h-4" />
@@ -262,20 +261,19 @@ export default function ClientHeader() {
 
             {/* Right Side */}
             <div className="flex items-center gap-4">
-              <CurrencySwitcher variant="dropdown" className="hidden md:flex" />
               {user && <UserBadge user={user} onLogout={handleLogout} className="hidden md:flex" />}
               <CartDropdown />
 
               {!user && (
                 <div className="hidden md:flex items-center gap-3">
                   <Link href="/login">
-                    <button className="px-5 py-2.5 rounded-xl bg-amber-800/50 border border-amber-600 text-amber-100 font-medium">
+                    <button className="px-5 py-2.5 rounded-xl bg-amber-800/50 border border-amber-600 text-amber-100 text-[16px] xl:text-[18px] font-semibold">
                       ورود
                     </button>
                   </Link>
 
                   <Link href="/register">
-                    <button className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 text-white font-bold shadow-lg shadow-amber-500/30">
+                    <button className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 text-white text-[16px] xl:text-[18px] font-bold shadow-lg shadow-amber-500/30">
                       ثبت نام
                     </button>
                   </Link>
