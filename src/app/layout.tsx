@@ -15,7 +15,7 @@ import { ShoppingChatbot, EnhancedAISearch } from '@/components/DynamicClientCom
 import AMPHead from '@/components/seo/AMPHead';
 import Script from 'next/script';
 import Link from 'next/link';
-import { Inter, Tajawal, Poppins, JetBrains_Mono } from 'next/font/google';
+import { Inter, Tajawal, Poppins, JetBrains_Mono, Vazirmatn } from 'next/font/google';
 
 // FIXED: Optimized font loading to eliminate render-blocking CSS.
 // Using next/font automatically self-hosts fonts and inlines the critical font-face CSS,
@@ -48,6 +48,13 @@ const jetbrainsMono = JetBrains_Mono({
   weight: ['400', '500', '600'],
 });
 
+const vazirmatn = Vazirmatn({
+  subsets: ['arabic'],
+  display: 'swap',
+  variable: '--font-vazirmatn',
+  weight: ['300', '400', '500', '600', '700', '800', '900'],
+});
+
 // === generateMetadata ===
 export async function generateMetadata(): Promise<Metadata> {
   // The root layout now provides a default, brand-focused metadata object.
@@ -66,8 +73,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   // Root layout doesn't receive params in Next.js 15
-  const lang = 'en';
-  const isArabic = false;
+  const lang = 'fa';
+  const isArabic = true;
 
   return (
     <html lang={lang} dir={isArabic ? 'rtl' : 'ltr'}>
@@ -113,7 +120,7 @@ export default function RootLayout({
         <WebsiteJsonLd />
       </head>
       <body
-        className={`${inter.variable} ${tajawal.variable} ${poppins.variable} ${jetbrainsMono.variable} antialiased font-sans`}
+        className={`${inter.variable} ${tajawal.variable} ${poppins.variable} ${jetbrainsMono.variable} ${vazirmatn.variable} antialiased font-sans font-vazirmatn`}
       >
         <AMPHead />
         <AccessibilityEnhancements />

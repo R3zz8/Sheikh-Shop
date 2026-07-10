@@ -9,10 +9,10 @@ test.describe('Production Smoke Tests', () => {
 
     // Check for a key element that should be visible on the homepage.
     // Using a regular expression to make it flexible.
-    const heading = page.getByRole('heading', { name: /Welcome to Sheikh Shop/i });
+    const heading = page.getByRole('heading', { name: /به فروشگاه شیخ خوش آمدید/i });
     await expect(heading).toBeVisible({ timeout: 15000 });
 
     // Verify the page title for SEO and correctness.
-    await expect(page).toHaveTitle(/Sheikh Shop/);
+    await expect(page).toHaveTitle(/Sheikh Shop|فروشگاه شیخ/);
   });
 });

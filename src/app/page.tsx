@@ -99,48 +99,49 @@ export default function Home() {
               }}
             >
               {/* Text Content - Left Column */}
-              <div className="text-left overflow-hidden flex flex-col justify-center pr-2 sm:pr-4">
+              <div className="text-right overflow-hidden flex flex-col justify-center pl-2 sm:pl-4">
                 <h1 
-                  className="font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent mb-3 sm:mb-4 md:mb-6"
+                  className="font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent mb-4 sm:mb-6 md:mb-8"
                   style={{
-                    fontSize: 'clamp(1.25rem, 3.5vw + 0.75rem, 3.75rem)',
-                    lineHeight: '1.1',
+                    fontSize: 'clamp(38px, 4vw + 14px, 56px)',
+                    lineHeight: '1.2',
                     wordBreak: 'break-word',
                   }}
                 >
-                  Welcome to Sheikh Shop
+                  به فروشگاه شیخ خوش آمدید
                 </h1>
                 <p 
-                  className="text-gray-300 mb-4 sm:mb-6 md:mb-8 leading-relaxed"
+                  className="text-gray-200 mb-6 sm:mb-8 md:mb-10 leading-[1.8] font-normal"
                   style={{
-                    fontSize: 'clamp(0.75rem, 1.25vw + 0.5rem, 1.25rem)',
-                    lineHeight: '1.6',
+                    fontSize: 'clamp(20px, 1.5vw + 12px, 22px)',
+                    maxWidth: '550px',
                   }}
                 >
-                  Experience luxury redefined with our curated collection of premium products,
-                  inspired by the elegance of Arabian heritage.
+                  با مجموعه‌ای از بهترین خرماهای ممتاز، عسل طبیعی، ارده، شیره خرما و محصولات اصیل، طعم واقعی کیفیت را تجربه کنید. فروشگاه شیخ با الهام از اصالت و مهمان‌نوازی شرقی، محصولاتی تازه، سالم و باکیفیت را برای خانواده شما فراهم کرده است.
                 </p>
-                <div className="flex flex-wrap items-center gap-2 sm:gap-3 md:gap-4">
+                <div className="flex flex-wrap items-center gap-3 sm:gap-4">
                   <Link href="/products">
                     <Button 
-                      className="btn-primary whitespace-nowrap"
+                      className="btn-primary whitespace-nowrap transition-all duration-300 font-bold"
                       style={{
-                        fontSize: 'clamp(0.75rem, 0.9vw + 0.5rem, 1.125rem)',
-                        padding: 'clamp(0.5rem, 1.25vw, 0.875rem) clamp(0.875rem, 1.75vw, 1.5rem)',
+                        fontSize: 'clamp(16px, 1vw + 12px, 18px)',
+                        padding: 'clamp(0.75rem, 1.5vw, 1.125rem) clamp(1.25rem, 2.5vw, 2.25rem)',
+                        borderRadius: '0.75rem',
                       }}
                     >
-                      Explore Products
+                      مشاهده محصولات
                     </Button>
                   </Link>
                   <Link href="/register">
                     <Button 
-                      className="btn-secondary whitespace-nowrap"
+                      className="btn-secondary whitespace-nowrap transition-all duration-300 font-bold"
                       style={{
-                        fontSize: 'clamp(0.75rem, 0.9vw + 0.5rem, 1.125rem)',
-                        padding: 'clamp(0.5rem, 1.25vw, 0.875rem) clamp(0.875rem, 1.75vw, 1.5rem)',
+                        fontSize: 'clamp(16px, 1vw + 12px, 18px)',
+                        padding: 'clamp(0.75rem, 1.5vw, 1.125rem) clamp(1.25rem, 2.5vw, 2.25rem)',
+                        borderRadius: '0.75rem',
                       }}
                     >
-                      Get Started
+                      ثبت نام
                     </Button>
                   </Link>
                 </div>
@@ -185,9 +186,9 @@ export default function Home() {
                 </div>
                 {/* Thin gradient separator */}
                 <div className="mx-auto mb-4 h-px w-16 bg-gradient-to-r from-amber-300 via-yellow-300 to-orange-300/70" />
-                <h2 className="text-xl max-[400px]:text-sm min-[500px]:text-base lg:text-xl font-semibold text-white mb-2">Premium Quality</h2>
-                <p className="text-gray-300 text-sm max-[400px]:text-xs min-[500px]:text-xs lg:text-sm">
-                  Curated selection of the finest products with exceptional craftsmanship
+                <h2 className="text-[18px] md:text-[20px] lg:text-[22px] font-bold text-white mb-2">کیفیت ممتاز</h2>
+                <p className="text-gray-300 text-[16px] md:text-[17px] lg:text-[18px] leading-relaxed">
+                  مجموعه‌ای منتخب از بهترین محصولات با هنر ساخت بی‌نظیر و کیفیت استثنایی
                 </p>
               </div>
 
@@ -197,9 +198,9 @@ export default function Home() {
                   <span className="text-2xl max-[400px]:text-xl min-[500px]:text-xl lg:text-2xl">🚚</span>
                 </div>
                 <div className="mx-auto mb-4 h-px w-16 bg-gradient-to-r from-amber-300 via-yellow-300 to-orange-300/70" />
-                <h2 className="text-xl max-[400px]:text-sm min-[500px]:text-base lg:text-xl font-semibold text-white mb-2">Fast Delivery</h2>
-                <p className="text-gray-300 text-sm max-[400px]:text-xs min-[500px]:text-xs lg:text-sm">
-                  Swift and secure delivery to your doorstep with premium packaging
+                <h2 className="text-[18px] md:text-[20px] lg:text-[22px] font-bold text-white mb-2">ارسال سریع</h2>
+                <p className="text-gray-300 text-[16px] md:text-[17px] lg:text-[18px] leading-relaxed">
+                  ارسال سریع و مطمئن درب منزل با بسته‌بندی ویژه و لوکس
                 </p>
               </div>
 
@@ -209,9 +210,9 @@ export default function Home() {
                   <span className="text-2xl max-[400px]:text-xl min-[500px]:text-xl lg:text-2xl">💎</span>
                 </div>
                 <div className="mx-auto mb-4 h-px w-16 bg-gradient-to-r from-amber-300 via-yellow-300 to-orange-300/70" />
-                <h2 className="text-xl max-[400px]:text-sm min-[500px]:text-base lg:text-xl font-semibold text-white mb-2">Exclusive Collection</h2>
-                <p className="text-gray-300 text-sm max-[400px]:text-xs min-[500px]:text-xs lg:text-sm">
-                  Limited edition items and exclusive deals for our valued customers
+                <h2 className="text-[18px] md:text-[20px] lg:text-[22px] font-bold text-white mb-2">مجموعه انحصاری</h2>
+                <p className="text-gray-300 text-[16px] md:text-[17px] lg:text-[18px] leading-relaxed">
+                  نسخه‌های محدود و تخفیف‌های ویژه برای مشتریان گران‌قدر ما
                 </p>
               </div>
             </div>
