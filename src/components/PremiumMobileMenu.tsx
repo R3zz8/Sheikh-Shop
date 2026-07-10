@@ -50,7 +50,7 @@ export default function PremiumMobileMenu({
     if (isOpen) {
       setIsVisible(true);
       if (pathname.startsWith('/products') || pathname.startsWith('/tech_products')) {
-        setExpandedItem('Products');
+        setExpandedItem('محصولات');
       } else {
         setExpandedItem(null);
       }
@@ -78,9 +78,9 @@ export default function PremiumMobileMenu({
   if (!isVisible) return null;
 
   const mobileNavigation: NavigationItem[] = [
-    { name: 'Home',        href: '/',          icon: Home },
+    { name: 'خانه',        href: '/',          icon: Home },
     {
-      name: 'Products',
+      name: 'محصولات',
       href: '/products',
       icon: ShoppingBag,
       subItems: [
@@ -89,18 +89,19 @@ export default function PremiumMobileMenu({
         { name: 'Sheikh Tech', href: '/tech-products', icon: Cpu },
       ]
     },
-    { name: 'About Us',    href: '/about-us',  icon: Users },
-    { name: 'Articles',    href: '/article',   icon: FileText },
+    { name: 'درباره ما',    href: '/about-us',  icon: Users },
+    { name: 'مقالات',    href: '/article',   icon: FileText },
     // --- FIXED: Restored original item order ---
-    { name: 'FAQ',         href: '/faq',       icon: HelpCircle },
-    { name: 'Affiliate',   href: '/affiliate', icon: Handshake },
-    { name: 'Privacy',     href: '/privacy',   icon: Shield },
+    { name: 'سوالات متداول',         href: '/faq',       icon: HelpCircle },
+    { name: 'همکاری در فروش',   href: '/affiliate', icon: Handshake },
+    { name: 'حریم خصوصی',     href: '/privacy',   icon: Shield },
   ];
 
   return (
     <AnimatePresence>
       {isOpen && (
         <motion.div
+          dir="rtl"
           className="fixed inset-0 z-50 lg:hidden mobile-menu-overlay"
           initial={{ x: '-100%' }}
           animate={{ x: 0 }}
@@ -128,9 +129,9 @@ export default function PremiumMobileMenu({
                 <div className="absolute inset-0 blur-xl bg-amber-400 opacity-60 animate-pulse" />
               </div>
               <h1 className="text-3xl font-bold bg-gradient-to-r from-amber-200 via-amber-100 to-orange-200 bg-clip-text text-transparent">
-                Sheikh Shop
+                شیخ شاپ
               </h1>
-              <p className="text-amber-300 text-sm mt-1 font-light">Luxury Redefined</p>
+              <p className="text-amber-300 text-sm mt-1 font-light">تعریف دوباره شکوه</p>
             </motion.div>
             <nav className="flex-1 px-6 overflow-y-auto pb-40">
               <div className="space-y-5">
@@ -255,20 +256,20 @@ export default function PremiumMobileMenu({
                       <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-full transition-transform duration-1000" />
                       <span className="relative flex items-center justify-center gap-2">
                         <Sparkles className="w-5 h-5 animate-pulse" />
-                        Register
+                        ثبت نام
                       </span>
                     </motion.button>
                   </Link>
                   <Link href="/login" onClick={onClose}>
                     <motion.button className="w-full px-6 py-5 rounded-2xl bg-amber-800/50 border border-amber-600 text-amber-100 font-medium hover:bg-amber-700/50" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                      Login
+                      ورود
                     </motion.button>
                   </Link>
                 </>
               ) : (
                 <motion.button onClick={onLogout} className="w-full px-6 py-5 rounded-2xl bg-red-900/50 border border-red-600 text-red-300 font-medium hover:bg-red-800/50 flex items-center justify-center gap-2" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                   <LogOut className="w-5 h-5" />
-                  Sign Out
+                  خروج
                 </motion.button>
               )}
             </div>
