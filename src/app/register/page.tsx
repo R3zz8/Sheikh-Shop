@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, Mail, User } from 'lucide-react';
+import { ArrowLeft, Mail, User } from 'lucide-react';
 import Link from 'next/link';
 import AuthCard from '@/components/auth/AuthCard';
 import InputField from '@/components/auth/InputField';
@@ -67,19 +67,19 @@ export default function RegisterPage() {
         });
         const data = await res.json().catch(() => ({}));
         if (res.ok && data?.success) {
-          toast.success('Account created successfully!');
+          toast.success('حساب کاربری با موفقیت ایجاد شد!');
           // Store email for verification page
           localStorage.setItem('pendingVerificationEmail', email);
           router.push('/verify-email');
           return;
         }
         if (res.status === 409) {
-          setMessage(data?.message || 'Email already in use');
+          setMessage(data?.message || 'این نشانی ایمیل قبلاً ثبت شده است.');
           return;
         }
-        setMessage(data?.message || 'Registration failed');
+        setMessage(data?.message || 'ثبت‌نام با خطا مواجه شد.');
       } catch (err: any) {
-        setMessage(err?.message || 'Registration failed');
+        setMessage(err?.message || 'ثبت‌نام با خطا مواجه شد.');
       }
     });
   }
@@ -87,31 +87,32 @@ export default function RegisterPage() {
   return (
     <AnimatedBackground>
       <AuthCard
-        title="Create your account"
-        subtitle="Join our premium experience"
+        title="ایجاد حساب کاربری"
+        subtitle="به تجربه ممتاز و لوکس ما بپیوندید"
         footer={(
           <div className="space-y-4">
             {/* Main footer link */}
-            <div className="text-center text-sm text-slate-600">
-              Already have an account?{' '}
-              <Link href="/login" className="text-slate-600 hover:text-amber-600 transition-colors">Login here</Link>
+            <div className="text-center text-base text-slate-600 font-medium">
+              قبلاً حساب کاربری دارید؟{' '}
+              <Link href="/login" className="text-amber-600 hover:text-amber-700 transition-colors font-semibold">وارد شوید</Link>
             </div>
             
             {/* Terms and Privacy links */}
-            <div className="text-center text-xs text-slate-500">
-              By creating an account, you agree to our{' '}
-              <Link href="/terms" className="hover:text-amber-600 transition-colors">Terms of Service</Link>
-              {' '}and{' '}
-              <Link href="/privacy" className="hover:text-amber-600 transition-colors">Privacy Policy</Link>
+            <div className="text-center text-sm text-slate-500 leading-relaxed pt-2 border-t border-slate-100 dark:border-slate-800/40">
+              با ایجاد حساب کاربری، شما با{' '}
+              <Link href="/terms" className="hover:text-amber-600 transition-colors underline decoration-dotted font-medium">شرایط و قوانین خدمات</Link>
+              {' '}و{' '}
+              <Link href="/privacy" className="hover:text-amber-600 transition-colors underline decoration-dotted font-medium">سیاست حریم خصوصی</Link>
+              {' '}ما موافقت می‌کنید.
             </div>
           </div>
         )}
       >
         <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4" aria-label="Register form">
           <InputField
-            label="Full Name"
+            label="نام و نام خانوادگی"
             type="text"
-            placeholder="John Doe"
+            placeholder="نام و نام خانوادگی خود را وارد کنید"
             value={fullName}
             onChange={e => setFullName(e.target.value)}
             icon={<User className="size-4 text-slate-400" aria-hidden />}
@@ -119,31 +120,31 @@ export default function RegisterPage() {
           />
 
           <InputField
-            label="Email"
+            label="نشانی ایمیل"
             type="email"
-            placeholder="you@example.com"
+            placeholder="ایمیل خود را وارد کنید"
             value={email}
             onChange={e => setEmail(e.target.value)}
             icon={<Mail className="size-4 text-slate-400" aria-hidden />}
-            error={email && !emailValid ? 'Invalid email address' : undefined}
+            error={email && !emailValid ? 'نشانی ایمیل نامعتبر است' : undefined}
             required
           />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <PasswordField
-              label="Password"
-              placeholder="At least 12 chars, upper/lower/number/special"
+              label="رمز عبور"
+              placeholder="حداقل ۱۲ نویسه، حروف بزرگ/کوچک/عدد/نماد"
               value={password}
               onChange={e => setPassword(e.target.value)}
               required
             />
 
             <PasswordField
-              label="Confirm Password"
-              placeholder="Re-enter password"
+              label="تکرار رمز عبور"
+              placeholder="رمز عبور را دوباره وارد کنید"
               value={confirmPassword}
               onChange={e => setConfirmPassword(e.target.value)}
-              error={confirmPassword && !passwordsMatch ? 'Passwords do not match' : undefined}
+              error={confirmPassword && !passwordsMatch ? 'رمزهای عبور با هم مطابقت ندارند' : undefined}
               required
             />
           </div>
@@ -153,21 +154,21 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={!formValid || isPending}
-            className="group relative inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-medium px-4 py-2.5 shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2"
+            className="group relative inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-medium text-lg px-4 py-3 shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 mt-2"
             aria-busy={isPending}
           >
-            <span className="mr-2">{isPending ? 'Creating account...' : 'Create account'}</span>
-            <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
+            <span className="ms-2">{isPending ? 'در حال ایجاد حساب...' : 'ایجاد حساب'}</span>
+            <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-0.5" aria-hidden />
           </button>
 
           {message && (
-            <p className="text-center text-sm text-red-600" role="alert">{message}</p>
+            <p className="text-center text-sm sm:text-base font-medium text-red-600 mt-2 bg-red-50 dark:bg-red-950/20 py-2 px-3 rounded-lg border border-red-100 dark:border-red-950/40" role="alert">{message}</p>
           )}
 
-          <div className="relative my-2">
-            <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-slate-200" /></div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-slate-500">Or continue with</span>
+          <div className="relative my-4 pt-2">
+            <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-slate-200 dark:border-slate-800" /></div>
+            <div className="relative flex justify-center text-sm">
+              <span className="bg-white dark:bg-slate-950 px-3 text-slate-500 dark:text-slate-400 font-medium">یا ادامه با</span>
             </div>
           </div>
           <SocialAuthButtons showGoogle={false} showGithub={false} />
