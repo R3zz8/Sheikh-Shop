@@ -29,7 +29,7 @@ export default function ProductStructuredData({ product, selectedUnit }: Product
             return [{
                 "@type": "Offer",
                 "price": product.basePrice,
-                "priceCurrency": "EUR",
+                "priceCurrency": "IRR",
                 "availability": product.quantity > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
                 "itemCondition": "https://schema.org/NewCondition",
                 "seller": {
@@ -45,7 +45,7 @@ export default function ProductStructuredData({ product, selectedUnit }: Product
                 "@type": "Offer",
                 "name": `${product.name} - ${unit.name}`,
                 "price": Number(unit.price),
-                "priceCurrency": "EUR",
+                "priceCurrency": "IRR",
                 "availability": unit.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
                 "itemCondition": "https://schema.org/NewCondition",
                 "seller": {

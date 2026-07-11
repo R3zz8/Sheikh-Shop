@@ -122,7 +122,7 @@ export async function logoutAllUserSessions(userId: string) {
     
     // Security: Blacklist all refresh tokens
     await Promise.all(
-      sessions.map(session => blacklistToken(session.refreshToken))
+      sessions.map((session: any) => blacklistToken(session.refreshToken))
     );
     
     // Security: Delete all sessions

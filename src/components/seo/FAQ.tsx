@@ -124,11 +124,11 @@ export const paymentFAQs: FAQItem[] = [
   },
   {
     question: 'Do you offer payment plans?',
-    answer: 'Yes, we offer flexible payment plans through Klarna and Afterpay for orders over $50.',
+    answer: 'Yes, we offer flexible payment plans through our local checkout partners for orders over fifty thousand Toman.',
   },
   {
     question: 'Can I pay in different currencies?',
-    answer: 'Yes, we accept payments in USD, EUR, GBP, AED, and SAR. Currency conversion is handled automatically at checkout.',
+    answer: 'Yes, we accept payments in Toman. Payment is handled automatically at checkout.',
   },
 ];
 

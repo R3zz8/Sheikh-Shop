@@ -222,5 +222,5 @@ export const localBusinessSchema = {
   openingHours: 'Mo-Su 09:00-18:00',
   priceRange: '$$$',
   paymentAccepted: 'Cash, Credit Card, PayPal',
-  currenciesAccepted: 'EUR, USD, AED',
+  currenciesAccepted: 'IRR',
 };

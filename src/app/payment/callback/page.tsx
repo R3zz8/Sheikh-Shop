@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { formatPrice } from '@/lib/currency';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, XCircle, Loader2, Home, Mail, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -285,7 +286,7 @@ export default function PaymentCallbackPage() {
                         Amount Paid
                       </p>
                       <p className="text-lg font-semibold text-gray-900">
-                        {verificationData.details.Amount} EUR
+                        {formatPrice(Number(verificationData.details.Amount))}
                       </p>
                     </div>
                   )}

@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
     // Transform products to include formatted units
     const serializedDeals = amazingDeals.map(serializeProductForAmazingDeals).filter(Boolean);
 
-    const amazingDealsWithUnits = serializedDeals.map(product => ({
+    const amazingDealsWithUnits = serializedDeals.map((product: any) => ({
       ...product,
       units: product.units.map((unit: any) => formatProductUnitResponse(unit)),
     }));

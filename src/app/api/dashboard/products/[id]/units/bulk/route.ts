@@ -104,7 +104,7 @@ export async function POST(
     });
 
     if (existingUnits.length > 0) {
-      const existingNames = existingUnits.map(unit => unit.name).join(', ');
+      const existingNames = existingUnits.map((unit: any) => unit.name).join(', ');
       return NextResponse.json(
         { error: `Unit names already exist: ${existingNames}` },
         { status: 400 }
@@ -112,7 +112,7 @@ export async function POST(
     }
 
     // Create all units in a transaction
-    const createdUnits = await prisma.$transaction(async (tx) => {
+    const createdUnits = await prisma.$transaction(async (tx: any) => {
       const units = await Promise.all(
         validatedData.units.map(unitData =>
           tx.productUnit.create({
@@ -210,7 +210,7 @@ export async function PUT(
     }
 
     // Update all units in a transaction
-    const updatedUnits = await prisma.$transaction(async (tx) => {
+    const updatedUnits = await prisma.$transaction(async (tx: any) => {
       const units = await Promise.all(
         validatedData.unitUpdates.map(update =>
           tx.productUnit.update({
@@ -298,7 +298,7 @@ export async function DELETE(
         return NextResponse.json(
           { 
             error: 'Some units are in use in cart items. Use force=true to deactivate them instead.',
-            unitsInUse: unitsInUse.map(item => item.unitId)
+            unitsInUse: unitsInUse.map((item: any) => item.unitId)
           },
           { status: 400 }
         );
@@ -306,7 +306,7 @@ export async function DELETE(
     }
 
     // Delete or deactivate units in a transaction
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: any) => {
       if (validatedData.force) {
         // Soft delete by deactivating
         const deactivatedUnits = await Promise.all(

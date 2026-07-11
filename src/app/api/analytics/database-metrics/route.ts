@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
             prisma.product.groupBy({
                 by: ['category'],
                 _count: { category: true }
-            }).then(result => result.length),
+            }).then((result: any) => result.length),
             prisma.user.count()
         ]);
 
@@ -68,7 +68,7 @@ async function getDatabaseSize(): Promise<string> {
             prisma.product.groupBy({
                 by: ['category'],
                 _count: { category: true }
-            }).then(result => result.length),
+            }).then((result: any) => result.length),
             prisma.user.count()
         ]);
 

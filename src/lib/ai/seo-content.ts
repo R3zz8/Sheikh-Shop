@@ -194,7 +194,7 @@ export class SEOContentGenerator {
       "offers": {
         "@type": "Offer",
         "price": product.basePrice,
-        "priceCurrency": "EUR",
+        "priceCurrency": "IRR",
         "availability": product.quantity > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"
       },
       "aggregateRating": {
