@@ -355,8 +355,8 @@ export const upsertProduct = async (
         select: { slug: true, id: true },
       });
       const existingSlugs = existingProducts
-        .map(p => p.slug)
-        .filter((slug): slug is string => slug !== null && slug !== undefined);
+        .map((p: any) => p.slug)
+        .filter((slug: any): slug is string => slug !== null && slug !== undefined);
       
       sanitizedData.slug = generateProductSlug(
         sanitizedData.name,
@@ -667,8 +667,8 @@ export const exportProducts = async (filters?: {
 
     // Generate CSV
     const csvHeader = 'ID,Name,Category,Price,Quantity,Status,Description,Images,Created At\n';
-    const csvRows = products.map(product => {
-      const images = product.images.map(img => img.image).join(';');
+    const csvRows = products.map((product: any) => {
+      const images = product.images.map((img: any) => img.image).join(';');
       return `"${product.id}","${product.name}","${product.category}","${product.basePrice || 'N/A'}","${product.quantity}","${product.status}","${product.description || ''}","${images}","${product.createdAt}"`;
     }).join('\n');
 

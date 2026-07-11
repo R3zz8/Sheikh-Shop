@@ -65,7 +65,7 @@ export async function GET(req: NextRequest) {
 
     // Calculate totals
     const totals = dailyStats.reduce(
-      (acc, stat) => {
+      (acc: { clicks: number; sales: number; commission: number }, stat: any) => {
         acc.clicks += stat.clicks;
         acc.sales += stat.sales;
         acc.commission += Number(stat.commissionEarned);
@@ -99,7 +99,7 @@ export async function GET(req: NextRequest) {
     });
 
     const previousTotals = previousPeriodStats.reduce(
-        (acc, stat) => {
+        (acc: { clicks: number; sales: number; commission: number }, stat: any) => {
           acc.clicks += stat.clicks;
           acc.sales += stat.sales;
           acc.commission += Number(stat.commissionEarned);
@@ -125,7 +125,7 @@ export async function GET(req: NextRequest) {
       const parser = new Parser({
         fields: ['date', 'clicks', 'sales', 'commission'],
       });
-      const csv = parser.parse(dailyStats.map(d => ({...d, date: d.date.toISOString().split('T')[0]})));
+      const csv = parser.parse(dailyStats.map((d: any) => ({...d, date: d.date.toISOString().split('T')[0]})));
       return new NextResponse(csv, {
         status: 200,
         headers: {

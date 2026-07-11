@@ -38,7 +38,7 @@ export async function suggestInternalLinks(
     const suggestions: InternalLinkSuggestion[] = [];
 
     // Add article suggestions
-    articles.forEach(article => {
+    articles.forEach((article: any) => {
       const relevanceScore = calculateRelevanceScore(
         contentKeywords,
         article.title + ' ' + article.summary,
@@ -58,7 +58,7 @@ export async function suggestInternalLinks(
     });
 
     // Add product suggestions
-    products.forEach(product => {
+    products.forEach((product: any) => {
       const relevanceScore = calculateRelevanceScore(
         contentKeywords,
         product.name + ' ' + (product.description || ''),

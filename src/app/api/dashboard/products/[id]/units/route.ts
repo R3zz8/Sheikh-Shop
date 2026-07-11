@@ -136,7 +136,7 @@ export async function POST(
     }
 
     // Create the new unit using transaction for data consistency
-    const newUnit = await prisma.$transaction(async (tx) => {
+    const newUnit = await prisma.$transaction(async (tx: any) => {
       const unit = await tx.productUnit.create({
         data: {
           productId,

@@ -283,8 +283,8 @@ export const upsertProduct = async (
       select: { slug: true, id: true },
     });
     const existingSlugs = existingProducts
-      .map(p => p.slug)
-      .filter((slug): slug is string => slug !== null && slug !== undefined);
+      .map((p: any) => p.slug)
+      .filter((slug: any): slug is string => slug !== null && slug !== undefined);
     
     productData.slug = generateProductSlug(
       productData.name,
@@ -294,7 +294,7 @@ export const upsertProduct = async (
     
     // Ensure slug uniqueness - check if generated slug already exists for another product
     const existingProductWithSlug = existingProducts.find(
-      p => p.slug === productData.slug && p.id !== id
+      (p: any) => p.slug === productData.slug && p.id !== id
     );
     
     if (existingProductWithSlug) {

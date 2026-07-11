@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRequireRole } from '@/hooks/useRBAC';
+import { formatPrice } from '@/lib/currency';
 import { motion } from 'framer-motion';
 import {
   Card,
@@ -145,10 +146,7 @@ export default function PaymentAnalyticsPage() {
   }, [range, status]);
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'EUR',
-    }).format(amount);
+    return formatPrice(amount);
   };
 
   const formatDate = (dateString: string) => {
@@ -319,7 +317,7 @@ export default function PaymentAnalyticsPage() {
                 <Skeleton className="h-8 w-32" />
               ) : (
                 <div className="text-2xl font-bold">
-                  {data ? formatCurrency(data.totalAmount) : '€0.00'}
+                  {data ? formatCurrency(data.totalAmount) : formatPrice(0)}
                 </div>
               )}
             </CardContent>
@@ -363,7 +361,7 @@ export default function PaymentAnalyticsPage() {
                 <Skeleton className="h-8 w-32" />
               ) : (
                 <div className="text-2xl font-bold">
-                  {data ? formatCurrency(data.averageAmount) : '€0.00'}
+                  {data ? formatCurrency(data.averageAmount) : formatPrice(0)}
                 </div>
               )}
             </CardContent>
@@ -470,8 +468,8 @@ export default function PaymentAnalyticsPage() {
                     <YAxis yAxisId="right" orientation="right" />
                     <Tooltip
                       formatter={(value: number, name: string) => [
-                        name === 'Amount (€)' 
-                          ? `€${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                        name === 'Amount (تومان)'
+                          ? formatPrice(value)
                           : value.toLocaleString(),
                         name,
                       ]}
@@ -492,7 +490,7 @@ export default function PaymentAnalyticsPage() {
                       dataKey="amount"
                       stroke="#10b981"
                       strokeWidth={2}
-                      name="Amount (€)"
+                      name="Amount (تومان)"
                     />
                   </LineChart>
                 </ResponsiveContainer>
@@ -587,7 +585,7 @@ export default function PaymentAnalyticsPage() {
                   />
                   <Legend />
                   <Bar dataKey="count" fill="#3b82f6" name="Transaction Count" />
-                  <Bar dataKey="amount" fill="#10b981" name="Total Amount (€)" />
+                  <Bar dataKey="amount" fill="#10b981" name="Total Amount (تومان)" />
                 </BarChart>
               </ResponsiveContainer>
             ) : (

@@ -60,7 +60,7 @@ export async function POST(req: Request) {
 
     // 2. If the payout is successful, update the database
     if (payout.batch_header.batch_status === 'SUCCESS') {
-      await prisma.$transaction(async (tx) => {
+      await prisma.$transaction(async (tx: any) => {
         await tx.affiliate.update({
           where: { id: affiliateId },
           data: {

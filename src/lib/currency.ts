@@ -13,6 +13,32 @@ import {
 export type { CurrencyCode, Locale };
 
 /**
+ * Format any numeric value directly as Persian Toman.
+ * Treats the amount as native Toman value (no conversion rate multiplication).
+ * @param amount - Amount in native Toman to format
+ * @returns Beautiful Persian Toman formatted string (e.g., ۱٬۲۵۰٬۰۰۰ تومان)
+ */
+export function formatToToman(amount: number): string {
+  const safeAmount = typeof amount === 'number' && !Number.isNaN(amount) ? amount : 0;
+
+  // Treat amount as native Toman value directly
+  const tomanValue = Math.round(safeAmount);
+
+  // Format with thousands separator using English formatting first
+  const formattedEnglish = new Intl.NumberFormat('en-US', {
+    useGrouping: true,
+  }).format(tomanValue);
+
+  // Convert English digits and commas to Persian
+  const farsiDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+  const formattedPersian = formattedEnglish
+    .replace(/,/g, '٬') // Persian thousands separator
+    .replace(/\d/g, (x) => farsiDigits[parseInt(x)] || x);
+
+  return `${formattedPersian} تومان`;
+}
+
+/**
  * Convert amount from one currency to another
  * @param amount - Amount to convert
  * @param from - Source currency code
@@ -63,41 +89,21 @@ export function getUserPreferredCurrency(locale: Locale, cookieValue?: string): 
  * Format price with proper currency display
  */
 export function formatPrice(amount: number, currency?: CurrencyCode): string {
-  const code = currency || getDefaultCurrency();
-  const display = CURRENCY_DISPLAY[code];
-  
-  try {
-    return new Intl.NumberFormat(display.locale, { 
-      style: 'currency', 
-      currency: code,
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(amount);
-  } catch {
-    return `${display.symbol}${amount.toFixed(2)}`;
-  }
+  return formatToToman(amount);
 }
 
 /**
  * Format price with currency symbol only
  */
 export function formatPriceWithSymbol(amount: number, currency?: CurrencyCode): string {
-  const code = currency || getDefaultCurrency();
-  const display = CURRENCY_DISPLAY[code];
-  return `${display.symbol}${amount.toFixed(2)}`;
+  return formatToToman(amount);
 }
 
 /**
  * Lightweight helper to ensure EUR formatting in UI grids
  */
 export function formatEUR(value: number): string {
-  const safeValue = typeof value === 'number' && !Number.isNaN(value) ? value : 0;
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'EUR',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(safeValue);
+  return formatToToman(value);
 }
 
 /**

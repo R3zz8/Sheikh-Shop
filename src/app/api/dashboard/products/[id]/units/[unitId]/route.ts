@@ -143,7 +143,7 @@ export async function PATCH(
     }
 
     // Update the unit using transaction for data consistency
-    const updatedUnit = await prisma.$transaction(async (tx) => {
+    const updatedUnit = await prisma.$transaction(async (tx: any) => {
       const unit = await tx.productUnit.update({
         where: { id: unitId },
         data: validatedData,

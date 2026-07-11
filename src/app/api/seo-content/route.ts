@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     const seoGenerator = createSEOContentGenerator(products);
 
     if (type === 'product' && productId) {
-      const product = products.find(p => p.id === productId);
+      const product = products.find((p: any) => p.id === productId);
       if (!product) {
         return NextResponse.json(
           { error: 'Product not found' },

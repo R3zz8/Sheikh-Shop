@@ -98,7 +98,7 @@ export async function getAnalyticsData(): Promise<{
     });
 
     // Transform articles to analytics format
-    const articleAnalytics: ArticleAnalytics[] = articles.map(article => {
+    const articleAnalytics: ArticleAnalytics[] = articles.map((article: any) => {
       // Use safe fallbacks since analytics, views, likes, shares, language fields don't exist in schema
       const analytics = {};
       

@@ -32,7 +32,7 @@ export default async function TestUserBadgePage() {
                     <section className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
                         <h2 className="text-2xl font-semibold text-white mb-4">Default Variant</h2>
                         <div className="flex flex-wrap gap-4">
-                            {users.map((user) => (
+                            {users.map((user: any) => (
                                 <div key={user.id} className="flex flex-col items-center gap-2">
                                     <UserBadge user={user} />
                                     <span className="text-gray-400 text-sm text-center max-w-[200px]">
@@ -47,7 +47,7 @@ export default async function TestUserBadgePage() {
                     <section className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
                         <h2 className="text-2xl font-semibold text-white mb-4">Compact Variant</h2>
                         <div className="flex flex-wrap gap-4">
-                            {users.map((user) => (
+                            {users.map((user: any) => (
                                 <div key={user.id} className="flex flex-col items-center gap-2">
                                     <UserBadge user={user} variant="compact" />
                                     <span className="text-gray-400 text-sm text-center max-w-[100px]">
@@ -62,7 +62,7 @@ export default async function TestUserBadgePage() {
                     <section className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
                         <h2 className="text-2xl font-semibold text-white mb-4">Mobile Variant</h2>
                         <div className="space-y-4 max-w-md">
-                            {users.map((user) => (
+                            {users.map((user: any) => (
                                 <div key={user.id}>
                                     <UserBadge user={user} variant="mobile" />
                                 </div>
@@ -74,7 +74,7 @@ export default async function TestUserBadgePage() {
                     <section className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
                         <h2 className="text-2xl font-semibold text-white mb-4">User Information</h2>
                         <div className="grid gap-4 md:grid-cols-2">
-                            {users.map((user) => (
+                            {users.map((user: any) => (
                                 <div key={user.id} className="bg-white/5 rounded-xl p-4 border border-white/10">
                                     <div className="flex items-center gap-3 mb-3">
                                         <UserBadge user={user} variant="compact" />

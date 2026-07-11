@@ -163,7 +163,7 @@ export async function POST(request: NextRequest) {
 
         // If unitId is provided, validate it and get its price
         if (unitId) {
-            const productUnit = product.units.find(unit => unit.id === unitId);
+            const productUnit = product.units.find((unit: any) => unit.id === unitId);
             if (!productUnit || !productUnit.isActive) {
                 return NextResponse.json(
                     { error: 'Invalid or inactive product unit' },
@@ -316,7 +316,7 @@ export async function PUT(request: NextRequest) {
         
         if (cartItem.unitId) {
             // Check ProductUnit stock
-            const productUnit = cartItem.product.units.find(unit => unit.id === cartItem.unitId);
+            const productUnit = cartItem.product.units.find((unit: any) => unit.id === cartItem.unitId);
             if (productUnit) {
                 hasStock = hasSufficientStock(productUnit.stock, quantity);
             }

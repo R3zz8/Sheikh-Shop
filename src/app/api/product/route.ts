@@ -103,7 +103,7 @@ export async function GET(req: NextRequest) {
     // Transform products to include formatted units
     const serializedProducts = products.map(serializeProductForProductAPI).filter(Boolean);
 
-    const productsWithUnits = serializedProducts.map(product => ({
+    const productsWithUnits = serializedProducts.map((product: any) => ({
       ...product,
       units: product.units.map((unit: any) => formatProductUnitResponse(unit)),
     }));

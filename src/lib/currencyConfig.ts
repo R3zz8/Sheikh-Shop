@@ -24,22 +24,22 @@ export const CURRENCY_MAP = {
  */
 export const CURRENCY_DISPLAY = {
   EUR: {
-    symbol: '€',
-    name: 'Euro',
-    locale: 'en-EU',
-    region: 'EU',
+    symbol: 'تومان',
+    name: 'تومان',
+    locale: 'fa-IR',
+    region: 'IR',
   },
   USD: {
-    symbol: '$',
-    name: 'US Dollar',
-    locale: 'en-US',
-    region: 'US',
+    symbol: 'تومان',
+    name: 'تومان',
+    locale: 'fa-IR',
+    region: 'IR',
   },
   AED: {
-    symbol: 'د.إ',
-    name: 'UAE Dirham',
-    locale: 'ar-AE',
-    region: 'AE',
+    symbol: 'تومان',
+    name: 'تومان',
+    locale: 'fa-IR',
+    region: 'IR',
   },
 } as const;
 
@@ -49,8 +49,8 @@ export const CURRENCY_DISPLAY = {
  */
 export const EXCHANGE_RATES = {
   EUR: 1.0, // Base currency
-  USD: 1.08, // 1 EUR = 1.08 USD (approximate)
-  AED: 3.97, // 1 EUR = 3.97 AED (approximate)
+  USD: 1.0, // 1 EUR = 1.0 Toman base (all exchange rates 1.0)
+  AED: 1.0, // 1 EUR = 1.0 Toman base
 } as const;
 
 /**
@@ -87,4 +87,3 @@ export function isSupportedCurrency(currency: string): currency is CurrencyCode 
 export function getCurrencyDisplay(currency: CurrencyCode) {
   return CURRENCY_DISPLAY[currency];
 }
-
