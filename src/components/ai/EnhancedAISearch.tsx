@@ -8,7 +8,6 @@ import { Search, X, Filter, SortAsc, Sparkles, TrendingUp, Brain, Zap, Target, L
 import type { ProductsWithImages } from '@/types';
 import { formatPrice, convertCurrency } from '@/lib/currency';
 import { useCurrencySafe } from '@/providers/CurrencyProvider';
-import ProductCard from '@/components/product/ProductCard';
 
 interface EnhancedSearchResult {
   product: ProductsWithImages;
@@ -40,7 +39,7 @@ interface EnhancedAISearchProps {
 
 export default function EnhancedAISearch({ 
   onResultClick, 
-  placeholder = "Search with AI intelligence...",
+  placeholder = "جستجو با هوش مصنوعی...",
   className = "",
   showAdvancedOptions = true,
   showVRStoreButton = false
@@ -192,17 +191,17 @@ export default function EnhancedAISearch({
   };
 
   const getMatchTypeLabel = (matchedFields: string[]) => {
-    if (matchedFields.includes('semantic')) return 'AI Match';
-    if (matchedFields.includes('typo_correction')) return 'Typo Fixed';
-    if (matchedFields.includes('synonym')) return 'Synonym';
-    return 'Exact Match';
+    if (matchedFields.includes('semantic')) return 'انطباق هوش مصنوعی';
+    if (matchedFields.includes('typo_correction')) return 'تصحیح تایپ';
+    if (matchedFields.includes('synonym')) return 'مترادف';
+    return 'انطباق دقیق';
   };
 
   return (
-    <div ref={searchRef} className={`relative ${className}`}>
+    <div ref={searchRef} className={`relative ${className} dir-rtl text-right`}>
       {/* Search Input */}
       <div className="relative">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+        <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
           <Brain className="h-5 w-5 text-amber-500" />
         </div>
         <input
@@ -212,9 +211,9 @@ export default function EnhancedAISearch({
           onChange={(e) => handleInputChange(e.target.value)}
           onFocus={() => setShowResults(true)}
           placeholder={placeholder}
-          className="block w-full pl-10 pr-20 py-3 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+          className="block w-full pr-10 pl-20 py-3 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-right font-vazirmatn text-[16px] text-gray-900"
         />
-        <div className="absolute inset-y-0 right-0 flex items-center pr-2">
+        <div className="absolute inset-y-0 left-0 flex items-center pl-3">
           {loading && (
             <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-amber-500"></div>
           )}
@@ -227,7 +226,8 @@ export default function EnhancedAISearch({
                 setShowResults(false);
                 setSearchMetadata(null);
               }}
-              className="ml-2 p-1 rounded-full hover:bg-gray-100"
+              className="mr-2 p-1 rounded-full hover:bg-gray-100"
+              aria-label="پاک کردن"
             >
               <X className="h-4 w-4 text-gray-400" />
             </button>
@@ -236,10 +236,10 @@ export default function EnhancedAISearch({
       </div>
 
       {/* Controls */}
-      <div className="flex flex-wrap items-center gap-2 mt-2">
+      <div className="flex flex-wrap items-center gap-2 mt-2 font-vazirmatn">
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300
+          className={`flex items-center gap-2 px-4 py-2 rounded-full text-[16px] font-medium transition-all duration-300
             border border-solid
             ${ showFilters
               ? 'bg-gradient-to-br from-amber-400 to-yellow-500 text-white shadow-md border-amber-500 ring-2 ring-amber-300/50'
@@ -247,48 +247,55 @@ export default function EnhancedAISearch({
             }`}
         >
           <Filter className="w-4 h-4" />
-          <span>Filters</span>
+          <span>فیلترها</span>
         </button>
         
-        <select
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value as any)}
-          className="appearance-none flex items-center gap-1 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300
-            border border-solid border-amber-500/50 bg-transparent text-amber-200
-            hover:bg-amber-500/10 hover:border-amber-500/80
-            focus:outline-none focus:ring-2 focus:ring-amber-300/50"
-          style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23D4AF37' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: 'right 0.5rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.5em 1.5em' }}
-          aria-label="Sort by"
-        >
-          <option className="bg-stone-800 text-white" value="relevance">Relevance</option>
-          <option className="bg-stone-800 text-white" value="price">Price</option>
-          <option className="bg-stone-800 text-white" value="rating">Rating</option>
-          <option className="bg-stone-800 text-white" value="newest">Newest</option>
-          <option className="bg-stone-800 text-white" value="popularity">Popularity</option>
-        </select>
+        <div className="relative">
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as any)}
+            className="appearance-none flex items-center gap-1 pl-8 pr-4 py-2 rounded-full text-[16px] font-medium transition-all duration-300
+              border border-solid border-amber-500/50 bg-transparent text-amber-200
+              hover:bg-amber-500/10 hover:border-amber-500/80
+              focus:outline-none focus:ring-2 focus:ring-amber-300/50 text-right font-vazirmatn cursor-pointer"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23D4AF37' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+              backgroundPosition: 'left 0.5rem center',
+              backgroundRepeat: 'no-repeat',
+              backgroundSize: '1.5em 1.5em'
+            }}
+            aria-label="مرتب‌سازی بر اساس"
+          >
+            <option className="bg-stone-800 text-white font-vazirmatn" value="relevance">مرتب‌سازی</option>
+            <option className="bg-stone-800 text-white font-vazirmatn" value="price">قیمت</option>
+            <option className="bg-stone-800 text-white font-vazirmatn" value="rating">امتیاز</option>
+            <option className="bg-stone-800 text-white font-vazirmatn" value="newest">جدیدترین</option>
+            <option className="bg-stone-800 text-white font-vazirmatn" value="popularity">محبوب‌ترین</option>
+          </select>
+        </div>
 
         {showVRStoreButton && (
           <Link
             href="/vr-store"
-            className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300
+            className="flex items-center gap-2 px-4 py-2 rounded-full text-[16px] font-medium transition-all duration-300
               border border-solid border-amber-500/50 bg-transparent text-amber-200
-              hover:bg-amber-500/10 hover:border-amber-500/80"
+              hover:bg-amber-500/10 hover:border-amber-500/80 font-vazirmatn"
           >
-            <span>VR Store</span>
+            <span>فروشگاه مجازی</span>
           </Link>
         )}
 
         {showAdvancedOptions && (
           <button
             onClick={() => setShowAdvanced(!showAdvanced)}
-            className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm transition-colors ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-full text-[16px] font-medium transition-colors ${
               showAdvanced 
                 ? 'bg-blue-100 text-blue-800 border border-blue-200' 
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
             <Brain className="w-4 h-4" />
-            AI Options
+            تنظیمات هوش مصنوعی
           </button>
         )}
       </div>
@@ -300,77 +307,76 @@ export default function EnhancedAISearch({
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="mt-2 p-4 bg-gray-50 rounded-lg border border-gray-200"
+            className="mt-2 p-4 bg-stone-900/95 rounded-lg border border-amber-500/30 text-right font-vazirmatn z-50 relative"
           >
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Category
+                <label className="block text-sm font-medium text-amber-200 mb-1">
+                  دسته‌بندی
                 </label>
                 <select
                   value={filters.category}
                   onChange={(e) => handleFilterChange('category', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                  aria-label="Filter by category"
+                  className="w-full px-3 py-2 bg-stone-800 border border-amber-500/30 rounded-md focus:ring-2 focus:ring-amber-500 text-white focus:outline-none"
+                  aria-label="فیلتر دسته‌بندی"
                 >
-                  <option value="">All Categories</option>
-                  <option value="ELECTRONICS">Electronics</option>
-                  <option value="CLOTHING">Clothing</option>
-                  <option value="HOME">Home</option>
-                  <option value="BOOKS">Books</option>
-                  <option value="SPORTS">Sports</option>
+                  <option value="">همه دسته‌بندی‌ها</option>
+                  <option value="DATES">خرما</option>
+                  <option value="HONEY">عسل طبیعی</option>
+                  <option value="SAFFRON">زعفران</option>
+                  <option value="OTHERS">محصولات دیگر</option>
                 </select>
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Min Price
+                <label className="block text-sm font-medium text-amber-200 mb-1">
+                  حداقل قیمت (تومان)
                 </label>
                 <input
                   type="number"
                   value={filters.minPrice}
                   onChange={(e) => handleFilterChange('minPrice', e.target.value)}
-                  placeholder="0"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                  placeholder="۰"
+                  className="w-full px-3 py-2 bg-stone-800 border border-amber-500/30 rounded-md focus:ring-2 focus:ring-amber-500 text-white focus:outline-none placeholder-gray-500"
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Max Price
+                <label className="block text-sm font-medium text-amber-200 mb-1">
+                  حداکثر قیمت (تومان)
                 </label>
                 <input
                   type="number"
                   value={filters.maxPrice}
                   onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
-                  placeholder="1000"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                  placeholder="۵,۰۰۰,۰۰۰"
+                  className="w-full px-3 py-2 bg-stone-800 border border-amber-500/30 rounded-md focus:ring-2 focus:ring-amber-500 text-white focus:outline-none placeholder-gray-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Brand
+                <label className="block text-sm font-medium text-amber-200 mb-1">
+                  برند
                 </label>
                 <input
                   type="text"
                   value={filters.brand}
                   onChange={(e) => handleFilterChange('brand', e.target.value)}
-                  placeholder="Brand name"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                  placeholder="نام برند"
+                  className="w-full px-3 py-2 bg-stone-800 border border-amber-500/30 rounded-md focus:ring-2 focus:ring-amber-500 text-white focus:outline-none placeholder-gray-500"
                 />
               </div>
             </div>
             
-            <div className="mt-3">
-              <label className="flex items-center">
+            <div className="mt-4 flex items-center">
+              <label className="flex items-center gap-2 cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={filters.inStock}
                   onChange={(e) => handleFilterChange('inStock', e.target.checked)}
-                  className="rounded border-gray-300 text-amber-600 focus:ring-amber-500"
+                  className="rounded border-amber-500/30 text-amber-600 focus:ring-amber-500 bg-stone-800"
                 />
-                <span className="ml-2 text-sm text-gray-700">In Stock Only</span>
+                <span className="text-sm text-amber-100">فقط کالاهای موجود</span>
               </label>
             </div>
           </motion.div>
@@ -384,25 +390,25 @@ export default function EnhancedAISearch({
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="mt-2 p-4 bg-blue-50 rounded-lg border border-blue-200"
+            className="mt-2 p-4 bg-stone-900/95 rounded-lg border border-blue-500/30 text-right font-vazirmatn z-50 relative"
           >
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="flex items-center">
+                <label className="flex items-center gap-2 cursor-pointer select-none">
                   <input
                     type="checkbox"
                     checked={includeTypos}
                     onChange={(e) => setIncludeTypos(e.target.checked)}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    className="rounded border-blue-500/30 text-blue-600 focus:ring-blue-500 bg-stone-800"
                   />
-                  <span className="ml-2 text-sm text-gray-700">Typo Tolerance</span>
+                  <span className="text-sm font-medium text-blue-200">تحمل خطای تایپی</span>
                 </label>
-                <p className="text-xs text-gray-500 mt-1">Find results even with spelling mistakes</p>
+                <p className="text-xs text-gray-400 mt-1">یافتن نتایج حتی با وجود غلط‌های املایی</p>
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Semantic Weight: {Math.round(semanticWeight * 100)}%
+                <label className="block text-sm font-medium text-blue-200 mb-1">
+                  وزن معنایی: {Math.round(semanticWeight * 100)}%
                 </label>
                 <input
                   type="range"
@@ -411,14 +417,14 @@ export default function EnhancedAISearch({
                   step="0.1"
                   value={semanticWeight}
                   onChange={(e) => setSemanticWeight(parseFloat(e.target.value))}
-                  className="w-full"
+                  className="w-full accent-blue-500"
                 />
-                <p className="text-xs text-gray-500">AI understanding vs keyword matching</p>
+                <p className="text-xs text-gray-400">درک معنایی هوش مصنوعی در برابر انطباق کلمات کلیدی</p>
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Keyword Weight: {Math.round(keywordWeight * 100)}%
+                <label className="block text-sm font-medium text-blue-200 mb-1">
+                  وزن کلمات کلیدی: {Math.round(keywordWeight * 100)}%
                 </label>
                 <input
                   type="range"
@@ -427,9 +433,9 @@ export default function EnhancedAISearch({
                   step="0.1"
                   value={keywordWeight}
                   onChange={(e) => setKeywordWeight(parseFloat(e.target.value))}
-                  className="w-full"
+                  className="w-full accent-blue-500"
                 />
-                <p className="text-xs text-gray-500">Exact keyword matching importance</p>
+                <p className="text-xs text-gray-400">اهمیت انطباق دقیق کلمات کلیدی</p>
               </div>
             </div>
           </motion.div>
@@ -443,28 +449,28 @@ export default function EnhancedAISearch({
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto"
+            className="absolute top-full left-0 right-0 mt-2 bg-stone-900 border border-amber-500/20 rounded-lg shadow-2xl z-50 max-h-96 overflow-y-auto text-right font-vazirmatn text-white"
           >
             {/* Search Metadata */}
             {searchMetadata && (
-              <div className="p-3 border-b border-gray-100 bg-gray-50">
-                <div className="flex items-center justify-between text-xs text-gray-600">
-                  <span>AI Search powered by enhanced algorithms</span>
-                  <span>Search time: {new Date(searchMetadata.searchTime).toLocaleTimeString()}</span>
+              <div className="p-3 border-b border-amber-500/10 bg-stone-950/80">
+                <div className="flex items-center justify-between text-xs text-gray-400">
+                  <span>جستجوی هوشمند مجهز به الگوریتم‌های پیشرفته شیخ</span>
+                  <span>زمان جستجو: {new Date(searchMetadata.searchTime).toLocaleTimeString('fa-IR')}</span>
                 </div>
               </div>
             )}
 
             {/* Suggestions */}
             {suggestions.length > 0 && query && (
-              <div className="p-3 border-b border-gray-100">
-                <h4 className="text-sm font-medium text-gray-700 mb-2">AI Suggestions</h4>
+              <div className="p-3 border-b border-amber-500/10">
+                <h4 className="text-sm font-medium text-amber-200 mb-2">پیشنهادهای هوش مصنوعی</h4>
                 <div className="space-y-1">
                   {suggestions.map((suggestion, index) => (
                     <button
                       key={index}
                       onClick={() => handleSuggestionClick(suggestion)}
-                      className="w-full text-left px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-md flex items-center gap-2"
+                      className="w-full text-right px-3 py-2 text-sm text-gray-300 hover:bg-amber-500/10 rounded-md flex items-center gap-2 transition-colors"
                     >
                       {suggestion.type === 'typo_correction' ? (
                         <Zap className="w-4 h-4 text-yellow-500" />
@@ -474,12 +480,12 @@ export default function EnhancedAISearch({
                       <span className="flex-1">
                         {suggestion.text}
                         {suggestion.originalText && (
-                          <span className="text-gray-400"> (from "{suggestion.originalText}")</span>
+                          <span className="text-gray-500"> (از "{suggestion.originalText}")</span>
                         )}
                       </span>
                       {suggestion.confidence && (
-                        <span className="text-xs text-gray-400">
-                          {Math.round(suggestion.confidence * 100)}%
+                        <span className="text-xs text-gray-500">
+                          {Math.round(suggestion.confidence * 100)}% انطباق
                         </span>
                       )}
                     </button>
@@ -491,13 +497,19 @@ export default function EnhancedAISearch({
             {/* Results */}
             {results.length > 0 && (
               <div className="p-3">
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-sm font-medium text-gray-700">
-                    {total} result{total !== 1 ? 's' : ''} found
+                <div className="flex items-center justify-between mb-3 border-b border-amber-500/10 pb-2">
+                  <h4 className="text-sm font-medium text-amber-200">
+                    {total} نتیجه یافت شد
                   </h4>
-                  <div className="flex items-center gap-1 text-xs text-gray-500">
+                  <div className="flex items-center gap-1 text-xs text-gray-400">
                     {getSortIcon()}
-                    <span className="capitalize">{sortBy}</span>
+                    <span className="mr-1">
+                      {sortBy === 'relevance' && 'مرتب‌سازی'}
+                      {sortBy === 'price' && 'قیمت'}
+                      {sortBy === 'rating' && 'امتیاز'}
+                      {sortBy === 'newest' && 'جدیدترین'}
+                      {sortBy === 'popularity' && 'محبوب‌ترین'}
+                    </span>
                   </div>
                 </div>
                 
@@ -505,14 +517,14 @@ export default function EnhancedAISearch({
                   {results.slice(0, 5).map((result, index) => (
                     <motion.div
                       key={result.product.id}
-                      initial={{ opacity: 0, x: -20 }}
+                      initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.1 }}
+                      transition={{ delay: index * 0.05 }}
                       onClick={() => handleResultClick(result.product)}
-                      className="cursor-pointer p-3 border border-gray-100 rounded-lg hover:border-amber-200 hover:bg-amber-50 transition-colors"
+                      className="cursor-pointer p-3 border border-amber-500/10 rounded-lg hover:border-amber-500/40 hover:bg-amber-500/5 transition-all duration-300"
                     >
                       <div className="flex items-start gap-3">
-                        <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                        <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-stone-800 flex-shrink-0">
                           {result.product.images && result.product.images.length > 0 ? (
                             <Image
                               src={result.product.images[0]?.image || '/noImage.jpg'}
@@ -522,55 +534,59 @@ export default function EnhancedAISearch({
                               sizes="48px"
                             />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <span className="text-gray-400 text-xs">No Image</span>
+                            <div className="w-full h-full flex items-center justify-center bg-stone-800">
+                              <span className="text-gray-500 text-[10px]">بدون تصویر</span>
                             </div>
                           )}
                         </div>
                         
-                        <div className="flex-1 min-w-0">
+                        <div className="flex-1 min-w-0 text-right">
                           <div className="flex items-center gap-2 mb-1">
-                            <h5 className="text-sm font-medium text-gray-900 truncate">
+                            <h5 className="text-sm font-semibold text-white truncate">
                               {result.product.name}
                             </h5>
                             {getMatchTypeIcon(result.matchedFields)}
-                            <span className="text-xs text-gray-500">
+                            <span className="text-xs text-amber-400/80">
                               {getMatchTypeLabel(result.matchedFields)}
                             </span>
                           </div>
-                          <p className="text-xs text-gray-500 mb-1">
-                            {result.product.category}
+                          <p className="text-xs text-gray-400 mb-1">
+                            {result.product.category === 'DATES' && 'خرما'}
+                            {result.product.category === 'HONEY' && 'عسل طبیعی'}
+                            {result.product.category === 'SAFFRON' && 'زعفران'}
+                            {result.product.category === 'OTHERS' && 'محصولات دیگر'}
+                            {result.product.category !== 'DATES' && result.product.category !== 'HONEY' && result.product.category !== 'SAFFRON' && result.product.category !== 'OTHERS' && result.product.category}
                           </p>
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-semibold text-amber-600">
+                          <div className="flex items-center justify-between mt-1">
+                            <span className="text-sm font-semibold text-amber-500">
                               {formatPrice(
                                 convertCurrency(result.product.basePrice, 'EUR', currency),
                                 currency
                               )}
                             </span>
                             {result.highlights.length > 0 && (
-                              <span className="text-xs text-gray-400">
-                                Matches: {result.highlights.slice(0, 2).join(', ')}
+                              <span className="text-xs text-gray-500">
+                                منطبق با: {result.highlights.slice(0, 2).join(', ')}
                               </span>
                             )}
                           </div>
                           {result.explanation && (
-                            <p className="text-xs text-blue-600 mt-1">
+                            <p className="text-xs text-blue-400 mt-1">
                               {result.explanation}
                             </p>
                           )}
                         </div>
                         
-                        <div className="flex flex-col items-end">
-                          <div className="text-xs text-gray-400">
-                            {Math.round(result.score * 100)}% match
+                        <div className="flex flex-col items-end flex-shrink-0">
+                          <div className="text-xs text-gray-500">
+                            {Math.round(result.score * 100)}٪ تطابق
                           </div>
-                          <div className="text-xs text-blue-500">
-                            AI: {Math.round(result.confidence * 100)}%
+                          <div className="text-xs text-blue-400">
+                            هوش مصنوعی: {Math.round(result.confidence * 100)}٪
                           </div>
                           {result.typoTolerance < 1 && (
                             <div className="text-xs text-yellow-500">
-                              Typo: {Math.round(result.typoTolerance * 100)}%
+                              خطای تایپ: {Math.round(result.typoTolerance * 100)}٪
                             </div>
                           )}
                         </div>
@@ -580,9 +596,9 @@ export default function EnhancedAISearch({
                 </div>
                 
                 {results.length > 5 && (
-                  <div className="mt-3 pt-3 border-t border-gray-100">
-                    <button className="w-full text-center text-sm text-amber-600 hover:text-amber-700">
-                      View all {total} results
+                  <div className="mt-3 pt-3 border-t border-amber-500/10">
+                    <button className="w-full text-center text-sm text-amber-500 hover:text-amber-400 transition-colors">
+                      مشاهده همه {total} نتیجه
                     </button>
                   </div>
                 )}
@@ -592,9 +608,9 @@ export default function EnhancedAISearch({
             {/* No Results */}
             {results.length === 0 && suggestions.length === 0 && query && !loading && (
               <div className="p-6 text-center">
-                <Brain className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                <p className="text-sm text-gray-500">No results found for "{query}"</p>
-                <p className="text-xs text-gray-400 mt-1">Try different keywords, check spelling, or adjust AI settings</p>
+                <Brain className="w-8 h-8 text-amber-500 mx-auto mb-2" />
+                <p className="text-sm text-amber-200">هیچ نتیجه‌ای برای "{query}" یافت نشد</p>
+                <p className="text-xs text-gray-400 mt-1">کلمات کلیدی دیگری را امتحان کنید، املا را بررسی کنید یا تنظیمات هوش مصنوعی را تغییر دهید</p>
               </div>
             )}
           </motion.div>

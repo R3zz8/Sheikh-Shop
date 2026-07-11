@@ -40,6 +40,7 @@ const mockProducts = [
     categoryType: 'SheikhFood',
     baseUnit: mockUnits[1],
     categoryRelation: mockCategories[1],
+    images: [{ id: 'img1', image: '/honey.webp' }],
     discounts: [{ id: 'd1', value: 200000, discountType: 'FIXED', isActive: true }], // Discount in native Toman
     units: [
       { id: 'pu1', price: 1250000, unitId: 'u2', unit: mockUnits[1] }
@@ -61,6 +62,7 @@ const mockProducts = [
     categoryType: 'SheikhFood',
     baseUnit: mockUnits[0],
     categoryRelation: mockCategories[2],
+    images: [{ id: 'img2', image: '/saffron.webp' }],
     discounts: [],
     units: [
       { id: 'pu2', price: 4250000, unitId: 'u1', unit: mockUnits[0] }
@@ -82,6 +84,7 @@ const mockProducts = [
     categoryType: 'SheikhFood',
     baseUnit: mockUnits[1],
     categoryRelation: mockCategories[0],
+    images: [{ id: 'img3', image: '/dates.webp' }],
     discounts: [{ id: 'd2', value: 100000, discountType: 'FIXED', isActive: true }], // Discount in native Toman
     units: [
       { id: 'pu3', price: 890000, unitId: 'u2', unit: mockUnits[1] }
@@ -103,6 +106,7 @@ const mockProducts = [
     categoryType: 'SheikhFood',
     baseUnit: mockUnits[2],
     categoryRelation: mockCategories[3],
+    images: [{ id: 'img4', image: '/other.webp' }],
     discounts: [],
     units: [
       { id: 'pu4', price: 650000, unitId: 'u3', unit: mockUnits[2] }

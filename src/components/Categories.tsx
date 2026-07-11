@@ -11,22 +11,22 @@ interface Category {
 
 const categories: Category[] = [
     {
-        name: 'Dates',
+        name: 'خرما',
         image: '/dates.webp',
         slug: 'dates'
     },
     {
-        name: 'Honey',
+        name: 'عسل طبیعی',
         image: '/honey.webp',
         slug: 'honey'
     },
     {
-        name: 'Saffron',
+        name: 'زعفران',
         image: '/saffron.webp',
         slug: 'saffron'
     },
     {
-        name: 'Other',
+        name: 'محصولات دیگر',
         image: '/other.webp',
         slug: 'other'
     }
@@ -34,15 +34,21 @@ const categories: Category[] = [
 
 export default function Categories() {
     return (
-        <section className="container-fluid section-padding">
+        <section className="container-fluid section-padding relative">
             <div className="max-w-6xl mx-auto">
                 {/* Section Header */}
                 <div className="text-center mb-12">
-                    <h2 style={{ opacity: 1 }} className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent mb-4">
-                        Main Categories
+                    <h2
+                        style={{ opacity: 1, animation: 'none' }}
+                        className="text-[42px] font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent mb-4 leading-tight font-vazirmatn select-none"
+                    >
+                        دسته‌بندی‌های اصلی
                     </h2>
-                    <p style={{ opacity: 1 }} className="text-gray-300 text-lg max-w-2xl mx-auto">
-                        Explore our premium collection of authentic products from the finest sources
+                    <p
+                        style={{ opacity: 1, animation: 'none' }}
+                        className="text-gray-300 text-[18px] max-w-2xl mx-auto font-vazirmatn leading-relaxed select-none"
+                    >
+                        مجموعه‌ای از بهترین محصولات طبیعی و اصیل را در دسته‌بندی‌های متنوع ما کشف کنید.
                     </p>
                 </div>
 
@@ -73,7 +79,10 @@ export default function Categories() {
 
                             {/* Category Name */}
                             <div className="text-center">
-                                <h3 style={{ opacity: 1 }} className="text-lg md:text-xl font-semibold text-white group-hover:text-amber-200 transition-colors duration-300">
+                                <h3
+                                    style={{ opacity: 1, animation: 'none' }}
+                                    className="text-[18px] font-semibold text-white group-hover:text-amber-200 transition-colors duration-300 font-vazirmatn"
+                                >
                                     {category.name}
                                 </h3>
                                 <div className="w-0 group-hover:w-8 h-0.5 bg-gradient-to-r from-amber-400 to-orange-400 mx-auto transition-all duration-300 mt-2" />
@@ -90,4 +99,4 @@ export default function Categories() {
             </div>
         </section>
     );
-} 
+}
