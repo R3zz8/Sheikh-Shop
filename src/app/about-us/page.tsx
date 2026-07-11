@@ -5,12 +5,12 @@ import { Mail, Sparkles, Code, Database, Palette } from 'lucide-react';
 import Image from 'next/image';
 
 const skills = [
-  { name: 'Next.js', icon: Code, color: 'from-blue-500 to-cyan-500' },
-  { name: 'React', icon: Code, color: 'from-cyan-400 to-blue-500' },
-  { name: 'Tailwind CSS', icon: Palette, color: 'from-teal-400 to-cyan-500' },
-  { name: 'Node.js', color: 'from-green-500 to-emerald-500' },
-  { name: 'Prisma', icon: Database, color: 'from-purple-500 to-pink-500' },
-  { name: 'PostgreSQL', icon: Database, color: 'from-blue-600 to-indigo-600' },
+  { name: 'نکست‌جی‌اس', icon: Code, color: 'from-blue-500 to-cyan-500' },
+  { name: 'ری‌اکت', icon: Code, color: 'from-cyan-400 to-blue-500' },
+  { name: 'تیلویند سی‌اس‌اس', icon: Palette, color: 'from-teal-400 to-cyan-500' },
+  { name: 'نود‌جی‌اس', color: 'from-green-500 to-emerald-500' },
+  { name: 'پریزما', icon: Database, color: 'from-purple-500 to-pink-500' },
+  { name: 'پستگرس‌کیوال', icon: Database, color: 'from-blue-600 to-indigo-600' },
 ];
 
 const containerVariants = {
@@ -50,17 +50,19 @@ const imageVariants = {
 
 export default function AboutUsPage() {
   const handleContact = () => {
-    window.location.href = 'mailto:reza@example.com?subject=Project Inquiry&body=Hello Reza, I would like to discuss a project with you.';
+    const subject = encodeURIComponent('درخواست همکاری و مشاوره پروژه');
+    const body = encodeURIComponent('سلام رضا عزیز، مایل هستم در مورد یک پروژه صادراتی و فروشگاهی با شما گفتگو داشته باشم.');
+    window.location.href = `mailto:reza@example.com?subject=${subject}&body=${body}`;
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-950/95 via-stone-900/95 to-amber-950/95 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-amber-950/95 via-stone-900/95 to-amber-950/95 relative overflow-hidden font-vazirmatn" dir="rtl">
       {/* Background effects matching header/footer */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-gradient-radial from-amber-500/3 via-orange-500/2 to-yellow-500/3 pointer-events-none" />
         <div className="absolute inset-0 bg-gradient-to-b from-amber-500/2 via-transparent to-orange-500/2 pointer-events-none" />
-        <div className="absolute top-0 left-0 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
       </div>
 
       <div className="relative z-10 container mx-auto px-6 py-16">
@@ -80,7 +82,7 @@ export default function AboutUsPage() {
               <div className="relative">
                 <Image
                   src="/Reza.jpg"
-                  alt="Reza Dehghani - Full-Stack Web Developer"
+                  alt="رضا دهقانی - طراح وب فول‌استک و صادرکننده محصولات پرمیوم"
                   width={280}
                   height={280}
                   className="rounded-2xl shadow-2xl shadow-amber-300/25 border-2 border-amber-300/30 object-cover"
@@ -93,21 +95,21 @@ export default function AboutUsPage() {
 
           {/* Name */}
           <motion.h1
-            className="text-5xl md:text-7xl font-bold text-white mb-4 tracking-tight"
+            className="text-4xl md:text-6xl font-extrabold text-white mb-6 leading-tight select-none"
             variants={itemVariants}
           >
-            REZA DEHGHANI
-            </motion.h1>
+            رضا دهقانی
+          </motion.h1>
 
           {/* Title */}
           <motion.div
-            className="mb-8"
+            className="mb-10"
             variants={itemVariants}
           >
             <div className="inline-flex items-center gap-3 px-6 py-3 bg-white/8 backdrop-blur-sm rounded-full border border-amber-200/20">
-              <Sparkles className="w-5 h-5 text-amber-300" />
-              <h2 className="text-xl md:text-2xl font-semibold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
-                Full-Stack Next.js Web Designer & Exporter
+              <Sparkles className="w-5 h-5 text-amber-300 shrink-0" />
+              <h2 className="text-lg md:text-xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent leading-none">
+                طراح وب فول‌استک نکست‌جی‌اس و صادرکننده محصولات لوکس غذایی
               </h2>
             </div>
           </motion.div>
@@ -131,7 +133,7 @@ export default function AboutUsPage() {
                   <div className="px-4 py-2 bg-white/8 backdrop-blur-sm border border-white/15 rounded-lg hover:border-amber-300/50 transition-all duration-300 group-hover:bg-white/12">
                     <div className="flex items-center gap-2">
                       {skill.icon && <skill.icon className="w-4 h-4 text-amber-300" />}
-                      <span className="text-white font-medium text-sm">{skill.name}</span>
+                      <span className="text-white font-semibold text-sm">{skill.name}</span>
                     </div>
                   </div>
                   <div className="absolute inset-0 bg-gradient-to-r from-amber-300/20 to-orange-300/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm -z-10" />
@@ -145,11 +147,11 @@ export default function AboutUsPage() {
             className="mb-12 max-w-3xl mx-auto space-y-6"
             variants={itemVariants}
           >
-            <p className="text-lg md:text-xl text-gray-300 leading-relaxed">
-              As a company engaged in both ecommerce website development and export sales, we possess deep insights into our client&apos;s requirements.
+            <p className="text-lg md:text-xl text-gray-200 leading-relaxed font-medium">
+              ما به عنوان مجموعه‌ای فعال در حوزه توسعه پلتفرم‌های تجارت الکترونیک پیشرفته و صادرات بین‌المللی، درک عمیق و بی‌واسطه‌ای از نیازها، استانداردها و چالش‌های تجاری مشتریان خود داریم.
             </p>
             <p className="text-lg md:text-xl text-gray-300 leading-relaxed">
-              I am a full-stack web designer and exporter who not only builds conversion-focused ecommerce platforms but also understands how to drive real business results through design.
+              من به عنوان یک طراح وب فول‌استک و صادرکننده، نه‌تنها پلتفرم‌های فروشگاهی با نرخ تبدیل بالا خلق می‌کنم، بلکه به‌خوبی می‌دانم چگونه از طریق طراحی استراتژیک، نتایج تجاری ملموس و رشد پایدار برای برندهای لوکس ایجاد کنم.
             </p>
           </motion.div>
 
@@ -161,18 +163,18 @@ export default function AboutUsPage() {
           >
             <button
               onClick={handleContact}
-              className="group relative inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-amber-600 via-yellow-600 to-orange-600 hover:from-amber-700 hover:via-yellow-700 hover:to-orange-700 text-white font-semibold text-lg rounded-xl shadow-2xl shadow-amber-900/30 hover:shadow-amber-900/40 transition-all duration-300 transform hover:-translate-y-1"
+              className="group relative inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-amber-600 via-yellow-600 to-orange-600 hover:from-amber-700 hover:via-yellow-700 hover:to-orange-700 text-white font-bold text-lg rounded-xl shadow-2xl shadow-amber-900/30 hover:shadow-amber-900/40 transition-all duration-300 transform hover:-translate-y-1"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-amber-300 to-orange-300 rounded-xl opacity-0 group-hover:opacity-20 transition-opacity duration-300 blur-xl" />
-              <Mail className="w-5 h-5" />
-              <span>Contact Me</span>
+              <Mail className="w-5 h-5 shrink-0" />
+              <span>ارتباط با من</span>
               <div className="absolute inset-0 rounded-xl border border-amber-300/30 group-hover:border-amber-200/50 transition-colors duration-300" />
             </button>
           </motion.div>
 
           {/* Decorative Elements */}
           <motion.div
-            className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-r from-amber-300/10 to-orange-300/10 rounded-full blur-3xl"
+            className="absolute top-20 right-10 w-32 h-32 bg-gradient-to-r from-amber-300/10 to-orange-300/10 rounded-full blur-3xl"
             animate={{
               scale: [1, 1.2, 1],
               opacity: [0.3, 0.6, 0.3],
@@ -184,7 +186,7 @@ export default function AboutUsPage() {
             }}
           />
           <motion.div
-            className="absolute bottom-20 right-10 w-40 h-40 bg-gradient-to-r from-orange-300/10 to-amber-300/10 rounded-full blur-3xl"
+            className="absolute bottom-20 left-10 w-40 h-40 bg-gradient-to-r from-orange-300/10 to-amber-300/10 rounded-full blur-3xl"
             animate={{
               scale: [1.2, 1, 1.2],
               opacity: [0.6, 0.3, 0.6],
