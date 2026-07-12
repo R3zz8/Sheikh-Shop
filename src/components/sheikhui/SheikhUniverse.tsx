@@ -10,7 +10,8 @@ import {
   ShoppingBag,
   Sparkles,
   Cpu,
-  Shield
+  Shield,
+  Code2
 } from 'lucide-react';
 
 // Category Definitions
@@ -20,6 +21,7 @@ interface CategoryItem {
   description: string;
   Icon: React.ComponentType<{ className?: string }>;
   color: string;
+  badge?: string;
 }
 
 const CATEGORIES: CategoryItem[] = [
@@ -43,6 +45,14 @@ const CATEGORIES: CategoryItem[] = [
     description: 'کالاهای سوپرمارکتی و مصرفی',
     Icon: ShoppingBag,
     color: '#d97706',
+  },
+  {
+    id: 'web',
+    name: 'شیخ وب',
+    description: 'طراحی وب‌سایت‌های حرفه‌ای، فروشگاهی و شرکتی با جدیدترین فناوری‌های روز دنیا.',
+    Icon: Code2,
+    color: '#a855f7',
+    badge: 'طراحی سایت اختصاصی'
   },
   {
     id: 'perfume',
@@ -344,6 +354,13 @@ function OrbitSystem({ scale, disabled, activeHoverId, setActiveHoverId }: Orbit
                   <span className="font-bold text-amber-300 text-sm md:text-base mb-1 tracking-wide font-vazirmatn">
                     {item.name}
                   </span>
+
+                  {item.badge && (
+                    <span className="inline-block px-2 py-0.5 mb-1.5 text-[9px] font-bold text-purple-200 bg-purple-500/20 border border-purple-400/30 rounded-full font-vazirmatn">
+                      {item.badge}
+                    </span>
+                  )}
+
                   <p className="text-gray-300 text-[10px] md:text-xs leading-relaxed font-vazirmatn">
                     {item.description}
                   </p>

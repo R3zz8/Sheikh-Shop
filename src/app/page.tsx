@@ -170,49 +170,48 @@ export default function Home() {
 
         {/* Features Section */}
         <section className="container-fluid section-padding-sm">
-          <div className="max-w-6xl mx-auto">
+          <div className="max-w-6xl mx-auto px-2 sm:px-4">
             {/*
-              Responsive grid behaviour:
-              - Default/mobile: 1 col baseline
-              - max-[400px]: 2 cols (2x2); center the last card by spanning 2 cols and centering
-              - min-[500px]: 3 cols in one row
-              - lg+: keep 3 cols as current
+              Optimized Mobile & Desktop Grid Layout:
+              - Mobile & Tablet: Always 1 perfectly balanced horizontal row (grid-cols-3)
+              - Desktop: Still 3 columns (grid-cols-3) with standard desktop dimensions.
+              - Uniform, balanced padding, gaps, and heights.
             */}
-            <div className="grid grid-cols-1 max-[400px]:grid-cols-2 min-[500px]:grid-cols-3 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-6">
               {/* Feature 1 */}
-              <div className="card p-6 text-center">
-                <div className="mx-auto mb-3 flex items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-400 shadow-lg w-16 h-16 max-[400px]:w-12 max-[400px]:h-12 min-[500px]:w-14 min-[500px]:h-14 lg:w-16 lg:h-16">
-                  <span className="text-2xl max-[400px]:text-xl min-[500px]:text-xl lg:text-2xl">🌟</span>
+              <div className="card p-2 sm:p-4 md:p-6 text-center flex flex-col justify-start items-stretch h-full">
+                <div className="mx-auto mb-1.5 sm:mb-3 flex items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-400 shadow-lg w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 shrink-0">
+                  <span className="text-lg sm:text-xl md:text-2xl">🌟</span>
                 </div>
                 {/* Thin gradient separator */}
-                <div className="mx-auto mb-4 h-px w-16 bg-gradient-to-r from-amber-300 via-yellow-300 to-orange-300/70" />
-                <h2 className="text-[18px] md:text-[20px] lg:text-[22px] font-bold text-white mb-2">کیفیت ممتاز</h2>
-                <p className="text-gray-300 text-[16px] md:text-[17px] lg:text-[18px] leading-relaxed">
-                  مجموعه‌ای منتخب از بهترین محصولات با هنر ساخت بی‌نظیر و کیفیت استثنایی
+                <div className="mx-auto mb-2 sm:mb-4 h-px w-10 sm:w-16 bg-gradient-to-r from-amber-300 via-yellow-300 to-orange-300/70 shrink-0" />
+                <h2 className="text-[13px] sm:text-[16px] md:text-[18px] lg:text-[22px] font-bold text-white mb-1 sm:mb-2 leading-tight tracking-tight select-none">کیفیت ممتاز</h2>
+                <p className="text-gray-300 text-[11px] sm:text-[13px] md:text-[15px] lg:text-[16px] leading-[1.4] sm:leading-relaxed">
+                  مجموعه‌ای منتخب از محصولات با هنر ساخت بی‌نظیر
                 </p>
               </div>
 
               {/* Feature 2 */}
-              <div className="card p-6 text-center">
-                <div className="mx-auto mb-3 flex items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-amber-400 shadow-lg w-16 h-16 max-[400px]:w-12 max-[400px]:h-12 min-[500px]:w-14 min-[500px]:h-14 lg:w-16 lg:h-16">
-                  <span className="text-2xl max-[400px]:text-xl min-[500px]:text-xl lg:text-2xl">🚚</span>
+              <div className="card p-2 sm:p-4 md:p-6 text-center flex flex-col justify-start items-stretch h-full">
+                <div className="mx-auto mb-1.5 sm:mb-3 flex items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-amber-400 shadow-lg w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 shrink-0">
+                  <span className="text-lg sm:text-xl md:text-2xl">🚚</span>
                 </div>
-                <div className="mx-auto mb-4 h-px w-16 bg-gradient-to-r from-amber-300 via-yellow-300 to-orange-300/70" />
-                <h2 className="text-[18px] md:text-[20px] lg:text-[22px] font-bold text-white mb-2">ارسال سریع</h2>
-                <p className="text-gray-300 text-[16px] md:text-[17px] lg:text-[18px] leading-relaxed">
-                  ارسال سریع و مطمئن درب منزل با بسته‌بندی ویژه و لوکس
+                <div className="mx-auto mb-2 sm:mb-4 h-px w-10 sm:w-16 bg-gradient-to-r from-amber-300 via-yellow-300 to-orange-300/70 shrink-0" />
+                <h2 className="text-[13px] sm:text-[16px] md:text-[18px] lg:text-[22px] font-bold text-white mb-1 sm:mb-2 leading-tight tracking-tight select-none">ارسال سریع</h2>
+                <p className="text-gray-300 text-[11px] sm:text-[13px] md:text-[15px] lg:text-[16px] leading-[1.4] sm:leading-relaxed">
+                  ارسال سریع و مطمئن درب منزل با بسته‌بندی لوکس
                 </p>
               </div>
 
               {/* Feature 3 */}
-              <div className="card p-6 text-center max-[400px]:col-span-2 max-[400px]:justify-self-center">
-                <div className="mx-auto mb-3 flex items-center justify-center rounded-full bg-gradient-to-br from-orange-400 to-red-400 shadow-lg w-16 h-16 max-[400px]:w-12 max-[400px]:h-12 min-[500px]:w-14 min-[500px]:h-14 lg:w-16 lg:h-16">
-                  <span className="text-2xl max-[400px]:text-xl min-[500px]:text-xl lg:text-2xl">💎</span>
+              <div className="card p-2 sm:p-4 md:p-6 text-center flex flex-col justify-start items-stretch h-full">
+                <div className="mx-auto mb-1.5 sm:mb-3 flex items-center justify-center rounded-full bg-gradient-to-br from-orange-400 to-red-400 shadow-lg w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 shrink-0">
+                  <span className="text-lg sm:text-xl md:text-2xl">💎</span>
                 </div>
-                <div className="mx-auto mb-4 h-px w-16 bg-gradient-to-r from-amber-300 via-yellow-300 to-orange-300/70" />
-                <h2 className="text-[18px] md:text-[20px] lg:text-[22px] font-bold text-white mb-2">مجموعه انحصاری</h2>
-                <p className="text-gray-300 text-[16px] md:text-[17px] lg:text-[18px] leading-relaxed">
-                  نسخه‌های محدود و تخفیف‌های ویژه برای مشتریان گران‌قدر ما
+                <div className="mx-auto mb-2 sm:mb-4 h-px w-10 sm:w-16 bg-gradient-to-r from-amber-300 via-yellow-300 to-orange-300/70 shrink-0" />
+                <h2 className="text-[13px] sm:text-[16px] md:text-[18px] lg:text-[22px] font-bold text-white mb-1 sm:mb-2 leading-tight tracking-tight select-none">مجموعه انحصاری</h2>
+                <p className="text-gray-300 text-[11px] sm:text-[13px] md:text-[15px] lg:text-[16px] leading-[1.4] sm:leading-relaxed">
+                  تخفیف‌های انحصاری و نسخه‌های خاص برای شما
                 </p>
               </div>
             </div>
