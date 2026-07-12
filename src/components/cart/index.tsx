@@ -30,7 +30,7 @@ export default function CartDropdown() {
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          aria-label="Open cart"
+          aria-label="باز کردن سبد خرید"
           className={cn(
             'relative w-10 h-10 rounded-xl bg-white/8 backdrop-blur-sm',
             'border border-white/20 text-gray-300 hover:text-white',
@@ -44,30 +44,30 @@ export default function CartDropdown() {
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               className={cn(
-                'absolute -top-2 -right-2 w-5 h-5 flex items-center justify-center rounded-full',
+                'absolute -top-2 -left-2 w-5 h-5 flex items-center justify-center rounded-full',
                 'bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-semibold',
                 'shadow-lg border border-amber-300/30',
               )}
             >
-              {cartTotals.itemCount > 99 ? '99+' : cartTotals.itemCount}
+              {cartTotals.itemCount > 99 ? '۹۹+' : cartTotals.itemCount}
             </motion.span>
           )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className={cn(
         'w-96 p-6 bg-white/12 backdrop-blur-2xl border border-white/20',
-        'shadow-2xl shadow-amber-900/30 rounded-2xl',
-      )}>
-        <div className="flex items-center justify-between mb-4">
+        'shadow-2xl shadow-amber-900/30 rounded-2xl font-vazirmatn',
+      )} align="end">
+        <div className="flex items-center justify-between mb-4" dir="rtl">
           <div className="flex items-center gap-2">
             <ShoppingCart className="w-5 h-5 text-amber-300" />
-            <h4 className="text-lg font-semibold text-white">Shopping Cart</h4>
+            <h4 className="text-lg font-semibold text-white">سبد خرید</h4>
             {cartTotals.uniqueItems > 0 && (
               <span className={cn(
                 'px-2 py-1 rounded-full text-xs font-semibold',
                 'bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-900',
               )}>
-                {cartTotals.uniqueItems} items
+                {cartTotals.uniqueItems} کالا
               </span>
             )}
           </div>
@@ -78,23 +78,23 @@ export default function CartDropdown() {
               onClick={clearCart}
               className="text-xs text-red-400 hover:text-red-300 hover:bg-red-400/10"
             >
-              Clear All
+              پاک کردن همه
             </Button>
           )}
         </div>
 
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
-            <div className="text-gray-300 text-sm">Loading cart...</div>
+            <div className="text-gray-300 text-sm">در حال بارگذاری سبد خرید...</div>
           </div>
         ) : !cart || cart?.length === 0 ? (
-          <div className="text-center py-8">
+          <div className="text-center py-8" dir="rtl">
             <Package className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-            <p className="text-gray-300 text-sm">Your cart is empty</p>
-            <p className="text-gray-400 text-xs mt-1">Add some premium products to get started</p>
+            <p className="text-gray-300 text-sm">سبد خرید شما خالی است</p>
+            <p className="text-gray-400 text-xs mt-1">برای شروع، محصولات مورد نظر خود را به سبد خرید اضافه کنید.</p>
           </div>
         ) : (
-          <div className="space-y-3 max-h-64 overflow-y-auto">
+          <div className="space-y-3 max-h-64 overflow-y-auto" dir="rtl">
             <AnimatePresence>
               {cart?.map((item: CartWithProduct) => (
                 <motion.div
@@ -120,12 +120,12 @@ export default function CartDropdown() {
                   </div>
 
                   {/* Product Info */}
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1 min-w-0 text-right">
                     <p className="text-sm font-medium text-white truncate">
                       {item.product.name}
                     </p>
                     <p className="text-xs text-amber-300 font-medium">
-                      {formatPrice(item.unitPrice || item.product.basePrice, 'EUR')}
+                      {formatPrice(item.unitPrice || item.product.basePrice)}
                     </p>
                   </div>
 
@@ -135,7 +135,7 @@ export default function CartDropdown() {
                       variant="ghost"
                       size="sm"
                       onClick={() => decrementQuantity(Number(item.id))}
-                      aria-label="Decrement quantity"
+                      aria-label="کاهش تعداد"
                       className="w-6 h-6 p-0 rounded-md bg-white/8 backdrop-blur-sm border border-white/20 text-gray-400 hover:text-white hover:bg-white/12"
                     >
                       <Minus className="w-3 h-3" />
@@ -149,7 +149,7 @@ export default function CartDropdown() {
                       variant="ghost"
                       size="sm"
                       onClick={() => incrementQuantity(Number(item.id))}
-                      aria-label="Increment quantity"
+                      aria-label="افزایش تعداد"
                       className="w-6 h-6 p-0 rounded-md bg-white/8 backdrop-blur-sm border border-white/20 text-gray-400 hover:text-white hover:bg-white/12"
                     >
                       <Plus className="w-3 h-3" />
@@ -157,9 +157,9 @@ export default function CartDropdown() {
                   </div>
 
                   {/* Item Total */}
-                  <div className="text-right min-w-0">
+                  <div className="text-left min-w-0">
                     <p className="text-sm font-semibold text-amber-300">
-                      {formatPrice((item.unitPrice || item.product.basePrice) * item.quantity, 'EUR')}
+                      {formatPrice((item.unitPrice || item.product.basePrice) * item.quantity)}
                     </p>
                   </div>
 
@@ -168,7 +168,7 @@ export default function CartDropdown() {
                     variant="ghost"
                     size="sm"
                     onClick={() => removeCartItemById(Number(item.id))}
-                    aria-label="Remove item"
+                    aria-label="حذف کالا"
                     className={cn(
                       'w-6 h-6 p-0 rounded-md bg-white/8 backdrop-blur-sm',
                       'border border-white/20 text-gray-400 hover:text-red-400',
@@ -188,11 +188,12 @@ export default function CartDropdown() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="mt-4 pt-4 border-t border-white/10"
+            dir="rtl"
           >
             <div className="flex items-center justify-between mb-3">
-              <span className="text-sm text-gray-300">Subtotal:</span>
+              <span className="text-sm text-gray-300">جمع کل:</span>
               <span className="text-lg font-semibold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
-                {formatPrice(cartTotals.subtotal, 'EUR')}
+                {formatPrice(cartTotals.subtotal)}
               </span>
             </div>
             <Button asChild className={cn(
@@ -200,11 +201,11 @@ export default function CartDropdown() {
               'hover:from-amber-700 hover:via-yellow-700 hover:to-orange-700',
               'text-white font-semibold py-2 px-4 rounded-xl border border-amber-500/30',
               'shadow-lg hover:shadow-xl hover:shadow-amber-900/30 transition-all duration-300',
-              'transform hover:-translate-y-0.5 backdrop-blur-sm',
+              'transform hover:-translate-y-0.5 backdrop-blur-sm flex items-center justify-center gap-2',
             )}>
               <Link href="/checkout">
-                <Sparkles className="w-4 h-4 mr-2" />
-                Proceed to Checkout
+                <Sparkles className="w-4 h-4" />
+                ادامه برای تسویه حساب
               </Link>
             </Button>
           </motion.div>

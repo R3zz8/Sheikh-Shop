@@ -61,7 +61,6 @@ export default function MiniCartDrawer({ isOpen, onClose }: MiniCartDrawerProps)
     }
   };
 
-
   return (
     <AnimatePresence>
       {isOpen && (
@@ -81,18 +80,19 @@ export default function MiniCartDrawer({ isOpen, onClose }: MiniCartDrawerProps)
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-xl z-50 flex flex-col"
+            className="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-xl z-50 flex flex-col font-vazirmatn"
+            dir="rtl"
           >
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200">
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center gap-2">
                 <ShoppingBag className="w-5 h-5 text-amber-600" />
                 <h2 className="text-lg font-semibold text-gray-900">
-                  Shopping Cart
+                  سبد خرید
                 </h2>
                 {cartTotals.itemCount > 0 && (
                   <Badge variant="secondary" className="bg-amber-100 text-amber-800">
-                    {cartTotals.itemCount}
+                    {cartTotals.itemCount} کالا
                   </Badge>
                 )}
               </div>
@@ -101,7 +101,7 @@ export default function MiniCartDrawer({ isOpen, onClose }: MiniCartDrawerProps)
                 size="sm"
                 onClick={onClose}
                 className="p-2"
-                aria-label="Close cart"
+                aria-label="بستن سبد خرید"
               >
                 <X className="w-5 h-5" />
               </Button>
@@ -112,17 +112,17 @@ export default function MiniCartDrawer({ isOpen, onClose }: MiniCartDrawerProps)
               {cart.length === 0 ? (
                 <div className="text-center py-8">
                   <ShoppingBag className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500 mb-4">Your cart is empty</p>
+                  <p className="text-gray-500 mb-4">سبد خرید شما خالی است</p>
                   <Link href="/products">
                     <Button className="w-full">
-                      Continue Shopping
+                      ادامه خرید
                     </Button>
                   </Link>
                 </div>
               ) : (
                 <div className="space-y-4">
                   {cart.map((item: CartWithProduct) => (
-                    <div key={`${item.productId}-${item.unitId}`} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg">
+                    <div key={`${item.productId}-${item.unitId}`} className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg">
                       <div className="relative w-16 h-16 flex-shrink-0">
                         <Image
                           src={item.product.images?.[0]?.image || '/noImage.jpg'}
@@ -133,7 +133,7 @@ export default function MiniCartDrawer({ isOpen, onClose }: MiniCartDrawerProps)
                         />
                       </div>
                       
-                      <div className="flex-1 min-w-0">
+                      <div className="flex-1 min-w-0 text-right">
                         <h3 className="text-sm font-medium text-gray-900 truncate">
                           {item.product.name}
                         </h3>
@@ -142,13 +142,13 @@ export default function MiniCartDrawer({ isOpen, onClose }: MiniCartDrawerProps)
                         </p>
                         
                         <div className="flex items-center justify-between mt-2">
-                          <div className="flex items-center space-x-2">
+                          <div className="flex items-center gap-2">
                             <Button
                               variant="outline"
                               size="sm"
                               onClick={() => handleQuantityChange(item.productId, item.unitId, item.quantity - 1)}
                               className="w-8 h-8 p-0"
-                              aria-label="Decrease quantity"
+                              aria-label="کاهش تعداد"
                             >
                               <Minus className="w-3 h-3" />
                             </Button>
@@ -160,7 +160,7 @@ export default function MiniCartDrawer({ isOpen, onClose }: MiniCartDrawerProps)
                               size="sm"
                               onClick={() => handleQuantityChange(item.productId, item.unitId, item.quantity + 1)}
                               className="w-8 h-8 p-0"
-                              aria-label="Increase quantity"
+                              aria-label="افزایش تعداد"
                             >
                               <Plus className="w-3 h-3" />
                             </Button>
@@ -182,21 +182,21 @@ export default function MiniCartDrawer({ isOpen, onClose }: MiniCartDrawerProps)
               <div className="border-t border-gray-200 p-4 space-y-4">
                 {/* Cart Summary */}
                 <div className="flex justify-between items-center text-lg font-semibold">
-                  <span>Subtotal:</span>
+                  <span>جمع کل:</span>
                   <span>{formatPrice(cartTotals.subtotal)}</span>
                 </div>
 
                 {/* Action Buttons */}
                 <div className="space-y-2">
                   <Link href="/checkout" className="block">
-                    <Button className="w-full" onClick={onClose}>
-                      Proceed to Checkout
-                      <ArrowRight className="w-4 h-4 ml-2" />
+                    <Button className="w-full flex items-center justify-center gap-2">
+                      ادامه برای تسویه حساب
+                      <ArrowRight className="w-4 h-4 transform rotate-180" />
                     </Button>
                   </Link>
                   <Link href="/cart" className="block">
-                    <Button variant="outline" className="w-full" onClick={onClose}>
-                      View Full Cart
+                    <Button variant="outline" className="w-full">
+                      مشاهده سبد خرید
                     </Button>
                   </Link>
                 </div>
@@ -205,14 +205,14 @@ export default function MiniCartDrawer({ isOpen, onClose }: MiniCartDrawerProps)
                 {crossSellProducts.length > 0 && (
                   <div className="pt-4 border-t border-gray-200">
                     <h3 className="text-sm font-medium text-gray-900 mb-3">
-                      You might also like
+                      شاید این محصولات را هم بپسندید
                     </h3>
                     <div className="space-y-2">
                       {crossSellProducts.slice(0, 2).map((product) => (
                         <Link
                           key={product.id}
                           href={`/products/${(product as any).slug || product.id}`}
-                          className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-lg transition-colors"
+                          className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors"
                           onClick={onClose}
                         >
                           <div className="relative w-12 h-12 flex-shrink-0">
@@ -229,7 +229,7 @@ export default function MiniCartDrawer({ isOpen, onClose }: MiniCartDrawerProps)
                               </div>
                             )}
                           </div>
-                          <div className="flex-1 min-w-0">
+                          <div className="flex-1 min-w-0 text-right">
                             <h4 className="text-sm font-medium text-gray-900 truncate">
                               {product.name}
                             </h4>
@@ -239,7 +239,7 @@ export default function MiniCartDrawer({ isOpen, onClose }: MiniCartDrawerProps)
                           </div>
                           {product.isAmazing && (
                             <Badge variant="destructive" className="text-xs">
-                              Amazing Deal
+                              پیشنهاد ویژه
                             </Badge>
                           )}
                         </Link>
@@ -255,8 +255,3 @@ export default function MiniCartDrawer({ isOpen, onClose }: MiniCartDrawerProps)
     </AnimatePresence>
   );
 }
-
-
-
-
-

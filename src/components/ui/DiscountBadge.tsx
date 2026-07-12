@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Clock, Zap, Tag } from 'lucide-react';
 import type { DiscountInfo } from '@/types';
 import { getDiscountTimeRemaining, isDiscountExpiringSoon } from '@/lib/pricing';
+import { formatPrice } from '@/lib/currency';
 
 interface DiscountBadgeProps {
   discount?: DiscountInfo;
@@ -41,8 +42,8 @@ export default function DiscountBadge({
   }, [discount, showCountdown]);
 
   const formatTimeRemaining = () => {
-    if (timeRemaining.days > 0) return `${timeRemaining.days}d ${timeRemaining.hours}h`;
-    if (timeRemaining.hours > 0) return `${timeRemaining.hours}h ${timeRemaining.minutes}m`;
+    if (timeRemaining.days > 0) return `${timeRemaining.days} روز ${timeRemaining.hours} ساعت`;
+    if (timeRemaining.hours > 0) return `${timeRemaining.hours} ساعت ${timeRemaining.minutes} دقیقه`;
     const minutes = timeRemaining.minutes.toString().padStart(2, '0');
     const seconds = timeRemaining.seconds.toString().padStart(2, '0');
     return `${minutes}:${seconds}`;
@@ -50,13 +51,13 @@ export default function DiscountBadge({
 
   const getBadgeContent = () => {
     if (discountPercentage) {
-      return `${Math.round(discountPercentage)}% OFF`;
+      return `٪${Math.round(discountPercentage)} تخفیف`;
     }
     if (discount?.type === 'PERCENTAGE') {
-      return `${Math.round(discount.value)}% OFF`;
+      return `٪${Math.round(discount.value)} تخفیف`;
     }
     if (discount) {
-      return `$${discount.value} OFF`;
+      return `${formatPrice(discount.value)} تخفیف`;
     }
     return null;
   };
@@ -80,7 +81,7 @@ export default function DiscountBadge({
   if (!badgeContent) return null;
 
   return (
-    <div className={`flex items-center gap-2 ${className}`}>
+    <div className={`flex items-center gap-2 font-vazirmatn ${className}`} dir="rtl">
       <div 
         className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full font-bold text-xs text-white shadow-lg ${
           isExpiringSoon 

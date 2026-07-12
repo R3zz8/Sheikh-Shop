@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { getArticleBySlug, getRelatedArticles } from '@/lib/actions/articles';
-import { Calendar, User, ArrowLeft, Clock, Share2, MessageCircle, Tag, ChevronRight, ExternalLink, Link as LinkIcon } from 'lucide-react';
+import { Calendar, User, ArrowRight, Clock, Share2, MessageCircle, Tag, ChevronLeft, ExternalLink, Link as LinkIcon } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import type { ArticleWithAuthor } from '@/types';
@@ -33,8 +33,8 @@ export async function generateMetadata({ params: { slug } }: ArticlePageProps) {
 
     if (!result.success || !result.data) {
         return generatePageSEO({
-            title: 'Article Not Found',
-            description: 'The requested article could not be found.',
+            title: 'مقاله یافت نشد',
+            description: 'مقاله درخواستی یافت نشد.',
             noIndex: true,
         });
     }
@@ -123,7 +123,7 @@ export default async function ArticlePage({ params: { slug } }: ArticlePageProps
     }
 
     const formatDate = (date: Date) => {
-        return new Intl.DateTimeFormat('en-US', {
+        return new Intl.DateTimeFormat('fa-IR', {
             year: 'numeric',
             month: 'long',
             day: 'numeric',
@@ -136,8 +136,8 @@ export default async function ArticlePage({ params: { slug } }: ArticlePageProps
     // Generate structured data
     const faqs = extractFAQsFromContent(article.content);
     const breadcrumbs = [
-        { name: 'Home', url: '/' },
-        { name: 'Articles', url: '/article' },
+        { name: 'خانه', url: '/' },
+        { name: 'مقالات', url: '/article' },
         { name: article.title, url: `/article/${article.slug}` }
     ];
 
@@ -146,7 +146,7 @@ export default async function ArticlePage({ params: { slug } }: ArticlePageProps
         breadcrumbs,
         baseUrl: 'https://sheikhshops.com',
         logoUrl: 'https://sheikhshops.com/logo.png',
-        organizationName: 'Sheikh Shop'
+        organizationName: 'فروشگاه شیخ'
     });
 
     const processedContent = manageHeadings(article.content);
@@ -158,7 +158,7 @@ export default async function ArticlePage({ params: { slug } }: ArticlePageProps
                 <JsonLd key={index} data={schema} />
             ))}
             
-            <div className="min-h-screen bg-gradient-to-br from-amber-950/95 via-stone-900/95 to-amber-950/95 relative overflow-hidden">
+            <div className="min-h-screen bg-gradient-to-br from-amber-950/95 via-stone-900/95 to-amber-950/95 relative overflow-hidden font-vazirmatn" dir="rtl">
                 {/* Background effects */}
                 <div className="absolute inset-0">
                     <div className="absolute inset-0 bg-gradient-radial from-amber-500/3 via-orange-500/2 to-yellow-500/3 pointer-events-none" />
@@ -174,7 +174,7 @@ export default async function ArticlePage({ params: { slug } }: ArticlePageProps
                     />
                 </div>
 
-                {/* Hero Section with Full-Width Cover Image */}
+                {/* Hero Section with Cover Image */}
                 {article.imageUrl && (
                     <div className="relative w-full h-[60vh] md:h-[70vh] overflow-hidden">
                         <Image
@@ -189,7 +189,7 @@ export default async function ArticlePage({ params: { slug } }: ArticlePageProps
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                         
                         {/* Article title overlay */}
-                        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-12">
+                        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-12 text-right">
                             <div className="container mx-auto">
                                 <h1 className="text-3xl md:text-5xl lg:text-6xl font-serif text-white font-bold leading-tight mb-4">
                                     {article.title}
@@ -205,11 +205,11 @@ export default async function ArticlePage({ params: { slug } }: ArticlePageProps
                             {/* Main Content */}
                             <div className="lg:col-span-3">
                                 {/* Article Meta Information */}
-                                <div className="bg-white/8 backdrop-blur-sm rounded-2xl p-6 border border-white/15 mb-8">
-                                    <div className="flex flex-wrap items-center gap-6 text-gray-300 text-sm mb-4">
+                                <div className="bg-white/8 backdrop-blur-sm rounded-2xl p-6 border border-white/15 mb-8 text-right">
+                                    <div className="flex flex-wrap items-center gap-6 text-gray-300 text-sm mb-4 justify-start">
                                         <div className="flex items-center gap-2">
                                             <User className="w-4 h-4 text-amber-400" />
-                                            <span>By {authorName}</span>
+                                            <span>نویسنده: {authorName}</span>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <Calendar className="w-4 h-4 text-amber-400" />
@@ -217,7 +217,7 @@ export default async function ArticlePage({ params: { slug } }: ArticlePageProps
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <Clock className="w-4 h-4 text-amber-400" />
-                                            <span>{readingTime} min read</span>
+                                            <span>{readingTime} دقیقه زمان مطالعه</span>
                                         </div>
                                         {article.category && (
                                             <div className="flex items-center gap-2">
@@ -230,15 +230,15 @@ export default async function ArticlePage({ params: { slug } }: ArticlePageProps
                                     </div>
 
                                     {/* Article Summary */}
-                                    <p className="text-lg text-gray-300 leading-relaxed mb-4">
+                                    <p className="text-lg text-gray-300 leading-relaxed mb-4 text-right">
                                         {article.summary}
                                     </p>
 
                                     {/* Keywords */}
                                     {article.keywords && article.keywords.length > 0 && (
-                                        <div className="mb-4">
-                                            <h4 className="text-sm font-medium text-amber-300 mb-2">Keywords:</h4>
-                                            <div className="flex flex-wrap gap-2">
+                                        <div className="mb-4 text-right">
+                                            <h4 className="text-sm font-medium text-amber-300 mb-2">کلمات کلیدی:</h4>
+                                            <div className="flex flex-wrap gap-2 justify-start">
                                                 {article.keywords.map((keyword, index) => (
                                                     <span
                                                         key={index}
@@ -253,7 +253,7 @@ export default async function ArticlePage({ params: { slug } }: ArticlePageProps
 
                                     {/* Tags */}
                                     {article.tags && article.tags.length > 0 && (
-                                        <div className="flex flex-wrap gap-2">
+                                        <div className="flex flex-wrap gap-2 justify-start">
                                             {article.tags.map((tag, index) => (
                                                 <span
                                                     key={index}
@@ -268,31 +268,31 @@ export default async function ArticlePage({ params: { slug } }: ArticlePageProps
 
                                 {/* Article Content */}
                                 <div className="bg-white/8 backdrop-blur-sm rounded-2xl p-8 border border-white/15 mb-8">
-                                    <div className="prose prose-invert prose-lg max-w-none">
+                                    <div className="prose prose-invert prose-lg max-w-none text-right">
                                         <div
-                                            className="text-gray-300 leading-relaxed space-y-6"
+                                            className="text-gray-300 leading-relaxed space-y-6 text-right"
                                             dangerouslySetInnerHTML={{ __html: processedContent }}
                                         />
                                     </div>
                                 </div>
 
-                                {/* Internal and External Links */}
+                                {/* References */}
                                 {(article.internalLinks.length > 0 || article.externalLinks.length > 0) && (
-                                    <div className="bg-white/8 backdrop-blur-sm rounded-2xl p-6 border border-white/15 mb-8">
-                                        <h3 className="text-xl font-semibold text-white mb-4">References</h3>
+                                    <div className="bg-white/8 backdrop-blur-sm rounded-2xl p-6 border border-white/15 mb-8 text-right">
+                                        <h3 className="text-xl font-semibold text-white mb-4">منابع و مراجع</h3>
                                         
                                         {article.internalLinks.length > 0 && (
                                             <div className="mb-6">
                                                 <h4 className="text-lg font-medium text-amber-300 mb-3 flex items-center gap-2">
                                                     <LinkIcon className="w-5 h-5" />
-                                                    Internal Links
+                                                    لینک‌های داخلی
                                                 </h4>
                                                 <div className="space-y-2">
                                                     {article.internalLinks.map((link, index) => (
                                                         <a
                                                             key={index}
                                                             href={link}
-                                                            className="block text-blue-300 hover:text-blue-200 transition-colors"
+                                                            className="block text-blue-300 hover:text-blue-200 transition-colors text-right"
                                                         >
                                                             {link}
                                                         </a>
@@ -305,7 +305,7 @@ export default async function ArticlePage({ params: { slug } }: ArticlePageProps
                                             <div>
                                                 <h4 className="text-lg font-medium text-amber-300 mb-3 flex items-center gap-2">
                                                     <ExternalLink className="w-5 h-5" />
-                                                    External References
+                                                    منابع خارجی
                                                 </h4>
                                                 <div className="space-y-2">
                                                     {article.externalLinks.map((link, index) => (
@@ -314,10 +314,10 @@ export default async function ArticlePage({ params: { slug } }: ArticlePageProps
                                                             href={link}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
-                                                            className="block text-blue-300 hover:text-blue-200 transition-colors"
+                                                            className="block text-blue-300 hover:text-blue-200 transition-colors text-right"
                                                         >
                                                             {link}
-                                                            <ExternalLink className="w-3 h-3 inline ml-1" />
+                                                            <ExternalLink className="w-3 h-3 inline mr-1" />
                                                         </a>
                                                     ))}
                                                 </div>
@@ -338,10 +338,10 @@ export default async function ArticlePage({ params: { slug } }: ArticlePageProps
                                     </div>
 
                                     {/* Social Sharing */}
-                                    <div className="bg-white/8 backdrop-blur-sm rounded-2xl p-6 border border-white/15">
+                                    <div className="bg-white/8 backdrop-blur-sm rounded-2xl p-6 border border-white/15 text-right">
                                         <div className="flex items-center gap-2 mb-4">
                                             <Share2 className="w-5 h-5 text-amber-400" />
-                                            <span className="text-white font-medium">Share Article</span>
+                                            <span className="text-white font-medium">اشتراک‌گذاری مقاله</span>
                                         </div>
                                         <SocialSharing 
                                             title={article.title}
@@ -355,25 +355,25 @@ export default async function ArticlePage({ params: { slug } }: ArticlePageProps
 
                         {/* Comments Section */}
                         {article.comments && article.comments.length > 0 && (
-                            <div className="bg-white/8 backdrop-blur-sm rounded-2xl p-8 border border-white/15 mb-8">
+                            <div className="bg-white/8 backdrop-blur-sm rounded-2xl p-8 border border-white/15 mb-8 text-right">
                                 <div className="flex items-center gap-2 mb-6">
                                     <MessageCircle className="w-5 h-5 text-amber-400" />
                                     <h3 className="text-xl font-semibold text-white">
-                                        Comments ({article.comments.length})
+                                        نظرات ({article.comments.length})
                                     </h3>
                                 </div>
                                 <div className="space-y-4">
                                     {article.comments.map((comment) => (
                                         <div key={comment.id} className="bg-white/5 rounded-lg p-4 border border-white/10">
-                                            <div className="flex items-center gap-2 mb-2">
+                                            <div className="flex items-center gap-2 mb-2 justify-start">
                                                 <span className="text-amber-300 font-medium">
-                                                    {comment.author?.username || 'Anonymous'}
+                                                    {comment.author?.username || 'کاربر ناشناس'}
                                                 </span>
                                                 <span className="text-gray-400 text-sm">
                                                     {formatDate(comment.createdAt)}
                                                 </span>
                                             </div>
-                                            <p className="text-gray-300">{comment.content}</p>
+                                            <p className="text-gray-300 text-right">{comment.content}</p>
                                         </div>
                                     ))}
                                 </div>
@@ -395,8 +395,8 @@ export default async function ArticlePage({ params: { slug } }: ArticlePageProps
                                 href="/article"
                                 className="inline-flex items-center gap-2 text-amber-300 hover:text-amber-200 transition-colors duration-300 group"
                             >
-                                <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-300" />
-                                <span>Back to All Articles</span>
+                                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+                                <span>بازگشت به همه مقالات</span>
                             </Link>
                         </div>
                     </div>
@@ -405,4 +405,4 @@ export default async function ArticlePage({ params: { slug } }: ArticlePageProps
         </div>
         </>
     );
-} 
+}

@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Calendar, ArrowRight } from 'lucide-react';
+import { Calendar, ArrowLeft } from 'lucide-react';
 import type { ArticleWithAuthor } from '@/types';
 
 interface ArticlesListProps {
@@ -35,7 +35,7 @@ const itemVariants = {
 
 export default function ArticlesList({ articles }: ArticlesListProps) {
     const formatDate = (date: Date) => {
-        return new Intl.DateTimeFormat('en-US', {
+        return new Intl.DateTimeFormat('fa-IR', {
             year: 'numeric',
             month: 'long',
             day: 'numeric',
@@ -44,10 +44,11 @@ export default function ArticlesList({ articles }: ArticlesListProps) {
 
     return (
         <motion.div
-            className="space-y-8"
+            className="space-y-8 font-vazirmatn"
             variants={containerVariants}
             initial="hidden"
             animate="visible"
+            dir="rtl"
         >
             {articles.map((article, index) => (
                 <motion.div
@@ -72,27 +73,27 @@ export default function ArticlesList({ articles }: ArticlesListProps) {
                                 </div>
 
                                 {/* Article Content */}
-                                <div className="flex-1 space-y-3">
+                                <div className="flex-1 space-y-3 text-right">
                                     {/* Date */}
-                                    <div className="flex items-center gap-2 text-gray-400 text-sm font-medium">
+                                    <div className="flex items-center gap-2 text-gray-400 text-sm font-medium justify-start" dir="rtl">
                                         <Calendar className="w-4 h-4" />
                                         <span>{formatDate(article.createdAt)}</span>
                                     </div>
 
                                     {/* Title */}
-                                    <h2 className="text-2xl md:text-3xl font-serif text-white font-bold leading-tight group-hover:text-amber-200 transition-colors duration-300">
+                                    <h2 className="text-2xl md:text-3xl font-serif text-white font-bold leading-tight group-hover:text-amber-200 transition-colors duration-300 text-right">
                                         {article.title}
                                     </h2>
 
                                     {/* Summary */}
-                                    <p className="text-gray-300 leading-relaxed overflow-hidden text-ellipsis" style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>
+                                    <p className="text-gray-300 leading-relaxed overflow-hidden text-ellipsis text-right" style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>
                                         {article.summary}
                                     </p>
 
                                     {/* Read More */}
-                                    <div className="flex items-center gap-2 text-amber-300 font-medium group-hover:text-amber-200 transition-colors duration-300">
-                                        <span>Read Article</span>
-                                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+                                    <div className="flex items-center gap-2 text-amber-300 font-medium group-hover:text-amber-200 transition-colors duration-300 justify-start" dir="rtl">
+                                        <span>خواندن مقاله</span>
+                                        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-300" />
                                     </div>
                                 </div>
                             </div>
@@ -102,4 +103,4 @@ export default function ArticlesList({ articles }: ArticlesListProps) {
             ))}
         </motion.div>
     );
-} 
+}
