@@ -23,7 +23,7 @@ interface GlobalSearchProps {
 
 export default function GlobalSearch({ 
   className = '', 
-  placeholder = 'Search products, articles...' 
+  placeholder = 'جستجوی محصولات، مقالات...'
 }: GlobalSearchProps) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -137,11 +137,17 @@ export default function GlobalSearch({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const getTypeLabel = (type: 'product' | 'article' | 'category') => {
+    if (type === 'product') return 'محصول';
+    if (type === 'article') return 'مقاله';
+    return 'دسته‌بندی';
+  };
+
   return (
-    <div className={cn('relative w-full max-w-md', className)} ref={resultsRef}>
+    <div className={cn('relative w-full max-w-md font-vazirmatn', className)} ref={resultsRef} dir="rtl">
       {/* Search Input */}
       <div className="relative">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+        <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
           <Search className="h-4 w-4 text-gray-400" />
         </div>
         <input
@@ -152,13 +158,13 @@ export default function GlobalSearch({
           onKeyDown={handleKeyDown}
           onFocus={() => query.length > 0 && setIsOpen(true)}
           placeholder={placeholder}
-          className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white/90 backdrop-blur-sm"
+          className="w-full pr-10 pl-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white/90 backdrop-blur-sm text-right"
           autoComplete="off"
         />
         {query && (
           <button
             onClick={handleClear}
-            className="absolute inset-y-0 right-0 pr-3 flex items-center"
+            className="absolute inset-y-0 left-0 pl-3 flex items-center"
           >
             {isLoading ? (
               <Loader2 className="h-4 w-4 text-gray-400 animate-spin" />
@@ -171,7 +177,7 @@ export default function GlobalSearch({
 
       {/* Search Results Dropdown */}
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto" dir="rtl">
           {results.length > 0 ? (
             <div className="py-2">
               {results.map((result, index) => (
@@ -179,7 +185,7 @@ export default function GlobalSearch({
                   key={`${result.type}-${result.id}`}
                   onClick={() => handleResultClick(result)}
                   className={cn(
-                    'w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors duration-150 flex items-center space-x-3',
+                    'w-full px-4 py-3 text-right hover:bg-gray-50 transition-colors duration-150 flex items-center gap-3',
                     selectedIndex === index && 'bg-amber-50 border-r-2 border-amber-500'
                   )}
                 >
@@ -190,8 +196,8 @@ export default function GlobalSearch({
                       className="w-8 h-8 rounded object-cover flex-shrink-0"
                     />
                   )}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-2">
+                  <div className="flex-1 min-w-0 text-right">
+                    <div className="flex items-center gap-2">
                       <span className="text-sm font-medium text-gray-900 truncate">
                         {result.title}
                       </span>
@@ -201,17 +207,16 @@ export default function GlobalSearch({
                         result.type === 'article' && 'bg-green-100 text-green-800',
                         result.type === 'category' && 'bg-purple-100 text-purple-800'
                       )}>
-                        {result.type}
+                        {getTypeLabel(result.type)}
                       </span>
                     </div>
                     {(() => {
                       if (!result.description) return null;
-                      // Sanitize description for search results (listing-like display)
                       const cleanText = stripHtmlTags(result.description)
                         .replace(/\s+/g, ' ')
                         .trim();
                       return cleanText ? (
-                        <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                        <p className="text-xs text-gray-500 mt-1 line-clamp-2 text-right">
                           {cleanText}
                         </p>
                       ) : null;
@@ -221,7 +226,7 @@ export default function GlobalSearch({
               ))}
               
               {/* View all results */}
-              <div className="border-t border-gray-100 px-4 py-2">
+              <div className="border-t border-gray-100 px-4 py-2 text-center">
                 <button
                   onClick={() => {
                     router.push(`/search?q=${encodeURIComponent(query)}`);
@@ -229,16 +234,16 @@ export default function GlobalSearch({
                   }}
                   className="w-full text-center text-sm text-amber-600 hover:text-amber-700 font-medium"
                 >
-                  View all results for "{query}"
+                  مشاهده همه نتایج برای «{query}»
                 </button>
               </div>
             </div>
           ) : query && !isLoading ? (
             <div className="px-4 py-8 text-center text-gray-500">
               <Search className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-              <p className="text-sm">No results found for "{query}"</p>
+              <p className="text-sm">نتیجه‌ای برای «{query}» یافت نشد</p>
               <p className="text-xs text-gray-400 mt-1">
-                Try different keywords or check spelling
+                کلمات کلیدی دیگری را امتحان کنید یا املای کلمه را بررسی کنید
               </p>
             </div>
           ) : null}

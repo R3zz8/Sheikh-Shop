@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Calendar, User, ArrowRight } from 'lucide-react';
+import { Calendar, User, ArrowLeft } from 'lucide-react';
 import { getRelatedArticles } from '@/lib/actions/articles';
 
 interface RelatedArticlesProps {
@@ -50,7 +50,7 @@ export default function RelatedArticles({ currentArticleId, category, tags }: Re
   }, [currentArticleId, category, tags]);
 
   const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('en-US', {
+    return new Intl.DateTimeFormat('fa-IR', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -69,10 +69,10 @@ export default function RelatedArticles({ currentArticleId, category, tags }: Re
 
   if (loading) {
     return (
-      <div className="bg-white/8 backdrop-blur-sm rounded-2xl p-8 border border-white/15">
-        <div className="flex items-center gap-2 mb-6">
-          <ArrowRight className="w-5 h-5 text-amber-400" />
-          <h3 className="text-xl font-semibold text-white">Related Articles</h3>
+      <div className="bg-white/8 backdrop-blur-sm rounded-2xl p-8 border border-white/15 font-vazirmatn text-right" dir="rtl">
+        <div className="flex items-center gap-2 mb-6 justify-start">
+          <ArrowLeft className="w-5 h-5 text-amber-400" />
+          <h3 className="text-xl font-semibold text-white">مقالات مرتبط</h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[1, 2, 3].map((i) => (
@@ -92,10 +92,10 @@ export default function RelatedArticles({ currentArticleId, category, tags }: Re
   }
 
   return (
-    <div className="bg-white/8 backdrop-blur-sm rounded-2xl p-8 border border-white/15">
-      <div className="flex items-center gap-2 mb-6">
-        <ArrowRight className="w-5 h-5 text-amber-400" />
-        <h3 className="text-xl font-semibold text-white">Related Articles</h3>
+    <div className="bg-white/8 backdrop-blur-sm rounded-2xl p-8 border border-white/15 font-vazirmatn text-right" dir="rtl">
+      <div className="flex items-center gap-2 mb-6 justify-start">
+        <ArrowLeft className="w-5 h-5 text-amber-400" />
+        <h3 className="text-xl font-semibold text-white">مقالات مرتبط</h3>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -103,7 +103,7 @@ export default function RelatedArticles({ currentArticleId, category, tags }: Re
           <Link
             key={article.id}
             href={`/article/${article.slug}`}
-            className="group bg-white/5 rounded-lg p-4 border border-white/10 hover:border-amber-300/30 hover:bg-white/8 transition-all duration-300"
+            className="group bg-white/5 rounded-lg p-4 border border-white/10 hover:border-amber-300/30 hover:bg-white/8 transition-all duration-300 text-right"
           >
             {/* Article Image */}
             {article.imageUrl && (
@@ -119,23 +119,23 @@ export default function RelatedArticles({ currentArticleId, category, tags }: Re
             )}
 
             {/* Article Content */}
-            <div className="space-y-3">
-              <h4 className="text-white font-semibold line-clamp-2 group-hover:text-amber-300 transition-colors duration-300">
+            <div className="space-y-3 text-right">
+              <h4 className="text-white font-semibold line-clamp-2 group-hover:text-amber-300 transition-colors duration-300 text-right">
                 {article.title}
               </h4>
               
-              <p className="text-gray-400 text-sm line-clamp-2">
+              <p className="text-gray-400 text-sm line-clamp-2 text-right">
                 {article.summary}
               </p>
 
               {/* Article Meta */}
-              <div className="flex items-center justify-between text-xs text-gray-500">
+              <div className="flex items-center justify-between text-xs text-gray-500" dir="rtl">
                 <div className="flex items-center gap-1">
-                  <User className="w-3 h-3" />
+                  <User className="w-3 h-3 text-amber-400" />
                   <span>{formatAuthorName(article.author)}</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Calendar className="w-3 h-3" />
+                  <Calendar className="w-3 h-3 text-amber-400" />
                   <span>{formatDate(article.createdAt)}</span>
                 </div>
               </div>

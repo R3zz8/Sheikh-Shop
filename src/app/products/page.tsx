@@ -16,8 +16,8 @@ export async function generateMetadata(): Promise<Metadata> {
   const canonicalUrl = `${baseUrl}${canonicalPath}`;
   
   return {
-    title: 'Premium Products Collection | Sheikh Shop',
-    description: 'Discover our curated collection of premium dates, saffron, honey, and authentic Middle Eastern products. Exceptional quality with worldwide shipping.',
+    title: 'مجموعه محصولات ویژه | فروشگاه شیخ',
+    description: 'مجموعه گزینش‌شده ما از خرماهای ممتاز، عسل طبیعی، زعفران و محصولات برتر را کشف کنید.',
     keywords: [
       'premium products',
       'dates',
@@ -31,24 +31,24 @@ export async function generateMetadata(): Promise<Metadata> {
       'premium saffron',
     ],
     openGraph: {
-      title: 'Premium Products Collection | Sheikh Shop',
-      description: 'Discover our curated collection of premium Middle Eastern products.',
+      title: 'مجموعه محصولات ویژه | فروشگاه شیخ',
+      description: 'مجموعه گزینش‌شده ما از محصولات ویژه را کشف کنید.',
       type: 'website',
       url: canonicalUrl,
-      siteName: 'Sheikh Shop',
+      siteName: 'فروشگاه شیخ',
       images: [
         {
           url: `${baseUrl}/og-products.jpg`,
           width: 1200,
           height: 630,
-          alt: 'Premium Products Collection - Sheikh Shop',
+          alt: 'مجموعه محصولات ویژه - فروشگاه شیخ',
         },
       ],
     },
     twitter: {
       card: 'summary_large_image',
-      title: 'Premium Products Collection | Sheikh Shop',
-      description: 'Discover our curated collection of premium Middle Eastern products.',
+      title: 'مجموعه محصولات ویژه | فروشگاه شیخ',
+      description: 'مجموعه گزینش‌شده ما از محصولات ویژه را کشف کنید.',
       images: [`${baseUrl}/og-products.jpg`],
     },
     alternates: {
@@ -102,8 +102,8 @@ export default async function Products() {
         <ProductListView
           products={serializedProducts}
           units={units}
-          title="Sheikh Food"
-          subtitle="Explore our premium selection of gourmet dates, nuts, and high-quality food items sourced with exceptional care."
+          title="محصولات غذایی شیخ"
+          subtitle="مجموعه گزینش‌شده ما از خرماهای ممتاز، عسل طبیعی، ادویه‌جات و مواد غذایی لوکس را کاوش کنید."
         />
       </div>
     );
@@ -117,7 +117,7 @@ export default async function Products() {
 
     // Return a user-friendly error page
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 font-vazirmatn" dir="rtl">
         <div className="text-center p-8">
           <div className="mb-4">
             <svg
@@ -135,13 +135,13 @@ export default async function Products() {
               />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Error Loading Products</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">خطا در بارگذاری محصولات</h1>
           <p className="text-gray-600 mb-6">
-            We encountered an issue while loading the products. Please refresh the page to try again.
+            در بارگذاری محصولات با مشکلی مواجه شدیم. لطفا صفحه را بازنشانی کنید تا دوباره تلاش شود.
           </p>
           <div className="text-sm text-gray-500">
-            <p>If the problem persists, please contact support.</p>
-            <p className="mt-2">Error: {error instanceof Error ? error.message : 'Unknown error'}</p>
+            <p>اگر مشکل همچنان ادامه دارد، لطفا با پشتیبانی تماس بگیرید.</p>
+            <p className="mt-2">خطا: {error instanceof Error ? error.message : 'خطای ناشناخته'}</p>
           </div>
         </div>
       </div>

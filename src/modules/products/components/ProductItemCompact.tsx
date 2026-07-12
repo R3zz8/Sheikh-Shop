@@ -195,10 +195,10 @@ export default function ProductItemCompact({
             onClick={handleAddToCart}
             disabled={addToCartMutation.isPending}
             size="sm"
-            className="w-full bg-gradient-to-r from-amber-600 via-yellow-600 to-orange-600 hover:from-amber-700 hover:via-yellow-700 hover:to-orange-700 text-white font-semibold border border-amber-500/30 shadow-lg hover:shadow-xl hover:shadow-amber-900/30 transition-all duration-300 transform hover:-translate-y-0.5 text-xs py-2"
+            className="w-full bg-gradient-to-r from-amber-600 via-yellow-600 to-orange-600 hover:from-amber-700 hover:via-yellow-700 hover:to-orange-700 text-white font-semibold border border-amber-500/30 shadow-lg hover:shadow-xl hover:shadow-amber-900/30 transition-all duration-300 transform hover:-translate-y-0.5 text-xs py-2 gap-1"
           >
-            <ShoppingCart className="w-3 h-3 mr-1" />
-            {addToCartMutation.isPending ? 'Adding...' : 'Add to Cart'}
+            <ShoppingCart className="w-3 h-3" />
+            {addToCartMutation.isPending ? 'در حال افزودن...' : 'افزودن به سبد خرید'}
           </Button>
         </div>
       </div>
@@ -207,7 +207,7 @@ export default function ProductItemCompact({
       <FlyToCartAnimation
         isVisible={showFlyAnimation}
         productImage={product?.images[0]?.image || '/assets/noImage.jpg'}
-        productName={product?.name || 'Product'}
+        productName={product?.name || 'محصول'}
         onAnimationComplete={handleAnimationComplete}
       />
     </>

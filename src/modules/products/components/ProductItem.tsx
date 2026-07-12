@@ -332,10 +332,10 @@ export default function ProductItem({
             ref={cartButtonRef}
             onClick={handleAddToCart}
             disabled={addToCartMutation.isPending}
-            className="w-full py-2 px-3 bg-gradient-to-r from-amber-600 via-yellow-600 to-orange-600 hover:from-amber-700 hover:via-yellow-700 hover:to-orange-700 text-white text-sm font-semibold border border-amber-500/30 shadow-lg hover:shadow-xl hover:shadow-amber-900/30 transition-all"
+            className="w-full py-2 px-3 bg-gradient-to-r from-amber-600 via-yellow-600 to-orange-600 hover:from-amber-700 hover:via-yellow-700 hover:to-orange-700 text-white text-sm font-semibold border border-amber-500/30 shadow-lg hover:shadow-xl hover:shadow-amber-900/30 transition-all flex items-center justify-center gap-2"
           >
-            <ShoppingCart className="w-4 h-4 mr-2" />
-            {addToCartMutation.isPending ? 'Adding...' : 'Add to Cart'}
+            <ShoppingCart className="w-4 h-4" />
+            {addToCartMutation.isPending ? 'در حال افزودن...' : 'افزودن به سبد خرید'}
           </Button>
         </div>
       </div>
@@ -344,7 +344,7 @@ export default function ProductItem({
       <FlyToCartAnimation
         isVisible={showFlyAnimation}
         productImage={product?.images[0]?.secureUrl || '/assets/noImage.jpg'}
-        productName={product?.name || 'Product'}
+        productName={product?.name || 'محصول'}
         onAnimationComplete={handleAnimationComplete}
       />
     </>

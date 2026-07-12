@@ -1,5 +1,4 @@
 import { Suspense } from 'react';
-import { notFound } from 'next/navigation';
 import { getArticles } from '@/lib/actions/articles';
 import ArticlesList from './_components/ArticlesList';
 import type { ArticleWithAuthor } from '@/types';
@@ -9,8 +8,8 @@ import ArticlesSkeleton from './_components/ArticlesSkeleton';
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-    title: 'Articles - Sheikh Shop',
-    description: 'Discover insightful articles about premium products, health benefits, and culinary excellence.',
+    title: 'مقالات آموزنده | فروشگاه شیخ',
+    description: 'مقالات آموزنده در مورد محصولات برتر، فواید سلامتی و برتری‌های غذایی را کشف کنید.',
 };
 
 async function fetchArticles() {
@@ -33,7 +32,7 @@ export default async function ArticlesPage() {
 
     if (!articles || articles.length === 0) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-amber-950/95 via-stone-900/95 to-amber-950/95 relative overflow-hidden">
+            <div className="min-h-screen bg-gradient-to-br from-amber-950/95 via-stone-900/95 to-amber-950/95 relative overflow-hidden font-vazirmatn" dir="rtl">
                 {/* Background effects matching header/footer */}
                 <div className="absolute inset-0">
                     <div className="absolute inset-0 bg-gradient-radial from-amber-500/3 via-orange-500/2 to-yellow-500/3 pointer-events-none" />
@@ -42,15 +41,15 @@ export default async function ArticlesPage() {
 
                 <div className="relative z-10 container mx-auto px-6 py-16">
                     <div className="max-w-4xl mx-auto text-center">
-                        <h1 className="text-5xl md:text-6xl font-serif text-white mb-8 tracking-tight">
-                            Articles
+                        <h1 className="text-5xl md:text-6xl font-extrabold text-white mb-8 tracking-tight">
+                            مقالات
                         </h1>
                         <div className="bg-white/8 backdrop-blur-sm rounded-2xl p-12 border border-white/15">
                             <p className="text-xl text-gray-300 mb-6">
-                                No articles available at the moment.
+                                در حال حاضر هیچ مقاله‌ای موجود نیست.
                             </p>
                             <p className="text-gray-400">
-                                Check back soon for insightful content about our premium products.
+                                به زودی برای مطالب آموزنده درباره محصولات ویژه ما دوباره سر بزنید.
                             </p>
                         </div>
                     </div>
@@ -60,7 +59,7 @@ export default async function ArticlesPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-amber-950/95 via-stone-900/95 to-amber-950/95 relative overflow-hidden">
+        <div className="min-h-screen bg-gradient-to-br from-amber-950/95 via-stone-900/95 to-amber-950/95 relative overflow-hidden font-vazirmatn" dir="rtl">
             {/* Background effects matching header/footer */}
             <div className="absolute inset-0">
                 <div className="absolute inset-0 bg-gradient-radial from-amber-500/3 via-orange-500/2 to-yellow-500/3 pointer-events-none" />
@@ -69,8 +68,8 @@ export default async function ArticlesPage() {
 
             <div className="relative z-10 container mx-auto px-6 py-16">
                 <div className="max-w-4xl mx-auto">
-                    <h1 className="text-5xl md:text-6xl font-serif text-white text-center mb-12 tracking-tight">
-                        Articles
+                    <h1 className="text-5xl md:text-6xl font-extrabold text-white text-center mb-12 tracking-tight">
+                        مقالات
                     </h1>
 
                     <Suspense fallback={<ArticlesSkeleton />}>
@@ -80,4 +79,4 @@ export default async function ArticlesPage() {
             </div>
         </div>
     );
-} 
+}

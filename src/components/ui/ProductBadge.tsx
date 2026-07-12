@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles, Trophy, Star } from 'lucide-react';
+import { Sparkles, Trophy } from 'lucide-react';
 
 interface ProductBadgeProps {
   isNew?: boolean;
@@ -32,7 +32,7 @@ export default function ProductBadge({
   };
 
   return (
-    <div className={`flex flex-wrap gap-2 ${className}`}>
+    <div className={`flex flex-wrap gap-2 font-vazirmatn ${className}`} dir="rtl">
       {isNew && (
         <Badge 
           variant="default"
@@ -40,7 +40,7 @@ export default function ProductBadge({
         >
           <div className="flex items-center gap-1">
             <Sparkles className={iconSizes[size]} />
-            NEW
+            جدید
           </div>
         </Badge>
       )}
@@ -52,7 +52,7 @@ export default function ProductBadge({
         >
           <div className="flex items-center gap-1">
             <Trophy className={iconSizes[size]} />
-            BEST SELLER
+            پرفروش
           </div>
         </Badge>
       )}
