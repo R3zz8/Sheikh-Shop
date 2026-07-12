@@ -3,16 +3,22 @@ import { motion } from "framer-motion";
 import SheikhHero from "./SheikhHero";
 import FloatingProducts from "./FloatingProducts";
 import FloatingFlags from "./FloatingFlags";
+import SheikhUniverse from "./SheikhUniverse";
 
 export default function SheikhScene() {
   return (
-    <div className="relative flex flex-col items-center justify-center w-full min-h-[80vh] overflow-hidden bg-[radial-gradient(ellipse_at_center,_#78350f_0%,_#0c0a09_70%)]">
+    <div className="relative flex flex-col items-center justify-center w-full min-h-[90vh] overflow-hidden bg-[radial-gradient(ellipse_at_center,_#78350f_0%,_#0c0a09_70%)] py-12">
+      {/* Dynamic 3D interactive Experience - "Sheikh Universe" */}
+      <div className="w-full max-w-7xl mx-auto relative z-20">
+        <SheikhUniverse />
+      </div>
+
       {/* شیخ */}
       <motion.div
         initial={{ opacity: 0, scale: 0.9, y: 40 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 1, ease: "easeOut", delay: 0 }}
-        className="z-20"
+        className="z-20 mt-12"
       >
         <SheikhHero />
       </motion.div>
