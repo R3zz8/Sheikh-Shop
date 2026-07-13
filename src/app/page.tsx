@@ -8,6 +8,7 @@ import {
   SheikhScene,
   AmazingDeals,
   CarouselMobile,
+  OptimizedPalmTree,
 } from '@/components/DynamicClientComponents';
 import BMWCarousel from '@/components/BMWCarousel';
 
@@ -85,6 +86,89 @@ export default function Home() {
       />
 
       <div className="relative z-10">
+        {/* Hero Section with 3D Palm Tree - Always Horizontal */}
+        <section className="container-fluid pt-4 md:pt-8 pb-4 md:pb-8">
+          <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
+            {/* Grid with 2 columns that never wrap - scales proportionally */}
+            <div
+              className="grid items-center overflow-hidden"
+              style={{
+                gridTemplateColumns: '1fr 1fr',
+                gap: 'clamp(0.5rem, 3vw, 2rem)',
+                minHeight: 'clamp(320px, 60vh, 700px)',
+                width: '100%',
+              }}
+            >
+              {/* Text Content - Left Column */}
+              <div className="text-right overflow-hidden flex flex-col justify-center pl-2 sm:pl-4">
+                <h1
+                  className="font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent mb-4 sm:mb-6 md:mb-8"
+                  style={{
+                    fontSize: 'clamp(38px, 4vw + 14px, 56px)',
+                    lineHeight: '1.2',
+                    wordBreak: 'break-word',
+                  }}
+                >
+                  به فروشگاه شیخ خوش آمدید
+                </h1>
+                <p
+                  className="text-gray-200 mb-6 sm:mb-8 md:mb-10 leading-[1.8] font-normal"
+                  style={{
+                    fontSize: 'clamp(20px, 1.5vw + 12px, 22px)',
+                    maxWidth: '550px',
+                  }}
+                >
+                  با مجموعه‌ای از بهترین خرماهای ممتاز، عسل طبیعی، ارده، شیره خرما و محصولات اصیل، طعم واقعی کیفیت را تجربه کنید. فروشگاه شیخ با الهام از اصالت و مهمان‌نوازی شرقی، محصولاتی تازه، سالم و باکیفیت را برای خانواده شما فراهم کرده است.
+                </p>
+                <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+                  <Link href="/products">
+                    <Button
+                      className="btn-primary whitespace-nowrap transition-all duration-300 font-bold"
+                      style={{
+                        fontSize: 'clamp(16px, 1vw + 12px, 18px)',
+                        padding: 'clamp(0.75rem, 1.5vw, 1.125rem) clamp(1.25rem, 2.5vw, 2.25rem)',
+                        borderRadius: '0.75rem',
+                      }}
+                    >
+                      مشاهده محصولات
+                    </Button>
+                  </Link>
+                  <Link href="/register">
+                    <Button
+                      className="btn-secondary whitespace-nowrap transition-all duration-300 font-bold"
+                      style={{
+                        fontSize: 'clamp(16px, 1vw + 12px, 18px)',
+                        padding: 'clamp(0.75rem, 1.5vw, 1.125rem) clamp(1.25rem, 2.5vw, 2.25rem)',
+                        borderRadius: '0.75rem',
+                      }}
+                    >
+                      ثبت نام
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+
+              {/* Optimized 3D Palm Tree - Right Column */}
+              <div
+                className="relative w-full flex items-center justify-center overflow-hidden"
+                style={{
+                  height: 'clamp(200px, 40vw, 600px)',
+                  minHeight: '200px',
+                }}
+              >
+                <OptimizedPalmTree
+                  height="100%"
+                  enableControls={true}
+                  autoRotate={true}
+                  intensity={1.2}
+                  className="rounded-2xl"
+                  posterImage="/tree3d.jpeg"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Features Section */}
         <section className="container-fluid section-padding-sm pt-4 pb-12">
           <div className="max-w-6xl mx-auto px-4">
