@@ -87,7 +87,7 @@ export default function Home() {
 
       <div className="relative z-10">
         {/* Hero Section with 3D Palm Tree - Always Horizontal */}
-        <section className="container-fluid pt-4 md:pt-8 pb-4 md:pb-8">
+        <section className="container-fluid pt-1 sm:pt-4 md:pt-8 pb-1 sm:pb-4 md:pb-8">
           <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
             {/* Grid with 2 columns that never wrap - scales proportionally */}
             <div
@@ -95,14 +95,15 @@ export default function Home() {
               style={{
                 gridTemplateColumns: '1fr 1fr',
                 gap: 'clamp(0.5rem, 3vw, 2rem)',
-                minHeight: 'clamp(320px, 60vh, 700px)',
+                minHeight: 'clamp(200px, 60vh, 700px)',
                 width: '100%',
               }}
             >
               {/* Text Content - Left Column */}
               <div className="text-right overflow-hidden flex flex-col justify-center pl-2 sm:pl-4">
+                {/* Desktop/Tablet Heading */}
                 <h1
-                  className="font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent mb-4 sm:mb-6 md:mb-8"
+                  className="font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent mb-4 sm:mb-6 md:mb-8 hidden md:block"
                   style={{
                     fontSize: 'clamp(38px, 4vw + 14px, 56px)',
                     lineHeight: '1.2',
@@ -111,14 +112,33 @@ export default function Home() {
                 >
                   به فروشگاه شیخ خوش آمدید
                 </h1>
+                {/* Mobile Heading */}
+                <h1
+                  className="font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent mb-2 md:hidden text-[30px] sm:text-[34px] leading-tight"
+                  style={{
+                    wordBreak: 'break-word',
+                  }}
+                >
+                  به فروشگاه شیخ خوش آمدید
+                </h1>
+                {/* Desktop/Tablet Description */}
                 <p
-                  className="text-gray-200 mb-6 sm:mb-8 md:mb-10 leading-[1.8] font-normal"
+                  className="text-gray-200 mb-6 sm:mb-8 md:mb-10 leading-[1.8] font-normal hidden md:block"
                   style={{
                     fontSize: 'clamp(20px, 1.5vw + 12px, 22px)',
                     maxWidth: '550px',
                   }}
                 >
                   با مجموعه‌ای از بهترین خرماهای ممتاز، عسل طبیعی، ارده، شیره خرما و محصولات اصیل، طعم واقعی کیفیت را تجربه کنید. فروشگاه شیخ با الهام از اصالت و مهمان‌نوازی شرقی، محصولاتی تازه، سالم و باکیفیت را برای خانواده شما فراهم کرده است.
+                </p>
+                {/* Mobile Description */}
+                <p
+                  className="text-gray-200 mb-3 leading-[1.45] font-normal md:hidden text-[14px] sm:text-[15px]"
+                  style={{
+                    maxWidth: '100%',
+                  }}
+                >
+                  با مجموعه‌ای از بهترین خرماهای ممتاز، عسل طبیعی، ارده، شیره خرما و محصولات اصیل، طعم واقعی کیفیت را تجربه کنید.
                 </p>
                 <div className="flex flex-wrap items-center gap-3 sm:gap-4">
                   <Link href="/products">
