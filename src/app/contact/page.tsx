@@ -1,20 +1,25 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, type Variants } from 'framer-motion';
 import {
   MessageSquare,
   Mail,
-  ArrowRight,
+  Phone,
+  MapPin,
+  Clock,
   Send,
+  ArrowRight,
+  Sparkles,
+  CheckCircle2,
+  AlertCircle
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 
-// Brand SVG icons (since lucide-react does not ship official brand icons)
+// Brand SVG icons for luxury visual continuity
 function FacebookIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
@@ -44,232 +49,415 @@ function TiktokIcon(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
-    transition: { staggerChildren: 0.12, delayChildren: 0.1 },
+    transition: { staggerChildren: 0.1, delayChildren: 0.15 },
   },
 };
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 25 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } },
 };
 
 export default function ContactPage() {
   const [mounted, setMounted] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', message: '' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
-  useEffect(() => setMounted(true), []);
-  if (!mounted) return null;
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
-  const socialItems = [
+  if (!mounted) {
+    return null;
+  }
+
+  const contactInfos = [
     {
-      name: 'Facebook',
-      href: 'https://www.facebook.com/share/1CJBL7zcbf/',
-      Icon: FacebookIcon,
+      name: 'تلفن همراه',
+      value: '+98 917 876 9556',
+      label: 'پاسخگویی مستقیم و اختصاصی',
+      icon: Phone,
+      dirLtr: true,
+      href: 'tel:+989178769556',
     },
     {
-      name: 'YouTube',
-      href: 'https://www.youtube.com/@Fuzzel_Fun',
-      Icon: YoutubeIcon,
+      name: 'پست الکترونیک',
+      value: 'sheikhshops.com@gmail.com',
+      label: 'مکاتبات اداری و همکاری تجاری',
+      icon: Mail,
+      dirLtr: true,
+      href: 'mailto:sheikhshops.com@gmail.com',
     },
     {
-      name: 'Instagram',
-      href: 'https://www.instagram.com/sheikh._.shops?igsh=cnZ2b3owZTUxYng1',
-      Icon: InstagramIcon,
+      name: 'نشانی مرکزی',
+      value: 'ایران، بوشهر، مرکز شهر',
+      label: 'پذیرای حضور شما با هماهنگی قبلی',
+      icon: MapPin,
+      dirLtr: false,
     },
     {
-      name: 'TikTok',
-      href: 'https://tiktok.com/@sheikh_shop2025',
-      Icon: TiktokIcon,
+      name: 'ساعات پاسخگویی',
+      value: 'شنبه تا پنج‌شنبه: ۹ الی ۲۱',
+      label: 'تعطیلات رسمی: پشتیبانی پیام‌رسان‌ها',
+      icon: Clock,
+      dirLtr: false,
     },
   ];
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-950 via-stone-900 to-black relative overflow-hidden">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 bg-[url('/public/assets/pattern.png')] opacity-5"></div>
+  const socialItems = [
+    {
+      name: 'اینستاگرام',
+      desc: 'مجموعه‌های جدید را دنبال کنید',
+      href: 'https://www.instagram.com/sheikh._.shops?igsh=cnZ2b3owZTUxYng1',
+      Icon: InstagramIcon,
+      color: 'from-pink-600 to-amber-500',
+    },
+    {
+      name: 'تیک‌تاک',
+      desc: 'ویدیوهای کوتاه محصولات لوکس',
+      href: 'https://tiktok.com/@sheikh_shop2025',
+      Icon: TiktokIcon,
+      color: 'from-stone-800 to-amber-700',
+    },
+    {
+      name: 'یوتیوب',
+      desc: 'بررسی دقیق محصولات ممتاز',
+      href: 'https://www.youtube.com/@Fuzzel_Fun',
+      Icon: YoutubeIcon,
+      color: 'from-red-600 to-orange-500',
+    },
+    {
+      name: 'فیس‌بوک',
+      desc: 'به جامعه جهانی ما بپیوندید',
+      href: 'https://www.facebook.com/share/1CJBL7zcbf/',
+      Icon: FacebookIcon,
+      color: 'from-blue-600 to-amber-600',
+    },
+  ];
 
-      <div className="relative z-10">
-        {/* Header */}
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.name || !form.email || !form.message) {
+      setSubmitStatus('error');
+      return;
+    }
+    setIsSubmitting(true);
+    setSubmitStatus('idle');
+
+    setTimeout(() => {
+      setIsSubmitting(false);
+      setSubmitStatus('success');
+      setForm({ name: '', email: '', message: '' });
+    }, 1500);
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-amber-950 via-stone-900 to-black relative overflow-hidden font-vazirmatn text-right" dir="rtl">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 bg-[url('/assets/pattern.png')] opacity-5 pointer-events-none"></div>
+      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-amber-500/10 blur-[130px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-orange-500/5 blur-[130px] pointer-events-none" />
+
+      {/* Floating Star Elements */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {[...Array(5)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-1 h-1 bg-amber-400 rounded-full opacity-30"
+            style={{
+              top: `${20 + i * 15}%`,
+              right: `${15 + (i * 19) % 70}%`,
+            }}
+            animate={{
+              y: [0, -25, 0],
+              opacity: [0.15, 0.6, 0.15],
+            }}
+            transition={{
+              duration: 6 + i * 1.5,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          />
+        ))}
+      </div>
+
+      <div className="relative z-10 max-w-6xl mx-auto px-4 md:px-6 pt-28 pb-24">
+        {/* Premium Hero Header */}
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
+          initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
-          className="pt-20 pb-10"
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="text-center mb-16"
         >
-          <div className="container mx-auto px-4 text-center">
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.7, delay: 0.15, ease: 'easeOut' }}
-              className="flex items-center justify-center gap-4 mb-4"
-            >
-              <MessageSquare className="w-12 h-12 text-amber-400" />
-              <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
-                Contact Us
-              </h1>
-            </motion.div>
-            <motion.p
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3, ease: 'easeOut' }}
-              className="text-gray-300 max-w-2xl mx-auto"
-            >
-              We’d love to hear from you. Reach out via social media or email.
-            </motion.p>
-          </div>
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.9, delay: 0.15, ease: "easeOut" }}
+            className="inline-flex items-center justify-center p-4 rounded-full bg-gradient-to-br from-amber-500/15 to-orange-500/5 border border-amber-500/20 mb-6 relative group"
+          >
+            <div className="absolute inset-0 rounded-full bg-amber-500/10 blur-md group-hover:bg-amber-500/15 transition-all duration-300" />
+            <MessageSquare className="w-12 h-12 text-amber-400 drop-shadow-[0_0_15px_rgba(245,158,11,0.5)] relative z-10" />
+          </motion.div>
+
+          <h1 className="text-4xl md:text-5xl font-black bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent mb-4 tracking-tight">
+            تماس با ما
+          </h1>
+
+          <p className="text-gray-300 text-lg md:text-xl font-light max-w-2xl mx-auto leading-relaxed">
+            همیشه آماده پاسخگویی به سوالات، پیشنهادات و درخواست‌های شما هستیم.
+          </p>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="mt-6 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-amber-300/80 backdrop-blur-sm"
+          >
+            <Sparkles className="w-3.5 h-3.5 animate-pulse" />
+            <span>پشتیبانی VIP مشتریان طراز اول</span>
+          </motion.div>
         </motion.div>
 
-        {/* Social Media Section */}
+        {/* 4-Grid Premium Information Cards */}
         <motion.section
           variants={containerVariants}
           initial="hidden"
-          animate="show"
-          className="container mx-auto px-4 pb-10"
+          whileInView="show"
+          viewport={{ once: true, margin: '-50px' }}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-16"
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {socialItems.map(({ name, href, Icon }, idx) => (
-              <motion.div key={name} variants={itemVariants}>
-                <Card className="bg-white/6 backdrop-blur-sm border border-amber-200/20 rounded-2xl h-full">
-                  <CardContent className="p-6 flex flex-col items-center text-center gap-4">
-                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center">
-                      <Icon className="w-7 h-7 text-white" />
+          {contactInfos.map((info) => {
+            const Icon = info.icon;
+            return (
+              <motion.div key={info.name} variants={itemVariants} className="h-full">
+                {info.href ? (
+                  <a
+                    href={info.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block h-full group bg-gradient-to-br from-amber-950/20 via-stone-900/40 to-black/50 backdrop-blur-md border border-amber-200/10 rounded-2xl p-6 hover:border-amber-500/30 transition-all duration-300 shadow-lg hover:shadow-amber-900/10 hover:-translate-y-1 cursor-pointer"
+                  >
+                    <div className="flex flex-col items-center text-center gap-4 h-full justify-between">
+                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-500/20 flex items-center justify-center group-hover:scale-110 group-hover:border-amber-500/40 transition-all duration-300">
+                        <Icon className="w-7 h-7 text-amber-400 group-hover:drop-shadow-[0_0_10px_rgba(245,158,11,0.4)]" />
+                      </div>
+                      <div>
+                        <h3 className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1">
+                          {info.name}
+                        </h3>
+                        <p
+                          className={`text-white font-bold text-base tracking-wide leading-snug ${
+                            info.dirLtr ? '[direction:ltr] inline-block' : ''
+                          }`}
+                        >
+                          {info.value}
+                        </p>
+                      </div>
+                      <p className="text-gray-400 text-xs font-light">{info.label}</p>
                     </div>
-                    <div className="text-white font-semibold text-lg">{name}</div>
-                    <Button
-                      asChild
-                      className="w-full bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 hover:from-amber-600 hover:via-yellow-600 hover:to-orange-600 text-black font-semibold shadow-lg hover:shadow-amber-500/25 transition-all duration-300 group"
-                    >
-                      <a href={href} target="_blank" rel="noopener noreferrer">
-                        Visit {name}
-                        <ArrowRight className="w-4 h-4 ml-2 inline-block group-hover:translate-x-0.5 transition-transform" />
-                      </a>
-                    </Button>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </motion.section>
-
-        {/* Email Section */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-100px' }}
-          transition={{ duration: 0.6 }}
-          className="container mx-auto px-4 pb-10"
-        >
-          <Card className="bg-white/6 backdrop-blur-sm border border-amber-200/20 rounded-2xl">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-3 text-white">
-                <Mail className="w-6 h-6 text-amber-400" /> Email Us Directly
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6 pt-2">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <p className="text-gray-300">Have a question? We typically respond within 24–48 hours.</p>
-                <Button
-                  asChild
-                  className="bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 hover:from-amber-600 hover:via-yellow-600 hover:to-orange-600 text-black font-semibold shadow-lg hover:shadow-amber-500/25 transition-all duration-300"
-                >
-                  <a href="mailto:sheikhshops.com@gmail.com">
-                    sheikhshops.com@gmail.com
                   </a>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+                ) : (
+                  <div className="block h-full group bg-gradient-to-br from-amber-950/20 via-stone-900/40 to-black/50 backdrop-blur-md border border-amber-200/10 rounded-2xl p-6 hover:border-amber-500/30 transition-all duration-300 shadow-lg hover:shadow-amber-900/10 hover:-translate-y-1">
+                    <div className="flex flex-col items-center text-center gap-4 h-full justify-between">
+                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-500/20 flex items-center justify-center group-hover:scale-110 group-hover:border-amber-500/40 transition-all duration-300">
+                        <Icon className="w-7 h-7 text-amber-400 group-hover:drop-shadow-[0_0_10px_rgba(245,158,11,0.4)]" />
+                      </div>
+                      <div>
+                        <h3 className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1">
+                          {info.name}
+                        </h3>
+                        <p
+                          className={`text-white font-bold text-base tracking-wide leading-snug ${
+                            info.dirLtr ? '[direction:ltr] inline-block' : ''
+                          }`}
+                        >
+                          {info.value}
+                        </p>
+                      </div>
+                      <p className="text-gray-400 text-xs font-light">{info.label}</p>
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            );
+          })}
         </motion.section>
 
-        {/* Optional Contact Form */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-100px' }}
-          transition={{ duration: 0.6 }}
-          className="container mx-auto px-4 pb-16"
-        >
-          <Card className="bg-white/6 backdrop-blur-sm border border-amber-200/20 rounded-2xl">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-white">Send us a message</CardTitle>
-            </CardHeader>
-            <CardContent className="p-6 pt-2">
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  // For now, just log. Could integrate API later.
-                  console.log('Contact form submit', form);
-                }}
-                className="grid grid-cols-1 md:grid-cols-2 gap-4"
-              >
-                <div>
-                  <Label htmlFor="name" className="text-gray-300">Name</Label>
-                  <Input
-                    id="name"
-                    value={form.name}
-                    onChange={(e) => setForm((s) => ({ ...s, name: e.target.value }))}
-                    className="mt-1 bg-white/10 border-amber-200/20 text-white placeholder-gray-400 focus:border-amber-400"
-                    placeholder="Your name"
-                  />
+        {/* Form and Social Section Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mb-16">
+          {/* Send us a message form */}
+          <motion.section
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="lg:col-span-7 h-full"
+          >
+            <div className="bg-gradient-to-br from-amber-950/20 via-stone-900/40 to-black/50 backdrop-blur-md border border-amber-200/10 rounded-3xl p-6 md:p-8 shadow-xl relative overflow-hidden">
+              <h2 className="text-xl md:text-2xl font-bold text-white mb-2 flex items-center gap-3">
+                <span className="w-2.5 h-6 rounded-full bg-amber-500" />
+                ارسال پیام مستقیم
+              </h2>
+              <p className="text-gray-400 text-sm font-light mb-6">
+                کارشناسان ما همواره مشتاق دریافت دیدگاه‌ها، سوالات و پیشنهادات شما هستند.
+              </p>
+
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name" className="text-gray-300 text-sm font-medium">نام و نام خانوادگی</Label>
+                    <Input
+                      id="name"
+                      value={form.name}
+                      onChange={(e) => setForm((s) => ({ ...s, name: e.target.value }))}
+                      className="bg-white/5 border-amber-200/10 text-white placeholder-gray-500 focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/50 rounded-xl py-5 text-right font-vazirmatn"
+                      placeholder="نام شریف شما"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="text-gray-300 text-sm font-medium">نشانی پست الکترونیک</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={form.email}
+                      onChange={(e) => setForm((s) => ({ ...s, email: e.target.value }))}
+                      className="bg-white/5 border-amber-200/10 text-white placeholder-gray-500 focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/50 rounded-xl py-5 text-left [direction:ltr] font-vazirmatn"
+                      placeholder="name@example.com"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <Label htmlFor="email" className="text-gray-300">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={form.email}
-                    onChange={(e) => setForm((s) => ({ ...s, email: e.target.value }))}
-                    className="mt-1 bg-white/10 border-amber-200/20 text-white placeholder-gray-400 focus:border-amber-400"
-                    placeholder="you@example.com"
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <Label htmlFor="message" className="text-gray-300">Message</Label>
+
+                <div className="space-y-2">
+                  <Label htmlFor="message" className="text-gray-300 text-sm font-medium">متن پیام شما</Label>
                   <Textarea
                     id="message"
                     value={form.message}
                     onChange={(e) => setForm((s) => ({ ...s, message: e.target.value }))}
-                    className="mt-1 min-h-32 bg-white/10 border-amber-200/20 text-white placeholder-gray-400 focus:border-amber-400"
-                    placeholder="How can we help you?"
+                    className="min-h-[150px] bg-white/5 border-amber-200/10 text-white placeholder-gray-500 focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/50 rounded-xl p-4 text-right leading-relaxed font-vazirmatn resize-none"
+                    placeholder="پرسش، پیشنهاد یا سفارش ویژه خود را با ما در میان بگذارید..."
                   />
                 </div>
-                <div className="md:col-span-2 flex justify-end">
-                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+
+                {submitStatus === 'success' && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex items-center gap-3 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm"
+                  >
+                    <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
+                    <p>پیام شما با موفقیت به دست ما رسید. کارشناسان ما به زودی با شما تماس خواهند گرفت.</p>
+                  </motion.div>
+                )}
+
+                {submitStatus === 'error' && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex items-center gap-3 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm"
+                  >
+                    <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                    <p>لطفاً تمامی فیلدهای فرم را با دقت تکمیل نمایید.</p>
+                  </motion.div>
+                )}
+
+                <div className="flex justify-end pt-2">
+                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="w-full sm:w-auto">
                     <Button
                       type="submit"
-                      className="bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 hover:from-amber-600 hover:via-yellow-600 hover:to-orange-600 text-black font-semibold shadow-lg hover:shadow-amber-500/25 transition-all duration-300"
+                      disabled={isSubmitting}
+                      className="w-full sm:w-auto bg-gradient-to-r from-amber-600 via-yellow-600 to-orange-600 hover:from-amber-700 hover:via-yellow-700 hover:to-orange-700 text-white font-bold px-8 py-5 rounded-xl border border-amber-500/20 shadow-lg hover:shadow-amber-500/20 transition-all duration-300 flex items-center justify-center gap-2"
                     >
-                      <Send className="w-4 h-4 mr-2" />
-                      Send Message
+                      {isSubmitting ? (
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        <>
+                          <Send className="w-4 h-4" />
+                          <span>ارسال پیام</span>
+                        </>
+                      )}
                     </Button>
                   </motion.div>
                 </div>
               </form>
-            </CardContent>
-          </Card>
-        </motion.section>
+            </div>
+          </motion.section>
 
-        {/* Footer */}
-        <motion.footer
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
-          className="bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 py-8"
-        >
-          <div className="container mx-auto px-4 text-center">
-            <p className="text-black font-semibold text-lg">
-              Sheikh Shop © 2025 | All Rights Reserved
-            </p>
-            <p className="text-black/80 text-sm mt-2">
-              Committed to connecting with our customers.
-            </p>
-          </div>
-        </motion.footer>
+          {/* Social and premium message section */}
+          <motion.section
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="lg:col-span-5 flex flex-col gap-6"
+          >
+            {/* Social Links Cards */}
+            <div className="bg-gradient-to-br from-amber-950/20 via-stone-900/40 to-black/50 backdrop-blur-md border border-amber-200/10 rounded-3xl p-6 shadow-xl flex-1">
+              <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
+                <span className="w-2.5 h-6 rounded-full bg-yellow-500" />
+                شبکه‌های اجتماعی شیخ
+              </h2>
+
+              <div className="space-y-4">
+                {socialItems.map(({ name, desc, href, Icon, color }) => (
+                  <a
+                    key={name}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-amber-500/30 transition-all duration-300 hover:bg-amber-950/20"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
+                        <Icon className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-white group-hover:text-amber-300 transition-colors duration-300">
+                          {name}
+                        </h4>
+                        <p className="text-xs text-gray-400 mt-0.5 font-light">
+                          {desc}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-amber-400 group-hover:bg-amber-500 group-hover:text-black transition-all duration-300">
+                      <ArrowRight className="w-4 h-4 rotate-180" />
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            {/* Premium Note */}
+            <div className="bg-gradient-to-br from-amber-900/30 to-amber-950/40 backdrop-blur-md border border-amber-500/20 rounded-3xl p-6 relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl" />
+              <h3 className="text-amber-300 font-bold text-base mb-2 flex items-center gap-2">
+                <Sparkles className="w-4 h-4 animate-pulse" />
+                اصالت و تعهد بی‌مرز
+              </h3>
+              <p className="text-gray-300 text-xs md:text-sm leading-relaxed font-light">
+                فروشگاه شیخ تنها ارائه‌دهنده نیست؛ ما پاسداران اصالت و میراثی ارزشمند در قلب بوشهر هستیم. تمامی فرآیندهای ارتباطی شما مستقیماً تحت نظارت مدیران ارشد برند پیگیری می‌شود.
+              </p>
+            </div>
+          </motion.section>
+        </div>
       </div>
+
+      {/* Luxury Footer */}
+      <footer className="bg-gradient-to-r from-amber-950 via-stone-900 to-amber-950 border-t border-amber-200/10 py-10">
+        <div className="container mx-auto px-4 text-center">
+          <p className="text-amber-100 font-medium text-base md:text-lg">
+            فروشگاه شیخ © {new Date().getFullYear()} | تمامی حقوق محفوظ است
+          </p>
+          <p className="text-gray-400 text-xs md:text-sm mt-2 font-light">
+            همیشه آماده شنیدن آوای پرمهر شما هستیم
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }

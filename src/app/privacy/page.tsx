@@ -2,14 +2,26 @@
 
 import { useState, useEffect } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { Lock, Shield, Eye, Database, Clock, Share2, Users, Cookie, Key, UserCheck, AlertCircle, Mail } from 'lucide-react';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Card, CardContent } from '@/components/ui/card';
+import {
+  ShieldCheck,
+  Lock,
+  Eye,
+  Database,
+  Cookie,
+  UserCheck,
+  Mail,
+  Phone,
+  MapPin,
+  Calendar,
+  Sparkles,
+  ChevronDown
+} from 'lucide-react';
 
 export default function PrivacyPolicyPage() {
   const [mounted, setMounted] = useState(false);
   const { scrollYProgress } = useScroll();
   const progressWidth = useTransform(scrollYProgress, [0, 1], ['0%', '100%']);
+  const [activeSection, setActiveSection] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -19,438 +31,318 @@ export default function PrivacyPolicyPage() {
     return null;
   }
 
-  const privacySections = [
+  const sections = [
     {
-      id: 'information-collection',
-      title: 'Information We Collect',
+      id: 'collection',
+      title: 'نحوه جمع‌آوری اطلاعات',
+      subtitle: 'جمع‌آوری هوشمندانه و اصولی داده‌ها جهت ارتقای خدمات',
       icon: Database,
-      content: `We collect information you provide directly to us, such as when you create an account, make a purchase, or contact us for support.
-
-**Personal Information:**
-- Name, email address, phone number, and billing address
-- Payment information (processed securely through our payment partners)
-- Account credentials and preferences
-- Communication history with our support team
-
-**Usage Information:**
-- Website usage patterns and preferences
-- Device information and browser type
-- IP address and location data
-- Cookies and similar tracking technologies
-
-**Content Information:**
-- Product reviews and ratings
-- Customer service communications
-- Survey responses and feedback
-
-We collect this information to provide, maintain, and improve our services, process transactions, and communicate with you about your account and our services.`
+      content: [
+        {
+          label: 'اطلاعات هویتی و تماسی شما',
+          desc: 'هنگام ثبت‌نام، سفارش یا ارتباط با ما، اطلاعاتی چون نام، نشانی، ایمیل و شماره تلفن همراه با نهایت دقت و امنیت ثبت می‌شوند.'
+        },
+        {
+          label: 'داده‌های ترجیحی و رفتار خرید',
+          desc: 'علاقه‌مندی‌ها، نظرات و الگوهای جستجوی شما برای ارائه پیشنهادهای هوشمندانه‌تر ثبت و تحلیل می‌شوند.'
+        },
+        {
+          label: 'اطلاعات فنی و ناوبری',
+          desc: 'نوع دستگاه، سیستم‌عامل، آدرس IP و صفحات مورد بازدید جهت بهینه‌سازی فنی ساختار وب‌سایت ثبت می‌گردند.'
+        }
+      ]
     },
     {
-      id: 'how-we-use',
-      title: 'How We Use Your Information',
+      id: 'usage',
+      title: 'نحوه استفاده از اطلاعات',
+      subtitle: 'استفاده هدفمند تنها برای تسهیل تجربه خرید ممتاز شما',
       icon: Eye,
-      content: `We use the information we collect for various business purposes, including:
-
-**Service Provision:**
-- Processing and fulfilling your orders
-- Managing your account and preferences
-- Providing customer support and technical assistance
-- Personalizing your shopping experience
-
-**Communication:**
-- Sending order confirmations and shipping updates
-- Responding to your inquiries and support requests
-- Sending marketing communications (with your consent)
-- Notifying you about important changes to our services
-
-**Business Operations:**
-- Analyzing website usage and customer behavior
-- Improving our products and services
-- Conducting research and analytics
-- Preventing fraud and ensuring security
-
-**Legal Compliance:**
-- Complying with applicable laws and regulations
-- Responding to legal requests and court orders
-- Protecting our rights and interests
-
-We will only use your personal information for the purposes described in this policy or as otherwise disclosed to you at the time of collection.`
+      content: [
+        {
+          label: 'پردازش دقیق و ارسال هوشمند سفارش‌ها',
+          desc: 'اطلاعات مکانی و تماسی شما صرفاً جهت تضمین تحویل سریع و بدون نقص محموله‌های لوکس استفاده می‌شود.'
+        },
+        {
+          label: 'پشتیبانی اختصاصی و شخصی‌سازی‌شده',
+          desc: 'سوابق ارتباطی شما به کارشناسان ما کمک می‌کند تا در کوتاه‌ترین زمان، پاسخگوی درخواست‌های شما باشند.'
+        },
+        {
+          label: 'اطلاع‌رسانی‌های ارزشمند و هوشمند',
+          desc: 'با رضایت قبلی شما، آخرین اخبار محصولات ممتاز، نسخه‌های محدود و پیشنهادهای ویژه به دستتان خواهد رسید.'
+        }
+      ]
     },
     {
-      id: 'data-retention',
-      title: 'Data Retention',
-      icon: Clock,
-      content: `We retain your personal information for as long as necessary to fulfill the purposes outlined in this Privacy Policy, unless a longer retention period is required or permitted by law.
-
-**Retention Periods:**
-- Account information: Until you delete your account or request deletion
-- Order information: 7 years for tax and accounting purposes
-- Marketing communications: Until you unsubscribe or opt out
-- Customer support records: 3 years after the last interaction
-- Website analytics: 2 years from collection
-
-**Deletion Process:**
-- You may request deletion of your personal information at any time
-- We will delete your information within 30 days of receiving your request
-- Some information may be retained for legal or business purposes
-- Anonymized data may be retained for analytics and research
-
-**Secure Disposal:**
-- All personal information is securely deleted using industry-standard methods
-- Physical records are shredded and disposed of securely
-- Electronic data is permanently erased from all systems
-
-We will notify you if we need to retain your information for longer than the standard retention period.`
+      id: 'security',
+      title: 'امنیت اطلاعات',
+      subtitle: 'دژ استوار حفاظت از حریم شخصی شما در دنیای مجازی',
+      icon: Lock,
+      content: [
+        {
+          label: 'رمزنگاری پیشرفته داده‌ها (SSL)',
+          desc: 'تمامی اطلاعات ورودی و ترکنش‌ها با پروتکل‌های رمزنگاری لایه انتقال به صورت کاملاً غیرقابل نفوذ جابه‌جا می‌شوند.'
+        },
+        {
+          label: 'محدودیت دسترسی‌های داخلی',
+          desc: 'دسترسی همکاران ما به داده‌های مشتریان بر اساس بالاترین استانداردهای امنیتی و طبقه‌بندی‌های اداری مدیریت می‌شود.'
+        },
+        {
+          label: 'پایش مستمر و مانیتورینگ هوشمند',
+          desc: 'سیستم‌های امنیتی شیخ به صورت ۲۴ ساعته در برابر تلاش‌های نفوذ پایش شده و به‌روزرسانی می‌شوند.'
+        }
+      ]
     },
     {
-      id: 'information-sharing',
-      title: 'Information Sharing',
-      icon: Share2,
-      content: `We do not sell, trade, or rent your personal information to third parties. We may share your information in the following limited circumstances:
-
-**Service Providers:**
-- Payment processors for transaction processing
-- Shipping companies for order fulfillment
-- Email service providers for communications
-- Analytics providers for website improvement
-- Cloud storage providers for data hosting
-
-**Business Transfers:**
-- In connection with a merger, acquisition, or sale of assets
-- As part of a corporate restructuring
-- With your explicit consent
-
-**Legal Requirements:**
-- To comply with applicable laws and regulations
-- To respond to legal requests and court orders
-- To protect our rights and interests
-- To prevent fraud or illegal activities
-
-**Protection of Rights:**
-- To protect the safety and security of our users
-- To investigate potential violations of our terms
-- To defend against legal claims
-
-All third parties with whom we share information are required to maintain the confidentiality and security of your personal information and use it only for the purposes for which it was shared.`
-    },
-    {
-      id: 'minors-privacy',
-      title: 'Privacy of Minors',
-      icon: Users,
-      content: `Our services are not intended for children under 13 years of age. We do not knowingly collect personal information from children under 13.
-
-**Age Verification:**
-- We require users to be at least 13 years old to create an account
-- We do not knowingly collect information from children under 13
-- If we learn we have collected information from a child under 13, we will delete it immediately
-
-**Parental Rights:**
-- Parents may review, update, or delete their child's information
-- Parents may refuse to permit further collection of their child's information
-- Parents may contact us to exercise these rights
-
-**Teen Privacy (13-17):**
-- We may collect limited information from users aged 13-17
-- We require parental consent for certain activities
-- We provide additional protections for teen users
-
-**Reporting Concerns:**
-- If you believe we have collected information from a child under 13, please contact us immediately
-- We will investigate and take appropriate action
-- We will notify parents if we discover we have collected information from their child
-
-We are committed to protecting the privacy of children and complying with applicable laws regarding children's privacy.`
-    },
-    {
-      id: 'cookies-tracking',
-      title: 'Cookies and Tracking Technologies',
+      id: 'cookies',
+      title: 'کوکی‌ها',
+      subtitle: 'فناوری‌های کوچک برای ایجاد هماهنگی بزرگ در مرور سایت',
       icon: Cookie,
-      content: `We use cookies and similar tracking technologies to enhance your experience on our website.
-
-**Types of Cookies:**
-- Essential cookies: Required for basic website functionality
-- Performance cookies: Help us understand how visitors use our website
-- Functionality cookies: Remember your preferences and settings
-- Marketing cookies: Used to deliver relevant advertisements
-
-**Cookie Management:**
-- You can control cookies through your browser settings
-- You can opt out of non-essential cookies
-- Disabling cookies may affect website functionality
-- We provide clear information about our cookie usage
-
-**Third-Party Tracking:**
-- We use Google Analytics to understand website usage
-- We may use social media pixels for advertising
-- We work with advertising partners to show relevant ads
-- You can opt out of personalized advertising
-
-**Data Collection:**
-- We collect information about your browsing behavior
-- We track which pages you visit and how long you stay
-- We monitor your interactions with our website
-- We use this information to improve our services
-
-We are transparent about our use of cookies and provide you with control over your privacy preferences.`
+      content: [
+        {
+          label: 'شخصی‌سازی خودکار ترجیحات شما',
+          desc: 'کوکی‌ها به ما اجازه می‌دهند اولویت‌های زبانی، حالت تاریک و سبد خرید شما را در مراجعات بعدی حفظ کنیم.'
+        },
+        {
+          label: 'تحلیل آماری و بهبود ساختار فرآیندها',
+          desc: 'با جمع‌آوری آمارهای کلی ترافیک بدون شناسایی هویت فردی، تجربه ناوبری وب‌سایت را بهبود می‌بخشیم.'
+        },
+        {
+          label: 'مدیریت آزادانه کوکی‌ها',
+          desc: 'شما می‌توانید از طریق تنظیمات مرورگر خود در هر زمان استفاده از کوکی‌ها را محدود یا غیرفعال سازید.'
+        }
+      ]
     },
     {
-      id: 'data-security',
-      title: 'Data Security',
-      icon: Shield,
-      content: `We implement appropriate technical and organizational measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction.
-
-**Security Measures:**
-- Encryption of data in transit and at rest
-- Regular security assessments and updates
-- Access controls and authentication systems
-- Secure data centers and infrastructure
-
-**Employee Training:**
-- Regular privacy and security training for all employees
-- Strict confidentiality agreements
-- Limited access to personal information on a need-to-know basis
-- Regular audits of data handling practices
-
-**Incident Response:**
-- We have procedures in place to respond to security incidents
-- We will notify affected users of any data breaches
-- We work with law enforcement when necessary
-- We continuously monitor for potential security threats
-
-**Third-Party Security:**
-- We carefully vet all third-party service providers
-- We require security certifications from our partners
-- We regularly review third-party security practices
-- We have contracts in place to ensure data protection
-
-While we strive to protect your personal information, no method of transmission over the internet or electronic storage is 100% secure. We cannot guarantee absolute security but are committed to maintaining the highest standards of data protection.`
-    },
-    {
-      id: 'your-rights',
-      title: 'Your Rights',
+      id: 'rights',
+      title: 'حقوق کاربران',
+      subtitle: 'مالکیت تمام و کمال شما بر داده‌های شخصیتان در شیخ',
       icon: UserCheck,
-      content: `You have certain rights regarding your personal information, which may vary depending on your location.
-
-**Access Rights:**
-- Request access to your personal information
-- Receive a copy of the data we hold about you
-- Understand how we use your information
-- Verify the accuracy of your data
-
-**Correction Rights:**
-- Request correction of inaccurate information
-- Update your personal details
-- Complete incomplete information
-- Ensure data accuracy and completeness
-
-**Deletion Rights:**
-- Request deletion of your personal information
-- Right to be forgotten (where applicable)
-- Withdraw consent for data processing
-- Object to certain types of processing
-
-**Portability Rights:**
-- Receive your data in a structured format
-- Transfer your data to another service provider
-- Export your account information
-- Maintain control over your data
-
-**Objection Rights:**
-- Object to processing for marketing purposes
-- Opt out of automated decision-making
-- Withdraw consent at any time
-- Request restriction of processing
-
-To exercise these rights, please contact us using the information provided in the Contact Us section. We will respond to your request within 30 days.`
+      content: [
+        {
+          label: 'حق دسترسی و آگاهی کامل',
+          desc: 'شما در هر زمان می‌توانید یک نسخه کامل از اطلاعات هویتی و سوابق سفارش‌های خود را دریافت نمایید.'
+        },
+        {
+          label: 'حق ویرایش و به‌روزرسانی فوری',
+          desc: 'هرگونه تغییر در آدرس، شماره تلفن یا مشخصات هویتی به سادگی و از طریق پنل کاربری قابل ویرایش است.'
+        },
+        {
+          label: 'حق فراموشی و حذف دائمی حساب',
+          desc: 'شما می‌توانید درخواست حذف کامل و برگشت‌ناپذیر تمامی داده‌های خود را به تیم حریم خصوصی ما ارسال نمایید.'
+        }
+      ]
     },
     {
-      id: 'policy-changes',
-      title: 'Changes to This Policy',
-      icon: AlertCircle,
-      content: `We may update this Privacy Policy from time to time to reflect changes in our practices or applicable laws.
-
-**Notification of Changes:**
-- We will notify you of material changes via email
-- We will post the updated policy on our website
-- We will update the "Last Updated" date at the top of this policy
-- We will provide a summary of significant changes
-
-**Your Continued Use:**
-- Your continued use of our services after changes constitutes acceptance
-- You may withdraw consent if you disagree with changes
-- You may contact us with questions about changes
-- We will honor your previous consent until you update your preferences
-
-**Version Control:**
-- We maintain a history of policy changes
-- Previous versions are available upon request
-- We track when and why changes were made
-- We document the impact of changes on your rights
-
-**Effective Date:**
-- Changes become effective immediately upon posting
-- We will provide reasonable notice for material changes
-- We will give you time to review changes before they take effect
-- We will respect your right to opt out of new practices
-
-We encourage you to review this Privacy Policy periodically to stay informed about how we protect your information.`
-    },
-    {
-      id: 'contact-us',
-      title: 'Contact Us',
+      id: 'contact',
+      title: 'ارتباط با ما',
+      subtitle: 'تیم اختصاصی حریم خصوصی همواره پاسخگوی سوالات شماست',
       icon: Mail,
-      content: `If you have any questions about this Privacy Policy or our data practices, please contact us:
-
-**Privacy Officer:**
-Sheikh Shop Privacy Team
-Email: privacy@sheikhshops.com
-Phone: +1 (555) 123-4567
-Address: 123 Luxury Lane, Premium District, CA 90210
-
-**Data Protection Officer:**
-For EU residents and GDPR-related inquiries
-Email: dpo@sheikhshops.com
-Phone: +1 (555) 123-4568
-
-**Response Times:**
-- General inquiries: Within 48 hours
-- Privacy requests: Within 30 days
-- Security incidents: Within 24 hours
-- Legal requests: As required by law
-
-**Languages:**
-- English (primary)
-- Arabic (available upon request)
-- Spanish (available upon request)
-- French (available upon request)
-
-**Office Hours:**
-Monday - Friday: 9:00 AM - 6:00 PM PST
-Saturday: 10:00 AM - 4:00 PM PST
-Sunday: Closed
-
-We are committed to addressing your privacy concerns promptly and professionally.`
+      isContact: true,
+      content: []
     }
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-950 via-stone-900 to-black relative overflow-hidden">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 bg-[url('/public/assets/pattern.png')] opacity-5"></div>
-      
+    <div className="min-h-screen bg-gradient-to-br from-amber-950 via-stone-900 to-black relative overflow-hidden font-vazirmatn text-right" dir="rtl">
+      {/* Premium Background Ambient Effects */}
+      <div className="absolute inset-0 bg-[url('/assets/pattern.png')] opacity-5 pointer-events-none"></div>
+      <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full bg-amber-500/10 blur-[150px] pointer-events-none" />
+      <div className="absolute bottom-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full bg-orange-500/5 blur-[150px] pointer-events-none" />
+
+      {/* Floating Sparkles Background Anim */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {[...Array(6)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-1 h-1 bg-amber-400 rounded-full opacity-30"
+            style={{
+              top: `${15 + i * 15}%`,
+              left: `${10 + (i * 17) % 80}%`,
+            }}
+            animate={{
+              y: [0, -30, 0],
+              opacity: [0.2, 0.7, 0.2],
+              scale: [1, 1.5, 1],
+            }}
+            transition={{
+              duration: 5 + i * 2,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          />
+        ))}
+      </div>
+
       {/* Reading Progress Bar */}
       <motion.div
-        className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 z-50"
+        className="fixed top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 z-50"
         style={{ width: progressWidth }}
       />
 
-      <div className="relative z-10">
-        {/* Header Section */}
+      <div className="relative z-10 max-w-5xl mx-auto px-4 md:px-6 pt-28 pb-24">
+        {/* Premium Hero Section */}
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
+          initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          className="pt-20 pb-12"
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="text-center mb-16"
         >
-          <div className="container mx-auto px-4 text-center">
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-              className="flex items-center justify-center gap-4 mb-6"
-            >
-              <Lock className="w-12 h-12 text-amber-400" />
-              <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
-            Privacy Policy
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.9, delay: 0.15, ease: "easeOut" }}
+            className="inline-flex items-center justify-center p-4 rounded-full bg-gradient-to-br from-amber-500/15 to-orange-500/5 border border-amber-500/20 mb-6 relative group"
+          >
+            <div className="absolute inset-0 rounded-full bg-amber-500/10 blur-md group-hover:bg-amber-500/15 transition-all duration-300" />
+            <ShieldCheck className="w-12 h-12 text-amber-400 drop-shadow-[0_0_15px_rgba(245,158,11,0.5)] relative z-10" />
+          </motion.div>
+
+          <h1 className="text-4xl md:text-5xl font-black bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent mb-4 tracking-tight">
+            حریم خصوصی
           </h1>
-            </motion.div>
-            
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
-              className="text-gray-300 text-lg max-w-3xl mx-auto"
-            >
-              Your privacy is important to us. This policy explains how we collect, use, and protect your personal information.
-            </motion.p>
-            
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
-              className="mt-6 text-sm text-gray-400"
-            >
-              Last Updated: January 1, 2025
-            </motion.div>
-                </div>
+
+          <p className="text-gray-300 text-lg md:text-xl font-light max-w-2xl mx-auto leading-relaxed">
+            حفظ امنیت و حریم خصوصی کاربران، یکی از مهم‌ترین تعهدات فروشگاه شیخ است.
+          </p>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="mt-6 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-amber-300/80 backdrop-blur-sm"
+          >
+            <Sparkles className="w-3.5 h-3.5 animate-spin-slow" />
+            <span>آخرین به‌روزرسانی: دی‌ماه ۱۴۰۳</span>
+          </motion.div>
         </motion.div>
 
-        {/* Main Content */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.8, ease: "easeOut" }}
-          className="container mx-auto px-4 pb-20"
-        >
-          <Card className="bg-white/5 backdrop-blur-sm border border-amber-200/20 rounded-2xl overflow-hidden">
-            <CardContent className="p-6 md:p-8">
-              <Accordion type="single" collapsible className="space-y-4">
-                {privacySections.map((section, index) => {
-                  const Icon = section.icon;
-                  return (
+        {/* Beautiful Glass Card Container */}
+        <div className="space-y-6">
+          {sections.map((section, index) => {
+            const Icon = section.icon;
+            const isOpen = activeSection === section.id;
+
+            return (
+              <motion.div
+                key={section.id}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.6, delay: index * 0.08, ease: "easeOut" }}
+              >
+                <div
+                  className={`bg-gradient-to-br from-amber-950/20 via-stone-900/30 to-black/40 backdrop-blur-md rounded-2xl border transition-all duration-500 shadow-xl overflow-hidden ${
+                    isOpen
+                      ? 'border-amber-500/40 shadow-amber-900/15 scale-[1.01]'
+                      : 'border-amber-200/10 hover:border-amber-500/25 shadow-black/30'
+                  }`}
+                >
+                  {/* Card Header Trigger */}
+                  <button
+                    onClick={() => setActiveSection(isOpen ? null : section.id)}
+                    className="w-full px-6 py-5 flex items-center justify-between gap-4 text-right cursor-pointer select-none"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-500/20 flex items-center justify-center flex-shrink-0">
+                        <Icon className="w-6 h-6 text-amber-400" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg md:text-xl font-bold text-white group-hover:text-amber-300 transition-colors duration-300">
+                          {section.title}
+                        </h3>
+                        <p className="text-xs md:text-sm text-gray-400 mt-0.5 font-light">
+                          {section.subtitle}
+                        </p>
+                      </div>
+                    </div>
+
                     <motion.div
-                      key={section.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.6, delay: 0.1 * index, ease: "easeOut" }}
+                      animate={{ rotate: isOpen ? 180 : 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-amber-400"
                     >
-                      <AccordionItem
-                        value={section.id}
-                        className="border border-amber-200/20 rounded-xl overflow-hidden bg-white/5 backdrop-blur-sm"
-                      >
-                        <AccordionTrigger className="px-6 py-4 hover:bg-white/10 transition-colors duration-300">
-                          <div className="flex items-center gap-4 text-left">
-                            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center flex-shrink-0">
-                              <Icon className="w-5 h-5 text-white" />
-                </div>
-                            <span className="text-lg font-semibold text-white">
-                              {section.title}
-                            </span>
-                </div>
-              </AccordionTrigger>
-                        <AccordionContent className="px-6 pb-6">
-                          <div className="prose prose-invert max-w-none">
-                            <div className="text-gray-300 leading-relaxed whitespace-pre-line">
-                              {section.content}
-                </div>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
+                      <ChevronDown className="w-4 h-4" />
                     </motion.div>
-                  );
-                })}
-          </Accordion>
-            </CardContent>
-          </Card>
-        </motion.div>
+                  </button>
 
-        {/* Footer */}
-        <motion.footer
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 1.2, ease: "easeOut" }}
-          className="bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 py-8"
-        >
-          <div className="container mx-auto px-4 text-center">
-            <p className="text-black font-semibold text-lg">
-          Sheikh Shop © 2025 | All Rights Reserved
-            </p>
-            <p className="text-black/80 text-sm mt-2">
-              Protecting your privacy is our commitment
-            </p>
-          </div>
-        </motion.footer>
+                  {/* Card Body Content */}
+                  <motion.div
+                    initial={false}
+                    animate={{ height: isOpen ? 'auto' : 0, opacity: isOpen ? 1 : 0 }}
+                    transition={{ duration: 0.4, ease: "easeInOut" }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-6 pb-6 pt-2 border-t border-amber-200/10 bg-black/20">
+                      {section.isContact ? (
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+                          <div className="flex items-start gap-3 p-4 rounded-xl bg-white/5 border border-white/5 hover:border-amber-500/20 transition-all duration-300">
+                            <Mail className="w-5 h-5 text-amber-400 mt-1 flex-shrink-0" />
+                            <div>
+                              <h4 className="text-sm font-bold text-white mb-1">پست الکترونیک</h4>
+                              <p className="text-xs text-gray-300 select-all">privacy@sheikhshops.com</p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-start gap-3 p-4 rounded-xl bg-white/5 border border-white/5 hover:border-amber-500/20 transition-all duration-300">
+                            <Phone className="w-5 h-5 text-amber-400 mt-1 flex-shrink-0" />
+                            <div>
+                              <h4 className="text-sm font-bold text-white mb-1">تلفن تماس مستقیم</h4>
+                              <p className="text-xs text-gray-300 select-all [direction:ltr] inline-block">+98 917 876 9556</p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-start gap-3 p-4 rounded-xl bg-white/5 border border-white/5 hover:border-amber-500/20 transition-all duration-300">
+                            <MapPin className="w-5 h-5 text-amber-400 mt-1 flex-shrink-0" />
+                            <div>
+                              <h4 className="text-sm font-bold text-white mb-1">نشانی دفتر مرکزی</h4>
+                              <p className="text-xs text-gray-300">ایران، بوشهر، مرکز شهر</p>
+                            </div>
+                          </div>
+
+                          <div className="md:col-span-3 flex flex-col md:flex-row items-center justify-between p-4 rounded-xl bg-amber-500/5 border border-amber-500/10 mt-2 gap-4">
+                            <div className="flex items-center gap-3">
+                              <Calendar className="w-5 h-5 text-amber-400 flex-shrink-0" />
+                              <p className="text-xs md:text-sm text-gray-300 leading-relaxed">
+                                زمان پاسخگویی کارشناسان حریم خصوصی شنبه تا چهارشنبه از ساعت ۹:۰۰ الی ۱۷:۰۰ می‌باشد.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-6 pt-4">
+                          {section.content.map((item, idx) => (
+                            <div key={idx} className="relative pr-5 group">
+                              <div className="absolute right-0 top-2 w-1.5 h-1.5 rounded-full bg-amber-400 group-hover:scale-125 transition-transform duration-300" />
+                              <h4 className="text-sm md:text-base font-bold text-amber-100 mb-1.5">
+                                {item.label}
+                              </h4>
+                              <p className="text-xs md:text-sm text-gray-300 leading-relaxed font-light">
+                                {item.desc}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
+      </div>
+
+      {/* Luxury Localized Footer */}
+      <footer className="bg-gradient-to-r from-amber-950 via-stone-900 to-amber-950 border-t border-amber-200/10 py-10">
+        <div className="container mx-auto px-4 text-center">
+          <p className="text-amber-100 font-medium text-base md:text-lg">
+            فروشگاه شیخ © {new Date().getFullYear()} | تمامی حقوق محفوظ است
+          </p>
+          <p className="text-gray-400 text-xs md:text-sm mt-2 font-light">
+            تعهد ما، حفظ امنیت کامل و آرامش خاطر شما در خرید اینترنتی است
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }
