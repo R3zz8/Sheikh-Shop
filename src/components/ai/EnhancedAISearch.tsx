@@ -236,66 +236,65 @@ export default function EnhancedAISearch({
       </div>
 
       {/* Controls */}
-      <div className="flex flex-wrap items-center gap-2 mt-2 font-vazirmatn">
+      <div className={`grid ${showVRStoreButton ? 'grid-cols-3' : 'grid-cols-2'} gap-1.5 md:flex md:flex-wrap md:items-center md:gap-2 mt-2 font-vazirmatn w-full`}>
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full text-[16px] font-medium transition-all duration-300
-            border border-solid
+          className={`flex items-center justify-center gap-1 md:gap-2 px-1 sm:px-3 md:px-4 py-2 rounded-full text-[11px] xs:text-[12px] sm:text-[14px] md:text-[16px] font-medium transition-all duration-300
+            border border-solid w-full h-10 md:w-auto md:h-auto
             ${ showFilters
               ? 'bg-gradient-to-br from-amber-400 to-yellow-500 text-white shadow-md border-amber-500 ring-2 ring-amber-300/50'
               : 'bg-transparent text-amber-200 border-amber-500/50 hover:bg-amber-500/10 hover:border-amber-500/80'
             }`}
         >
-          <Filter className="w-4 h-4" />
-          <span>فیلترها</span>
+          <Filter className="w-3.5 h-3.5 md:w-4 md:h-4 shrink-0" />
+          <span className="truncate">فیلترها</span>
         </button>
         
-        <div className="relative">
+        <div className="relative w-full md:w-auto">
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as any)}
-            className="appearance-none flex items-center gap-1 pl-8 pr-4 py-2 rounded-full text-[16px] font-medium transition-all duration-300
-              border border-solid border-amber-500/50 bg-transparent text-amber-200
+            className="appearance-none flex items-center justify-center gap-1 pl-6 pr-2 py-2 rounded-full text-[11px] xs:text-[12px] sm:text-[14px] md:text-[16px] font-medium transition-all duration-300
+              border border-solid border-amber-500/50 bg-transparent text-amber-200 w-full h-10 md:w-auto md:h-auto
               hover:bg-amber-500/10 hover:border-amber-500/80
-              focus:outline-none focus:ring-2 focus:ring-amber-300/50 text-right font-vazirmatn cursor-pointer"
+              focus:outline-none focus:ring-2 focus:ring-amber-300/50 text-center font-vazirmatn cursor-pointer"
             style={{
               backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23D4AF37' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-              backgroundPosition: 'left 0.5rem center',
+              backgroundPosition: 'left 0.4rem center',
               backgroundRepeat: 'no-repeat',
-              backgroundSize: '1.5em 1.5em'
+              backgroundSize: '1.2em 1.2em'
             }}
             aria-label="مرتب‌سازی بر اساس"
           >
-            <option className="bg-stone-800 text-white font-vazirmatn" value="relevance">مرتب‌سازی</option>
-            <option className="bg-stone-800 text-white font-vazirmatn" value="price">قیمت</option>
-            <option className="bg-stone-800 text-white font-vazirmatn" value="rating">امتیاز</option>
-            <option className="bg-stone-800 text-white font-vazirmatn" value="newest">جدیدترین</option>
-            <option className="bg-stone-800 text-white font-vazirmatn" value="popularity">محبوب‌ترین</option>
+            <option className="bg-stone-800 text-white font-vazirmatn text-xs sm:text-sm" value="relevance">مرتب‌سازی</option>
+            <option className="bg-stone-800 text-white font-vazirmatn text-xs sm:text-sm" value="price">قیمت</option>
+            <option className="bg-stone-800 text-white font-vazirmatn text-xs sm:text-sm" value="rating">امتیاز</option>
+            <option className="bg-stone-800 text-white font-vazirmatn text-xs sm:text-sm" value="newest">جدیدترین</option>
+            <option className="bg-stone-800 text-white font-vazirmatn text-xs sm:text-sm" value="popularity">محبوب‌ترین</option>
           </select>
         </div>
 
         {showVRStoreButton && (
           <Link
             href="/vr-store"
-            className="flex items-center gap-2 px-4 py-2 rounded-full text-[16px] font-medium transition-all duration-300
-              border border-solid border-amber-500/50 bg-transparent text-amber-200
-              hover:bg-amber-500/10 hover:border-amber-500/80 font-vazirmatn"
+            className="flex items-center justify-center gap-1 md:gap-2 px-1 sm:px-3 md:px-4 py-2 rounded-full text-[11px] xs:text-[12px] sm:text-[14px] md:text-[16px] font-medium transition-all duration-300
+              border border-solid border-amber-500/50 bg-transparent text-amber-200 w-full h-10 md:w-auto md:h-auto font-vazirmatn text-center hover:bg-amber-500/10 hover:border-amber-500/80"
           >
-            <span>فروشگاه مجازی</span>
+            <span className="truncate">فروشگاه مجازی</span>
           </Link>
         )}
 
         {showAdvancedOptions && (
           <button
             onClick={() => setShowAdvanced(!showAdvanced)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-full text-[16px] font-medium transition-colors ${
+            className={`flex items-center justify-center gap-1 md:gap-2 px-1 sm:px-3 md:px-4 py-2 rounded-full text-[11px] xs:text-[12px] sm:text-[14px] md:text-[16px] font-medium transition-colors w-full h-10 md:w-auto md:h-auto col-span-3 mt-1 md:mt-0 ${
               showAdvanced 
                 ? 'bg-blue-100 text-blue-800 border border-blue-200' 
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                : 'bg-stone-900/40 text-gray-300 border border-amber-500/20 hover:bg-amber-500/10'
             }`}
           >
-            <Brain className="w-4 h-4" />
-            تنظیمات هوش مصنوعی
+            <Brain className="w-3.5 h-3.5 md:w-4 md:h-4 shrink-0" />
+            <span className="truncate">تنظیمات هوش مصنوعی</span>
           </button>
         )}
       </div>
