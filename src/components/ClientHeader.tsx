@@ -106,8 +106,8 @@ export default function ClientHeader() {
       href: '/about-us',
       icon: Users,
       subItems: [
-        { name: 'حریم خصوصی', href: 'https://sheikhshops.com/privacy' },
-        { name: 'تماس با ما', href: 'https://sheikhshops.com/contact' },
+        { name: 'حریم خصوصی', href: '/privacy' },
+        { name: 'تماس با ما', href: '/contact' },
       ],
     },
     { name: 'مقالات', href: '/article', icon: FileText },
