@@ -38,3 +38,9 @@ export const CarouselMobile = dynamic(() => import('@/components/CarouselMobile'
     preload: false,
     loading: () => <div className="w-full h-64 bg-gray-900 animate-pulse md:hidden" />,
 } as any);
+
+export const PremiumSpeakerShowcase = dynamic(() => import('@/components/home/PremiumSpeakerShowcase'), {
+    ssr: false,
+    preload: false,
+    loading: () => <div className="w-full h-96 bg-gray-900 animate-pulse" />,
+} as any);

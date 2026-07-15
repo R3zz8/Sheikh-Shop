@@ -9,6 +9,7 @@ import {
   AmazingDeals,
   CarouselMobile,
   OptimizedPalmTree,
+  PremiumSpeakerShowcase,
 } from '@/components/DynamicClientComponents';
 import BMWCarousel from '@/components/BMWCarousel';
 
@@ -73,6 +74,9 @@ export default function Home() {
 
       {/* Amazing Deals Section */}
       <AmazingDeals />
+
+      {/* Premium Speaker Showcase Section */}
+      <PremiumSpeakerShowcase />
 
       <BMWCarousel />
 
