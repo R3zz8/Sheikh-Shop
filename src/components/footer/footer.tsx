@@ -294,7 +294,7 @@ export default function Footer() {
               <div className="space-y-3">
                 <div className="flex items-center gap-3 text-gray-300 text-[16px] lg:text-[17px] xl:text-[18px] justify-start">
                   <Phone className="w-4 h-4 text-amber-300" />
-                  <span>+212 (753) 862-853</span>
+                  <span>+98 917 876 9556</span>
                 </div>
                 <div className="flex items-center gap-3 text-gray-300 text-[16px] lg:text-[17px] xl:text-[18px] justify-start">
                   <Mail className="w-4 h-4 text-amber-300" />
@@ -302,7 +302,7 @@ export default function Footer() {
                 </div>
                 <div className="flex items-center gap-3 text-gray-300 text-[16px] lg:text-[17px] xl:text-[18px] justify-start">
                   <MapPin className="w-4 h-4 text-amber-300" />
-                  <span>ایران، تهران، منطقه تجاری لوکس</span>
+                  <span>ایران، بوشهر، مرکز شهر</span>
                 </div>
               </div>
             </div>
