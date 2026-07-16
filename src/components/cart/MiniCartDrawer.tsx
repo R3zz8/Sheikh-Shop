@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import type { CartWithProduct } from '@/types';
 import { formatPrice } from '@/lib/currency';
 import { getShippingCost, calculateOrderTotal } from '@/lib/shipping';
+import EstimatedDelivery from '@/components/shipping/EstimatedDelivery';
 
 interface MiniCartDrawerProps {
   isOpen: boolean;
@@ -191,6 +192,9 @@ export default function MiniCartDrawer({ isOpen, onClose }: MiniCartDrawerProps)
                     <span>هزینه ارسال:</span>
                     <span>{formatPrice(getShippingCost(cartTotals.subtotal))}</span>
                   </div>
+
+                  <EstimatedDelivery variant="light" className="my-1.5" />
+
                   <div className="flex justify-between items-center text-lg font-bold text-gray-900 pt-2">
                     <span>مبلغ قابل پرداخت:</span>
                     <span className="text-amber-600">{formatPrice(calculateOrderTotal(cartTotals.subtotal))}</span>

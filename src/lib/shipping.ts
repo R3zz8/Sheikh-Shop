@@ -19,6 +19,33 @@
 export const DEFAULT_SHIPPING_COST = 200000;
 
 /**
+ * Centralized shipping configuration including estimated delivery times
+ */
+export const SHIPPING_CONFIG = {
+  estimatedDelivery: {
+    minDays: 3,
+    maxDays: 7
+  }
+};
+
+/**
+ * Convert any number or string of English digits to Persian digits
+ */
+export function toPersianDigits(num: number | string): string {
+  const farsiDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+  return num.toString().replace(/\d/g, (x) => farsiDigits[parseInt(x)] || x);
+}
+
+/**
+ * Returns the formatted estimated delivery text in Persian.
+ * e.g., "۳ تا ۷ روز کاری"
+ */
+export function getFormattedEstimatedDelivery(): string {
+  const { minDays, maxDays } = SHIPPING_CONFIG.estimatedDelivery;
+  return `${toPersianDigits(minDays)} تا ${toPersianDigits(maxDays)} روز کاری`;
+}
+
+/**
  * Supported shipping methods for future expansion
  */
 export type ShippingMethod = 'STANDARD' | 'EXPRESS' | 'PICKUP' | 'OVERNIGHT';

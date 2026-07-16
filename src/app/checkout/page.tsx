@@ -31,6 +31,7 @@ import { useCart } from '@/hooks/useCart';
 import { useUser } from '@/hooks/useUser';
 import { formatPrice } from '@/lib/currency';
 import { getShippingCost, calculateOrderTotal } from '@/lib/shipping';
+import EstimatedDelivery from '@/components/shipping/EstimatedDelivery';
 import Link from 'next/link';
 
 export default function CheckoutPage() {
@@ -528,7 +529,7 @@ export default function CheckoutPage() {
                     </motion.div>
 
                     {/* Section 2: Shipping with inline informational row */}
-                    <div className="space-y-1.5 bg-amber-500/5 p-3 rounded-xl border border-amber-500/10">
+                    <div className="space-y-2.5 bg-amber-500/5 p-3 rounded-xl border border-amber-500/10">
                       <motion.div
                         layout
                         className="flex justify-between items-center text-gray-300"
@@ -541,6 +542,9 @@ export default function CheckoutPage() {
                           {shipping === 0 ? 'رایگان' : formatPrice(shipping)}
                         </span>
                       </motion.div>
+
+                      <EstimatedDelivery variant="glass" showDivider={false} className="border-amber-500/10 bg-amber-500/5 py-1 px-2.5" />
+
                       <div className="flex items-center gap-2 text-[11px] text-gray-400 pr-1 select-none">
                         <BadgeCheck className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />
                         <span>ارسال سفارش با بسته‌بندی ایمن و استاندارد انجام خواهد شد.</span>

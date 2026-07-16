@@ -11,6 +11,7 @@ import { ShoppingCart, Trash2, Sparkles, Plus, Minus, Package } from 'lucide-rea
 import { cn } from '@/lib/utils';
 import { formatPrice } from '@/lib/currency';
 import { getShippingCost, calculateOrderTotal } from '@/lib/shipping';
+import EstimatedDelivery from '@/components/shipping/EstimatedDelivery';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -199,6 +200,9 @@ export default function CartDropdown() {
               <span>هزینه ارسال:</span>
               <span className="font-medium text-gray-300">{formatPrice(getShippingCost(cartTotals.subtotal))}</span>
             </div>
+
+            <EstimatedDelivery variant="glass" className="my-1.5" />
+
             <div className="flex items-center justify-between pt-1 border-t border-white/5 mb-3">
               <span className="text-sm text-gray-300">مبلغ قابل پرداخت:</span>
               <span className="text-lg font-semibold bg-gradient-to-r from-amber-200 via-yellow-200 to-orange-200 bg-clip-text text-transparent">
