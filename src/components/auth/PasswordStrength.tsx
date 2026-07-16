@@ -53,21 +53,21 @@ export default function PasswordStrength({ password }: PasswordStrengthProps) {
     const currentChecks = checks(password);
 
     return (
-        <div className="mt-3.5 p-4 rounded-2xl bg-slate-500/5 dark:bg-slate-400/5 border border-slate-200/40 dark:border-slate-800/40 backdrop-blur-sm">
+        <div className="mt-3.5 p-4 rounded-2xl bg-neutral-950/25 border border-white/[0.04] backdrop-blur-sm">
             {/* Header section with password strength percentage and label */}
             <div className="flex items-center justify-between mb-2">
-                <span className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300 font-vazirmatn">
+                <span className="text-xs sm:text-sm font-semibold text-slate-300 font-vazirmatn">
                     امنیت رمز عبور:
                 </span>
                 <span className={`text-xs sm:text-sm font-bold font-vazirmatn transition-colors duration-300 ${
-                    s <= 2 ? 'text-red-500' : s === 3 ? 'text-amber-500' : 'text-emerald-500'
+                    s <= 2 ? 'text-red-400' : s === 3 ? 'text-amber-400' : 'text-emerald-400'
                 }`}>
                     {label}
                 </span>
             </div>
 
             {/* Dynamic premium progress bar */}
-            <div className="h-2 w-full bg-slate-200/60 dark:bg-slate-800/60 rounded-full overflow-hidden">
+            <div className="h-2 w-full bg-neutral-950/50 rounded-full overflow-hidden">
                 <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${(s / 5) * 100}%` }}
@@ -77,8 +77,8 @@ export default function PasswordStrength({ password }: PasswordStrengthProps) {
             </div>
 
             {/* Verification checklist layout */}
-            <div className="mt-4 pt-3 border-t border-slate-200/50 dark:border-slate-800/50">
-                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-xs sm:text-[13px] text-slate-500 dark:text-slate-400 leading-relaxed font-vazirmatn">
+            <div className="mt-4 pt-3 border-t border-white/[0.08]">
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-xs sm:text-[13px] text-slate-400 leading-relaxed font-vazirmatn">
                     {validationRequirements.map((req) => {
                         const passed = currentChecks[req.key as keyof typeof currentChecks];
                         return (
@@ -86,14 +86,14 @@ export default function PasswordStrength({ password }: PasswordStrengthProps) {
                                 key={req.key}
                                 className={`flex items-center gap-2 transition-colors duration-300 ${
                                     passed
-                                        ? 'text-emerald-600 dark:text-emerald-400 font-medium'
-                                        : 'text-slate-400 dark:text-slate-500'
+                                        ? 'text-emerald-400 font-medium'
+                                        : 'text-slate-500'
                                 }`}
                             >
                                 <span className={`p-0.5 rounded-full ${
                                     passed
-                                        ? 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400'
-                                        : 'bg-slate-100 dark:bg-slate-900 text-slate-400 dark:text-slate-600'
+                                        ? 'bg-emerald-950/40 text-emerald-400'
+                                        : 'bg-white/[0.02] text-slate-600'
                                 }`}>
                                     {passed ? (
                                         <Check className="size-3" strokeWidth={3} aria-hidden />
