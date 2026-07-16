@@ -10,6 +10,7 @@ import type { CartWithProduct } from '@/types';
 import { ShoppingCart, Trash2, Sparkles, Plus, Minus, Package } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatPrice } from '@/lib/currency';
+import { getShippingCost, calculateOrderTotal } from '@/lib/shipping';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -187,13 +188,21 @@ export default function CartDropdown() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mt-4 pt-4 border-t border-white/10"
+            className="mt-4 pt-4 border-t border-white/10 space-y-2.5"
             dir="rtl"
           >
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-sm text-gray-300">جمع کل:</span>
-              <span className="text-lg font-semibold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
-                {formatPrice(cartTotals.subtotal)}
+            <div className="flex items-center justify-between text-xs text-gray-400">
+              <span>جمع کالاها:</span>
+              <span className="font-medium text-gray-300">{formatPrice(cartTotals.subtotal)}</span>
+            </div>
+            <div className="flex items-center justify-between text-xs text-gray-400">
+              <span>هزینه ارسال:</span>
+              <span className="font-medium text-gray-300">{formatPrice(getShippingCost(cartTotals.subtotal))}</span>
+            </div>
+            <div className="flex items-center justify-between pt-1 border-t border-white/5 mb-3">
+              <span className="text-sm text-gray-300">مبلغ قابل پرداخت:</span>
+              <span className="text-lg font-semibold bg-gradient-to-r from-amber-200 via-yellow-200 to-orange-200 bg-clip-text text-transparent">
+                {formatPrice(calculateOrderTotal(cartTotals.subtotal))}
               </span>
             </div>
             <Button asChild className={cn(

@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { nanoid } from 'nanoid';
+import { prisma } from '@/lib/prisma';
+import { verifyJwtToken } from '@/lib/auth/jwt';
+import { getShippingCost, calculateSubtotal, calculateOrderTotal } from '@/lib/shipping';
 
 // Request payload validation schema
 const paymentRequestSchema = z.object({
@@ -17,6 +20,31 @@ const paymentRequestSchema = z.object({
   city: z.string().min(1, 'City is required'),
   description: z.string().optional(),
 });
+
+// Helper function to extract user ID from request cookies
+async function getUserIdFromToken(request: NextRequest): Promise<string | null> {
+  try {
+    const accessToken = request.cookies.get('access-token')?.value;
+    const refreshToken = request.cookies.get('refresh-token')?.value;
+    const sessionToken = request.cookies.get('session-token')?.value;
+
+    if (accessToken) {
+      const user = await verifyJwtToken(accessToken);
+      if (user?.id) return user.id;
+    }
+    if (refreshToken) {
+      const user = await verifyJwtToken(refreshToken);
+      if (user?.id) return user.id;
+    }
+    if (sessionToken) {
+      const user = await verifyJwtToken(sessionToken);
+      if (user?.id) return user.id;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
 
 // YekPay API response interface
 interface YekPayResponse {
@@ -82,12 +110,48 @@ export async function POST(request: NextRequest) {
     const baseUrl = getBaseUrl();
     const callbackUrl = `${baseUrl}/api/payment/verify`;
 
-    // Prepare YekPay request parameters
+    // Authenticate user to calculate server-safe totals
+    const userId = await getUserIdFromToken(request);
+    let finalAmount = payload.amount;
+
+    if (userId) {
+      // Fetch user's cart from database to do server-safe recalculation
+      const cartItems = await prisma.cartItem.findMany({
+        where: { userId },
+        include: {
+          product: true,
+        },
+      });
+
+      if (cartItems && cartItems.length > 0) {
+        // Map cart items to prices (relying on the stored unitPrice or fallback basePrice)
+        const itemsForCalc = cartItems.map((item: any) => {
+          const price = item.unitPrice || item.product.basePrice;
+          return {
+            price: Number(price),
+            quantity: item.quantity,
+          };
+        });
+
+        const subtotal = calculateSubtotal(itemsForCalc);
+        finalAmount = calculateOrderTotal(subtotal);
+
+        console.log('[Server-side Recalculation] Successful:', {
+          userId,
+          itemCount: cartItems.length,
+          subtotal,
+          finalAmount,
+          frontendAmount: payload.amount,
+        });
+      }
+    }
+
+    // Prepare YekPay request parameters using the server-safe finalAmount
     const yekpayParams = new URLSearchParams({
       merchantId: merchantId,
       fromCurrencyCode: payload.currencyFrom.toString(),
       toCurrencyCode: payload.currencyTo.toString(),
-      amount: payload.amount.toString(),
+      amount: finalAmount.toString(),
       orderNumber: orderNumber,
       callback: callbackUrl,
       firstName: payload.firstName,
