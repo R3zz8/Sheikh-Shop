@@ -7,6 +7,7 @@ import { useCart } from '@/hooks/useCart';
 import Image from 'next/image';
 import Link from 'next/link';
 import { formatPrice } from '@/lib/currency';
+import { getShippingCost, calculateOrderTotal } from '@/lib/shipping';
 
 interface MiniCartProps {
   isOpen: boolean;
@@ -227,12 +228,12 @@ export default function MiniCart({ isOpen, onClose }: MiniCartProps) {
                 <div className="flex justify-between text-sm">
                   <span>هزینه ارسال</span>
                   <span className="font-medium">
-                    {cartTotals.subtotal > 1000000 ? 'رایگان' : formatPrice(99000)}
+                    {formatPrice(getShippingCost(cartTotals.subtotal))}
                   </span>
                 </div>
                 <div className="flex justify-between text-lg font-semibold">
                   <span>جمع کل</span>
-                  <span>{formatPrice(cartTotals.subtotal + (cartTotals.subtotal > 1000000 ? 0 : 99000))}</span>
+                  <span>{formatPrice(calculateOrderTotal(cartTotals.subtotal))}</span>
                 </div>
                 
                 <div className="space-y-2">

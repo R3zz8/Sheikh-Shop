@@ -16,7 +16,10 @@ import {
   Shield,
   CheckCircle,
   ArrowRight,
-  ShoppingCart
+  ShoppingCart,
+  Package,
+  BadgeCheck,
+  Receipt
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -27,6 +30,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useCart } from '@/hooks/useCart';
 import { useUser } from '@/hooks/useUser';
 import { formatPrice } from '@/lib/currency';
+import { getShippingCost, calculateOrderTotal } from '@/lib/shipping';
 import Link from 'next/link';
 
 export default function CheckoutPage() {
@@ -68,11 +72,10 @@ export default function CheckoutPage() {
     }
   }, [cart, isCartLoading, isUserLoading, router]);
 
-  // Calculate totals using actual cart data
+  // Calculate totals using centralized shipping logic
   const subtotal = cartTotals.subtotal || 0;
-  const shipping = subtotal > 0 ? 9.99 : 0; // Free shipping over threshold can be added later
-  const tax = subtotal * 0.08; // 8% tax rate
-  const total = subtotal + shipping + tax;
+  const shipping = subtotal > 0 ? getShippingCost(subtotal) : 0;
+  const total = subtotal > 0 ? calculateOrderTotal(subtotal) : 0;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -445,89 +448,126 @@ export default function CheckoutPage() {
                             </div>
 
             {/* Right Column - Order Summary */}
-            <div className="space-y-6">
-              <Card className="bg-white/5 backdrop-blur-sm border border-amber-200/20 rounded-2xl overflow-hidden sticky top-24">
-                <CardHeader className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 border-b border-amber-200/20">
-                  <CardTitle className="flex items-center gap-3 text-white">
-                    <ShoppingBag className="w-6 h-6 text-amber-400" />
-                    Order Summary
+            <div className="space-y-6 font-vazirmatn" dir="rtl">
+              <Card className="relative bg-stone-900/60 backdrop-blur-xl border border-amber-500/20 rounded-3xl overflow-hidden sticky top-24 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8),0_0_50px_rgba(217,119,6,0.15)] group transition-all duration-300 hover:border-amber-500/30">
+                {/* Visual Accent Glow */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full blur-2xl pointer-events-none group-hover:bg-amber-500/10 transition-all duration-500"></div>
+
+                <CardHeader className="bg-gradient-to-l from-amber-950/40 via-amber-900/10 to-stone-900/20 border-b border-amber-500/20 px-6 py-5">
+                  <CardTitle className="flex items-center justify-between text-white">
+                    <div className="flex items-center gap-3">
+                      <ShoppingBag className="w-6 h-6 text-amber-500" />
+                      <span className="font-bold text-lg tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100">
+                        خلاصه سفارش
+                      </span>
+                    </div>
+                    {cartTotals.itemCount > 0 && (
+                      <span className="px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/25 border border-amber-400/30 text-amber-200">
+                        {cartTotals.itemCount} کالا
+                      </span>
+                    )}
                   </CardTitle>
                 </CardHeader>
+
                 <CardContent className="p-6">
                   {/* Cart Items */}
-                  <div className="space-y-4 mb-6">
+                  <div className="space-y-4 mb-6 max-h-[240px] overflow-y-auto pr-1">
                     {cart.map((item: any) => {
                       const unitPrice = item.unitPrice || item.product?.basePrice || 0;
                       const itemTotal = unitPrice * item.quantity;
                       const productImage = item.product?.images?.[0]?.image || '/assets/noImage.jpg';
-                      const productName = item.product?.name || 'Product';
+                      const productName = item.product?.name || 'محصول';
                       const unitName = item.unit?.name || item.unit?.symbol || '';
                       
                       return (
                         <motion.div
                           key={item.id}
-                          initial={{ opacity: 0, x: 20 }}
+                          initial={{ opacity: 0, x: -10 }}
                           animate={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.5 }}
-                          className="flex items-center space-x-4 p-3 bg-white/5 rounded-xl"
+                          transition={{ duration: 0.4 }}
+                          className="flex items-center justify-between gap-4 p-3 bg-white/5 rounded-xl border border-white/5 hover:bg-white/10 hover:border-white/10 transition-all duration-300 group"
                         >
-                          <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
-                            <Image
-                              src={productImage}
-                              alt={productName}
-                              fill
-                              className="object-cover"
-                              sizes="64px"
-                            />
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="relative w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 border border-white/10 group-hover:border-amber-500/30 transition-colors">
+                              <Image
+                                src={productImage}
+                                alt={productName}
+                                fill
+                                className="object-cover"
+                                sizes="56px"
+                              />
+                            </div>
+                            <div className="min-w-0">
+                              <h4 className="text-white font-medium text-sm truncate group-hover:text-amber-200 transition-colors">{productName}</h4>
+                              <p className="text-gray-400 text-xs mt-0.5">
+                                {unitName && <span className="bg-amber-500/10 text-amber-300 text-[10px] px-2 py-0.5 rounded-full ml-1.5 font-semibold">{unitName}</span>}
+                                تعداد: {item.quantity}
+                              </p>
+                            </div>
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <h4 className="text-white font-semibold text-sm truncate">{productName}</h4>
-                            <p className="text-gray-400 text-xs">
-                              {unitName && `${unitName} • `}
-                              Qty: {item.quantity}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-amber-400 font-semibold">{formatPrice(itemTotal, 'EUR')}</p>
-                            <p className="text-gray-400 text-xs">{formatPrice(unitPrice, 'EUR')} each</p>
+                          <div className="text-left flex-shrink-0">
+                            <p className="text-amber-400 font-semibold text-sm">{formatPrice(itemTotal)}</p>
+                            <p className="text-gray-500 text-[10px] mt-0.5">{formatPrice(unitPrice)} هر کدام</p>
                           </div>
                         </motion.div>
                       );
                     })}
                   </div>
 
-                  <Separator className="bg-amber-200/20" />
+                  <div className="border-t border-amber-500/10 pt-5 space-y-4">
+                    {/* Section 1: Subtotal */}
+                    <motion.div
+                      layout
+                      className="flex justify-between items-center text-gray-300"
+                    >
+                      <span className="flex items-center gap-2 text-sm">
+                        <Package className="w-4 h-4 text-amber-500/70" />
+                        جمع کالاها
+                      </span>
+                      <span className="font-semibold text-white text-sm">{formatPrice(subtotal)}</span>
+                    </motion.div>
 
-                  {/* Pricing Breakdown */}
-                  <div className="space-y-3 mt-6">
-                    <div className="flex justify-between text-gray-300">
-                      <span>Subtotal ({cartTotals.itemCount} {cartTotals.itemCount === 1 ? 'item' : 'items'})</span>
-                      <span>{formatPrice(subtotal, 'EUR')}</span>
+                    {/* Section 2: Shipping with inline informational row */}
+                    <div className="space-y-1.5 bg-amber-500/5 p-3 rounded-xl border border-amber-500/10">
+                      <motion.div
+                        layout
+                        className="flex justify-between items-center text-gray-300"
+                      >
+                        <span className="flex items-center gap-2 text-sm font-medium">
+                          <Truck className="w-4 h-4 text-amber-500" />
+                          هزینه ارسال
+                        </span>
+                        <span className="font-semibold text-amber-400 text-sm">
+                          {shipping === 0 ? 'رایگان' : formatPrice(shipping)}
+                        </span>
+                      </motion.div>
+                      <div className="flex items-center gap-2 text-[11px] text-gray-400 pr-1 select-none">
+                        <BadgeCheck className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />
+                        <span>ارسال سفارش با بسته‌بندی ایمن و استاندارد انجام خواهد شد.</span>
+                      </div>
                     </div>
-                    <div className="flex justify-between text-gray-300">
-                      <span className="flex items-center gap-2">
-                        <Truck className="w-4 h-4" />
-                        Shipping
+
+                    <Separator className="bg-amber-500/10" />
+
+                    {/* Section 3: Grand Total - strongest visual emphasis */}
+                    <motion.div
+                      layout
+                      className="flex justify-between items-center p-3 bg-gradient-to-l from-amber-500/10 to-transparent rounded-xl border-r-4 border-amber-500"
+                    >
+                      <span className="flex items-center gap-2 text-base font-bold text-white">
+                        <Receipt className="w-5 h-5 text-amber-400" />
+                        مبلغ قابل پرداخت
                       </span>
-                      <span>{formatPrice(shipping, 'EUR')}</span>
-                    </div>
-                    <div className="flex justify-between text-gray-300">
-                      <span>Tax (8%)</span>
-                      <span>{formatPrice(tax, 'EUR')}</span>
-                    </div>
-                    <Separator className="bg-amber-200/20" />
-                    <div className="flex justify-between text-xl font-bold">
-                      <span className="text-white">Total</span>
-                      <span className="bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-400 bg-clip-text text-transparent">
-                        {formatPrice(total, 'EUR')}
+                      <span className="text-xl md:text-2xl font-black bg-gradient-to-r from-amber-300 via-yellow-300 to-orange-400 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(245,158,11,0.2)]">
+                        {formatPrice(total)}
                       </span>
-                    </div>
-                </div>
+                    </motion.div>
+                  </div>
 
                   {/* Security Badge */}
-                  <div className="flex items-center justify-center gap-2 mt-6 p-3 bg-green-500/10 border border-green-500/20 rounded-xl">
-                    <Shield className="w-5 h-5 text-green-400" />
-                    <span className="text-green-400 text-sm font-medium">Secure Checkout</span>
+                  <div className="flex items-center justify-center gap-2.5 mt-6 p-3 bg-green-500/10 border border-green-500/20 rounded-xl">
+                    <Shield className="w-4 h-4 text-green-400" />
+                    <span className="text-green-400 text-xs font-semibold">پرداخت امن و تضمین شده</span>
                   </div>
 
                   {/* Place Order Button */}

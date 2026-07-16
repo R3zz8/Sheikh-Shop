@@ -10,6 +10,7 @@ import { useCart } from '@/hooks/useCart';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { CartWithProduct } from '@/types';
 import { formatPrice } from '@/lib/currency';
+import { getShippingCost, calculateOrderTotal } from '@/lib/shipping';
 
 interface MiniCartDrawerProps {
   isOpen: boolean;
@@ -181,9 +182,19 @@ export default function MiniCartDrawer({ isOpen, onClose }: MiniCartDrawerProps)
             {cart.length > 0 && (
               <div className="border-t border-gray-200 p-4 space-y-4">
                 {/* Cart Summary */}
-                <div className="flex justify-between items-center text-lg font-semibold">
-                  <span>جمع کل:</span>
-                  <span>{formatPrice(cartTotals.subtotal)}</span>
+                <div className="space-y-2 border-b border-gray-100 pb-4">
+                  <div className="flex justify-between items-center text-sm text-gray-500">
+                    <span>جمع کالاها:</span>
+                    <span>{formatPrice(cartTotals.subtotal)}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm text-gray-500">
+                    <span>هزینه ارسال:</span>
+                    <span>{formatPrice(getShippingCost(cartTotals.subtotal))}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-lg font-bold text-gray-900 pt-2">
+                    <span>مبلغ قابل پرداخت:</span>
+                    <span className="text-amber-600">{formatPrice(calculateOrderTotal(cartTotals.subtotal))}</span>
+                  </div>
                 </div>
 
                 {/* Action Buttons */}

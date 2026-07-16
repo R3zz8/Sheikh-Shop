@@ -156,6 +156,42 @@ const makeMockModel = (name: string, data: any[]) => {
   });
 };
 
+const mockUser = [
+  {
+    id: 'mock-user-id',
+    email: 'customer@sheikhshop.com',
+    firstName: 'احمد',
+    lastName: 'شیخ',
+    role: 'USER',
+    canLogin: true,
+    disabled: false,
+    emailVerified: true,
+  }
+];
+
+const mockCartItems = [
+  {
+    id: 1,
+    userId: 'mock-user-id',
+    productId: 'p1',
+    quantity: 2,
+    unitId: 'pu1',
+    unitPrice: 1250000,
+    product: mockProducts[0],
+    unit: mockUnits[1],
+  },
+  {
+    id: 2,
+    userId: 'mock-user-id',
+    productId: 'p3',
+    quantity: 1,
+    unitId: 'pu3',
+    unitPrice: 890000,
+    product: mockProducts[2],
+    unit: mockUnits[1],
+  }
+];
+
 const createMockPrisma = () => {
   return new Proxy({}, {
     get(target, prop) {
@@ -164,7 +200,8 @@ const createMockPrisma = () => {
       if (prop === 'unit') return makeMockModel('unit', mockUnits);
       if (prop === 'mobileCarousel') return makeMockModel('mobileCarousel', mockCarousel);
       if (prop === 'discount') return makeMockModel('discount', []);
-      if (prop === 'user') return makeMockModel('user', []);
+      if (prop === 'user') return makeMockModel('user', mockUser);
+      if (prop === 'cartItem') return makeMockModel('cartItem', mockCartItems);
       if (prop === 'order') return makeMockModel('order', []);
       if (prop === 'orderItem') return makeMockModel('orderItem', []);
       if (prop === '$connect') return async () => {};
