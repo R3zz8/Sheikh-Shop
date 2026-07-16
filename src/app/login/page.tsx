@@ -91,21 +91,21 @@ export default function LoginPage() {
           <div className="space-y-5">
             {/* Main footer links */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-base">
-              <Link href="/forgot-password" className="text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-500 transition-colors text-center sm:text-right font-medium font-vazirmatn text-sm sm:text-base">
+              <Link href="/forgot-password" className="text-slate-300 hover:text-amber-400 transition-colors text-center sm:text-right font-medium font-vazirmatn text-sm sm:text-base">
                 رمز عبور را فراموش کرده‌اید؟
               </Link>
-              <div className="text-slate-600 dark:text-slate-400 text-center sm:text-left font-medium font-vazirmatn text-sm sm:text-base">
+              <div className="text-slate-300 text-center sm:text-left font-medium font-vazirmatn text-sm sm:text-base">
                 حساب کاربری ندارید؟{' '}
-                <Link href="/register" className="text-amber-600 dark:text-amber-500 hover:text-amber-700 dark:hover:text-amber-400 transition-colors font-bold">ثبت‌نام کنید</Link>
+                <Link href="/register" className="text-amber-500 hover:text-amber-400 transition-colors font-bold">ثبت‌نام کنید</Link>
               </div>
             </div>
             
             {/* Terms and Privacy links */}
-            <div className="text-center text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed pt-3 border-t border-slate-200/50 dark:border-slate-800/40 font-vazirmatn">
+            <div className="text-center text-xs sm:text-sm text-slate-400 leading-relaxed pt-3 border-t border-white/[0.08] font-vazirmatn">
               با ورود به حساب، شما با{' '}
-              <Link href="/terms" className="hover:text-amber-600 dark:hover:text-amber-500 transition-colors underline decoration-dotted font-medium">شرایط و قوانین خدمات</Link>
+              <Link href="/terms" className="hover:text-amber-500 transition-colors underline decoration-dotted font-medium">شرایط و قوانین خدمات</Link>
               {' '}و{' '}
-              <Link href="/privacy" className="hover:text-amber-600 dark:hover:text-amber-500 transition-colors underline decoration-dotted font-medium">سیاست حریم خصوصی</Link>
+              <Link href="/privacy" className="hover:text-amber-500 transition-colors underline decoration-dotted font-medium">سیاست حریم خصوصی</Link>
               {' '}ما موافقت می‌کنید.
             </div>
           </div>
@@ -137,10 +137,10 @@ export default function LoginPage() {
             />
 
             <div className="flex items-center justify-between pt-1">
-              <label className="inline-flex items-center gap-2.5 text-sm sm:text-base text-slate-700 dark:text-slate-300 cursor-pointer select-none font-vazirmatn font-medium">
+              <label className="inline-flex items-center gap-2.5 text-sm sm:text-base text-slate-200 cursor-pointer select-none font-vazirmatn font-medium">
                 <input
                   type="checkbox"
-                  className="h-4.5 w-4.5 rounded border-slate-300 dark:border-slate-700 text-amber-600 focus:ring-amber-500 cursor-pointer bg-white dark:bg-slate-900"
+                  className="h-4.5 w-4.5 rounded border-white/[0.08] text-amber-600 focus:ring-amber-500 cursor-pointer bg-neutral-950"
                   checked={remember}
                   onChange={e => setRemember(e.target.checked)}
                 />
@@ -154,7 +154,7 @@ export default function LoginPage() {
               disabled={!isFormValid || isPending}
               whileHover={isFormValid ? { scale: 1.02, boxShadow: "0 10px 25px -5px rgba(245, 158, 11, 0.4)" } : {}}
               whileTap={isFormValid ? { scale: 0.98 } : {}}
-              className="group relative inline-flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white font-bold text-base sm:text-lg px-4 py-3.5 shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 dark:focus:ring-offset-slate-900 mt-3 cursor-pointer"
+              className="group relative inline-flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white font-bold text-base sm:text-lg px-4 py-3.5 shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 mt-3 cursor-pointer"
               aria-busy={isPending}
             >
               {isPending ? (
@@ -174,29 +174,29 @@ export default function LoginPage() {
             </motion.button>
 
             {message && (
-              <p className="text-center text-sm font-semibold text-red-600 dark:text-red-400 mt-3 bg-red-50 dark:bg-red-950/20 py-2.5 px-4 rounded-xl border border-red-100 dark:border-red-950/40 font-vazirmatn" role="alert">{message}</p>
+              <p className="text-center text-sm font-semibold text-red-400 mt-3 bg-red-950/20 py-2.5 px-4 rounded-xl border border-red-950/40 font-vazirmatn" role="alert">{message}</p>
             )}
 
             {/* Premium Trust Badges Section */}
-            <div className="pt-6 mt-4 border-t border-slate-200/50 dark:border-slate-800/40">
+            <div className="pt-6 mt-4 border-t border-white/[0.08]">
               <div className="grid grid-cols-3 gap-2 text-center">
-                <div className="flex flex-col items-center gap-1">
-                  <div className="p-2 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-500">
+                <div className="flex flex-col items-center gap-1.5 p-2 rounded-xl bg-white/[0.02] border border-white/[0.03] hover:border-amber-500/10 transition-all duration-300">
+                  <div className="p-1.5 rounded-full bg-amber-500/10 text-amber-500">
                     <ShieldCheck className="size-5" />
                   </div>
-                  <span className="text-[10px] sm:text-xs font-bold text-slate-700 dark:text-slate-300 font-vazirmatn">ضمانت اصالت</span>
+                  <span className="text-[10px] sm:text-xs font-bold text-slate-300 font-vazirmatn">ضمانت اصالت</span>
                 </div>
-                <div className="flex flex-col items-center gap-1">
-                  <div className="p-2 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-500">
+                <div className="flex flex-col items-center gap-1.5 p-2 rounded-xl bg-white/[0.02] border border-white/[0.03] hover:border-amber-500/10 transition-all duration-300">
+                  <div className="p-1.5 rounded-full bg-amber-500/10 text-amber-500">
                     <Truck className="size-5" />
                   </div>
-                  <span className="text-[10px] sm:text-xs font-bold text-slate-700 dark:text-slate-300 font-vazirmatn">ارسال سریع</span>
+                  <span className="text-[10px] sm:text-xs font-bold text-slate-300 font-vazirmatn">ارسال سریع</span>
                 </div>
-                <div className="flex flex-col items-center gap-1">
-                  <div className="p-2 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-500">
+                <div className="flex flex-col items-center gap-1.5 p-2 rounded-xl bg-white/[0.02] border border-white/[0.03] hover:border-amber-500/10 transition-all duration-300">
+                  <div className="p-1.5 rounded-full bg-amber-500/10 text-amber-500">
                     <Lock className="size-5" />
                   </div>
-                  <span className="text-[10px] sm:text-xs font-bold text-slate-700 dark:text-slate-300 font-vazirmatn">پرداخت امن</span>
+                  <span className="text-[10px] sm:text-xs font-bold text-slate-300 font-vazirmatn">پرداخت امن</span>
                 </div>
               </div>
             </div>
@@ -208,10 +208,10 @@ export default function LoginPage() {
                   <Star key={i} className="size-4 fill-amber-500 text-amber-500" />
                 ))}
               </div>
-              <span className="text-xs sm:text-sm font-extrabold text-slate-800 dark:text-slate-200 font-vazirmatn">
+              <span className="text-xs sm:text-sm font-extrabold text-slate-200 font-vazirmatn">
                 ۴.۹ از ۵ رضایت مشتریان
               </span>
-              <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-vazirmatn leading-relaxed max-w-[280px] sm:max-w-none">
+              <p className="text-[11px] sm:text-xs text-slate-400 font-vazirmatn leading-relaxed max-w-[280px] sm:max-w-none">
                 بیش از هزاران مشتری به فروشگاه شیخ اعتماد کرده‌اند.
               </p>
             </div>

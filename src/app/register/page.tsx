@@ -97,17 +97,17 @@ export default function RegisterPage() {
         footer={(
           <div className="space-y-4">
             {/* Main footer link */}
-            <div className="text-center text-sm sm:text-base text-slate-600 dark:text-slate-400 font-medium font-vazirmatn">
+            <div className="text-center text-sm sm:text-base text-slate-300 font-medium font-vazirmatn">
               قبلاً حساب کاربری دارید؟{' '}
-              <Link href="/login" className="text-amber-600 dark:text-amber-500 hover:text-amber-700 dark:hover:text-amber-400 transition-colors font-bold">وارد شوید</Link>
+              <Link href="/login" className="text-amber-500 hover:text-amber-400 transition-colors font-bold">وارد شوید</Link>
             </div>
             
             {/* Terms and Privacy links */}
-            <div className="text-center text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed pt-3 border-t border-slate-200/50 dark:border-slate-800/40 font-vazirmatn">
+            <div className="text-center text-xs sm:text-sm text-slate-400 leading-relaxed pt-3 border-t border-white/[0.08] font-vazirmatn">
               با ایجاد حساب کاربری، شما با{' '}
-              <Link href="/terms" className="hover:text-amber-600 dark:hover:text-amber-500 transition-colors underline decoration-dotted font-medium">شرایط و قوانین خدمات</Link>
+              <Link href="/terms" className="hover:text-amber-500 transition-colors underline decoration-dotted font-medium">شرایط و قوانین خدمات</Link>
               {' '}و{' '}
-              <Link href="/privacy" className="hover:text-amber-600 dark:hover:text-amber-500 transition-colors underline decoration-dotted font-medium">سیاست حریم خصوصی</Link>
+              <Link href="/privacy" className="hover:text-amber-500 transition-colors underline decoration-dotted font-medium">سیاست حریم خصوصی</Link>
               {' '}ما موافقت می‌کنید.
             </div>
           </div>
@@ -166,7 +166,7 @@ export default function RegisterPage() {
               disabled={!formValid || isPending}
               whileHover={formValid ? { scale: 1.02, boxShadow: "0 10px 25px -5px rgba(245, 158, 11, 0.4)" } : {}}
               whileTap={formValid ? { scale: 0.98 } : {}}
-              className="group relative inline-flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white font-bold text-base sm:text-lg px-4 py-3.5 shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 dark:focus:ring-offset-slate-900 mt-3 cursor-pointer"
+              className="group relative inline-flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white font-bold text-base sm:text-lg px-4 py-3.5 shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 mt-3 cursor-pointer"
               aria-busy={isPending}
             >
               {isPending ? (
@@ -186,29 +186,29 @@ export default function RegisterPage() {
             </motion.button>
 
             {message && (
-              <p className="text-center text-sm font-semibold text-red-600 dark:text-red-400 mt-3 bg-red-50 dark:bg-red-950/20 py-2.5 px-4 rounded-xl border border-red-100 dark:border-red-950/40 font-vazirmatn" role="alert">{message}</p>
+              <p className="text-center text-sm font-semibold text-red-400 mt-3 bg-red-950/20 py-2.5 px-4 rounded-xl border border-red-100 dark:border-red-950/40 font-vazirmatn" role="alert">{message}</p>
             )}
 
             {/* Premium Trust Badges Section */}
-            <div className="pt-6 mt-4 border-t border-slate-200/50 dark:border-slate-800/40">
+            <div className="pt-6 mt-4 border-t border-white/[0.08]">
               <div className="grid grid-cols-3 gap-2 text-center">
-                <div className="flex flex-col items-center gap-1">
-                  <div className="p-2 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-500">
+                <div className="flex flex-col items-center gap-1.5 p-2 rounded-xl bg-white/[0.02] border border-white/[0.03] hover:border-amber-500/10 transition-all duration-300">
+                  <div className="p-1.5 rounded-full bg-amber-500/10 text-amber-500">
                     <ShieldCheck className="size-5" />
                   </div>
-                  <span className="text-[10px] sm:text-xs font-bold text-slate-700 dark:text-slate-300 font-vazirmatn">ضمانت اصالت</span>
+                  <span className="text-[10px] sm:text-xs font-bold text-slate-300 font-vazirmatn">ضمانت اصالت</span>
                 </div>
-                <div className="flex flex-col items-center gap-1">
-                  <div className="p-2 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-500">
+                <div className="flex flex-col items-center gap-1.5 p-2 rounded-xl bg-white/[0.02] border border-white/[0.03] hover:border-amber-500/10 transition-all duration-300">
+                  <div className="p-1.5 rounded-full bg-amber-500/10 text-amber-500">
                     <Truck className="size-5" />
                   </div>
-                  <span className="text-[10px] sm:text-xs font-bold text-slate-700 dark:text-slate-300 font-vazirmatn">ارسال سریع</span>
+                  <span className="text-[10px] sm:text-xs font-bold text-slate-300 font-vazirmatn">ارسال سریع</span>
                 </div>
-                <div className="flex flex-col items-center gap-1">
-                  <div className="p-2 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-500">
+                <div className="flex flex-col items-center gap-1.5 p-2 rounded-xl bg-white/[0.02] border border-white/[0.03] hover:border-amber-500/10 transition-all duration-300">
+                  <div className="p-1.5 rounded-full bg-amber-500/10 text-amber-500">
                     <Lock className="size-5" />
                   </div>
-                  <span className="text-[10px] sm:text-xs font-bold text-slate-700 dark:text-slate-300 font-vazirmatn">پرداخت امن</span>
+                  <span className="text-[10px] sm:text-xs font-bold text-slate-300 font-vazirmatn">پرداخت امن</span>
                 </div>
               </div>
             </div>
@@ -220,10 +220,10 @@ export default function RegisterPage() {
                   <Star key={i} className="size-4 fill-amber-500 text-amber-500" />
                 ))}
               </div>
-              <span className="text-xs sm:text-sm font-extrabold text-slate-800 dark:text-slate-200 font-vazirmatn">
+              <span className="text-xs sm:text-sm font-extrabold text-slate-200 font-vazirmatn">
                 ۴.۹ از ۵ رضایت مشتریان
               </span>
-              <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-vazirmatn leading-relaxed max-w-[280px] sm:max-w-none">
+              <p className="text-[11px] sm:text-xs text-slate-400 font-vazirmatn leading-relaxed max-w-[280px] sm:max-w-none">
                 بیش از هزاران مشتری به فروشگاه شیخ اعتماد کرده‌اند.
               </p>
             </div>
