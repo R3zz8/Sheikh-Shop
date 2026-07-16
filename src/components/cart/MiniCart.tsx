@@ -8,6 +8,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { formatPrice } from '@/lib/currency';
 import { getShippingCost, calculateOrderTotal } from '@/lib/shipping';
+import EstimatedDelivery from '@/components/shipping/EstimatedDelivery';
 
 interface MiniCartProps {
   isOpen: boolean;
@@ -231,6 +232,9 @@ export default function MiniCart({ isOpen, onClose }: MiniCartProps) {
                     {formatPrice(getShippingCost(cartTotals.subtotal))}
                   </span>
                 </div>
+
+                <EstimatedDelivery variant="light" className="my-1.5" />
+
                 <div className="flex justify-between text-lg font-semibold">
                   <span>جمع کل</span>
                   <span>{formatPrice(calculateOrderTotal(cartTotals.subtotal))}</span>
