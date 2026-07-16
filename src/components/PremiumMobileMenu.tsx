@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, type ComponentType } from 'react';
+import { useState, useEffect, useRef, type ComponentType } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -9,19 +9,20 @@ import {
   HelpCircle, Handshake, Shield, 
   Crown, Sparkles, X, LogOut,
   ChevronDown,
-  // --- ADDED: Icons for sub-menu items as per review feedback ---
   Beef,
-  Cpu
+  Cpu,
+  User
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// --- MODIFIED: Sub-item type now includes an icon ---
+// Sub-item interface including icon
 interface SubMenuItem {
   name: string;
   href: string;
   icon: ComponentType<{ className?: string }>;
 }
 
+// Navigation Item interface
 interface NavigationItem {
   name: string;
   href: string;
@@ -45,11 +46,12 @@ export default function PremiumMobileMenu({
   const pathname = usePathname();
   const [isVisible, setIsVisible] = useState(false);
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isOpen) {
       setIsVisible(true);
-      if (pathname.startsWith('/products') || pathname.startsWith('/tech_products')) {
+      if (pathname.startsWith('/products') || pathname.startsWith('/tech_products') || pathname.startsWith('/tech-products')) {
         setExpandedItem('محصولات');
       } else {
         setExpandedItem(null);
@@ -61,14 +63,92 @@ export default function PremiumMobileMenu({
     return () => {};
   }, [isOpen, pathname]);
 
-  // --- REFACTORED: `isActive` logic is now dynamic for parent items ---
+  // Handle open/close state events, body class locking, and haptics
+  useEffect(() => {
+    if (isOpen) {
+      document.body.classList.add('mobile-menu-open');
+      document.body.style.overflow = 'hidden';
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        try { navigator.vibrate(8); } catch (_) {}
+      }
+    } else {
+      document.body.classList.remove('mobile-menu-open');
+      document.body.style.overflow = '';
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        try { navigator.vibrate(8); } catch (_) {}
+      }
+    }
+
+    const event = new CustomEvent('sheikh-mobile-menu-state', { detail: { isOpen } });
+    window.dispatchEvent(event);
+
+    return () => {
+      document.body.classList.remove('mobile-menu-open');
+      document.body.style.overflow = '';
+      window.dispatchEvent(new CustomEvent('sheikh-mobile-menu-state', { detail: { isOpen: false } }));
+    };
+  }, [isOpen]);
+
+  // Trap focus and close on Escape key (Accessibility)
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+        return;
+      }
+
+      if (e.key === 'Tab' && menuRef.current) {
+        const focusableElements = menuRef.current.querySelectorAll(
+          'a[href], button:not([disabled]), input, select, textarea, [tabindex="0"]'
+        );
+        if (focusableElements.length === 0) return;
+
+        const firstElement = focusableElements[0] as HTMLElement;
+        const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+        if (e.shiftKey) {
+          if (document.activeElement === firstElement) {
+            lastElement.focus();
+            e.preventDefault();
+          }
+        } else {
+          if (document.activeElement === lastElement) {
+            firstElement.focus();
+            e.preventDefault();
+          }
+        }
+      }
+    };
+
+    // Set initial focus to close button
+    const focusTimer = setTimeout(() => {
+      if (menuRef.current) {
+        const closeBtn = menuRef.current.querySelector('button[aria-label="Close menu"]') as HTMLElement;
+        if (closeBtn) {
+          closeBtn.focus();
+        } else {
+          const firstFocusable = menuRef.current.querySelector('button, a') as HTMLElement;
+          if (firstFocusable) firstFocusable.focus();
+        }
+      }
+    }, 120);
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      clearTimeout(focusTimer);
+    };
+  }, [isOpen, onClose]);
+
+  // Check if item or sub-item is active
   const isActive = (href: string, subItems?: SubMenuItem[]) => {
     if (subItems && subItems.length > 0) {
-      // A parent is active if any of its children are active
-      return subItems.some(sub => pathname.startsWith(sub.href));
+      return subItems.some(sub => pathname === sub.href || pathname.startsWith(sub.href));
     }
     if (href === '/') return pathname === '/';
-    return pathname.startsWith(href);
+    return pathname === href || pathname.startsWith(href);
   };
 
   const handleParentClick = (itemName: string) => {
@@ -84,14 +164,12 @@ export default function PremiumMobileMenu({
       href: '/products',
       icon: ShoppingBag,
       subItems: [
-        // --- MODIFIED: Sub-items now have icons ---
         { name: 'محصولات غذایی شیخ', href: '/products', icon: Beef },
         { name: 'محصولات فناورانه شیخ', href: '/tech-products', icon: Cpu },
       ]
     },
     { name: 'درباره ما',    href: '/about-us',  icon: Users },
     { name: 'مقالات',    href: '/article',   icon: FileText },
-    // --- FIXED: Restored original item order ---
     { name: 'سوالات متداول',         href: '/faq',       icon: HelpCircle },
     { name: 'همکاری در فروش',   href: '/affiliate', icon: Handshake },
     { name: 'حریم خصوصی',     href: '/privacy',   icon: Shield },
@@ -101,140 +179,247 @@ export default function PremiumMobileMenu({
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          dir="rtl"
-          className="fixed inset-0 z-50 lg:hidden mobile-menu-overlay"
-          initial={{ x: '-100%' }}
-          animate={{ x: 0 }}
-          exit={{ x: '-100%' }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          className="fixed inset-0 z-50 lg:hidden flex items-center justify-center p-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Mobile Navigation Menu"
         >
-          <div className="absolute inset-0 bg-gradient-to-b from-[#3d2b1f] via-[#4a3728] to-[#3d2b1f]" />
-          <div className="absolute inset-0 bg-gradient-to-r from-amber-900/10 via-transparent to-amber-900/10" />
-          <div className="absolute inset-0 flex items-center justify-center opacity-8 pointer-events-none">
-            <Crown className="w-[420px] h-[420px] text-amber-600/40 animate-pulse-slow" />
-          </div>
-          <motion.button
+
+          {/* PREMIUM IOS-STYLE DARK/BLUR OVERLAY (Backdrop click closes menu) */}
+          <motion.div
+            className="absolute inset-0 bg-black/80 backdrop-blur-2xl"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             onClick={onClose}
-            aria-label="Close menu"
-            className="absolute top-6 right-6 z-50 w-12 h-12 rounded-full bg-[#4a3728] border border-amber-600 flex items-center justify-center text-amber-200 hover:bg-[#5a4535]"
-            whileHover={{ scale: 1.1, rotate: 90 }}
-            whileTap={{ scale: 0.9 }}
           >
-            <X className="w-6 h-6" />
-          </motion.button>
-          <div className="relative z-10 flex flex-col h-full text-amber-100">
-            <motion.div className="flex flex-col items-center pt-16 pb-10">
-              <div className="relative mb-3">
-                <Crown className="w-12 h-12 text-amber-400" />
-                <div className="absolute inset-0 blur-xl bg-amber-400 opacity-60 animate-pulse" />
+            {/* Ambient gold glow 1 */}
+            <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-amber-500/10 blur-[120px] pointer-events-none" />
+            {/* Ambient gold glow 2 */}
+            <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-orange-500/10 blur-[120px] pointer-events-none" />
+            {/* Vignette */}
+            <div className="absolute inset-0 shadow-[inset_0_0_100px_rgba(0,0,0,0.9)] pointer-events-none" />
+            {/* CSS Noise Overlay */}
+            <div
+              className="absolute inset-0 opacity-[0.02] pointer-events-none"
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`
+              }}
+            />
+          </motion.div>
+
+          {/* FLOATING LUXURY CONTAINER (Swipe-to-close & click propagation stopped) */}
+          <motion.div
+            ref={menuRef}
+            dir="rtl"
+            className={cn(
+              "relative w-full max-w-md h-[calc(100vh-2rem)] rounded-[32px] overflow-hidden select-none touch-none",
+              "bg-gradient-to-b from-[#1b110b]/95 via-[#231710]/95 to-[#150c07]/98",
+              "border border-amber-500/20 shadow-[0_24px_50px_-12px_rgba(0,0,0,0.9)]",
+              "flex flex-col text-amber-100/90 z-10"
+            )}
+            onClick={(e) => e.stopPropagation()}
+            drag="y"
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={{ top: 0.1, bottom: 0.7 }}
+            onDragEnd={(_, info) => {
+              if (info.offset.y > 150) {
+                onClose();
+              }
+            }}
+            initial={{ opacity: 0, scale: 0.93, y: 15 }}
+            animate={{
+              opacity: 1,
+              scale: 1,
+              y: 0,
+              boxShadow: [
+                "0 24px 50px -12px rgba(0,0,0,0.9), 0 0 0 0px rgba(245,158,11,0)",
+                "0 24px 50px -12px rgba(0,0,0,0.9), 0 0 25px 2px rgba(245,158,11,0.08)",
+                "0 24px 50px -12px rgba(0,0,0,0.9), 0 0 0 0px rgba(245,158,11,0)"
+              ]
+            }}
+            exit={{ opacity: 0, scale: 0.93, y: 15 }}
+            transition={{
+              boxShadow: { repeat: Infinity, duration: 4, ease: "easeInOut" },
+              default: { type: "spring", stiffness: 280, damping: 26 }
+            }}
+          >
+            {/* Visual Drag Handle Indicator for Native App Vibe */}
+            <div className="w-12 h-1 bg-amber-500/30 rounded-full mx-auto mt-3 flex-shrink-0" />
+
+            {/* Close Button */}
+            <motion.button
+              onClick={onClose}
+              aria-label="Close menu"
+              className={cn(
+                "absolute top-5 left-5 z-50 w-10 h-10 rounded-full",
+                "bg-stone-900/40 border border-amber-500/20",
+                "flex items-center justify-center text-amber-200/80 hover:text-amber-100",
+                "hover:bg-amber-950/40 hover:border-amber-500/40 transition-all duration-300"
+              )}
+              whileHover={{ scale: 1.08, rotate: 90 }}
+              whileTap={{ scale: 0.92 }}
+            >
+              <X className="w-5 h-5" />
+            </motion.button>
+
+            {/* Background Branding Crown Watermark */}
+            <div className="absolute inset-x-0 top-32 flex items-center justify-center opacity-[0.02] pointer-events-none">
+              <Crown className="w-80 h-80 text-amber-400" />
+            </div>
+
+            {/* BRAND HEADER */}
+            <div className="flex flex-col items-center pt-5 pb-3 px-6 relative flex-shrink-0">
+              <div className="relative mb-2">
+                <Crown className="w-10 h-10 text-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.5)]" />
+                <div className="absolute inset-0 blur-lg bg-amber-400/40 animate-pulse" />
               </div>
-              <h1 className="text-[26px] md:text-[30px] font-bold bg-gradient-to-r from-amber-200 via-amber-100 to-orange-200 bg-clip-text text-transparent select-none">
+              <h1 className="text-xl md:text-2xl font-black bg-gradient-to-r from-amber-200 via-amber-100 to-yellow-200 bg-clip-text text-transparent select-none tracking-wide">
                 فروشگاه شیخ
               </h1>
-              <p className="text-amber-300 text-sm mt-1 font-light">تعریف دوباره شکوه</p>
-            </motion.div>
-            <nav className="flex-1 px-6 overflow-y-auto pb-40">
-              <div className="space-y-5">
+              <p className="text-[11px] text-amber-400/60 mt-1 font-medium tracking-normal text-center">
+                فروشگاهی برای محصولات خاص و تجربه‌ای متفاوت
+              </p>
+            </div>
+
+            {/* NAVIGATION SCROLL AREA (Restored native scroll for content overflow) */}
+            <nav className="flex-1 overflow-y-auto px-5 py-2 scrollbar-thin scrollbar-thumb-amber-900/30 touch-pan-y">
+              <div className="space-y-3">
                 {mobileNavigation.map((item, index) => {
                   const Icon = item.icon;
                   const isExpanded = expandedItem === item.name;
                   const hasSubItems = item.subItems && item.subItems.length > 0;
-                  // --- MODIFIED: Pass subItems to isActive for dynamic check ---
                   const active = isActive(item.href, item.subItems);
 
                   return (
                     <motion.div
                       key={item.name}
-                      initial={{ opacity: 0, x: -30 }}
+                      initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.08 }}
+                      transition={{ delay: index * 0.05 }} // 50ms stagger delay
+                      className="relative"
                     >
                       {hasSubItems ? (
                         <div
                           onClick={() => handleParentClick(item.name)}
                           className={cn(
-                            'group relative flex items-center gap-4 px-5 py-5 rounded-2xl transition-all duration-500 overflow-hidden cursor-pointer',
+                            'group relative flex items-center justify-between px-4 py-3.5 rounded-2xl transition-all duration-300 cursor-pointer border',
                             active
-                              ? 'bg-gradient-to-r from-amber-600 via-amber-500 to-orange-500 text-white shadow-xl shadow-amber-500/40'
-                              : 'text-amber-100 hover:text-white'
+                              ? 'bg-gradient-to-l from-amber-950/40 to-amber-900/20 border-amber-500/30 text-white shadow-[0_4px_20px_rgba(245,158,11,0.05)]'
+                              : 'bg-stone-900/20 hover:bg-amber-950/20 border-amber-950/30 hover:border-amber-900/40 text-amber-200/80 hover:text-white'
                           )}
                           aria-expanded={isExpanded}
                         >
-                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/20 to-transparent translate-x-[-100%] group-hover:translate-x-full transition-transform duration-1000" />
-                          <div className={cn('w-11 h-11 rounded-xl flex items-center justify-center', active ? 'bg-white/20' : 'bg-amber-800/30 group-hover:bg-amber-700/40')}>
-                            <Icon className={cn('w-5 h-5', active ? 'text-white' : 'text-amber-300 group-hover:text-amber-100')} />
+                          <div className="flex items-center gap-3.5">
+                            <div className={cn(
+                              'w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300',
+                              active ? 'bg-amber-500/20 text-amber-300' : 'bg-stone-800/40 text-amber-400/75 group-hover:bg-amber-900/30 group-hover:text-amber-300'
+                            )}>
+                              <Icon className="w-5 h-5 transition-transform duration-300 group-hover:scale-110" />
+                            </div>
+                            <span className={cn('font-semibold text-base tracking-wide', active ? 'text-amber-200 font-bold' : 'text-amber-200/90 group-hover:text-white')}>
+                              {item.name}
+                            </span>
                           </div>
-                          <h3 className={cn('font-semibold text-lg', active ? 'text-white' : 'group-hover:text-white')}>
-                            {item.name}
-                          </h3>
-                          <motion.div
-                            className="ml-auto"
-                            animate={{ rotate: isExpanded ? 180 : 0 }}
-                            transition={{ duration: 0.3 }}
-                          >
-                            <ChevronDown className="w-5 h-5" />
-                          </motion.div>
+
+                          <div className="flex items-center gap-2">
+                            {active && <Crown className="w-3.5 h-3.5 text-amber-400 animate-pulse" />}
+                            <motion.div
+                              animate={{ rotate: isExpanded ? 180 : 0 }}
+                              transition={{ duration: 0.25 }}
+                              className="text-amber-400/60 group-hover:text-amber-300"
+                            >
+                              <ChevronDown className="w-4 h-4" />
+                            </motion.div>
+                          </div>
                         </div>
                       ) : (
                         <Link
                           href={item.href}
                           onClick={onClose}
                           className={cn(
-                            'group relative flex items-center gap-4 px-5 py-5 rounded-2xl transition-all duration-500 overflow-hidden',
+                            'group relative flex items-center justify-between px-4 py-3.5 rounded-2xl transition-all duration-300 border',
                             active
-                              ? 'bg-gradient-to-r from-amber-600 via-amber-500 to-orange-500 text-white shadow-xl shadow-amber-500/40'
-                              : 'text-amber-100 hover:text-white'
+                              ? 'bg-gradient-to-l from-amber-500/20 via-amber-600/10 to-transparent border-amber-500/40 text-white shadow-[0_4px_20px_rgba(245,158,11,0.08)]'
+                              : 'bg-stone-900/20 hover:bg-amber-950/20 border-amber-950/30 hover:border-amber-900/40 text-amber-200/80 hover:text-white'
                           )}
                         >
-                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/20 to-transparent translate-x-[-100%] group-hover:translate-x-full transition-transform duration-1000" />
-                          <div className={cn('w-11 h-11 rounded-xl flex items-center justify-center', active ? 'bg-white/20' : 'bg-amber-800/30 group-hover:bg-amber-700/40')}>
-                            <Icon className={cn('w-5 h-5', active ? 'text-white' : 'text-amber-300 group-hover:text-amber-100')} />
+                          <div className="flex items-center gap-3.5">
+                            <div className={cn(
+                              'w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300',
+                              active ? 'bg-amber-500/35 text-amber-200 shadow-[0_0_15px_rgba(245,158,11,0.25)]' : 'bg-stone-800/40 text-amber-400/75 group-hover:bg-amber-900/30 group-hover:text-amber-300'
+                            )}>
+                              <Icon className="w-5 h-5 transition-transform duration-300 group-hover:scale-110" />
+                            </div>
+                            <span className={cn('font-semibold text-base tracking-wide', active ? 'text-white font-bold' : 'text-amber-200/90 group-hover:text-white')}>
+                              {item.name}
+                            </span>
                           </div>
-                          <h3 className={cn('font-semibold text-lg', active ? 'text-white' : 'group-hover:text-white')}>
-                            {item.name}
-                          </h3>
-                          {active && <div className="w-2 h-2 bg-amber-300 rounded-full animate-pulse ml-auto" />}
+
+                          <div className="flex items-center gap-2">
+                            {active && (
+                              <>
+                                <Crown className="w-3.5 h-3.5 text-amber-400" />
+                                <div className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-ping" />
+                              </>
+                            )}
+                          </div>
                         </Link>
                       )}
 
+                      {/* SUBMENU WITH HEIGHT ANIMATION AND NESTED TREE CONNECTOR */}
                       <AnimatePresence>
                         {isExpanded && hasSubItems && (
                           <motion.div
                             initial={{ height: 0, opacity: 0 }}
                             animate={{ height: 'auto', opacity: 1 }}
                             exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.4, ease: "easeInOut" }}
-                            className="pl-4 mt-1 space-y-1"
+                            transition={{ duration: 0.3, ease: "easeInOut" }}
+                            className="relative mt-1.5 ms-6 border-r border-amber-500/20 pr-4 space-y-1.5"
                           >
-                            {/* --- REFACTORED: Sub-items now use the exact same styling as parent items --- */}
+                            {/* Decorative Tree branch lines */}
+                            <div className="absolute right-0 top-0 bottom-4 w-[1px] bg-gradient-to-b from-amber-500/25 to-transparent pointer-events-none" />
+
                             {item.subItems?.map((subItem, subIndex) => {
                               const SubIcon = subItem.icon;
                               const isSubActive = isActive(subItem.href);
                               return (
                                 <motion.div
                                   key={subItem.name}
-                                  initial={{ opacity: 0, x: -20 }}
+                                  initial={{ opacity: 0, x: 10 }}
                                   animate={{ opacity: 1, x: 0 }}
-                                  transition={{ delay: subIndex * 0.05, duration: 0.3 }}
+                                  transition={{ delay: subIndex * 0.04 }}
+                                  className="relative"
                                 >
+                                  {/* Horizontal connector node */}
+                                  <div className="absolute right-[-16px] top-[24px] w-4 h-[1px] bg-amber-500/20" />
+
                                   <Link
                                     href={subItem.href}
                                     onClick={onClose}
                                     className={cn(
-                                      'group relative flex items-center gap-4 px-5 py-5 rounded-2xl transition-all duration-500 overflow-hidden',
+                                      'group relative flex items-center justify-between px-4 py-2.5 rounded-xl transition-all duration-300 border',
                                       isSubActive
-                                        ? 'bg-gradient-to-r from-amber-600 via-amber-500 to-orange-500 text-white shadow-lg shadow-amber-500/30'
-                                        : 'text-amber-100 hover:text-white'
+                                        ? 'bg-gradient-to-l from-amber-500/15 via-amber-600/5 to-transparent border-amber-500/30 text-white shadow-md shadow-amber-500/5'
+                                        : 'bg-stone-900/10 hover:bg-amber-950/10 border-transparent hover:border-amber-950/20 text-amber-300/70 hover:text-white'
                                     )}
                                   >
-                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/20 to-transparent translate-x-[-100%] group-hover:translate-x-full transition-transform duration-1000" />
-                                    <div className={cn('w-11 h-11 rounded-xl flex items-center justify-center', isSubActive ? 'bg-white/20' : 'bg-amber-800/30 group-hover:bg-amber-700/40')}>
-                                      <SubIcon className={cn('w-5 h-5', isSubActive ? 'text-white' : 'text-amber-300 group-hover:text-amber-100')} />
+                                    <div className="flex items-center gap-3">
+                                      <div className={cn(
+                                        'w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300',
+                                        isSubActive ? 'bg-amber-500/20 text-amber-300' : 'bg-stone-800/30 text-amber-400/50 group-hover:bg-amber-900/20 group-hover:text-amber-300'
+                                      )}>
+                                        <SubIcon className="w-4 h-4" />
+                                      </div>
+                                      <span className={cn('text-sm font-medium tracking-wide', isSubActive ? 'text-amber-200 font-semibold' : 'text-amber-300/80 group-hover:text-white')}>
+                                        {subItem.name}
+                                      </span>
                                     </div>
-                                    <h3 className={cn('font-semibold text-lg', isSubActive ? 'text-white' : 'group-hover:text-white')}>
-                                      {subItem.name}
-                                    </h3>
-                                    {isSubActive && <div className="w-2 h-2 bg-amber-300 rounded-full animate-pulse ml-auto" />}
+                                    {isSubActive && <Crown className="w-3 h-3 text-amber-400" />}
                                   </Link>
                                 </motion.div>
                               );
@@ -248,32 +433,87 @@ export default function PremiumMobileMenu({
               </div>
             </nav>
 
-            <div className="px-6 pb-12 pt-8 space-y-4">
-              {!user ? (
-                <>
-                  <Link href="/register" onClick={onClose}>
-                    <motion.button className="w-full px-6 py-5 rounded-2xl bg-gradient-to-r from-amber-600 via-amber-500 to-orange-500 text-white font-bold text-[16px] md:text-[18px] shadow-lg shadow-amber-500/30 hover:shadow-amber-500/50 relative overflow-hidden group" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                      <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-full transition-transform duration-1000" />
-                      <span className="relative flex items-center justify-center gap-2">
-                        <Sparkles className="w-5 h-5 animate-pulse" />
+            {/* PREMIUM FOOTER */}
+            <div className="p-5 relative bg-[#130904]/90 border-t border-amber-500/10 flex-shrink-0">
+              <div className="space-y-4">
+                {!user ? (
+                  <div className="grid grid-cols-2 gap-3">
+                    <Link href="/register" onClick={onClose} className="w-full">
+                      <motion.button
+                        className={cn(
+                          "w-full py-3 px-4 rounded-xl font-bold text-sm text-white",
+                          "bg-gradient-to-r from-amber-600 via-amber-500 to-orange-500",
+                          "shadow-[0_4px_15px_rgba(245,158,11,0.25)] hover:shadow-[0_4px_20px_rgba(245,158,11,0.4)]",
+                          "relative overflow-hidden group flex items-center justify-center gap-1.5"
+                        )}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-full transition-transform duration-1000" />
+                        <Sparkles className="w-4 h-4 animate-pulse" />
                         ثبت نام
+                      </motion.button>
+                    </Link>
+                    <Link href="/login" onClick={onClose} className="w-full">
+                      <motion.button
+                        className={cn(
+                          "w-full py-3 px-4 rounded-xl font-semibold text-sm",
+                          "bg-stone-900/60 border border-amber-500/20 text-amber-100",
+                          "hover:bg-amber-950/30 hover:border-amber-500/40 transition-colors"
+                        )}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        ورود
+                      </motion.button>
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-3">
+                    <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-stone-900/30 border border-amber-500/10">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-full bg-amber-500/15 flex items-center justify-center text-amber-300">
+                          <User className="w-4 h-4" />
+                        </div>
+                        <span className="text-xs font-semibold text-amber-200 truncate max-w-[120px]">
+                          {user.name || user.email || 'کاربر گرامی'}
+                        </span>
+                      </div>
+                      <span className="text-[10px] bg-amber-500/15 text-amber-400 font-bold px-2 py-0.5 rounded-md">
+                        عضو طلایی
                       </span>
+                    </div>
+
+                    <motion.button
+                      onClick={onLogout}
+                      className={cn(
+                        "w-full py-3 px-4 rounded-xl text-sm font-semibold flex items-center justify-center gap-2",
+                        "bg-red-950/20 border border-red-900/30 text-red-300 hover:bg-red-900/20 transition-all duration-300"
+                      )}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <LogOut className="w-4 h-4" />
+                      خروج از حساب کاربری
                     </motion.button>
-                  </Link>
-                  <Link href="/login" onClick={onClose}>
-                    <motion.button className="w-full px-6 py-5 rounded-2xl bg-amber-800/50 border border-amber-600 text-amber-100 font-medium text-[16px] md:text-[18px] hover:bg-amber-700/50" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                      ورود
-                    </motion.button>
-                  </Link>
-                </>
-              ) : (
-                <motion.button onClick={onLogout} className="w-full px-6 py-5 rounded-2xl bg-red-900/50 border border-red-600 text-red-300 font-medium hover:bg-red-800/50 flex items-center justify-center gap-2" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <LogOut className="w-5 h-5" />
-                  خروج
-                </motion.button>
-              )}
+                  </div>
+                )}
+
+                {/* Bottom Meta & Copyright */}
+                <div className="pt-2 flex flex-col items-center">
+                  <div className="flex items-center justify-between w-full text-[11px] text-amber-500/40 border-t border-amber-500/5 pt-3">
+                    <span>تمامی حقوق مادی و معنوی محفوظ است</span>
+                    <span className="bg-amber-500/10 text-amber-400/80 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider">
+                      نسخه ۲.۴.۰
+                    </span>
+                  </div>
+                  <span className="text-[9px] text-amber-500/25 mt-1">
+                    فروشگاه شیخ © ۱۴۰۳
+                  </span>
+                </div>
+              </div>
             </div>
-          </div>
+          </motion.div>
         </motion.div>
       )}
     </AnimatePresence>
