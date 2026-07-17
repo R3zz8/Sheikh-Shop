@@ -50,7 +50,7 @@ export default function PremiumMobileMenu({
   useEffect(() => {
     if (isMobileMenuOpen) {
       setIsVisible(true);
-      if (pathname.startsWith('/products') || pathname.startsWith('/tech_products') || pathname.startsWith('/tech-products')) {
+      if (pathname.startsWith('/products') || pathname.startsWith('/tech_products') || pathname.startsWith('/tech-products') || pathname.startsWith('/sheikh-digital')) {
         setExpandedItem('محصولات');
       } else {
         setExpandedItem(null);
@@ -164,6 +164,7 @@ export default function PremiumMobileMenu({
       icon: ShoppingBag,
       subItems: [
         { name: 'محصولات غذایی شیخ', href: '/products', icon: Beef },
+        { name: 'شیخ دیجیتال', href: '/sheikh-digital', icon: Sparkles },
         { name: 'محصولات فناورانه شیخ', href: '/tech-products', icon: Cpu },
       ]
     },

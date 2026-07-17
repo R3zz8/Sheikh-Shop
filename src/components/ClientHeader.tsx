@@ -99,6 +99,7 @@ export default function ClientHeader() {
       icon: ShoppingBag,
       subItems: [
         { name: 'محصولات غذایی شیخ', href: '/products' },
+        { name: 'شیخ دیجیتال', href: '/sheikh-digital' },
         { name: 'محصولات فناورانه شیخ', href: '/tech-products' },
       ],
     },
