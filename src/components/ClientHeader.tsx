@@ -20,10 +20,11 @@ import { cn } from '@/lib/utils';
 import UserBadge from '@/components/UserBadge';
 import PremiumMobileMenu from '@/components/PremiumMobileMenu';
 import { usePathname } from 'next/navigation';
+import { useUIContext } from '@/providers/UIProvider';
 
 export default function ClientHeader() {
   const { data: user, refetch } = useUser() as { data: any; refetch: () => void };
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { isMobileMenuOpen, setMobileMenuOpen } = useUIContext();
   const [isScrolled, setIsScrolled] = useState(false);
   const [hasMounted, setHasMounted] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
@@ -54,8 +55,8 @@ export default function ClientHeader() {
 
   // Close mobile menu on route change
   useEffect(() => {
-    setIsMobileMenuOpen(false);
-  }, [pathname]);
+    setMobileMenuOpen(false);
+  }, [pathname, setMobileMenuOpen]);
 
   // Prevent body scroll when mobile menu is open
   useEffect(() => {
@@ -281,7 +282,7 @@ export default function ClientHeader() {
               )}
 
               <button
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                onClick={() => setMobileMenuOpen(!isMobileMenuOpen)}
                 className="lg:hidden w-12 h-12 rounded-xl flex items-center justify-center bg-white/8 backdrop-blur-sm border border-white/20 text-white"
                 aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
               >
@@ -292,7 +293,7 @@ export default function ClientHeader() {
         </div>
       </header>
 
-      <PremiumMobileMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} user={user} onLogout={handleLogout} />
+      <PremiumMobileMenu user={user} onLogout={handleLogout} />
 
       <style jsx>{`
         @keyframes fadeIn {
