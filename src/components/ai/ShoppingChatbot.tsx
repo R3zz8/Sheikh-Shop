@@ -44,6 +44,8 @@ interface ShoppingChatbotProps {
   maxMessages?: number;
 }
 
+import { useUIContext } from '@/providers/UIProvider';
+
 export default function ShoppingChatbot({
   className = '',
   theme = 'auto',
@@ -51,6 +53,7 @@ export default function ShoppingChatbot({
   maxMessages = 50
 }: ShoppingChatbotProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const { isMobileMenuOpen } = useUIContext();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -199,6 +202,13 @@ export default function ShoppingChatbot({
     });
   };
 
+  // Automatically close chat window when mobile menu is opened
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      setIsOpen(false);
+    }
+  }, [isMobileMenuOpen]);
+
   // موقعیت ثابت: بالای Profile
   const getPositionClasses = () => {
     return 'bottom-24 left-4';
@@ -211,38 +221,46 @@ export default function ShoppingChatbot({
   };
 
   return (
-    <div className={`fixed ${getPositionClasses()} z-50 ${className}`}>
-      {/* دکمه چت‌بات بزرگ‌تر + آیکون ربات + انیمیشن */}
-      {!isOpen && (
-        <motion.button
-          initial={{ scale: 0 }}
-          animate={{ 
-            scale: 1,
-            y: [0, -10, 0]  // تکون می‌خوره
-          }}
-          transition={{ 
-            y: { repeat: Infinity, duration: 3, ease: "easeInOut" }
-          }}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => setIsOpen(true)}
-          aria-label="باز کردن دستیار هوشمند"
-          className="w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-full shadow-2xl hover:shadow-green-500/50 transition-all duration-200 flex items-center justify-center border-4 border-white/30"
+    <AnimatePresence>
+      {!isMobileMenuOpen && (
+        <motion.div
+          className={`fixed ${getPositionClasses()} z-50 ${className}`}
+          initial={{ opacity: 0, scale: 0.9, y: 20, pointerEvents: 'none' }}
+          animate={{ opacity: 1, scale: 1, y: 0, pointerEvents: 'auto' }}
+          exit={{ opacity: 0, scale: 0.9, y: 20, pointerEvents: 'none' }}
+          transition={{ duration: 0.25, ease: 'easeInOut' }}
         >
-          <Bot className="w-9 h-9" />
-        </motion.button>
-      )}
+          {/* دکمه چت‌بات بزرگ‌تر + آیکون ربات + انیمیشن */}
+          {!isOpen && (
+            <motion.button
+              initial={{ scale: 0 }}
+              animate={{
+                scale: 1,
+                y: [0, -10, 0]  // تکون می‌خوره
+              }}
+              transition={{
+                y: { repeat: Infinity, duration: 3, ease: "easeInOut" }
+              }}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setIsOpen(true)}
+              aria-label="باز کردن دستیار هوشمند"
+              className="w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-full shadow-2xl hover:shadow-green-500/50 transition-all duration-200 flex items-center justify-center border-4 border-white/30"
+            >
+              <Bot className="w-9 h-9" />
+            </motion.button>
+          )}
 
-      {/* پنجره چت */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.8, y: 20 }}
-            className={`w-96 h-[500px] ${getThemeClasses()} rounded-lg shadow-2xl border flex flex-col font-vazirmatn`}
-            dir="rtl"
-          >
+          {/* پنجره چت */}
+          <AnimatePresence>
+            {isOpen && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.8, y: 20 }}
+                className={`w-96 h-[500px] ${getThemeClasses()} rounded-lg shadow-2xl border flex flex-col font-vazirmatn`}
+                dir="rtl"
+              >
             {/* هدر */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center gap-3">
@@ -350,31 +368,33 @@ export default function ShoppingChatbot({
               <div ref={messagesEndRef} />
             </div>
 
-            {/* ورودی */}
-            <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-              <form onSubmit={handleSubmit} className="flex items-center gap-2">
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  placeholder="پیام خود را بنویسید..."
-                  disabled={isLoading}
-                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-[16px] text-right"
-                  dir="rtl"
-                />
-                <button
-                  type="submit"
-                  disabled={!inputValue.trim() || isLoading}
-                  className="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4 transform rotate-180" />}
-                </button>
-              </form>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+                {/* ورودی */}
+                <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+                  <form onSubmit={handleSubmit} className="flex items-center gap-2">
+                    <input
+                      ref={inputRef}
+                      type="text"
+                      value={inputValue}
+                      onChange={(e) => setInputValue(e.target.value)}
+                      placeholder="پیام خود را بنویسید..."
+                      disabled={isLoading}
+                      className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-[16px] text-right"
+                      dir="rtl"
+                    />
+                    <button
+                      type="submit"
+                      disabled={!inputValue.trim() || isLoading}
+                      className="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4 transform rotate-180" />}
+                    </button>
+                  </form>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

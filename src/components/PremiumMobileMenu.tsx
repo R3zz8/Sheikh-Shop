@@ -30,26 +30,25 @@ interface NavigationItem {
   subItems?: SubMenuItem[];
 }
 
+import { useUIContext } from '@/providers/UIProvider';
+
 interface PremiumMobileMenuProps {
-  isOpen: boolean;
-  onClose: () => void;
   user?: any;
   onLogout?: () => void;
 }
 
 export default function PremiumMobileMenu({ 
-  isOpen, 
-  onClose, 
   user, 
   onLogout 
 }: PremiumMobileMenuProps) {
   const pathname = usePathname();
+  const { isMobileMenuOpen, setMobileMenuOpen } = useUIContext();
   const [isVisible, setIsVisible] = useState(false);
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (isOpen) {
+    if (isMobileMenuOpen) {
       setIsVisible(true);
       if (pathname.startsWith('/products') || pathname.startsWith('/tech_products') || pathname.startsWith('/tech-products')) {
         setExpandedItem('محصولات');
@@ -61,11 +60,11 @@ export default function PremiumMobileMenu({
       return () => clearTimeout(timer);
     }
     return () => {};
-  }, [isOpen, pathname]);
+  }, [isMobileMenuOpen, pathname]);
 
   // Handle open/close state events, body class locking, and haptics
   useEffect(() => {
-    if (isOpen) {
+    if (isMobileMenuOpen) {
       document.body.classList.add('mobile-menu-open');
       document.body.style.overflow = 'hidden';
       if (typeof navigator !== 'undefined' && navigator.vibrate) {
@@ -79,7 +78,7 @@ export default function PremiumMobileMenu({
       }
     }
 
-    const event = new CustomEvent('sheikh-mobile-menu-state', { detail: { isOpen } });
+    const event = new CustomEvent('sheikh-mobile-menu-state', { detail: { isOpen: isMobileMenuOpen } });
     window.dispatchEvent(event);
 
     return () => {
@@ -87,15 +86,15 @@ export default function PremiumMobileMenu({
       document.body.style.overflow = '';
       window.dispatchEvent(new CustomEvent('sheikh-mobile-menu-state', { detail: { isOpen: false } }));
     };
-  }, [isOpen]);
+  }, [isMobileMenuOpen]);
 
   // Trap focus and close on Escape key (Accessibility)
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isMobileMenuOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        onClose();
+        setMobileMenuOpen(false);
         return;
       }
 
@@ -140,7 +139,7 @@ export default function PremiumMobileMenu({
       window.removeEventListener('keydown', handleKeyDown);
       clearTimeout(focusTimer);
     };
-  }, [isOpen, onClose]);
+  }, [isMobileMenuOpen, setMobileMenuOpen]);
 
   // Check if item or sub-item is active
   const isActive = (href: string, subItems?: SubMenuItem[]) => {
@@ -177,7 +176,7 @@ export default function PremiumMobileMenu({
 
   return (
     <AnimatePresence>
-      {isOpen && (
+      {isMobileMenuOpen && (
         <motion.div
           className="fixed inset-0 z-50 lg:hidden flex items-center justify-center p-4"
           initial={{ opacity: 0 }}
@@ -195,7 +194,7 @@ export default function PremiumMobileMenu({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={onClose}
+            onClick={() => setMobileMenuOpen(false)}
           >
             {/* Ambient gold glow 1 */}
             <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-amber-500/10 blur-[120px] pointer-events-none" />
@@ -228,7 +227,7 @@ export default function PremiumMobileMenu({
             dragElastic={{ top: 0.1, bottom: 0.7 }}
             onDragEnd={(_, info) => {
               if (info.offset.y > 150) {
-                onClose();
+                setMobileMenuOpen(false);
               }
             }}
             initial={{ opacity: 0, scale: 0.93, y: 15 }}
@@ -253,7 +252,7 @@ export default function PremiumMobileMenu({
 
             {/* Close Button */}
             <motion.button
-              onClick={onClose}
+              onClick={() => setMobileMenuOpen(false)}
               aria-label="Close menu"
               className={cn(
                 "absolute top-5 left-5 z-50 w-10 h-10 rounded-full",
@@ -340,7 +339,7 @@ export default function PremiumMobileMenu({
                       ) : (
                         <Link
                           href={item.href}
-                          onClick={onClose}
+                          onClick={() => setMobileMenuOpen(false)}
                           className={cn(
                             'group relative flex items-center justify-between px-4 py-3.5 rounded-2xl transition-all duration-300 border',
                             active
@@ -400,7 +399,7 @@ export default function PremiumMobileMenu({
 
                                   <Link
                                     href={subItem.href}
-                                    onClick={onClose}
+                                    onClick={() => setMobileMenuOpen(false)}
                                     className={cn(
                                       'group relative flex items-center justify-between px-4 py-2.5 rounded-xl transition-all duration-300 border',
                                       isSubActive
@@ -438,7 +437,7 @@ export default function PremiumMobileMenu({
               <div className="space-y-4">
                 {!user ? (
                   <div className="grid grid-cols-2 gap-3">
-                    <Link href="/register" onClick={onClose} className="w-full">
+                    <Link href="/register" onClick={() => setMobileMenuOpen(false)} className="w-full">
                       <motion.button
                         className={cn(
                           "w-full py-3 px-4 rounded-xl font-bold text-sm text-white",
@@ -454,7 +453,7 @@ export default function PremiumMobileMenu({
                         ثبت نام
                       </motion.button>
                     </Link>
-                    <Link href="/login" onClick={onClose} className="w-full">
+                    <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="w-full">
                       <motion.button
                         className={cn(
                           "w-full py-3 px-4 rounded-xl font-semibold text-sm",
