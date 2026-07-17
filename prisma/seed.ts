@@ -153,13 +153,14 @@ async function main() {
   const gUnit = units.find((u: any) => u.symbol === 'g');
   const pkgUnit = units.find((u: any) => u.symbol === 'pkg');
   const LUnit = units.find((u: any) => u.symbol === 'L');
+  const pcsUnit = units.find((u: any) => u.symbol === 'pcs');
   
   const datesCategory = categories.find((c: any) => c.slug === 'dates');
   const honeyCategory = categories.find((c: any) => c.slug === 'honey');
   const saffronCategory = categories.find((c: any) => c.slug === 'saffron');
   const otherCategory = categories.find((c: any) => c.slug === 'other');
   
-  if (!kgUnit || !gUnit || !pkgUnit || !LUnit) {
+  if (!kgUnit || !gUnit || !pkgUnit || !LUnit || !pcsUnit) {
     throw new Error('Required units not found');
   }
   
@@ -255,9 +256,67 @@ async function main() {
         isAmazing: false,
       },
     }),
+    prisma.product.upsert({
+      where: { name: 'اسپیکر ایستاده شیخ مدل Luxury X9' },
+      update: {},
+      create: {
+        name: 'اسپیکر ایستاده شیخ مدل Luxury X9',
+        category: 'OTHERS',
+        categoryId: otherCategory.id,
+        description: 'اسپیکر ایستاده حرفه‌ای با صدای قدرتمند، طراحی لوکس و کیفیت صدای فوق‌العاده.',
+        basePrice: 18900000,
+        baseUnitId: pcsUnit.id,
+        quantity: 15,
+        status: 'ACTIVE',
+        isNew: true,
+        isBestSeller: true,
+        isAmazing: true,
+        categoryType: 'SheikhDigital',
+      },
+    }),
+    prisma.product.upsert({
+      where: { name: 'اسپیکر هوشمند شیخ مدل Royal Sound Pro' },
+      update: {},
+      create: {
+        name: 'اسپیکر هوشمند شیخ مدل Royal Sound Pro',
+        category: 'OTHERS',
+        categoryId: otherCategory.id,
+        description: 'سیستم صوتی هوشمند با طراحی مدرن، اتصال بی‌سیم و صدایی شفاف برای تجربه‌ای متفاوت.',
+        basePrice: 24500000,
+        baseUnitId: pcsUnit.id,
+        quantity: 25,
+        status: 'ACTIVE',
+        isNew: true,
+        isBestSeller: true,
+        isAmazing: false,
+        categoryType: 'SheikhDigital',
+      },
+    }),
   ]);
 
   console.log(`✅ Created ${newProducts.length} new products`);
+
+  // Create ProductUnit entries for our seeded digital speaker products
+  console.log('🔊 Seeding product units for digital products...');
+  const digitalSpeakers = newProducts.filter(p => p.categoryType === 'SheikhDigital');
+  for (const speaker of digitalSpeakers) {
+    await prisma.productUnit.upsert({
+      where: { id: `unit_${speaker.id}` },
+      update: {
+        price: speaker.basePrice,
+        stock: speaker.quantity,
+        isActive: true,
+      },
+      create: {
+        id: `unit_${speaker.id}`,
+        productId: speaker.id,
+        name: speaker.name,
+        price: speaker.basePrice,
+        stock: speaker.quantity,
+        isActive: true,
+      }
+    });
+  }
 
   // Add additional test products for each category
   console.log('🛍️ Adding additional test products for each category...');
