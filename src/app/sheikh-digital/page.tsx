@@ -137,14 +137,16 @@ export default async function SheikhDigitalPage() {
       </div>
     );
   } catch (error) {
+    const isDev = process.env.NODE_ENV === 'development';
     console.error('Failed to load Sheikh Digital page:', {
       error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
       timestamp: new Date().toISOString(),
     });
 
     return (
       <div className="min-h-screen flex items-center justify-center bg-stone-950 font-vazirmatn" dir="rtl">
-        <div className="text-center p-8 border border-amber-500/10 bg-[#140b07]/80 rounded-[2rem] max-w-md mx-auto shadow-2xl">
+        <div className="text-center p-8 border border-amber-500/10 bg-[#140b07]/80 rounded-[2rem] max-w-2xl mx-auto shadow-2xl">
           <div className="mb-4">
             <svg
               className="mx-auto h-12 w-12 text-red-500/80"
@@ -168,6 +170,17 @@ export default async function SheikhDigitalPage() {
           <div className="text-xs text-amber-500/50">
             <p>Error code: {error instanceof Error ? error.message : 'UNKNOWN_DB_ERROR'}</p>
           </div>
+
+          {isDev && error instanceof Error && (
+            <div className="mt-6 text-left" dir="ltr">
+              <details className="bg-black/50 p-4 rounded-xl border border-red-500/20 text-red-400 text-xs overflow-auto max-h-60">
+                <summary className="cursor-pointer font-semibold select-none mb-2 text-red-500 hover:text-red-400 transition-colors">
+                  View Developer Stack Trace (Development Mode Only)
+                </summary>
+                <p className="font-mono whitespace-pre-wrap">{error.stack || error.message}</p>
+              </details>
+            </div>
+          )}
         </div>
       </div>
     );

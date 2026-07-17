@@ -33,7 +33,7 @@ const productSchema = z.object({
     .optional(),
   basePrice: z.number()
     .min(0.01, 'Price must be at least $0.01')
-    .max(999999.99, 'Price must be less than $1,000,000'),
+    .max(999999999999.99, 'Price must be less than 1,000,000,000,000 Toman'),
   baseUnitId: z.string()
     .min(1, 'Base unit is required'),
   quantity: z.number()
