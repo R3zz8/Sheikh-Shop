@@ -656,7 +656,7 @@ export default function PremiumSpeakerShowcase() {
               </Link>
 
               {/* Secondary Button */}
-              <Link href="/categories/sheikh-digital" className="flex-1 max-w-[195px]">
+              <Link href="/sheikh-digital" className="flex-1 max-w-[195px]">
                 <button className="w-full whitespace-nowrap bg-stone-950/80 hover:bg-stone-900 border border-amber-500/25 hover:border-amber-400/45 text-amber-200 text-[clamp(7.5px,1.05vw,14px)] font-bold font-vazirmatn py-[clamp(5px,0.85vw,12px)] px-[clamp(8px,1.6vw,26px)] rounded-[clamp(6px,0.9vw,12px)] hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 flex items-center justify-center gap-[0.4vw] backdrop-blur-md">
                   <span>مشاهده شیخ دیجیتال</span>
                   <Sparkles className="w-[clamp(8px,1.2vw,16px)] h-[clamp(8px,1.2vw,16px)] text-amber-400 shrink-0" />
