@@ -194,6 +194,7 @@ const ProductForm = (props: { product: Product | null }) => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="SheikhFood">Sheikh Food</SelectItem>
+                  <SelectItem value="SheikhDigital">Sheikh Digital</SelectItem>
                   <SelectItem value="SheikhTech">Sheikh Tech</SelectItem>
                 </SelectContent>
               </Select>

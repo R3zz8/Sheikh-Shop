@@ -42,7 +42,7 @@ const productSchema = z.object({
     .max(999999, 'Quantity must be less than 1,000,000'),
   category: z.enum(Object.values(ProductCategory) as [string, ...string[]]),
   status: z.enum(Object.values(ProductStatus) as [string, ...string[]]).optional(),
-  categoryType: z.enum(['SheikhFood', 'SheikhTech']).optional(),
+  categoryType: z.enum(['SheikhFood', 'SheikhTech', 'SheikhDigital']).optional(),
   // SEO fields
   slug: z.string()
     .max(255, 'Slug must be less than 255 characters')
@@ -193,7 +193,7 @@ export const upsertProduct = async (
       baseUnitId,
       quantity: parseInt(formData.get('quantity') as string),
       status: (formData.get('status') as string) || 'ACTIVE',
-      categoryType: formData.get('categoryType') as 'SheikhFood' | 'SheikhTech',
+      categoryType: formData.get('categoryType') as 'SheikhFood' | 'SheikhTech' | 'SheikhDigital',
       // SEO fields
       slug: formData.get('slug') as string || null,
       seoTitle: formData.get('seoTitle') as string || null,

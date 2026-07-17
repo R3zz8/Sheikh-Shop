@@ -111,6 +111,72 @@ const mockProducts = [
     units: [
       { id: 'pu4', price: 650000, unitId: 'u3', unit: mockUnits[2] }
     ]
+  },
+  {
+    id: 'pd1',
+    name: 'هدست بی‌سیم طلایی لوکس',
+    category: 'OTHERS',
+    categoryId: '4',
+    description: 'تجربه‌ای استثنایی از کیفیت صدا با طراحی ارگونومیک، بدنه مزین به روکش طلایی ۱۸ عیار، حذف نویز هوشمند و تفکیک صدای بی‌نظیر برای شیفتگان صدا.',
+    basePrice: 14500000,
+    baseUnitId: 'u3',
+    quantity: 15,
+    status: 'ACTIVE',
+    isNew: true,
+    isBestSeller: true,
+    isAmazing: true,
+    categoryType: 'SheikhDigital',
+    baseUnit: mockUnits[2],
+    categoryRelation: mockCategories[3],
+    images: [{ id: 'img5', image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=600&auto=format&fit=crop' }],
+    discounts: [{ id: 'd3', value: 1500000, discountType: 'FIXED', isActive: true }],
+    units: [
+      { id: 'pud1', price: 14500000, unitId: 'u3', unit: mockUnits[2] }
+    ]
+  },
+  {
+    id: 'pd2',
+    name: 'ساعت هوشمند پرمیوم شیخ',
+    category: 'OTHERS',
+    categoryId: '4',
+    description: 'ساعت هوشمند فوق‌العاده با بدنه تیتانیوم مستحکم، صفحه نمایش آمولد همیشه روشن، حسگرهای پایش سلامتی پیشرفته و بندهای دست‌دوز چرمی نفیس.',
+    basePrice: 19800000,
+    baseUnitId: 'u3',
+    quantity: 25,
+    status: 'ACTIVE',
+    isNew: true,
+    isBestSeller: true,
+    isAmazing: false,
+    categoryType: 'SheikhDigital',
+    baseUnit: mockUnits[2],
+    categoryRelation: mockCategories[3],
+    images: [{ id: 'img6', image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=600&auto=format&fit=crop' }],
+    discounts: [],
+    units: [
+      { id: 'pud2', price: 19800000, unitId: 'u3', unit: mockUnits[2] }
+    ]
+  },
+  {
+    id: 'pd3',
+    name: 'اسپیکر ایستاده لوکس شیخ',
+    category: 'OTHERS',
+    categoryId: '4',
+    description: 'سیستم صوتی بی‌نظیر با صدای سه‌بعدی فراگیر، روکش چوب قهوه‌ای تیره و طلای امبر، اتصالات همه‌جانبه و ووفرهای قدرتمند برای لذت ناب موسیقی.',
+    basePrice: 42000000,
+    baseUnitId: 'u3',
+    quantity: 10,
+    status: 'ACTIVE',
+    isNew: true,
+    isBestSeller: false,
+    isAmazing: true,
+    categoryType: 'SheikhDigital',
+    baseUnit: mockUnits[2],
+    categoryRelation: mockCategories[3],
+    images: [{ id: 'img7', image: 'https://images.unsplash.com/photo-1545454675-3531b543be5d?q=80&w=600&auto=format&fit=crop' }],
+    discounts: [],
+    units: [
+      { id: 'pud3', price: 42000000, unitId: 'u3', unit: mockUnits[2] }
+    ]
   }
 ];
 
