@@ -73,7 +73,7 @@ function serializeProducts(products: any[]) {
     ...product,
     basePrice: toNumber(product.basePrice),
     oldPrice: product.oldPrice ? toNumber(product.oldPrice) : null,
-    units: product.units.map((u: any) => ({
+    units: (product.units || []).map((u: any) => ({
       ...u,
       price: toNumber(u.price),
       oldPrice: u.oldPrice ? toNumber(u.oldPrice) : null,
