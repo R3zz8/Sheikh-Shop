@@ -19,7 +19,7 @@ def verify_sheikh_digital():
         desktop_page.on("pageerror", handle_page_error)
 
         print("Navigating to Sheikh Digital page on Desktop...")
-        desktop_page.goto("http://localhost:3000/sheikh-digital", wait_until="domcontentloaded")
+        desktop_page.goto("http://localhost:3001/sheikh-digital", wait_until="domcontentloaded")
 
         # Apply dark mode state programmatically
         desktop_page.evaluate("""() => {

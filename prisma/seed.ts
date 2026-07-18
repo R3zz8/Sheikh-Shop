@@ -272,6 +272,20 @@ async function main() {
         isBestSeller: true,
         isAmazing: true,
         categoryType: 'SheikhDigital',
+        slug: 'luxury-x9-speaker',
+        seoTitle: 'اسپیکر ایستاده شیخ مدل Luxury X9 | سیستم صوتی لوکس',
+        seoDescription: 'خرید اسپیکر ایستاده حرفه‌ای شیخ مدل Luxury X9 با کیفیت صدای استثنایی و روکش طلا.',
+        metaKeywords: ['اسپیکر شیخ', 'اسپیکر ایستاده', 'سیستم صوتی لوکس'],
+        canonicalUrl: '/products/luxury-x9-speaker',
+        brand: 'Sheikh Shop',
+        sku: 'SH-SPK-X9',
+        features: ['صدای سه‌بعدی استریو', 'روکش طلای ۲۴ عیار گلد تریم', 'بلوتوث نسخه ۵.۳'],
+        technicalSpecs: { power: '200W RMS', frequency: '20Hz - 20KHz', weight: '12kg' },
+        tags: ['اسپیکر', 'لوکس', 'صدا'],
+        weight: 12.0,
+        warranty: 'ضمانت طلایی ۲۴ ماهه شیخ',
+        origin: 'ایران',
+        color: 'طلایی / مشکی',
       },
     }),
     prisma.product.upsert({
@@ -290,14 +304,28 @@ async function main() {
         isBestSeller: true,
         isAmazing: false,
         categoryType: 'SheikhDigital',
+        slug: 'royal-sound-pro-speaker',
+        seoTitle: 'اسپیکر هوشمند شیخ مدل Royal Sound Pro | صدای رویال',
+        seoDescription: 'خرید اسپیکر هوشمند شیخ مدل Royal Sound Pro با طراحی مدرن و اتصال بیسیم.',
+        metaKeywords: ['اسپیکر هوشمند', 'صدای رویال', 'سیستم صوتی بی سیم'],
+        canonicalUrl: '/products/royal-sound-pro-speaker',
+        brand: 'Sheikh Shop',
+        sku: 'SH-SPK-RSP',
+        features: ['دستیار صوتی هوشمند', 'اتصال Wi-Fi و بلوتوث', 'طراحی مینیمال و لوکس'],
+        technicalSpecs: { power: '120W RMS', frequency: '35Hz - 20KHz', weight: '4.5kg' },
+        tags: ['اسپیکر هوشمند', 'بیسیم', 'صدا'],
+        weight: 4.5,
+        warranty: 'ضمانت طلایی ۲۴ ماهه شیخ',
+        origin: 'ایران',
+        color: 'طلایی / قهوه‌ای',
       },
     }),
   ]);
 
   console.log(`✅ Created ${newProducts.length} new products`);
 
-  // Create ProductUnit entries for our seeded digital speaker products
-  console.log('🔊 Seeding product units for digital products...');
+  // Create ProductUnit and Image entries for our seeded digital speaker products
+  console.log('🔊 Seeding product units & images for digital products...');
   const digitalSpeakers = newProducts.filter(p => p.categoryType === 'SheikhDigital');
   for (const speaker of digitalSpeakers) {
     await prisma.productUnit.upsert({
@@ -314,6 +342,19 @@ async function main() {
         price: speaker.basePrice,
         stock: speaker.quantity,
         isActive: true,
+      }
+    });
+
+    const imageUrl = speaker.slug === 'luxury-x9-speaker'
+      ? 'https://images.unsplash.com/photo-1545454675-3531b543be5d?q=80&w=600&auto=format&fit=crop'
+      : 'https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?q=80&w=600&auto=format&fit=crop';
+
+    await prisma.image.create({
+      data: {
+        id: `image_${speaker.id}`,
+        productId: speaker.id,
+        image: imageUrl,
+        secureUrl: imageUrl,
       }
     });
   }

@@ -61,6 +61,7 @@ export default function ProductItemCompact({
   // Generate deterministic rating based on product ID hash
   const idHash = product.id.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
   const rating = 4 + (idHash % 2); // Either 4 or 5
+  const reviewCount = 5 + (idHash % 45);
 
   const handleAddToCart = async () => {
     if (!productRef.current || !cartButtonRef.current) return;
@@ -108,7 +109,7 @@ export default function ProductItemCompact({
             )}
             <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden">
             <Image
-              src={product?.images[0]?.image || '/assets/noImage.jpg'}
+              src={product?.images[0]?.secureUrl || product?.images[0]?.image || '/assets/noImage.jpg'}
               alt={`${product?.name || 'Product'} - Premium ${product?.category || 'product'} from Sheikh Shop`}
                 fill
               className={cn(
@@ -150,7 +151,7 @@ export default function ProductItemCompact({
                 />
               ))}
             </div>
-            <span className="text-xs text-amber-200/60">({Math.floor(Math.random() * 10) + 1})</span>
+            <span className="text-xs text-amber-200/60">({reviewCount})</span>
           </div>
 
             {/* Price */}

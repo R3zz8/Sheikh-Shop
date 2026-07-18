@@ -191,7 +191,7 @@ export default function ProductItem({
 
             {/* Main Image - Contain, Center, Full View, No Crop */}
             <Image
-              src={product?.images[0]?.secureUrl || '/assets/noImage.jpg'}
+              src={product?.images[0]?.secureUrl || product?.images[0]?.image || '/assets/noImage.jpg'}
               alt={`${product?.name || 'Product'} - Premium ${product?.category || 'product'} from Sheikh Shop`}
               fill
               className={cn(
