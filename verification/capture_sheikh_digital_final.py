@@ -61,6 +61,22 @@ def capture_screenshots():
         print(f"Mobile screenshot captured. Size: {os.path.getsize('/home/jules/verification/sheikh_digital_mobile.png')} bytes.")
         mobile_page.close()
 
+        # 4. Small Mobile Screenshot
+        print("Capturing Small Mobile screenshot...")
+        small_mobile_page = browser.new_page(viewport={"width": 320, "height": 568})
+        small_mobile_page.goto("http://localhost:3001/sheikh-digital", wait_until="load")
+        time.sleep(8)
+
+        scroll_width = small_mobile_page.evaluate("document.documentElement.scrollWidth")
+        client_width = small_mobile_page.evaluate("document.documentElement.clientWidth")
+        scroll_left_target = -(scroll_width - client_width)
+
+        small_mobile_page.evaluate(f"window.scrollTo({scroll_left_target}, 300)")
+        time.sleep(3)
+        small_mobile_page.screenshot(path="/home/jules/verification/sheikh_digital_small_mobile.png")
+        print(f"Small Mobile screenshot captured. Size: {os.path.getsize('/home/jules/verification/sheikh_digital_small_mobile.png')} bytes.")
+        small_mobile_page.close()
+
         browser.close()
         print("Screenshots captured successfully!")
 

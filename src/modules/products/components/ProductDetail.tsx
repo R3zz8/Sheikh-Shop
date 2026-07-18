@@ -18,9 +18,10 @@ export default function ProductDetail(product: ProductsWithImages) {
   const isPremium = (product?.basePrice || 0) > 50;
   const isLuxury = (product?.basePrice || 0) > 100;
 
-  // Generate random rating for demo
-  const rating = Math.floor(Math.random() * 2) + 4;
-  const reviewCount = Math.floor(Math.random() * 200) + 50;
+  // Generate deterministic rating based on product ID hash for SSR hydration safety
+  const idHash = (product?.id || '').split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
+  const rating = 4 + (idHash % 2);
+  const reviewCount = 50 + (idHash % 200);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-950 via-stone-900 to-amber-950 relative">
