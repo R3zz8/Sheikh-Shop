@@ -134,6 +134,17 @@ function addSecurityHeaders(response: NextResponse): NextResponse {
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
+
+  // Bypass all static assets, chunks, and static public files immediately
+  if (
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/static') ||
+    pathname.startsWith('/favicon.ico') ||
+    pathname.includes('.')
+  ) {
+    return NextResponse.next();
+  }
+
   const isApiRoute = pathname.startsWith('/api');
   const hasJwtSecret = !!getJwtSecret();
 

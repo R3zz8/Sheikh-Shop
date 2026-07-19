@@ -18,9 +18,9 @@ const mockCategories = [
 ];
 
 const mockUnits = [
-  { id: 'u1', name: 'Gram', symbol: 'g', multiplier: 0.001, sortOrder: 1, isActive: true },
-  { id: 'u2', name: 'Kilogram', symbol: 'kg', multiplier: 1.0, sortOrder: 2, isActive: true },
-  { id: 'u3', name: 'Piece', symbol: 'pcs', multiplier: 1.0, sortOrder: 3, isActive: true },
+  { id: 'u1', name: 'Gram', symbol: 'g', multiplier: 0.001, sortOrder: 1, isActive: true, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'u2', name: 'Kilogram', symbol: 'kg', multiplier: 1.0, sortOrder: 2, isActive: true, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'u3', name: 'Piece', symbol: 'pcs', multiplier: 1.0, sortOrder: 3, isActive: true, createdAt: new Date(), updatedAt: new Date() },
 ];
 
 const mockProducts = [
@@ -40,11 +40,13 @@ const mockProducts = [
     categoryType: 'SheikhFood',
     baseUnit: mockUnits[1],
     categoryRelation: mockCategories[1],
-    images: [{ id: 'img1', image: '/honey.webp' }],
-    discounts: [{ id: 'd1', value: 200000, discountType: 'FIXED', isActive: true }], // Discount in native Toman
+    images: [{ id: 'img1', image: '/honey.webp', secureUrl: '/honey.webp', createdAt: new Date() }],
+    discounts: [{ id: 'd1', value: 200000, discountType: 'FIXED', isActive: true, startDate: new Date(), endDate: new Date(Date.now() + 100000000), createdAt: new Date(), updatedAt: new Date() }], // Discount in native Toman
     units: [
-      { id: 'pu1', price: 1250000, unitId: 'u2', unit: mockUnits[1] }
-    ]
+      { id: 'pu1', productId: 'p1', name: 'Kilogram', price: 1250000, unitId: 'u2', unit: mockUnits[1], isActive: true, stock: 75, createdAt: new Date(), updatedAt: new Date() }
+    ],
+    createdAt: new Date(),
+    updatedAt: new Date(),
   },
   {
     id: 'p2',
@@ -62,11 +64,13 @@ const mockProducts = [
     categoryType: 'SheikhFood',
     baseUnit: mockUnits[0],
     categoryRelation: mockCategories[2],
-    images: [{ id: 'img2', image: '/saffron.webp' }],
+    images: [{ id: 'img2', image: '/saffron.webp', secureUrl: '/saffron.webp', createdAt: new Date() }],
     discounts: [],
     units: [
-      { id: 'pu2', price: 4250000, unitId: 'u1', unit: mockUnits[0] }
-    ]
+      { id: 'pu2', productId: 'p2', name: 'Gram', price: 4250000, unitId: 'u1', unit: mockUnits[0], isActive: true, stock: 30, createdAt: new Date(), updatedAt: new Date() }
+    ],
+    createdAt: new Date(),
+    updatedAt: new Date(),
   },
   {
     id: 'p3',
@@ -84,11 +88,13 @@ const mockProducts = [
     categoryType: 'SheikhFood',
     baseUnit: mockUnits[1],
     categoryRelation: mockCategories[0],
-    images: [{ id: 'img3', image: '/dates.webp' }],
-    discounts: [{ id: 'd2', value: 100000, discountType: 'FIXED', isActive: true }], // Discount in native Toman
+    images: [{ id: 'img3', image: '/dates.webp', secureUrl: '/dates.webp', createdAt: new Date() }],
+    discounts: [{ id: 'd2', value: 100000, discountType: 'FIXED', isActive: true, startDate: new Date(), endDate: new Date(Date.now() + 100000000), createdAt: new Date(), updatedAt: new Date() }], // Discount in native Toman
     units: [
-      { id: 'pu3', price: 890000, unitId: 'u2', unit: mockUnits[1] }
-    ]
+      { id: 'pu3', productId: 'p3', name: 'Kilogram', price: 890000, unitId: 'u2', unit: mockUnits[1], isActive: true, stock: 120, createdAt: new Date(), updatedAt: new Date() }
+    ],
+    createdAt: new Date(),
+    updatedAt: new Date(),
   },
   {
     id: 'p4',
@@ -106,11 +112,13 @@ const mockProducts = [
     categoryType: 'SheikhFood',
     baseUnit: mockUnits[2],
     categoryRelation: mockCategories[3],
-    images: [{ id: 'img4', image: '/other.webp' }],
+    images: [{ id: 'img4', image: '/other.webp', secureUrl: '/other.webp', createdAt: new Date() }],
     discounts: [],
     units: [
-      { id: 'pu4', price: 650000, unitId: 'u3', unit: mockUnits[2] }
-    ]
+      { id: 'pu4', productId: 'p4', name: 'Piece', price: 650000, unitId: 'u3', unit: mockUnits[2], isActive: true, stock: 50, createdAt: new Date(), updatedAt: new Date() }
+    ],
+    createdAt: new Date(),
+    updatedAt: new Date(),
   },
   {
     id: 'pd_speaker_1',
@@ -142,11 +150,13 @@ const mockProducts = [
     color: 'طلایی / مشکی',
     baseUnit: mockUnits[2],
     categoryRelation: mockCategories[3],
-    images: [{ id: 'img_pd1', image: 'https://images.unsplash.com/photo-1545454675-3531b543be5d?q=80&w=600&auto=format&fit=crop', secureUrl: 'https://images.unsplash.com/photo-1545454675-3531b543be5d?q=80&w=600&auto=format&fit=crop' }],
+    images: [{ id: 'img_pd1', image: 'https://images.unsplash.com/photo-1545454675-3531b543be5d?q=80&w=600&auto=format&fit=crop', secureUrl: 'https://images.unsplash.com/photo-1545454675-3531b543be5d?q=80&w=600&auto=format&fit=crop', createdAt: new Date() }],
     discounts: [],
     units: [
-      { id: 'pud_speaker_1', price: 18900000, unitId: 'u3', unit: mockUnits[2] }
-    ]
+      { id: 'pud_speaker_1', productId: 'pd_speaker_1', name: 'Piece', price: 18900000, unitId: 'u3', unit: mockUnits[2], isActive: true, stock: 15, createdAt: new Date(), updatedAt: new Date() }
+    ],
+    createdAt: new Date(),
+    updatedAt: new Date(),
   },
   {
     id: 'pd_speaker_2',
@@ -178,11 +188,13 @@ const mockProducts = [
     color: 'طلایی / قهوه‌ای',
     baseUnit: mockUnits[2],
     categoryRelation: mockCategories[3],
-    images: [{ id: 'img_pd2', image: 'https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?q=80&w=600&auto=format&fit=crop', secureUrl: 'https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?q=80&w=600&auto=format&fit=crop' }],
+    images: [{ id: 'img_pd2', image: 'https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?q=80&w=600&auto=format&fit=crop', secureUrl: 'https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?q=80&w=600&auto=format&fit=crop', createdAt: new Date() }],
     discounts: [],
     units: [
-      { id: 'pud_speaker_2', price: 24500000, unitId: 'u3', unit: mockUnits[2] }
-    ]
+      { id: 'pud_speaker_2', productId: 'pd_speaker_2', name: 'Piece', price: 24500000, unitId: 'u3', unit: mockUnits[2], isActive: true, stock: 25, createdAt: new Date(), updatedAt: new Date() }
+    ],
+    createdAt: new Date(),
+    updatedAt: new Date(),
   }
 ];
 

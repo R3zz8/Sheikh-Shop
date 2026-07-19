@@ -103,9 +103,10 @@ export default function ProductItem({
 
   useEffect(() => {
     if (availableUnits.length > 0 && !selectedUnit) {
-      setSelectedUnit(availableUnits[0] || null);
+      const defaultUnit = availableUnits.find(u => u.id === product.baseUnitId) || availableUnits[0];
+      setSelectedUnit(defaultUnit || null);
     }
-  }, [availableUnits]);
+  }, [availableUnits, product.baseUnitId]);
 
   useEffect(() => {
     if (availableProductUnits.length > 0 && !selectedProductUnit) {

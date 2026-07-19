@@ -66,18 +66,50 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-// Helper function to serialize Decimal/Float prices safely for the client component
+// Helper function to serialize Decimal/Float prices and Date objects safely for the client component
 function serializeProducts(products: any[]) {
   if (!products) return [];
-  return products.map(product => ({
-    ...product,
-    basePrice: toNumber(product.basePrice),
-    oldPrice: product.oldPrice ? toNumber(product.oldPrice) : null,
-    units: (product.units || []).map((u: any) => ({
-      ...u,
-      price: toNumber(u.price),
-      oldPrice: u.oldPrice ? toNumber(u.oldPrice) : null,
-    })),
+  return products.map(product => {
+    return {
+      ...product,
+      basePrice: toNumber(product.basePrice),
+      oldPrice: product.oldPrice ? toNumber(product.oldPrice) : null,
+      createdAt: product.createdAt instanceof Date ? product.createdAt.toISOString() : String(product.createdAt),
+      updatedAt: product.updatedAt instanceof Date ? product.updatedAt.toISOString() : String(product.updatedAt),
+      baseUnit: product.baseUnit ? {
+        ...product.baseUnit,
+        createdAt: product.baseUnit.createdAt instanceof Date ? product.baseUnit.createdAt.toISOString() : String(product.baseUnit.createdAt),
+        updatedAt: product.baseUnit.updatedAt instanceof Date ? product.baseUnit.updatedAt.toISOString() : String(product.baseUnit.updatedAt),
+      } : null,
+      units: (product.units || []).map((u: any) => ({
+        ...u,
+        price: toNumber(u.price),
+        oldPrice: u.oldPrice ? toNumber(u.oldPrice) : null,
+        createdAt: u.createdAt instanceof Date ? u.createdAt.toISOString() : String(u.createdAt),
+        updatedAt: u.updatedAt instanceof Date ? u.updatedAt.toISOString() : String(u.updatedAt),
+      })),
+      images: (product.images || []).map((img: any) => ({
+        ...img,
+        createdAt: img.createdAt instanceof Date ? img.createdAt.toISOString() : String(img.createdAt),
+      })),
+      discounts: (product.discounts || []).map((d: any) => ({
+        ...d,
+        startDate: d.startDate instanceof Date ? d.startDate.toISOString() : String(d.startDate),
+        endDate: d.endDate instanceof Date ? d.endDate.toISOString() : String(d.endDate),
+        createdAt: d.createdAt instanceof Date ? d.createdAt.toISOString() : String(d.createdAt),
+        updatedAt: d.updatedAt instanceof Date ? d.updatedAt.toISOString() : String(d.updatedAt),
+      })),
+    };
+  });
+}
+
+// Helper function to serialize system unit dates cleanly
+function serializeUnits(units: any[]) {
+  if (!units) return [];
+  return units.map(u => ({
+    ...u,
+    createdAt: u.createdAt instanceof Date ? u.createdAt.toISOString() : String(u.createdAt),
+    updatedAt: u.updatedAt instanceof Date ? u.updatedAt.toISOString() : String(u.updatedAt),
   }));
 }
 
@@ -102,6 +134,7 @@ export default async function SheikhDigitalPage() {
     }
 
     const serializedProducts = serializeProducts(data);
+    const serializedUnits = serializeUnits(units);
 
     // Build breadcrumbs for SEO schema
     const breadcrumbs = [
@@ -126,7 +159,7 @@ export default async function SheikhDigitalPage() {
           {serializedProducts.length > 0 ? (
             <ProductListView
               products={serializedProducts}
-              units={units}
+              units={serializedUnits}
               title="محصولات دیجیتال شیخ"
               subtitle="از اسپیکرهای ایستاده لوکس تا هدفون‌های روکش طلا و جدیدترین لوازم الکترونیک ممتاز."
             />

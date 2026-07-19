@@ -147,5 +147,6 @@ const sentryWebpackPluginOptions = {
   // https://github.com/getsentry/sentry-webpack-plugin#options.
 };
 
-// Make sure to put Sentry last in the export so it can wrap everything else.
-export default withSentryConfig(nextConfig, sentryWebpackPluginOptions);
+// Enable Sentry only in production with configured credentials
+const isSentryEnabled = process.env.NODE_ENV === 'production' && !!process.env.NEXT_PUBLIC_SENTRY_DSN;
+export default isSentryEnabled ? withSentryConfig(nextConfig, sentryWebpackPluginOptions) : nextConfig;
