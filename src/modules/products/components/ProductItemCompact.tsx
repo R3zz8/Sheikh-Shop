@@ -34,9 +34,10 @@ export default function ProductItemCompact({
   // Set default unit when availableUnits are loaded
   useEffect(() => {
     if (availableUnits.length > 0 && !selectedUnit) {
-      setSelectedUnit(availableUnits[0] || null);
+      const defaultUnit = availableUnits.find(u => u.id === product.baseUnitId) || availableUnits[0];
+      setSelectedUnit(defaultUnit || null);
     }
-  }, [availableUnits]);
+  }, [availableUnits, product.baseUnitId]);
 
   // Fallback if no units are available
   if (!selectedUnit || availableUnits.length === 0) {
