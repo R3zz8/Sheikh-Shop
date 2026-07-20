@@ -195,12 +195,174 @@ const mockProducts = [
     ],
     createdAt: new Date(),
     updatedAt: new Date(),
+  },
+  {
+    id: 'pd_headphones',
+    name: 'هدفون بی‌سیم لوکس شیخ مدل Golden Scent',
+    category: 'OTHERS',
+    categoryId: '4',
+    description: 'هدفون بیسیم با روکش آبکاری طلای ۲۴ عیار گلد تریم و صدای استودیویی مانیتورینگ.',
+    basePrice: 14200000,
+    baseUnitId: 'u3',
+    quantity: 40,
+    status: 'ACTIVE',
+    isNew: true,
+    isBestSeller: true,
+    isAmazing: true,
+    categoryType: 'SheikhDigital',
+    slug: 'golden-scent-headphones',
+    brand: 'Sheikh Shop',
+    sku: 'SH-HP-GS',
+    features: ['صدای شفاف مانیتورینگ استودیویی', 'روکش طلای ۲۴ عیار', 'نویز کنسلینگ پیشرفته ANC'],
+    technicalSpecs: { driver: '45mm', bluetooth: 'v5.3', battery: '45 hours' },
+    tags: ['هدفون', 'بی‌سیم', 'لوکس'],
+    weight: 0.35,
+    warranty: 'ضمانت طلایی ۲۴ ماهه شیخ',
+    origin: 'ایران',
+    color: 'طلایی',
+    baseUnit: mockUnits[2],
+    categoryRelation: mockCategories[3],
+    images: [{ id: 'img_pd_headphones', image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=600&auto=format&fit=crop', secureUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=600&auto=format&fit=crop', createdAt: new Date() }],
+    discounts: [],
+    units: [
+      { id: 'pud_headphones', productId: 'pd_headphones', name: 'Piece', price: 14200000, unitId: 'u3', unit: mockUnits[2], isActive: true, stock: 40, createdAt: new Date(), updatedAt: new Date() }
+    ],
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'pd_smartwatch',
+    name: 'ساعت هوشمند سلطنتی شیخ مدل Royal Watch V2',
+    category: 'OTHERS',
+    categoryId: '4',
+    description: 'ساعت هوشمند با سنسورهای سلامتی پیشرفته، بند چرم شتر اصل و قاب تیتانیومی طلا.',
+    basePrice: 32800000,
+    baseUnitId: 'u3',
+    quantity: 30,
+    status: 'ACTIVE',
+    isNew: true,
+    isBestSeller: true,
+    isAmazing: false,
+    categoryType: 'SheikhDigital',
+    slug: 'royal-watch-v2',
+    brand: 'Sheikh Shop',
+    sku: 'SH-W-RW2',
+    features: ['بند چرم شتر دست‌دوز اصیل', 'بدنه تیتانیوم گرید ۵ آبکاری طلا', 'صفحه نمایش همیشه روشن AMOLED'],
+    technicalSpecs: { size: '46mm', water: '50m', battery: '14 days' },
+    tags: ['ساعت هوشمند', 'تیتانیوم', 'سلطنتی'],
+    weight: 0.08,
+    warranty: 'ضمانت طلایی ۲۴ ماهه شیخ',
+    origin: 'ایران',
+    color: 'طلایی / قهوه‌ای قهوه',
+    baseUnit: mockUnits[2],
+    categoryRelation: mockCategories[3],
+    images: [{ id: 'img_pd_smartwatch', image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=600&auto=format&fit=crop', secureUrl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=600&auto=format&fit=crop', createdAt: new Date() }],
+    discounts: [],
+    units: [
+      { id: 'pud_smartwatch', productId: 'pd_smartwatch', name: 'Piece', price: 32800000, unitId: 'u3', unit: mockUnits[2], isActive: true, stock: 30, createdAt: new Date(), updatedAt: new Date() }
+    ],
+    createdAt: new Date(),
+    updatedAt: new Date(),
   }
 ];
 
 const mockCarousel = [
   { id: 'c1', title: 'Premium Dates', image: 'https://images.unsplash.com/photo-1596797038530-2c107229654b?q=80&w=600&auto=format&fit=crop', link: '/product/p3', order: 1 },
   { id: 'c2', title: 'Mountain Honey', image: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=600&auto=format&fit=crop', link: '/product/p1', order: 2 },
+];
+
+const mockShowcaseConfig = [
+  {
+    id: 'sc1',
+    isEnabled: true,
+    loopMode: true,
+    autoplayInterval: 5000,
+    animationSpeed: 1000,
+    backgroundGlow: '#fbbf24',
+    maxProducts: 8,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }
+];
+
+const mockFeaturedProducts = [
+  {
+    id: 'fp1',
+    productId: 'pd_speaker_1',
+    order: 0,
+    badgeType: 'BEST_SELLER',
+    categoryEffect: 'SPEAKER',
+    ctaText: 'مشاهده اسپیکر ایستاده',
+    ctaLink: '/product/pd_speaker_1',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'fp2',
+    productId: 'pd_speaker_2',
+    order: 1,
+    badgeType: 'FEATURED',
+    categoryEffect: 'SPEAKER',
+    ctaText: 'مشاهده اسپیکر هوشمند',
+    ctaLink: '/product/pd_speaker_2',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'fp3',
+    productId: 'pd_headphones',
+    order: 2,
+    badgeType: 'NEW',
+    categoryEffect: 'HEADPHONES',
+    ctaText: 'خرید هدفون بی‌سیم',
+    ctaLink: '/product/pd_headphones',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'fp4',
+    productId: 'pd_smartwatch',
+    order: 3,
+    badgeType: 'FEATURED',
+    categoryEffect: 'LIGHTING',
+    ctaText: 'خرید ساعت هوشمند',
+    ctaLink: '/product/pd_smartwatch',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'fp5',
+    productId: 'p1',
+    order: 4,
+    badgeType: 'BEST_SELLER',
+    categoryEffect: 'HONEY',
+    ctaText: 'خرید عسل طبیعی',
+    ctaLink: '/product/p1',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'fp6',
+    productId: 'p2',
+    order: 5,
+    badgeType: 'NEW',
+    categoryEffect: 'SAFFRON',
+    ctaText: 'خرید زعفران نگین',
+    ctaLink: '/product/p2',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'fp7',
+    productId: 'p3',
+    order: 6,
+    badgeType: 'BEST_SELLER',
+    categoryEffect: 'DATES',
+    ctaText: 'خرید خرما مجول',
+    ctaLink: '/product/p3',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }
 ];
 
 const makeMockModel = (name: string, data: any[]) => {
@@ -234,6 +396,90 @@ const makeMockModel = (name: string, data: any[]) => {
       }
       if (prop === 'count') {
         return async () => data.length;
+      }
+      return async () => null;
+    }
+  });
+};
+
+const makeMockModelWithWrites = (name: string, data: any[]) => {
+  let localData = [...data];
+  return new Proxy({}, {
+    get(target, prop) {
+      if (prop === 'findMany') {
+        return async (args?: any) => {
+          let result = [...localData];
+          if (args?.where) {
+            const where = args.where;
+            result = result.filter(item => {
+              for (const key in where) {
+                if (where[key] !== undefined && item[key] !== where[key]) {
+                  return false;
+                }
+              }
+              return true;
+            });
+          }
+          if (args?.orderBy) {
+            const orderBy = args.orderBy;
+            const key = Object.keys(orderBy)[0];
+            if (key) {
+              const direction = orderBy[key];
+              result.sort((a: any, b: any) => {
+                if (direction === 'asc') return a[key] > b[key] ? 1 : -1;
+                return a[key] < b[key] ? 1 : -1;
+              });
+            }
+          }
+          return result;
+        };
+      }
+      if (prop === 'findFirst' || prop === 'findUnique') {
+        return async (args?: any) => {
+          const id = args?.where?.id || args?.where?.slug || args?.where?.name;
+          if (id) {
+            return localData.find(item => item.id === id || item.slug === id || item.name === id) || localData[0] || null;
+          }
+          return localData[0] || null;
+        };
+      }
+      if (prop === 'create') {
+        return async (args: any) => {
+          const newItem = { id: `mock-${Date.now()}-${Math.random()}`, ...args.data, createdAt: new Date(), updatedAt: new Date() };
+          localData.push(newItem);
+          return newItem;
+        };
+      }
+      if (prop === 'update' || prop === 'updateMany') {
+        return async (args: any) => {
+          const id = args?.where?.id;
+          if (id) {
+            const index = localData.findIndex(item => item.id === id);
+            if (index !== -1) {
+              localData[index] = { ...localData[index], ...args.data, updatedAt: new Date() };
+              return localData[index];
+            }
+          }
+          if (localData[0]) {
+            localData[0] = { ...localData[0], ...args.data, updatedAt: new Date() };
+            return localData[0];
+          }
+          return null;
+        };
+      }
+      if (prop === 'delete' || prop === 'deleteMany') {
+        return async (args?: any) => {
+          const id = args?.where?.id;
+          if (id) {
+            localData = localData.filter(item => item.id !== id);
+          } else {
+            localData = [];
+          }
+          return { count: 1 };
+        };
+      }
+      if (prop === 'count') {
+        return async () => localData.length;
       }
       return async () => null;
     }
@@ -288,6 +534,8 @@ const createMockPrisma = () => {
       if (prop === 'cartItem') return makeMockModel('cartItem', mockCartItems);
       if (prop === 'order') return makeMockModel('order', []);
       if (prop === 'orderItem') return makeMockModel('orderItem', []);
+      if (prop === 'showcaseConfig') return makeMockModelWithWrites('showcaseConfig', mockShowcaseConfig);
+      if (prop === 'featuredProduct') return makeMockModelWithWrites('featuredProduct', mockFeaturedProducts);
       if (prop === '$connect') return async () => {};
       if (prop === '$disconnect') return async () => {};
 
