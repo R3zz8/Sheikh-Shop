@@ -10,6 +10,7 @@ import {
   CarouselMobile,
   OptimizedPalmTree,
   PremiumSpeakerShowcase,
+  RoyalShowcase,
 } from '@/components/DynamicClientComponents';
 import BMWCarousel from '@/components/BMWCarousel';
 
@@ -90,6 +91,9 @@ export default function Home() {
       />
 
       <div className="relative z-10">
+        {/* Royal 3D Showcase */}
+        <RoyalShowcase />
+
         {/* Hero Section with 3D Palm Tree - Always Horizontal */}
         <section className="container-fluid pt-1 sm:pt-4 md:pt-8 pb-1 sm:pb-4 md:pb-8">
           <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">

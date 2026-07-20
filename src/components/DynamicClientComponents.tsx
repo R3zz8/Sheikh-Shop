@@ -33,6 +33,12 @@ export const AmazingDeals = dynamic(() => import('@/components/AmazingDeals'), {
     loading: () => <div className="w-full h-96 bg-gray-900 animate-pulse" />,
 } as any);
 
+export const RoyalShowcase = dynamic(() => import('@/components/royal-showcase/RoyalShowcase'), {
+    ssr: false,
+    preload: false,
+    loading: () => <div className="w-full h-96 bg-stone-900/60 rounded-[2.5rem] animate-pulse" />,
+} as any);
+
 export const CarouselMobile = dynamic(() => import('@/components/CarouselMobile'), {
     ssr: false,
     preload: false,
