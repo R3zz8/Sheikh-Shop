@@ -197,7 +197,7 @@ export default function ClientHeader() {
                       {isProductsOpen && (
                         <div
                           onMouseLeave={() => setIsProductsOpen(false)}
-                          className="absolute right-0 mt-2 w-[160px] bg-gradient-to-r from-amber-600 to-orange-600 backdrop-blur-xl border border-amber-600 rounded-2xl shadow-2xl z-50 animate-fadeIn py-2 animate-duration-200"
+                          className="absolute right-0 mt-2 w-[160px] bg-gradient-to-r from-amber-600 to-orange-600 backdrop-blur-xl border border-amber-600 rounded-2xl shadow-2xl z-50 animate-fadeInHeader py-2"
                         >
                           {item.subItems.map((subItem) => (
                             <Link
@@ -238,7 +238,7 @@ export default function ClientHeader() {
                     {isAboutOpen && (
                       <div
                         onMouseLeave={() => setIsAboutOpen(false)}
-                        className="absolute right-0 mt-2 w-[160px] bg-gradient-to-r from-amber-600 to-orange-600 backdrop-blur-xl border border-amber-600 rounded-2xl shadow-2xl z-50 animate-fadeIn py-2"
+                        className="absolute right-0 mt-2 w-[160px] bg-gradient-to-r from-amber-600 to-orange-600 backdrop-blur-xl border border-amber-600 rounded-2xl shadow-2xl z-50 animate-fadeInHeader py-2"
                       >
                         {item.subItems.map((subItem) => (
                           <Link
@@ -295,22 +295,6 @@ export default function ClientHeader() {
       </header>
 
       <PremiumMobileMenu user={user} onLogout={handleLogout} />
-
-      <style jsx>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.3s ease-in-out;
-        }
-      `}</style>
     </>
   );
 }

@@ -26,9 +26,10 @@ const CURRENCY = 'EUR';
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-  const { slug } = params;
+  const data = await params;
+  const { slug } = data;
   const product = await getProductByIdOrSlug(slug);
   
   if (!product) {
