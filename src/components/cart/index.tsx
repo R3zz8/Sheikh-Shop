@@ -198,7 +198,7 @@ export default function CartDropdown() {
             </div>
             <div className="flex items-center justify-between text-xs text-gray-400">
               <span>هزینه ارسال:</span>
-              <span className="font-medium text-gray-300">{formatPrice(getShippingCost(cartTotals.subtotal))}</span>
+              <span className="font-medium text-gray-300">{formatPrice(cartTotals.shippingTotal)}</span>
             </div>
 
             <EstimatedDelivery variant="glass" className="my-1.5" />
@@ -206,7 +206,7 @@ export default function CartDropdown() {
             <div className="flex items-center justify-between pt-1 border-t border-white/5 mb-3">
               <span className="text-sm text-gray-300">مبلغ قابل پرداخت:</span>
               <span className="text-lg font-semibold bg-gradient-to-r from-amber-200 via-yellow-200 to-orange-200 bg-clip-text text-transparent">
-                {formatPrice(calculateOrderTotal(cartTotals.subtotal))}
+                {formatPrice(cartTotals.subtotal + cartTotals.shippingTotal)}
               </span>
             </div>
             <Button asChild className={cn(

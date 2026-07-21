@@ -75,8 +75,8 @@ export default function CheckoutPage() {
 
   // Calculate totals using centralized shipping logic
   const subtotal = cartTotals.subtotal || 0;
-  const shipping = subtotal > 0 ? getShippingCost(subtotal) : 0;
-  const total = subtotal > 0 ? calculateOrderTotal(subtotal) : 0;
+  const shipping = cartTotals.shippingTotal || 0;
+  const total = subtotal + shipping;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -528,7 +528,19 @@ export default function CheckoutPage() {
                       <span className="font-semibold text-white text-sm">{formatPrice(subtotal)}</span>
                     </motion.div>
 
-                    {/* Section 2: Shipping with inline informational row */}
+                    {/* Section 2: Per Product Shipping */}
+                    <motion.div
+                      layout
+                      className="flex justify-between items-center text-gray-300"
+                    >
+                      <span className="flex items-center gap-2 text-sm">
+                        <Truck className="w-4 h-4 text-amber-500/70" />
+                        هزینه ارسال کالاها
+                      </span>
+                      <span className="font-semibold text-white text-sm">{formatPrice(shipping)}</span>
+                    </motion.div>
+
+                    {/* Section 3: Shipping Total with inline info */}
                     <div className="space-y-2.5 bg-amber-500/5 p-3 rounded-xl border border-amber-500/10">
                       <motion.div
                         layout
@@ -536,7 +548,7 @@ export default function CheckoutPage() {
                       >
                         <span className="flex items-center gap-2 text-sm font-medium">
                           <Truck className="w-4 h-4 text-amber-500" />
-                          هزینه ارسال
+                          جمع کل ارسال
                         </span>
                         <span className="font-semibold text-amber-400 text-sm">
                           {shipping === 0 ? 'رایگان' : formatPrice(shipping)}
@@ -551,16 +563,40 @@ export default function CheckoutPage() {
                       </div>
                     </div>
 
+                    {/* Section 4: Discount */}
+                    <motion.div
+                      layout
+                      className="flex justify-between items-center text-gray-300"
+                    >
+                      <span className="flex items-center gap-2 text-sm">
+                        <span className="text-amber-500/70">🏷️</span>
+                        تخفیف
+                      </span>
+                      <span className="font-semibold text-green-400 text-sm">{formatPrice(0)}</span>
+                    </motion.div>
+
+                    {/* Section 4.5: Tax (Future Ready) */}
+                    <motion.div
+                      layout
+                      className="flex justify-between items-center text-gray-300"
+                    >
+                      <span className="flex items-center gap-2 text-sm">
+                        <span>🧾</span>
+                        مالیات (آماده برای آینده)
+                      </span>
+                      <span className="font-semibold text-gray-400 text-sm">{formatPrice(0)}</span>
+                    </motion.div>
+
                     <Separator className="bg-amber-500/10" />
 
-                    {/* Section 3: Grand Total - strongest visual emphasis */}
+                    {/* Section 5: Grand Total - strongest visual emphasis */}
                     <motion.div
                       layout
                       className="flex justify-between items-center p-3 bg-gradient-to-l from-amber-500/10 to-transparent rounded-xl border-r-4 border-amber-500"
                     >
                       <span className="flex items-center gap-2 text-base font-bold text-white">
                         <Receipt className="w-5 h-5 text-amber-400" />
-                        مبلغ قابل پرداخت
+                        مبلغ نهایی
                       </span>
                       <span className="text-xl md:text-2xl font-black bg-gradient-to-r from-amber-300 via-yellow-300 to-orange-400 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(245,158,11,0.2)]">
                         {formatPrice(total)}

@@ -25,6 +25,7 @@ import { useActionState, useEffect, useState } from 'react';
 import { upsertProduct } from '../actions';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { useUser } from '@/hooks/useUser';
 
 interface Unit {
   id: string;
@@ -48,6 +49,7 @@ const ProductForm = (props: { product: Product | null }) => {
   const { product } = props;
   const router = useRouter();
   const isNewProduct = !product?.id;
+  const { data: user } = useUser();
 
   const [state, action, isPending] = useActionState<
     {
@@ -292,6 +294,147 @@ const ProductForm = (props: { product: Product | null }) => {
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          {/* 🚚 تنظیمات پیشرفته ارسال محصول (Polished Enterprise-grade UI) */}
+          <div className="border-2 border-amber-500/30 bg-gradient-to-br from-stone-950 via-stone-900 to-black p-7 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.8),0_0_30px_rgba(217,119,6,0.1)] font-vazirmatn text-right space-y-6 relative overflow-hidden" dir="rtl">
+            {/* Elegant Background Glow */}
+            <div className="absolute -top-12 -left-12 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl pointer-events-none"></div>
+
+            <div className="flex items-center gap-3.5 pb-4 border-b border-amber-500/20">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white shadow-lg shadow-amber-500/25">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-truck"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><polyline points="14 18 20 18 22 14 18 14 18 10 14 10"/><circle cx="7.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+              </div>
+              <div>
+                <h3 className="text-base sm:text-lg font-black bg-gradient-to-r from-amber-200 via-yellow-100 to-amber-300 bg-clip-text text-transparent">
+                  🚚 تنظیمات پیشرفته ارسال محصول
+                </h3>
+                <p className="text-xs text-amber-200/50 mt-1 font-medium">پیکربندی سیستم هوشمند توزیع و لجستیک کالا</p>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              {/* Group 1: هزینه و نوع ارسال */}
+              <div className="bg-white/5 p-5 rounded-2xl border border-white/5 space-y-4">
+                <h4 className="text-xs font-bold text-amber-400/90 flex items-center gap-2 mb-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                  بخش اول: هزینه و نوع ارسال کالا
+                </h4>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  {/* Shipping Cost */}
+                  <div className="space-y-2">
+                    <Label htmlFor="shippingCost" className="text-stone-300 text-xs font-bold flex items-center gap-1.5">
+                      <span>💰</span> هزینه اختصاصی ارسال (تومان)
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        name="shippingCost"
+                        type="number"
+                        id="shippingCost"
+                        defaultValue={(data as any)?.shippingCost ?? ''}
+                        placeholder="مثال: ۲۵۰۰۰۰"
+                        disabled={user?.role !== 'SUPERADMIN'}
+                        className="bg-stone-950/90 border-amber-500/20 text-white placeholder-stone-600 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 disabled:opacity-75 disabled:cursor-not-allowed text-left font-semibold pr-4 h-11 rounded-xl"
+                      />
+                    </div>
+                    <p className="text-[10px] text-stone-400 leading-relaxed font-medium">
+                      💡 در صورت خالی بودن، هزینه پایه حمل و نقل فروشگاه (<span className="text-amber-300">۲۰۰٬۰۰۰ تومان</span>) اعمال خواهد شد.
+                    </p>
+                    {error?.shippingCost && (
+                      <span className="text-red-500 text-xs mt-1 block font-bold">⚠️ {error.shippingCost}</span>
+                    )}
+                  </div>
+
+                  {/* Shipping Description / Mode */}
+                  <div className="space-y-2">
+                    <Label htmlFor="shippingDescription" className="text-stone-300 text-xs font-bold flex items-center gap-1.5">
+                      <span>📦</span> روش و قالب ارسال کالا
+                    </Label>
+                    <Select
+                      name="shippingDescription"
+                      defaultValue={(data as any)?.shippingDescription || ''}
+                      disabled={user?.role !== 'SUPERADMIN'}
+                    >
+                      <SelectTrigger className="bg-stone-950/90 border-amber-500/20 text-white focus:border-amber-400 focus:ring-1 focus:ring-amber-400 disabled:opacity-75 h-11 rounded-xl">
+                        <SelectValue placeholder="انتخاب قالب ارسال..." />
+                      </SelectTrigger>
+                      <SelectContent className="bg-stone-950 border-amber-500/20 text-white font-vazirmatn">
+                        <SelectItem value="ارسال ویژه">📦 ارسال ویژه (لوکس با بسته‌بندی امن)</SelectItem>
+                        <SelectItem value="ارسال سنگین">🏋️ ارسال سنگین (کالاهای با وزن بالا)</SelectItem>
+                        <SelectItem value="ارسال رایگان">🎁 ارسال رایگان (هدیه ویژه شیخ شاپ)</SelectItem>
+                        <SelectItem value="ارسال اقتصادی">⚡ ارسال اقتصادی (حمل استاندارد مقرون‌به‌صرفه)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-[10px] text-stone-400 leading-relaxed font-medium">
+                      💡 قالب انتخابی به عنوان یک نشان ارزشمند و لوکس در صفحه محصول به مشتریان نمایش داده می‌شود.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Group 2: اولویت و شرایط خاص */}
+              <div className="bg-white/5 p-5 rounded-2xl border border-white/5 space-y-4">
+                <h4 className="text-xs font-bold text-amber-400/90 flex items-center gap-2 mb-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                  بخش دوم: زمان‌بندی و شرایط استثنایی
+                </h4>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  {/* Shipping Priority */}
+                  <div className="space-y-2">
+                    <Label htmlFor="shippingPriority" className="text-stone-300 text-xs font-bold flex items-center gap-1.5">
+                      <span>⏱</span> زمان‌بندی و اولویت تحویل
+                    </Label>
+                    <Select
+                      name="shippingPriority"
+                      defaultValue={(data as any)?.shippingPriority || ''}
+                      disabled={user?.role !== 'SUPERADMIN'}
+                    >
+                      <SelectTrigger className="bg-stone-950/90 border-amber-500/20 text-white focus:border-amber-400 focus:ring-1 focus:ring-amber-400 disabled:opacity-75 h-11 rounded-xl">
+                        <SelectValue placeholder="انتخاب اولویت زمانی..." />
+                      </SelectTrigger>
+                      <SelectContent className="bg-stone-950 border-amber-500/20 text-white font-vazirmatn">
+                        <SelectItem value="Low">Low (عادی - ۵ الی ۱۰ روز کاری)</SelectItem>
+                        <SelectItem value="Normal">Normal (استاندارد - ۳ الی ۷ روز کاری)</SelectItem>
+                        <SelectItem value="High">High (ارسال سریع - ۲ الی ۴ روز کاری)</SelectItem>
+                        <SelectItem value="Express">Express (فوری اکسپرس - ۱ الی ۲ روز کاری)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-[10px] text-stone-400 leading-relaxed font-medium">
+                      💡 سیستم بر اساس اولویت زمانی انتخاب شده، زمان‌بندی ارسال و فازهای تحویل را تخمین می‌زند.
+                    </p>
+                  </div>
+
+                  {/* Free Shipping Switch */}
+                  <div className="flex items-center justify-between p-4.5 bg-stone-950/90 border border-amber-500/10 rounded-xl">
+                    <div className="space-y-1">
+                      <Label htmlFor="allowFreeShipping" className="text-amber-200 text-xs font-bold cursor-pointer flex items-center gap-1.5">
+                        <span>🎁</span> ارسال رایگان اختصاصی
+                      </Label>
+                      <span className="text-[10px] text-stone-400 block font-medium">فعال‌سازی ارسال کاملاً رایگان برای این کالا</span>
+                    </div>
+                    <div className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        name="allowFreeShipping"
+                        id="allowFreeShipping"
+                        defaultChecked={!!(data as any)?.allowFreeShipping}
+                        disabled={user?.role !== 'SUPERADMIN'}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-stone-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-amber-100 after:border-amber-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-amber-500 peer-checked:to-orange-500 disabled:opacity-50"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {user?.role !== 'SUPERADMIN' && (
+              <div className="mt-4 p-4 bg-amber-500/10 border-2 border-amber-500/20 rounded-2xl text-center flex items-center justify-center gap-2">
+                <span className="text-xs text-amber-300 font-bold">🔒 حالت فقط مشاهده: دسترسی ویرایش این فیلدها منحصراً در اختیار مدیران ارشد (Super Admin) فروشگاه است.</span>
+              </div>
+            )}
           </div>
 
           {data?.status && (
