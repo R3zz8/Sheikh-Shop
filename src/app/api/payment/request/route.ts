@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { nanoid } from 'nanoid';
 import { prisma } from '@/lib/prisma';
 import { verifyJwtToken } from '@/lib/auth/jwt';
-import { getShippingCost, calculateSubtotal, calculateOrderTotal } from '@/lib/shipping';
+import { getShippingCost, calculateSubtotal, calculateOrderTotal, calculateCartShipping } from '@/lib/shipping';
 
 // Request payload validation schema
 const paymentRequestSchema = z.object({
@@ -134,12 +134,14 @@ export async function POST(request: NextRequest) {
         });
 
         const subtotal = calculateSubtotal(itemsForCalc);
-        finalAmount = calculateOrderTotal(subtotal);
+        const shippingTotal = calculateCartShipping(cartItems);
+        finalAmount = subtotal + shippingTotal;
 
         console.log('[Server-side Recalculation] Successful:', {
           userId,
           itemCount: cartItems.length,
           subtotal,
+          shippingTotal,
           finalAmount,
           frontendAmount: payload.amount,
         });
@@ -164,6 +166,25 @@ export async function POST(request: NextRequest) {
       city: payload.city,
       description: payload.description || 'Payment',
     });
+
+    // Offline bypass when mock mode is enabled
+    if (process.env.MOCK_DB === 'true') {
+      const mockAuthority = `MOCK-AUTHORITY-${nanoid(8)}`;
+      const mockPaymentUrl = `${baseUrl}/payment/callback?authority=${mockAuthority}&status=100`;
+
+      console.log('[Mock Gateway Bypass] Bypassing YekPay network request:', {
+        orderNumber,
+        mockAuthority,
+        mockPaymentUrl,
+      });
+
+      return NextResponse.json({
+        success: true,
+        authority: mockAuthority,
+        paymentUrl: mockPaymentUrl,
+        orderNumber,
+      });
+    }
 
     // Call YekPay sandbox API
     const yekpayUrl = 'https://api.ypsapi.com/api/sandbox/request';

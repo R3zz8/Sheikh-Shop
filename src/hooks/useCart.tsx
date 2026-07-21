@@ -4,6 +4,7 @@ import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useUser } from './useUser';
 import { resolveProductPrice } from '@/lib/product-pricing';
+import { calculateCartShipping } from '@/lib/shipping';
 
 // Types for cart operations
 interface AddToCartParams {
@@ -352,6 +353,8 @@ export const useCart = () => {
   });
 
   // Calculate cart totals - use unitPrice (price per unit at time of adding to cart)
+  const shippingTotal = cart ? calculateCartShipping(cart) : 0;
+
   const cartTotals = cart ? {
     itemCount: cart.reduce((total: number, item: any) => total + item.quantity, 0),
     subtotal: cart.reduce((total: number, item: any) => {
@@ -363,10 +366,12 @@ export const useCart = () => {
       }
       return total + (price * item.quantity);
     }, 0),
+    shippingTotal,
     uniqueItems: cart.length,
   } : {
     itemCount: 0,
     subtotal: 0,
+    shippingTotal: 0,
     uniqueItems: 0,
   };
 

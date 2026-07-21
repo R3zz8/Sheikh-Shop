@@ -365,6 +365,21 @@ const mockFeaturedProducts = [
   }
 ];
 
+const normalizeMockProduct = (item: any) => {
+  if (!item || typeof item !== 'object') return item;
+  if ('basePrice' in item || 'category' in item) {
+    return {
+      shippingCost: null,
+      shippingMode: null,
+      shippingDescription: null,
+      allowFreeShipping: false,
+      shippingPriority: null,
+      ...item
+    };
+  }
+  return item;
+};
+
 const makeMockModel = (name: string, data: any[]) => {
   return new Proxy({}, {
     get(target, prop) {
@@ -382,16 +397,17 @@ const makeMockModel = (name: string, data: any[]) => {
               return true;
             });
           }
-          return result;
+          return result.map(normalizeMockProduct);
         };
       }
       if (prop === 'findFirst' || prop === 'findUnique') {
         return async (args?: any) => {
           const id = args?.where?.id || args?.where?.slug || args?.where?.name;
           if (id) {
-            return data.find(item => item.id === id || item.slug === id || item.name === id) || data[0] || null;
+            const item = data.find(item => item.id === id || item.slug === id || item.name === id) || data[0] || null;
+            return normalizeMockProduct(item);
           }
-          return data[0] || null;
+          return normalizeMockProduct(data[0] || null);
         };
       }
       if (prop === 'count') {
@@ -403,7 +419,7 @@ const makeMockModel = (name: string, data: any[]) => {
 };
 
 const makeMockModelWithWrites = (name: string, data: any[]) => {
-  let localData = [...data];
+  let localData = data;
   return new Proxy({}, {
     get(target, prop) {
       if (prop === 'findMany') {
@@ -431,23 +447,24 @@ const makeMockModelWithWrites = (name: string, data: any[]) => {
               });
             }
           }
-          return result;
+          return result.map(normalizeMockProduct);
         };
       }
       if (prop === 'findFirst' || prop === 'findUnique') {
         return async (args?: any) => {
           const id = args?.where?.id || args?.where?.slug || args?.where?.name;
           if (id) {
-            return localData.find(item => item.id === id || item.slug === id || item.name === id) || localData[0] || null;
+            const item = localData.find(item => item.id === id || item.slug === id || item.name === id) || localData[0] || null;
+            return normalizeMockProduct(item);
           }
-          return localData[0] || null;
+          return normalizeMockProduct(localData[0] || null);
         };
       }
       if (prop === 'create') {
         return async (args: any) => {
           const newItem = { id: `mock-${Date.now()}-${Math.random()}`, ...args.data, createdAt: new Date(), updatedAt: new Date() };
           localData.push(newItem);
-          return newItem;
+          return normalizeMockProduct(newItem);
         };
       }
       if (prop === 'update' || prop === 'updateMany') {
@@ -457,12 +474,12 @@ const makeMockModelWithWrites = (name: string, data: any[]) => {
             const index = localData.findIndex(item => item.id === id);
             if (index !== -1) {
               localData[index] = { ...localData[index], ...args.data, updatedAt: new Date() };
-              return localData[index];
+              return normalizeMockProduct(localData[index]);
             }
           }
           if (localData[0]) {
             localData[0] = { ...localData[0], ...args.data, updatedAt: new Date() };
-            return localData[0];
+            return normalizeMockProduct(localData[0]);
           }
           return null;
         };
@@ -470,10 +487,20 @@ const makeMockModelWithWrites = (name: string, data: any[]) => {
       if (prop === 'delete' || prop === 'deleteMany') {
         return async (args?: any) => {
           const id = args?.where?.id;
+          const userId = args?.where?.userId;
           if (id) {
-            localData = localData.filter(item => item.id !== id);
+            const index = localData.findIndex(item => item.id === id);
+            if (index !== -1) {
+              localData.splice(index, 1);
+            }
+          } else if (userId) {
+            for (let i = localData.length - 1; i >= 0; i--) {
+              if (localData[i].userId === userId) {
+                localData.splice(i, 1);
+              }
+            }
           } else {
-            localData = [];
+            localData.length = 0;
           }
           return { count: 1 };
         };
@@ -492,7 +519,7 @@ const mockUser = [
     email: 'customer@sheikhshop.com',
     firstName: 'احمد',
     lastName: 'شیخ',
-    role: 'USER',
+    role: 'SUPERADMIN',
     canLogin: true,
     disabled: false,
     emailVerified: true,
@@ -521,6 +548,8 @@ const mockCartItems = [
     unit: mockUnits[1],
   }
 ];
+
+let globalCartItems = JSON.parse(JSON.stringify(mockCartItems));
 
 const mockLuxuryUnboxingConfig = [
   {
@@ -584,9 +613,10 @@ const createMockPrisma = () => {
       if (prop === 'mobileCarousel') return makeMockModel('mobileCarousel', mockCarousel);
       if (prop === 'discount') return makeMockModel('discount', []);
       if (prop === 'user') return makeMockModel('user', mockUser);
-      if (prop === 'cartItem') return makeMockModel('cartItem', mockCartItems);
-      if (prop === 'order') return makeMockModel('order', []);
-      if (prop === 'orderItem') return makeMockModel('orderItem', []);
+      if (prop === 'cartItem') return makeMockModelWithWrites('cartItem', globalCartItems);
+      if (prop === 'order') return makeMockModelWithWrites('order', []);
+      if (prop === 'orderItem') return makeMockModelWithWrites('orderItem', []);
+      if (prop === 'transaction') return makeMockModelWithWrites('transaction', []);
       if (prop === 'showcaseConfig') return makeMockModelWithWrites('showcaseConfig', mockShowcaseConfig);
       if (prop === 'featuredProduct') return makeMockModelWithWrites('featuredProduct', mockFeaturedProducts);
       if (prop === 'luxuryUnboxingConfig') return makeMockModelWithWrites('luxuryUnboxingConfig', mockLuxuryUnboxingConfig);

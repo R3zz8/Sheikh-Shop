@@ -99,6 +99,14 @@ const productSchema = z.object({
   color: z.string().max(50).optional().nullable(),
   scent: z.string().max(50).optional().nullable(),
   flavor: z.string().max(50).optional().nullable(),
+  shippingCost: z.number()
+    .nonnegative('هزینه ارسال باید یک عدد مثبت یا صفر باشد')
+    .optional()
+    .nullable(),
+  shippingMode: z.string().optional().nullable(),
+  shippingDescription: z.string().optional().nullable(),
+  allowFreeShipping: z.boolean().optional().default(false),
+  shippingPriority: z.string().optional().nullable(),
 });
 
 // Bulk operations schema
@@ -165,9 +173,65 @@ export const upsertProduct = async (
 ) => {
   try {
     // Security: Verify admin access
-    const { userId } = await verifyAdminAccess();
+    const { userId, userRole } = await verifyAdminAccess();
 
     const id = formData.get('id') as string | null;
+
+    // Extract Shipping settings
+    const shippingCostStr = formData.get('shippingCost') as string | null;
+    const shippingMode = formData.get('shippingMode') as string | null;
+    const shippingDescription = formData.get('shippingDescription') as string | null;
+    const allowFreeShipping = formData.get('allowFreeShipping') === 'true' || formData.get('allowFreeShipping') === 'on';
+    const shippingPriority = formData.get('shippingPriority') as string | null;
+
+    const shippingCost = shippingCostStr ? parseFloat(shippingCostStr) : null;
+
+    // RBAC Permissions Enforcement for Shipping Settings
+    if (userRole !== 'SUPERADMIN') {
+      if (id) {
+        // Fetch existing product from DB
+        const existing = await prisma.product.findUnique({
+          where: { id },
+          select: {
+            shippingCost: true,
+            shippingMode: true,
+            shippingDescription: true,
+            allowFreeShipping: true,
+            shippingPriority: true,
+          }
+        });
+        if (existing) {
+          const hasShippingChanges =
+            shippingCost !== existing.shippingCost ||
+            shippingMode !== existing.shippingMode ||
+            shippingDescription !== existing.shippingDescription ||
+            allowFreeShipping !== (existing.allowFreeShipping ?? false) ||
+            shippingPriority !== existing.shippingPriority;
+
+          if (hasShippingChanges) {
+            return {
+              data: prevData.data,
+              error: { general: 'تنها مدیر ارشد (Super Admin) مجاز به تغییر تنظیمات ارسال است.' }
+            };
+          }
+        }
+      } else {
+        const hasCustomShipping =
+          shippingCost !== null ||
+          shippingMode !== null ||
+          shippingDescription !== null ||
+          allowFreeShipping !== false ||
+          shippingPriority !== null;
+
+        if (hasCustomShipping) {
+          return {
+            data: prevData.data,
+            error: { general: 'تنها مدیر ارشد (Super Admin) مجاز به تنظیم هزینه ارسال برای محصول جدید است.' }
+          };
+        }
+      }
+    }
+
     // Get baseUnitId from form or use default (kg unit)
     let baseUnitId = formData.get('baseUnitId') as string;
     if (!baseUnitId) {
@@ -270,6 +334,11 @@ export const upsertProduct = async (
       color: formData.get('color') as string || null,
       scent: formData.get('scent') as string || null,
       flavor: formData.get('flavor') as string || null,
+      shippingCost,
+      shippingMode,
+      shippingDescription,
+      allowFreeShipping,
+      shippingPriority,
     };
 
     // Find category by slug and get both enum and ID

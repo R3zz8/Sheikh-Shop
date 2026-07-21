@@ -48,6 +48,11 @@ model Product {
   color          String?             @db.VarChar(50)
   scent          String?             @db.VarChar(50)
   flavor         String?             @db.VarChar(50)
+  shippingCost        Float?
+  shippingMode        String?
+  shippingDescription String?
+  allowFreeShipping   Boolean?        @default(false)
+  shippingPriority    String?
   cartItems      CartItem[]
   discounts      Discount[]
   images         Image[]
@@ -429,12 +434,13 @@ model Order {
 }
 
 model OrderItem {
-  id        String  @id @default(cuid())
-  orderId   String
-  productId String
-  quantity  Int
-  price     Decimal @db.Decimal(10, 2)
-  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  id           String   @id @default(cuid())
+  orderId      String
+  productId    String
+  quantity     Int
+  price        Decimal  @db.Decimal(10, 2)
+  shippingCost Decimal? @db.Decimal(10, 2)
+  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@index([orderId])
   @@index([productId])

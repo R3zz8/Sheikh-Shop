@@ -61,6 +61,54 @@ export interface ShippingOptions {
   weight?: number; // in kg
   itemsCount?: number;
   productIds?: string[];
+  perProductShippingTotal?: number;
+  items?: Array<{
+    product: {
+      shippingCost?: number | null;
+      allowFreeShipping?: boolean | null;
+    } | null;
+    quantity: number;
+  }>;
+}
+
+/**
+ * Single source of truth shipping resolver for per-product shipping cost
+ */
+export function resolveShipping(product: {
+  shippingCost?: number | null;
+  allowFreeShipping?: boolean | null;
+} | null): number {
+  if (!product) {
+    return DEFAULT_SHIPPING_COST;
+  }
+  if (product.allowFreeShipping) {
+    return 0;
+  }
+  if (product.shippingCost !== undefined && product.shippingCost !== null) {
+    return product.shippingCost;
+  }
+  return DEFAULT_SHIPPING_COST;
+}
+
+/**
+ * Sums the shipping costs of all cart items using the per-product resolver
+ */
+export function calculateCartShipping(
+  items: Array<{
+    product: {
+      shippingCost?: number | null;
+      allowFreeShipping?: boolean | null;
+    } | null;
+    quantity: number;
+  }>
+): number {
+  if (!items || items.length === 0) {
+    return 0;
+  }
+  return items.reduce((acc, item) => {
+    const cost = resolveShipping(item.product);
+    return acc + (cost * item.quantity);
+  }, 0);
 }
 
 /**
@@ -91,6 +139,15 @@ export function getShippingCost(
 ): number {
   if (subtotal <= 0) {
     return 0;
+  }
+
+  // 0. Per-product shipping total priority if provided
+  if (options?.perProductShippingTotal !== undefined) {
+    return options.perProductShippingTotal;
+  }
+
+  if (options?.items && options.items.length > 0) {
+    return calculateCartShipping(options.items);
   }
 
   // 1. Future Coupon Code Integration

@@ -146,6 +146,136 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                 <span className="text-gray-300 font-medium">4.8 (124 reviews)</span>
             </motion.div>
 
+            {/* 🚚 Luxury Shipping Details Section & Timeline */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.52 }}
+                className="p-6 border-2 border-amber-500/20 bg-gradient-to-br from-stone-950 via-stone-900 to-black backdrop-blur-xl rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.7)] font-vazirmatn text-right space-y-6 relative overflow-hidden"
+                dir="rtl"
+            >
+                {/* Visual Accent Glow */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full blur-3xl pointer-events-none"></div>
+
+                <div className="flex items-center justify-between gap-3 pb-3 border-b border-white/10">
+                    <div className="flex items-center gap-2.5 text-right">
+                        <span className="text-lg">🚚</span>
+                        <h3 className="text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-100 to-amber-300">
+                            جزئیات و هزینه ارسال لوکس
+                        </h3>
+                    </div>
+                    {/* Animated Premium badge */}
+                    {product.allowFreeShipping ? (
+                        <motion.span
+                            animate={{ scale: [1, 1.05, 1], boxShadow: ['0 0 0 rgba(16,185,129,0)', '0 0 15px rgba(16,185,129,0.3)', '0 0 0 rgba(16,185,129,0)'] }}
+                            transition={{ repeat: Infinity, duration: 2 }}
+                            className="bg-gradient-to-r from-green-500 to-emerald-600 text-white text-[11px] font-bold px-3 py-1 rounded-full border border-green-400/20"
+                        >
+                            🎁 ارسال رایگان
+                        </motion.span>
+                    ) : product.shippingPriority === 'Express' ? (
+                        <motion.span
+                            animate={{ scale: [1, 1.03, 1] }}
+                            transition={{ repeat: Infinity, duration: 2.5 }}
+                            className="bg-gradient-to-r from-amber-500 to-orange-600 text-white text-[11px] font-bold px-3 py-1 rounded-full border border-amber-400/20"
+                        >
+                            ⚡ ارسال اکسپرس
+                        </motion.span>
+                    ) : product.shippingDescription === 'ارسال سنگین' ? (
+                        <span className="bg-gradient-to-r from-stone-700 to-stone-900 text-amber-200 text-[11px] font-bold px-3 py-1 rounded-full border border-amber-500/25">
+                            🏋️ ارسال سنگین
+                        </span>
+                    ) : product.shippingDescription === 'ارسال اقتصادی' ? (
+                        <span className="bg-gradient-to-r from-blue-900/60 to-slate-900 text-blue-200 text-[11px] font-bold px-3 py-1 rounded-full border border-blue-500/20">
+                            📦 ارسال اقتصادی
+                        </span>
+                    ) : (
+                        <span className="bg-gradient-to-r from-amber-950/80 to-stone-900 text-amber-300 text-[11px] font-bold px-3 py-1 rounded-full border border-amber-500/20">
+                            🚚 ارسال ویژه لوکس
+                        </span>
+                    )}
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Cost Detail block */}
+                    <div className="bg-white/5 p-4 rounded-2xl border border-white/5 hover:border-amber-500/20 transition-all duration-300">
+                        <span className="text-[11px] text-gray-400 font-semibold block mb-1">هزینه نهایی تحویل کالا</span>
+                        {product.allowFreeShipping ? (
+                            <span className="text-sm font-extrabold text-green-400">کاملاً رایگان (مهمان فروشگاه)</span>
+                        ) : (
+                            <div className="flex items-baseline gap-1">
+                                <span className="text-lg font-black text-amber-400">
+                                    {formatPrice(product.shippingCost !== undefined && product.shippingCost !== null ? product.shippingCost : 200000)}
+                                </span>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Mode Detail block */}
+                    <div className="bg-white/5 p-4 rounded-2xl border border-white/5 hover:border-amber-500/20 transition-all duration-300">
+                        <span className="text-[11px] text-gray-400 font-semibold block mb-1">پروتکل توزیع لجستیک</span>
+                        <span className="text-sm font-bold text-gray-200">
+                            {product.shippingDescription || 'ارسال ویژه با بیمه طلایی'}
+                        </span>
+                    </div>
+                </div>
+
+                {/* Shipping Timeline Phase Display */}
+                <div className="space-y-4 pt-2">
+                    <div className="flex items-center gap-2">
+                        <span className="text-xs">⏱</span>
+                        <h4 className="text-xs font-bold text-amber-400/80">زمان‌بندی و فازهای ارسال کالا</h4>
+                    </div>
+
+                    <div className="relative flex justify-between items-center px-2 py-4">
+                        {/* Connecting Line */}
+                        <div className="absolute top-[28px] left-8 right-8 h-1 bg-gradient-to-r from-amber-500/20 via-amber-500/50 to-amber-500/20 rounded-full z-0"></div>
+
+                        {/* Phase 1: ثبت سفارش */}
+                        <div className="flex flex-col items-center gap-2 relative z-10">
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white text-[11px] font-black shadow-lg shadow-amber-500/20 border-2 border-stone-950">
+                                ✓
+                            </div>
+                            <span className="text-[11px] font-bold text-amber-300">ثبت سفارش</span>
+                        </div>
+
+                        {/* Phase 2: آماده‌سازی */}
+                        <div className="flex flex-col items-center gap-2 relative z-10">
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white text-[11px] font-black shadow-lg shadow-amber-500/20 border-2 border-stone-950">
+                                ✓
+                            </div>
+                            <span className="text-[11px] font-bold text-amber-300">آماده‌سازی</span>
+                        </div>
+
+                        {/* Phase 3: ارسال */}
+                        <div className="flex flex-col items-center gap-2 relative z-10">
+                            <motion.div
+                                animate={{ rotate: [0, 5, -5, 0] }}
+                                transition={{ repeat: Infinity, duration: 3 }}
+                                className="w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-400 text-xs shadow-lg border-2 border-amber-500 z-10 bg-stone-900"
+                            >
+                                🚚
+                            </motion.div>
+                            <span className="text-[11px] font-medium text-gray-300">ارسال کالا</span>
+                        </div>
+
+                        {/* Phase 4: تحویل */}
+                        <div className="flex flex-col items-center gap-2 relative z-10">
+                            <div className="w-8 h-8 rounded-full bg-stone-900 flex items-center justify-center text-gray-500 text-xs border-2 border-white/10">
+                                🎁
+                            </div>
+                            <span className="text-[11px] font-medium text-gray-500">تحویل نهایی</span>
+                        </div>
+                    </div>
+
+                    <p className="text-[10px] text-stone-400 text-center leading-relaxed">
+                        🚚 تخمین زمان تحویل نهایی: <span className="text-amber-300 font-bold">
+                            {product.shippingPriority === 'Express' ? '۱ تا ۲ روز کاری (اکسپرس)' : '۳ تا ۷ روز کاری'}
+                        </span> از زمان ثبت فاکتور پرداخت‌شده.
+                    </p>
+                </div>
+            </motion.div>
+
             {arAvailable && (
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.35 }}>
                     <button
