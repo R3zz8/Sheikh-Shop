@@ -7,6 +7,8 @@ import { formatPrice } from '@/lib/currency';
 import DiscountBadge from '@/components/ui/DiscountBadge';
 import CompactProductUnitSelector from '@/components/ui/CompactProductUnitSelector';
 import { getOrGenerateExcerpt, stripHtmlTags } from '@/lib/seo/sanitize';
+import { useLuxuryUnboxing } from '@/components/3d/LuxuryUnboxingProvider';
+import { Gift } from 'lucide-react';
 
 interface ProductCardProps {
   product: ProductsWithImages;
@@ -15,6 +17,8 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product, className = '', onClick }: ProductCardProps) {
+  const { triggerUnboxing, config: unboxingConfig } = useLuxuryUnboxing();
+
   const imageUrl = product.images && product.images.length > 0 
     ? product.images[0]?.image || '/noImage.jpg'
     : '/noImage.jpg';
@@ -57,13 +61,13 @@ export default function ProductCard({ product, className = '', onClick }: Produc
       onClick={onClick}
     >
       <Link href={`/products/${product.slug || product.id}`} className="flex flex-col flex-grow">
-        <div className="relative overflow-hidden rounded-t-lg h-40 lg:h-44">
+        <div className="relative overflow-hidden rounded-t-lg h-40 lg:h-44 group/image">
           <Image
             src={imageUrl}
             alt={product.name}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            className="object-contain mx-auto"
+            className="object-contain mx-auto transition-transform duration-500 group-hover/image:scale-105"
           />
           
           {pricing.hasDiscount && (
@@ -74,6 +78,22 @@ export default function ProductCard({ product, className = '', onClick }: Produc
                 className="scale-75"
               />
             </div>
+          )}
+
+          {/* Luxury 3D Unboxing Quick Trigger Button */}
+          {unboxingConfig?.isEnabled !== false && (
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                triggerUnboxing(product);
+              }}
+              className="absolute bottom-2 left-2 z-20 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-black p-2 rounded-xl shadow-lg border border-amber-300/30 transition-all scale-90 md:scale-100 hover:scale-110 flex items-center gap-1 text-[10px] px-2.5 font-vazirmatn"
+              title="مشاهده جعبه گشایی سه‌بعدی لوکس"
+            >
+              <Gift className="w-3.5 h-3.5" />
+              <span>جعبه‌گشایی ۳بعدی</span>
+            </button>
           )}
         </div>
         <div className="p-4 flex flex-col flex-grow min-h-0">

@@ -9,6 +9,7 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 import ReactQueryProvider from '@/providers/ReactQuery';
 import { CurrencyProvider } from '@/providers/CurrencyProvider';
 import { UIProvider } from '@/providers/UIProvider';
+import { LuxuryUnboxingProvider } from '@/components/3d/LuxuryUnboxingProvider';
 import { OrganizationJsonLd, WebsiteJsonLd } from '@/components/seo/JsonLd';
 import { generatePageSEO } from '@/lib/seo/core';
 import AccessibilityEnhancements from '@/components/accessibility/AccessibilityEnhancements';
@@ -129,23 +130,25 @@ export default function RootLayout({
           <ReactQueryProvider>
             <CurrencyProvider>
               <UIProvider>
-                <div className="flex flex-col min-h-screen">
-                  <ClientHeader />
-                  <div className="sticky top-20 z-40 w-full bg-amber-950/90 backdrop-blur supports-[backdrop-filter]:bg-amber-950/70 border-b border-amber-200/10">
-                    <div className="max-w-7xl mx-auto px-6 md:px-8 py-3 flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
-                      <div className="w-full md:max-w-xl">
-                        <EnhancedAISearch showAdvancedOptions={false} showVRStoreButton={true} />
+                <LuxuryUnboxingProvider>
+                  <div className="flex flex-col min-h-screen">
+                    <ClientHeader />
+                    <div className="sticky top-20 z-40 w-full bg-amber-950/90 backdrop-blur supports-[backdrop-filter]:bg-amber-950/70 border-b border-amber-200/10">
+                      <div className="max-w-7xl mx-auto px-6 md:px-8 py-3 flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
+                        <div className="w-full md:max-w-xl">
+                          <EnhancedAISearch showAdvancedOptions={false} showVRStoreButton={true} />
+                        </div>
                       </div>
                     </div>
+                    <main id="main-content" className="flex-1 pt-20 pb-20 md:pb-0">
+                      {children}
+                    </main>
+                    <Footer />
+                    <MobileFooter />
                   </div>
-                  <main id="main-content" className="flex-1 pt-20 pb-20 md:pb-0">
-                    {children}
-                  </main>
-                  <Footer />
-                  <MobileFooter />
-                </div>
-                <Toaster />
-                <ShoppingChatbot />
+                  <Toaster />
+                  <ShoppingChatbot />
+                </LuxuryUnboxingProvider>
               </UIProvider>
             </CurrencyProvider>
           </ReactQueryProvider>

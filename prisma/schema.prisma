@@ -597,3 +597,50 @@ model FeaturedProduct {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }
+
+model LuxuryUnboxingConfig {
+  id                  String   @id @default(cuid())
+  isEnabled           Boolean  @default(true)
+  animationSpeed      Float    @default(1.0)
+  particleDensity     Float    @default(1.0)
+  lightIntensity      Float    @default(1.0)
+  cameraDistance      Float    @default(5.0)
+  enableAudio         Boolean  @default(true)
+  ribbonColor         String   @default("#d97706") // Golden Amber amber-600
+  goldenGlow          String   @default("#f59e0b") // Golden amber-500
+  backgroundStyle     String   @default("dark-ambient") // dark-ambient, coffee, chocolate
+  openingDuration     Float    @default(3.0) // seconds
+  featuredProductMode String   @default("pedestal") // pedestal, 3d, floating
+  autoPreview         Boolean  @default(false)
+  introDuration       Float    @default(2.0)
+  cameraSpeed         Float    @default(1.0)
+  fogIntensity        Float    @default(1.0)
+  audioVolume         Float    @default(0.5)
+  animationPreset     String   @default("classic")
+  autoClose           Boolean  @default(false)
+  ctaStyle            String   @default("luxury")
+  themePreset         String   @default("gold-chocolate")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model LuxuryUnboxingAssets {
+  id              String   @id @default(cuid())
+  boxTextureUrl   String?
+  crownLogoUrl    String?
+  unlockSoundUrl  String?
+  openSoundUrl    String?
+  sparkleSoundUrl String?
+  unwrapSoundUrl  String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model LuxuryUnboxingSettings {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
