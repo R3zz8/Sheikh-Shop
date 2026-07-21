@@ -5,12 +5,64 @@ import type { ProductsWithImages } from '@/types';
 import ImageGallery from './ImageGallery';
 import ProductInfo from './ProductInfo';
 import BundleRecommendations from '@/components/recommendations/BundleRecommendations';
+import { useLuxuryUnboxing } from '@/components/3d/LuxuryUnboxingProvider';
+import { Sparkles, Gift } from 'lucide-react';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import ProductDetailSkeleton from '@/components/ui/ProductDetailSkeleton';
 
 interface ProductDetailPageProps {
     product: ProductsWithImages;
     allProducts?: ProductsWithImages[];
+}
+
+function UnboxingTriggerSection({ product }: { product: any }) {
+    const { triggerUnboxing, config } = useLuxuryUnboxing();
+
+    if (config?.isEnabled === false) return null;
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="w-full bg-[#1e110d]/40 backdrop-blur-md border border-amber-500/15 rounded-3xl p-5 shadow-2xl relative overflow-hidden flex flex-col items-center gap-4 text-center mt-2"
+        >
+            {/* Soft decorative background glow */}
+            <div className="absolute -top-12 -left-12 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl" />
+            <div className="absolute -bottom-12 -right-12 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl" />
+
+            {/* Glowing Golden Crown Logo */}
+            <motion.div
+                animate={{ rotateY: [0, 360], scale: [1, 1.05, 1] }}
+                transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+                className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-500/20 to-amber-600/5 border border-amber-500/40 flex items-center justify-center text-2xl shadow-inner shadow-amber-500/25"
+            >
+                👑
+            </motion.div>
+
+            <div>
+                <h3 className="text-sm font-black text-amber-100 flex items-center justify-center gap-1.5 leading-none">
+                    <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
+                    <span>✨ تجربه باز کردن جعبه لوکس</span>
+                </h3>
+                <p className="text-[11px] text-stone-300 mt-2 max-w-xs mx-auto leading-relaxed">
+                    پیش از سفارش، لذت گشودن نمادین جعبه چرمی این شاهکار را با جزئیات سه‌بعدی و غبار زرین لمس کنید.
+                </p>
+            </div>
+
+            {/* Large Luxury CTA */}
+            <button
+                onClick={() => triggerUnboxing(product)}
+                className="w-full bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 hover:from-amber-400 hover:via-amber-500 hover:to-amber-600 text-stone-950 font-black py-3 px-6 rounded-2xl shadow-lg shadow-amber-500/5 border border-amber-400/20 transition-all text-xs flex items-center justify-center gap-2 group/btn"
+                aria-label="مشاهده تجربه آنباکس"
+            >
+                <Gift className="w-4 h-4 text-stone-950 group-hover/btn:rotate-12 transition-transform duration-300" />
+                <span>مشاهده تجربه آنباکس کالا 🎁</span>
+            </button>
+
+            <span className="text-[9px] text-amber-500/60 font-semibold tracking-wider block">هر خرید، آغاز یک تجربه لوکس</span>
+        </motion.div>
+    );
 }
 
 export default function ProductDetailPage({ product, allProducts = [] }: ProductDetailPageProps) {
@@ -48,8 +100,11 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
                                             <p className="text-gray-300">Failed to load image gallery</p>
                                         </div>
                                     }>
-                                        <div className="mobile-gallery-col mx-auto w-[50vw] max-w-[340px] md:max-w-none md:w-full">
+                                        <div className="mobile-gallery-col mx-auto w-[50vw] max-w-[340px] md:max-w-none md:w-full flex flex-col gap-6">
                                             <ImageGallery images={product.images} productName={product.name} />
+
+                                            {/* ✨ Luxury Unboxing Glass Card Section */}
+                                            <UnboxingTriggerSection product={product} />
                                         </div>
                                     </ErrorBoundary>
 

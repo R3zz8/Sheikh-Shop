@@ -16,6 +16,8 @@ import ProductBadge from '@/components/ui/ProductBadge';
 import CompactProductUnitSelector from '@/components/ui/CompactProductUnitSelector';
 import { calculateFinalPricing } from '@/lib/pricing';
 import { getOrGenerateExcerpt, stripHtmlTags } from '@/lib/seo/sanitize';
+import { useLuxuryUnboxing } from '@/components/3d/LuxuryUnboxingProvider';
+import { Gift } from 'lucide-react';
 
 // ProductDescription component for read more/less functionality
 function ProductDescription({ description }: { description: string }) {
@@ -79,6 +81,7 @@ export default function ProductItem({
   units?: Unit[];
 }) {
   const { addToCartMutation } = useCart();
+  const { triggerUnboxing, config: unboxingConfig } = useLuxuryUnboxing();
   const [isImageLoaded, setIsImageLoaded] = useState(false);
   const [showFlyAnimation, setShowFlyAnimation] = useState(false);
   const [animationPosition, setAnimationPosition] = useState({ x: 0, y: 0 });
@@ -234,6 +237,22 @@ export default function ProductItem({
                   className="scale-90"
                 />
               </div>
+            )}
+
+            {/* Luxury 3D Unboxing Quick Trigger Button */}
+            {unboxingConfig?.isEnabled !== false && (
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  triggerUnboxing(product);
+                }}
+                className="absolute bottom-3 left-3 z-20 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-black p-2 rounded-xl shadow-lg border border-amber-300/30 transition-all scale-95 hover:scale-105 flex items-center gap-1 text-[10px] px-2.5 font-vazirmatn"
+                title="مشاهده جعبه گشایی سه‌بعدی لوکس"
+              >
+                <Gift className="w-3.5 h-3.5" />
+                <span>جعبه‌گشایی ۳بعدی</span>
+              </button>
             )}
           </div>
         </Link>

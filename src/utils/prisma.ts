@@ -522,6 +522,59 @@ const mockCartItems = [
   }
 ];
 
+const mockLuxuryUnboxingConfig = [
+  {
+    id: 'luc1',
+    isEnabled: true,
+    animationSpeed: 1.0,
+    particleDensity: 1.0,
+    lightIntensity: 1.0,
+    cameraDistance: 5.0,
+    enableAudio: true,
+    ribbonColor: '#d97706',
+    goldenGlow: '#f59e0b',
+    backgroundStyle: 'dark-ambient',
+    openingDuration: 3.0,
+    featuredProductMode: 'pedestal',
+    autoPreview: false,
+    introDuration: 2.0,
+    cameraSpeed: 1.0,
+    fogIntensity: 1.0,
+    audioVolume: 0.5,
+    animationPreset: 'classic',
+    autoClose: false,
+    ctaStyle: 'luxury',
+    themePreset: 'gold-chocolate',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }
+];
+
+const mockLuxuryUnboxingAssets = [
+  {
+    id: 'lua1',
+    boxTextureUrl: null,
+    crownLogoUrl: null,
+    unlockSoundUrl: null,
+    openSoundUrl: null,
+    sparkleSoundUrl: null,
+    unwrapSoundUrl: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }
+];
+
+const mockLuxuryUnboxingSettings = [
+  {
+    id: 'lus1',
+    key: 'theme',
+    value: 'dark',
+    description: 'default theme mode',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }
+];
+
 const createMockPrisma = () => {
   return new Proxy({}, {
     get(target, prop) {
@@ -536,6 +589,9 @@ const createMockPrisma = () => {
       if (prop === 'orderItem') return makeMockModel('orderItem', []);
       if (prop === 'showcaseConfig') return makeMockModelWithWrites('showcaseConfig', mockShowcaseConfig);
       if (prop === 'featuredProduct') return makeMockModelWithWrites('featuredProduct', mockFeaturedProducts);
+      if (prop === 'luxuryUnboxingConfig') return makeMockModelWithWrites('luxuryUnboxingConfig', mockLuxuryUnboxingConfig);
+      if (prop === 'luxuryUnboxingAssets') return makeMockModelWithWrites('luxuryUnboxingAssets', mockLuxuryUnboxingAssets);
+      if (prop === 'luxuryUnboxingSettings') return makeMockModelWithWrites('luxuryUnboxingSettings', mockLuxuryUnboxingSettings);
       if (prop === '$connect') return async () => {};
       if (prop === '$disconnect') return async () => {};
 
