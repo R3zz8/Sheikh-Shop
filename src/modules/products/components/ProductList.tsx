@@ -7,6 +7,17 @@ import ProductItemResponsive from './ProductItemResponsive';
 import ProductCarouselMobile from '@/components/product/ProductCarouselMobile';
 import { ProductListSkeleton } from '@/components/ui';
 import { Search, Filter, Grid, Smartphone } from 'lucide-react';
+import dynamic from 'next/dynamic';
+
+const SpeakerDecoration = dynamic(
+  () => import('@/components/sheikhDigital/SpeakerDecoration'),
+  { ssr: false }
+);
+
+const HeadphoneDecoration = dynamic(
+  () => import('@/components/sheikhDigital/HeadphoneDecoration'),
+  { ssr: false }
+);
 
 interface ProductListProps {
   products: ProductsWithImages[];
@@ -15,6 +26,7 @@ interface ProductListProps {
   title?: string;
   subtitle?: string;
   mobileLayout?: 'grid' | 'carousel' | 'auto';
+  variant?: 'default' | 'digital';
 }
 
 export default function ProductList({
@@ -24,6 +36,7 @@ export default function ProductList({
   title = 'محصولات ویژه',
   subtitle = 'مجموعه انحصاری محصولات لوکس و اصیل ما را کشف کنید',
   mobileLayout = 'auto',
+  variant = 'default',
 }: ProductListProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredProducts, setFilteredProducts] = useState<ProductsWithImages[]>(products);
@@ -76,47 +89,87 @@ export default function ProductList({
           </div>
 
           {/* Search and Filter Bar */}
-          <div className="mb-8 flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <div className="relative w-full max-w-md">
-              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="جستجوی محصولات..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pr-10 pl-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-right"
-              />
-            </div>
-            <div className="flex gap-2">
-              <button className="px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-lg transition-colors duration-200 flex items-center gap-2">
-                <Filter className="w-5 h-5" />
-                فیلتر
-              </button>
-              
-              {/* Mobile Layout Toggle - Only visible on mobile */}
-              <div className="md:hidden flex bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg overflow-hidden">
-                <button
-                  onClick={() => setCurrentMobileLayout('grid')}
-                  className={`px-3 py-3 flex items-center gap-1 transition-colors duration-200 ${
-                    currentMobileLayout === 'grid' 
-                      ? 'bg-amber-600 text-white' 
-                      : 'text-gray-400 hover:text-white'
-                  }`}
-                >
-                  <Grid className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setCurrentMobileLayout('carousel')}
-                  className={`px-3 py-3 flex items-center gap-1 transition-colors duration-200 ${
-                    currentMobileLayout === 'carousel' 
-                      ? 'bg-amber-600 text-white' 
-                      : 'text-gray-400 hover:text-white'
-                  }`}
-                >
-                  <Smartphone className="w-4 h-4" />
-                </button>
+          <div className="flex flex-row items-center justify-between w-full gap-2 sm:gap-4 mb-8">
+            {/* Speaker (Left) - Hidden on extra small screens, visible as a small luxury decor */}
+            {variant === 'digital' && (
+              <div className="hidden sm:flex shrink-0 w-[80px] h-[80px] md:w-[100px] md:h-[100px] items-center justify-center">
+                <SpeakerDecoration />
+              </div>
+            )}
+
+            {/* Central Search Bar Box inside premium glass card with subtle animated gold glow */}
+            <div className={`flex-1 w-full ${
+              variant === 'digital'
+                ? 'p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#1c110a]/80 via-[#23150c]/85 to-[#1c110a]/80 border border-amber-500/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] relative overflow-hidden group transition-all duration-300 hover:border-amber-500/40'
+                : 'mb-0'
+            }`}>
+              {/* Gold glow animation behind */}
+              {variant === 'digital' && (
+                <>
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-500/5 to-transparent -translate-x-full animate-[shimmer_3s_infinite] pointer-events-none" />
+                  <style dangerouslySetInnerHTML={{ __html: `
+                    @keyframes shimmer {
+                      0% { transform: translateX(-100%); }
+                      100% { transform: translateX(100%); }
+                    }
+                  `}} />
+                </>
+              )}
+
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center relative z-10">
+                <div className="relative w-full max-w-md">
+                  <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <input
+                    type="text"
+                    placeholder="جستجوی محصولات..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className={`w-full pr-10 pl-4 py-3 bg-white/10 backdrop-blur-sm border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-right transition-colors duration-300 ${
+                      variant === 'digital'
+                        ? 'border-amber-500/20 hover:border-amber-500/40'
+                        : 'border-white/20'
+                    }`}
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <button className="px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-lg transition-colors duration-200 flex items-center gap-2">
+                    <Filter className="w-5 h-5" />
+                    فیلتر
+                  </button>
+
+                  {/* Mobile Layout Toggle - Only visible on mobile */}
+                  <div className="md:hidden flex bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg overflow-hidden">
+                    <button
+                      onClick={() => setCurrentMobileLayout('grid')}
+                      className={`px-3 py-3 flex items-center gap-1 transition-colors duration-200 ${
+                        currentMobileLayout === 'grid'
+                          ? 'bg-amber-600 text-white'
+                          : 'text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      <Grid className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setCurrentMobileLayout('carousel')}
+                      className={`px-3 py-3 flex items-center gap-1 transition-colors duration-200 ${
+                        currentMobileLayout === 'carousel'
+                          ? 'bg-amber-600 text-white'
+                          : 'text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      <Smartphone className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
+
+            {/* Headphone (Right) */}
+            {variant === 'digital' && (
+              <div className="hidden sm:flex shrink-0 w-[80px] h-[80px] md:w-[100px] md:h-[100px] items-center justify-center">
+                <HeadphoneDecoration />
+              </div>
+            )}
           </div>
 
           {/* Debug Info */}
