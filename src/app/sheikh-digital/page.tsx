@@ -8,8 +8,6 @@ import { buildLanguageAlternates, getBaseUrl } from '@/lib/seo/hreflang';
 import { BreadcrumbJsonLd } from '@/components/seo/JsonLd';
 
 // Import our premium custom Sheikh Digital page sections
-import SheikhDigitalHero from '@/components/sheikhDigital/SheikhDigitalHero';
-import SheikhDigitalDivider from '@/components/sheikhDigital/SheikhDigitalDivider';
 import SheikhDigitalEmptyState from '@/components/sheikhDigital/SheikhDigitalEmptyState';
 import ProductListView from '@/modules/products/views/ProductListView';
 
@@ -144,17 +142,11 @@ export default async function SheikhDigitalPage() {
     ];
 
     return (
-      <div className="min-h-screen bg-gradient-to-b from-[#0a0503] via-[#120703] to-[#0a0503] text-white">
+      <div className="min-h-screen bg-gradient-to-b from-[#0a0503] via-[#120703] to-[#0a0503] text-white pt-6">
         {/* Render Breadcrumb JSON-LD schema */}
         <BreadcrumbJsonLd breadcrumbs={breadcrumbs} />
 
-        {/* 1. Hero Section containing 3D canvas and copy */}
-        <SheikhDigitalHero />
-
-        {/* 2. Shimmering Gold Divider */}
-        <SheikhDigitalDivider />
-
-        {/* 3. Product Listing Grid or Localized Premium Empty State */}
+        {/* Product Listing Grid starts directly below global search/header */}
         <div id="digital-products-section" className="scroll-mt-24 pb-16">
           {serializedProducts.length > 0 ? (
             <ProductListView

@@ -47,92 +47,134 @@ class ThreeErrorBoundary extends React.Component<ThreeErrorBoundaryProps, { hasE
 
 function HeadphoneModel() {
   const groupRef = useRef<THREE.Group>(null);
+  const shadowRef = useRef<THREE.Mesh>(null);
 
   useFrame((state) => {
     const time = state.clock.getElapsedTime();
     const pointer = state.pointer; // Mouse positions on canvas screen (-1 to 1)
 
+    // Slow float & slow rotation & mouse tilt parallax
     if (groupRef.current) {
-      // Slow float & gentle rotation
+      // Float
       groupRef.current.position.y = Math.sin(time * 0.9) * 0.08;
+
+      // Slow rotation
       groupRef.current.rotation.y = time * 0.25;
 
       // Subtle mouse tilt parallax (independent of rotation)
-      // We map pointer.x to rotation.z/y, and pointer.y to rotation.x
       groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, pointer.y * 0.25, 0.1);
       groupRef.current.rotation.z = THREE.MathUtils.lerp(groupRef.current.rotation.z, -pointer.x * 0.25, 0.1);
+    }
+
+    // Dynamic scale/opacity shadow plane based on height (AO Shadow effect)
+    if (shadowRef.current && groupRef.current) {
+      const heightOffset = groupRef.current.position.y;
+      const shadowScale = Math.max(0.4, 1.0 - heightOffset * 0.6);
+      shadowRef.current.scale.set(shadowScale, shadowScale, 1.0);
+
+      const shadowMat = shadowRef.current.material as THREE.MeshBasicMaterial;
+      if (shadowMat) {
+        shadowMat.opacity = Math.max(0.2, 0.55 - heightOffset * 0.9);
+      }
     }
   });
 
   return (
-    <group ref={groupRef} scale={[0.8, 0.8, 0.8]} position={[0, 0, 0]}>
-      {/* Headband Arc */}
-      <mesh position={[0, 0.18, 0]}>
-        <torusGeometry args={[0.55, 0.06, 16, 48, Math.PI]} />
-        <meshStandardMaterial
-          color="#1e120b" // Dark Chocolate leather brown
-          roughness={0.7}
-          metalness={0.3}
+    <group>
+      {/* Headphone Main Group */}
+      <group ref={groupRef} scale={[0.85, 0.85, 0.85]} position={[0, 0, 0]}>
+        {/* Headband Arc */}
+        <mesh position={[0, 0.18, 0]}>
+          <torusGeometry args={[0.55, 0.06, 16, 48, Math.PI]} />
+          <meshStandardMaterial
+            color="#120a06" // Dark Chocolate leather brown
+            roughness={0.5}
+            metalness={0.5}
+          />
+        </mesh>
+
+        {/* Gold metallic frame connectors */}
+        <mesh position={[-0.55, 0.18, 0]} rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.05, 0.05, 0.15, 16]} />
+          <meshStandardMaterial color="#d4af37" metalness={0.98} roughness={0.05} />
+        </mesh>
+        <mesh position={[0.55, 0.18, 0]} rotation={[0, 0, -Math.PI / 2]}>
+          <cylinderGeometry args={[0.05, 0.05, 0.15, 16]} />
+          <meshStandardMaterial color="#d4af37" metalness={0.98} roughness={0.05} />
+        </mesh>
+
+        {/* Left Cup */}
+        <group position={[-0.58, -0.1, 0]}>
+          {/* Gold metal rod */}
+          <mesh position={[0.03, 0.18, 0]} rotation={[0, 0, -0.15]}>
+            <cylinderGeometry args={[0.015, 0.015, 0.12, 8]} />
+            <meshStandardMaterial color="#d4af37" metalness={0.95} roughness={0.05} />
+          </mesh>
+          {/* Cup body */}
+          <mesh rotation={[0, Math.PI / 2, 0]}>
+            <cylinderGeometry args={[0.2, 0.2, 0.12, 32]} />
+            <meshStandardMaterial color="#1a0f09" metalness={0.8} roughness={0.15} />
+          </mesh>
+          {/* Outer gold ring (Emissive glow) */}
+          <mesh position={[-0.06, 0, 0]} rotation={[0, Math.PI / 2, 0]}>
+            <torusGeometry args={[0.2, 0.01, 8, 32]} />
+            <meshStandardMaterial
+              color="#fbbf24"
+              emissive="#d4af37"
+              emissiveIntensity={0.8}
+              metalness={0.95}
+              roughness={0.05}
+            />
+          </mesh>
+          {/* Cushion (leather) */}
+          <mesh position={[0.04, 0, 0]} rotation={[0, Math.PI / 2, 0]}>
+            <torusGeometry args={[0.18, 0.04, 16, 32]} />
+            <meshStandardMaterial color="#120a06" roughness={0.8} />
+          </mesh>
+        </group>
+
+        {/* Right Cup */}
+        <group position={[0.58, -0.1, 0]}>
+          {/* Gold metal rod */}
+          <mesh position={[-0.03, 0.18, 0]} rotation={[0, 0, 0.15]}>
+            <cylinderGeometry args={[0.015, 0.015, 0.12, 8]} />
+            <meshStandardMaterial color="#d4af37" metalness={0.95} roughness={0.05} />
+          </mesh>
+          {/* Cup body */}
+          <mesh rotation={[0, -Math.PI / 2, 0]}>
+            <cylinderGeometry args={[0.2, 0.2, 0.12, 32]} />
+            <meshStandardMaterial color="#1a0f09" metalness={0.8} roughness={0.15} />
+          </mesh>
+          {/* Outer gold ring (Emissive glow) */}
+          <mesh position={[0.06, 0, 0]} rotation={[0, -Math.PI / 2, 0]}>
+            <torusGeometry args={[0.2, 0.01, 8, 32]} />
+            <meshStandardMaterial
+              color="#fbbf24"
+              emissive="#d4af37"
+              emissiveIntensity={0.8}
+              metalness={0.95}
+              roughness={0.05}
+            />
+          </mesh>
+          {/* Cushion (leather) */}
+          <mesh position={[-0.04, 0, 0]} rotation={[0, -Math.PI / 2, 0]}>
+            <torusGeometry args={[0.18, 0.04, 16, 32]} />
+            <meshStandardMaterial color="#120a06" roughness={0.8} />
+          </mesh>
+        </group>
+      </group>
+
+      {/* AO Bottom Shadow Plane */}
+      <mesh ref={shadowRef} rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.8, 0]}>
+        <planeGeometry args={[1.2, 1.2]} />
+        <meshBasicMaterial
+          color="#000000"
+          transparent
+          opacity={0.4}
+          depthWrite={false}
+          blending={THREE.NormalBlending}
         />
       </mesh>
-
-      {/* Gold metallic frame connectors */}
-      <mesh position={[-0.55, 0.18, 0]} rotation={[0, 0, Math.PI / 2]}>
-        <cylinderGeometry args={[0.05, 0.05, 0.15, 16]} />
-        <meshStandardMaterial color="#d4af37" metalness={0.95} roughness={0.1} />
-      </mesh>
-      <mesh position={[0.55, 0.18, 0]} rotation={[0, 0, -Math.PI / 2]}>
-        <cylinderGeometry args={[0.05, 0.05, 0.15, 16]} />
-        <meshStandardMaterial color="#d4af37" metalness={0.95} roughness={0.1} />
-      </mesh>
-
-      {/* Left Cup */}
-      <group position={[-0.58, -0.1, 0]}>
-        {/* Gold metal rod */}
-        <mesh position={[0.03, 0.18, 0]} rotation={[0, 0, -0.15]}>
-          <cylinderGeometry args={[0.015, 0.015, 0.12, 8]} />
-          <meshStandardMaterial color="#d4af37" metalness={0.9} roughness={0.1} />
-        </mesh>
-        {/* Cup body */}
-        <mesh rotation={[0, Math.PI / 2, 0]}>
-          <cylinderGeometry args={[0.2, 0.2, 0.12, 32]} />
-          <meshStandardMaterial color="#111111" metalness={0.8} roughness={0.15} />
-        </mesh>
-        {/* Outer gold ring */}
-        <mesh position={[-0.06, 0, 0]} rotation={[0, Math.PI / 2, 0]}>
-          <torusGeometry args={[0.2, 0.01, 8, 32]} />
-          <meshStandardMaterial color="#d4af37" metalness={0.95} roughness={0.05} />
-        </mesh>
-        {/* Cushion (leather) */}
-        <mesh position={[0.04, 0, 0]} rotation={[0, Math.PI / 2, 0]}>
-          <torusGeometry args={[0.18, 0.04, 16, 32]} />
-          <meshStandardMaterial color="#1e120b" roughness={0.85} />
-        </mesh>
-      </group>
-
-      {/* Right Cup */}
-      <group position={[0.58, -0.1, 0]}>
-        {/* Gold metal rod */}
-        <mesh position={[-0.03, 0.18, 0]} rotation={[0, 0, 0.15]}>
-          <cylinderGeometry args={[0.015, 0.015, 0.12, 8]} />
-          <meshStandardMaterial color="#d4af37" metalness={0.9} roughness={0.1} />
-        </mesh>
-        {/* Cup body */}
-        <mesh rotation={[0, -Math.PI / 2, 0]}>
-          <cylinderGeometry args={[0.2, 0.2, 0.12, 32]} />
-          <meshStandardMaterial color="#111111" metalness={0.8} roughness={0.15} />
-        </mesh>
-        {/* Outer gold ring */}
-        <mesh position={[0.06, 0, 0]} rotation={[0, -Math.PI / 2, 0]}>
-          <torusGeometry args={[0.2, 0.01, 8, 32]} />
-          <meshStandardMaterial color="#d4af37" metalness={0.95} roughness={0.05} />
-        </mesh>
-        {/* Cushion (leather) */}
-        <mesh position={[-0.04, 0, 0]} rotation={[0, -Math.PI / 2, 0]}>
-          <torusGeometry args={[0.18, 0.04, 16, 32]} />
-          <meshStandardMaterial color="#1e120b" roughness={0.85} />
-        </mesh>
-      </group>
     </group>
   );
 }
@@ -141,7 +183,7 @@ function HeadphoneStaticFallback() {
   return (
     <div className="w-full h-full flex items-center justify-center pointer-events-none select-none">
       {/* SVG headphone illustration */}
-      <svg className="w-14 h-14 md:w-16 md:h-16 text-amber-500/80 filter drop-shadow-[0_0_8px_rgba(245,158,11,0.3)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+      <svg className="w-16 h-16 md:w-20 md:h-20 text-amber-500/80 filter drop-shadow-[0_0_12px_rgba(245,158,11,0.4)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
         <path d="M3 14c0-4.97 4.03-9 9-9s9 4.03 9 9" stroke="#d4af37" strokeWidth="2.5" strokeLinecap="round" />
         <rect x="2" y="12" width="4" height="6" rx="2" fill="#1e120b" stroke="#d4af37" strokeWidth="1.5" />
         <rect x="18" y="12" width="4" height="6" rx="2" fill="#1e120b" stroke="#d4af37" strokeWidth="1.5" />
@@ -167,11 +209,11 @@ export default function HeadphoneDecoration() {
   }, []);
 
   if (!mounted) {
-    return <div className="w-[80px] h-[80px] md:w-[100px] md:h-[100px]" />;
+    return <div className="w-full h-full" />;
   }
 
   return (
-    <div ref={ref} className="w-[80px] h-[80px] md:w-[100px] md:h-[100px] relative flex items-center justify-center">
+    <div ref={ref} className="w-full h-full relative flex items-center justify-center">
       {inView && hasWebGL ? (
         <ThreeErrorBoundary fallback={<HeadphoneStaticFallback />}>
           <Suspense fallback={<HeadphoneStaticFallback />}>
@@ -180,9 +222,9 @@ export default function HeadphoneDecoration() {
               gl={{ antialias: true, alpha: true }}
               className="w-full h-full"
             >
-              <ambientLight intensity={1.1} />
-              <directionalLight position={[-1, 2, 1.5]} intensity={1.8} color="#fffbee" />
-              <pointLight position={[1, -1, 1]} intensity={0.5} color="#fbbf24" />
+              <ambientLight intensity={1.3} />
+              <directionalLight position={[-1.5, 2.5, 1.5]} intensity={2.0} color="#fffbee" />
+              <pointLight position={[1.5, -1, 1]} intensity={0.6} color="#fbbf24" />
               <HeadphoneModel />
             </Canvas>
           </Suspense>

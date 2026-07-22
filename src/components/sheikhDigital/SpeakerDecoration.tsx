@@ -46,24 +46,44 @@ class ThreeErrorBoundary extends React.Component<ThreeErrorBoundaryProps, { hasE
 }
 
 function SpeakerModel() {
-  const speakerRef = useRef<THREE.Group>(null);
+  const groupRef = useRef<THREE.Group>(null);
   const woofer1Ref = useRef<THREE.Mesh>(null);
   const woofer2Ref = useRef<THREE.Mesh>(null);
+  const shadowRef = useRef<THREE.Mesh>(null);
 
   useFrame((state) => {
     const time = state.clock.getElapsedTime();
+    const pointer = state.pointer; // Mouse positions on canvas screen (-1 to 1)
 
-    // Slow float & gentle rotation
-    if (speakerRef.current) {
-      speakerRef.current.position.y = Math.sin(time * 0.8) * 0.08;
-      speakerRef.current.rotation.y = Math.sin(time * 0.4) * 0.15;
+    // Slow float & gentle rotation & mouse tilt parallax
+    if (groupRef.current) {
+      // Float
+      groupRef.current.position.y = Math.sin(time * 0.8) * 0.08 - 0.2;
+
+      // Slow rotation
+      groupRef.current.rotation.y = time * 0.15;
+
+      // Mouse tilt interaction (lerp to smooth)
+      groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, pointer.y * 0.2, 0.1);
+      groupRef.current.rotation.z = THREE.MathUtils.lerp(groupRef.current.rotation.z, -pointer.x * 0.2, 0.1);
     }
 
-    // Bass pulse every ~2.5 seconds
+    // Dynamic scale/opacity shadow plane based on height (AO Shadow effect)
+    if (shadowRef.current && groupRef.current) {
+      const heightOffset = groupRef.current.position.y + 0.2; // normalize offset
+      const shadowScale = Math.max(0.4, 1.0 - heightOffset * 0.5);
+      shadowRef.current.scale.set(shadowScale, shadowScale, 1.0);
+
+      const shadowMat = shadowRef.current.material as THREE.MeshBasicMaterial;
+      if (shadowMat) {
+        shadowMat.opacity = Math.max(0.2, 0.6 - heightOffset * 0.8);
+      }
+    }
+
+    // Dynamic bass pulse animation on woofers
     const pulseCycle = (time * 2.5) % (Math.PI * 2);
-    // Pulse is active when sine is high
     const pulseStrength = Math.max(0, Math.sin(pulseCycle));
-    const bassScale = 1.0 + pulseStrength * 0.08;
+    const bassScale = 1.0 + pulseStrength * 0.06;
 
     if (woofer1Ref.current) {
       woofer1Ref.current.scale.set(bassScale, bassScale, 1.0);
@@ -74,82 +94,97 @@ function SpeakerModel() {
   });
 
   return (
-    <group ref={speakerRef} position={[0, -0.4, 0]} scale={[1.2, 1.2, 1.2]}>
-      {/* Main Speaker Cabinet */}
-      <mesh castShadow receiveShadow>
-        <boxGeometry args={[0.36, 0.9, 0.3]} />
-        <meshStandardMaterial
-          color="#111111" // Premium Matte Black
-          roughness={0.4}
-          metalness={0.7}
-        />
-      </mesh>
-
-      {/* Gold Front Trim Borders */}
-      <mesh position={[0, 0, 0.152]}>
-        <planeGeometry args={[0.34, 0.86]} />
-        <meshStandardMaterial
-          color="#d4af37" // Luxurious Gold Border
-          metalness={0.9}
-          roughness={0.15}
-          wireframe
-        />
-      </mesh>
-
-      {/* Tweeter (Top Speaker Driver) */}
-      <group position={[0, 0.28, 0.155]}>
-        <mesh rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[0.07, 0.07, 0.01, 32]} />
-          <meshStandardMaterial color="#222222" roughness={0.5} />
-        </mesh>
-        <mesh position={[0, 0, 0.005]} rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[0.04, 0.04, 0.01, 16]} />
-          <meshStandardMaterial color="#d4af37" metalness={0.9} roughness={0.1} />
-        </mesh>
-      </group>
-
-      {/* Upper Woofer with LED ring (Bass Pulsing) */}
-      <group position={[0, 0.04, 0.155]}>
-        <mesh ref={woofer1Ref} rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[0.1, 0.1, 0.02, 32]} />
-          <meshStandardMaterial color="#111" roughness={0.6} />
-        </mesh>
-        {/* LED Ring / Gold Accent */}
-        <mesh position={[0, 0, 0.005]} rotation={[Math.PI / 2, 0, 0]}>
-          <torusGeometry args={[0.09, 0.008, 16, 32]} />
+    <group>
+      {/* Speaker Main Group */}
+      <group ref={groupRef} position={[0, -0.2, 0]} scale={[1.3, 1.3, 1.3]}>
+        {/* Main Speaker Cabinet */}
+        <mesh castShadow receiveShadow>
+          <boxGeometry args={[0.34, 0.85, 0.28]} />
           <meshStandardMaterial
-            color="#fbbf24"
-            emissive="#d4af37"
-            emissiveIntensity={0.6}
+            color="#120a06" // Deep Luxury Dark Chocolate Brown
+            roughness={0.25}
             metalness={0.8}
-            roughness={0.2}
           />
         </mesh>
-      </group>
 
-      {/* Lower Woofer with LED ring (Bass Pulsing) */}
-      <group position={[0, -0.22, 0.155]}>
-        <mesh ref={woofer2Ref} rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[0.1, 0.1, 0.02, 32]} />
-          <meshStandardMaterial color="#111" roughness={0.6} />
-        </mesh>
-        {/* LED Ring / Gold Accent */}
-        <mesh position={[0, 0, 0.005]} rotation={[Math.PI / 2, 0, 0]}>
-          <torusGeometry args={[0.09, 0.008, 16, 32]} />
+        {/* Polished Gold Front Trim Borders */}
+        <mesh position={[0, 0, 0.142]}>
+          <planeGeometry args={[0.32, 0.81]} />
           <meshStandardMaterial
-            color="#fbbf24"
-            emissive="#d4af37"
-            emissiveIntensity={0.6}
-            metalness={0.8}
-            roughness={0.2}
+            color="#d4af37" // Luxurious Gold Border
+            metalness={0.95}
+            roughness={0.1}
+            wireframe
           />
         </mesh>
+
+        {/* Tweeter (Top Speaker Driver) */}
+        <group position={[0, 0.26, 0.145]}>
+          <mesh rotation={[Math.PI / 2, 0, 0]}>
+            <cylinderGeometry args={[0.065, 0.065, 0.01, 32]} />
+            <meshStandardMaterial color="#0c0704" roughness={0.3} metalness={0.9} />
+          </mesh>
+          <mesh position={[0, 0, 0.005]} rotation={[Math.PI / 2, 0, 0]}>
+            <cylinderGeometry args={[0.035, 0.035, 0.01, 16]} />
+            <meshStandardMaterial color="#d4af37" metalness={0.95} roughness={0.05} />
+          </mesh>
+        </group>
+
+        {/* Upper Woofer with Golden LED ring */}
+        <group position={[0, 0.03, 0.145]}>
+          <mesh ref={woofer1Ref} rotation={[Math.PI / 2, 0, 0]}>
+            <cylinderGeometry args={[0.09, 0.09, 0.015, 32]} />
+            <meshStandardMaterial color="#1a0f09" roughness={0.5} />
+          </mesh>
+          {/* LED Ring / Gold Accent (Emissive bloom) */}
+          <mesh position={[0, 0, 0.005]} rotation={[Math.PI / 2, 0, 0]}>
+            <torusGeometry args={[0.082, 0.006, 16, 32]} />
+            <meshStandardMaterial
+              color="#fbbf24"
+              emissive="#d4af37"
+              emissiveIntensity={1.2}
+              metalness={0.9}
+              roughness={0.1}
+            />
+          </mesh>
+        </group>
+
+        {/* Lower Woofer with Golden LED ring */}
+        <group position={[0, -0.2, 0.145]}>
+          <mesh ref={woofer2Ref} rotation={[Math.PI / 2, 0, 0]}>
+            <cylinderGeometry args={[0.09, 0.09, 0.015, 32]} />
+            <meshStandardMaterial color="#1a0f09" roughness={0.5} />
+          </mesh>
+          {/* LED Ring / Gold Accent (Emissive bloom) */}
+          <mesh position={[0, 0, 0.005]} rotation={[Math.PI / 2, 0, 0]}>
+            <torusGeometry args={[0.082, 0.006, 16, 32]} />
+            <meshStandardMaterial
+              color="#fbbf24"
+              emissive="#d4af37"
+              emissiveIntensity={1.2}
+              metalness={0.9}
+              roughness={0.1}
+            />
+          </mesh>
+        </group>
+
+        {/* Base Platform / Gold Accented Feet */}
+        <mesh position={[0, -0.43, 0]}>
+          <boxGeometry args={[0.38, 0.025, 0.32]} />
+          <meshStandardMaterial color="#d4af37" metalness={0.98} roughness={0.05} />
+        </mesh>
       </group>
 
-      {/* Base Platform / Gold Accented Feet */}
-      <mesh position={[0, -0.46, 0]}>
-        <boxGeometry args={[0.4, 0.03, 0.34]} />
-        <meshStandardMaterial color="#d4af37" metalness={0.95} roughness={0.1} />
+      {/* AO Bottom Shadow Plane */}
+      <mesh ref={shadowRef} rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.85, 0]}>
+        <planeGeometry args={[1.0, 1.0]} />
+        <meshBasicMaterial
+          color="#000000"
+          transparent
+          opacity={0.5}
+          depthWrite={false}
+          blending={THREE.NormalBlending}
+        />
       </mesh>
     </group>
   );
@@ -159,8 +194,8 @@ function SpeakerStaticFallback() {
   return (
     <div className="w-full h-full flex items-center justify-center pointer-events-none select-none">
       {/* SVG speaker illustration */}
-      <svg className="w-14 h-14 md:w-16 md:h-16 text-amber-500/80 filter drop-shadow-[0_0_8px_rgba(245,158,11,0.3)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-        <rect x="5" y="2" width="14" height="20" rx="2" fill="#1c110a" stroke="#d4af37" strokeWidth="2" />
+      <svg className="w-16 h-16 md:w-20 md:h-20 text-amber-500/80 filter drop-shadow-[0_0_12px_rgba(245,158,11,0.4)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+        <rect x="5" y="2" width="14" height="20" rx="3" fill="#1c110a" stroke="#d4af37" strokeWidth="2" />
         <circle cx="12" cy="7" r="2.5" stroke="#d4af37" fill="#111" />
         <circle cx="12" cy="7" r="1" fill="#d4af37" />
         <circle cx="12" cy="15" r="4" stroke="#d4af37" fill="#111" className="animate-pulse" style={{ transformOrigin: 'center' }} />
@@ -185,11 +220,11 @@ export default function SpeakerDecoration() {
   }, []);
 
   if (!mounted) {
-    return <div className="w-[80px] h-[80px] md:w-[100px] md:h-[100px]" />;
+    return <div className="w-full h-full" />;
   }
 
   return (
-    <div ref={ref} className="w-[80px] h-[80px] md:w-[100px] md:h-[100px] relative flex items-center justify-center">
+    <div ref={ref} className="w-full h-full relative flex items-center justify-center">
       {inView && hasWebGL ? (
         <ThreeErrorBoundary fallback={<SpeakerStaticFallback />}>
           <Suspense fallback={<SpeakerStaticFallback />}>
@@ -198,9 +233,9 @@ export default function SpeakerDecoration() {
               gl={{ antialias: true, alpha: true }}
               className="w-full h-full"
             >
-              <ambientLight intensity={1.1} />
-              <directionalLight position={[1, 2, 1.5]} intensity={1.8} color="#fffbee" />
-              <pointLight position={[-1, -1, 1]} intensity={0.5} color="#fbbf24" />
+              <ambientLight intensity={1.3} />
+              <directionalLight position={[1.5, 2.5, 1.5]} intensity={2.0} color="#fffbee" />
+              <pointLight position={[-1.5, -1, 1]} intensity={0.6} color="#fbbf24" />
               <SpeakerModel />
             </Canvas>
           </Suspense>
