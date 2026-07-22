@@ -36,16 +36,16 @@ test.describe('Sheikh Digital Visual Verification', () => {
       console.log(`[Browser Unhandled Exception] ${err.message}`);
     });
 
-    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(targetUrl, { waitUntil: 'domcontentloaded' });
 
     // 1. Title verification
     await expect(page).toHaveTitle(/شیخ دیجیتال | فروشگاه بزرگ شیخ/);
 
-    // 2. Headings & copy verification (wait for mount)
-    const heroHeading = page.locator('h1', { hasText: 'دنیای دیجیتال مجلل' });
-    await heroHeading.waitFor({ state: 'visible', timeout: 15000 });
-    await expect(heroHeading).toContainText('دنیای دیجیتال مجلل');
+    // 2. Headings & copy verification (wait for mount of the main title)
+    const titleHeading = page.locator('h1', { hasText: 'محصولات دیجیتال شیخ' });
+    await titleHeading.waitFor({ state: 'visible', timeout: 15000 });
+    await expect(titleHeading).toContainText('محصولات دیجیتال شیخ');
 
     // 3. Scroll to products section to ensure layout updates and image downloads trigger
     const productsSection = page.locator('#digital-products-section');
@@ -59,7 +59,7 @@ test.describe('Sheikh Digital Visual Verification', () => {
     // Give a brief moment for layout/animations/images to fully settle
     await page.waitForTimeout(3000);
 
-    // 4. Exactly 2 products should be visible
+    // 4. Exactly 2 products should be visible (mock db has 2 digital products seeded)
     await expect(visibleProductCards).toHaveCount(2);
 
     // Verify product 1: اسپیکر ایستاده شیخ مدل Luxury X9
@@ -109,7 +109,7 @@ test.describe('Sheikh Digital Visual Verification', () => {
   });
 
   test('mobile screenshot and assertions', async ({ page }) => {
-    await page.setViewportSize({ width: 375, height: 812 });
+    await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(targetUrl, { waitUntil: 'domcontentloaded' });
 
     const productsSection = page.locator('#digital-products-section');
@@ -125,5 +125,24 @@ test.describe('Sheikh Digital Visual Verification', () => {
     // Capture mobile screenshot
     await page.screenshot({ path: 'verification/mobile-view.png', fullPage: true });
     console.log('✅ Mobile screenshot generated successfully.');
+  });
+
+  test('small-mobile screenshot and assertions', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 568 });
+    await page.goto(targetUrl, { waitUntil: 'domcontentloaded' });
+
+    const productsSection = page.locator('#digital-products-section');
+    await productsSection.waitFor({ state: 'visible', timeout: 15000 });
+    await productsSection.scrollIntoViewIfNeeded();
+
+    const visibleProductCards = page.locator('#digital-products-section .product-card').filter({ visible: true });
+    await visibleProductCards.first().waitFor({ state: 'visible', timeout: 15000 });
+    await page.waitForTimeout(2000);
+
+    await expect(visibleProductCards).toHaveCount(2);
+
+    // Capture small mobile screenshot
+    await page.screenshot({ path: 'verification/small-mobile-view.png', fullPage: true });
+    console.log('✅ Small Mobile screenshot generated successfully.');
   });
 });
