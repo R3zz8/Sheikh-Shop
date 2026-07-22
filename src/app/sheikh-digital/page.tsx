@@ -162,6 +162,7 @@ export default async function SheikhDigitalPage() {
               units={serializedUnits}
               title="محصولات دیجیتال شیخ"
               subtitle="از اسپیکرهای ایستاده لوکس تا هدفون‌های روکش طلا و جدیدترین لوازم الکترونیک ممتاز."
+              variant="digital"
             />
           ) : (
             <SheikhDigitalEmptyState />

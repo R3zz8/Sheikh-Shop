@@ -9,6 +9,7 @@ interface ProductListViewProps {
   units?: Unit[];
   title?: string;
   subtitle?: string;
+  variant?: 'default' | 'digital';
 }
 
 function ProductListView({
@@ -16,6 +17,7 @@ function ProductListView({
   units: initialUnits,
   title,
   subtitle,
+  variant = 'default',
 }: ProductListViewProps) {
   return (
     <ProductList
@@ -23,6 +25,7 @@ function ProductListView({
       units={initialUnits}
       title={title}
       subtitle={subtitle}
+      variant={variant}
     />
   );
 }
