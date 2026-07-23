@@ -159,7 +159,7 @@ function SpeakerStaticFallback() {
   return (
     <div className="w-full h-full flex items-center justify-center pointer-events-none select-none">
       {/* SVG speaker illustration */}
-      <svg className="w-14 h-14 md:w-16 md:h-16 text-amber-500/80 filter drop-shadow-[0_0_8px_rgba(245,158,11,0.3)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+      <svg className="w-[70%] h-[70%] max-w-[56px] max-h-[56px] text-amber-500/80 filter drop-shadow-[0_0_8px_rgba(245,158,11,0.3)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
         <rect x="5" y="2" width="14" height="20" rx="2" fill="#1c110a" stroke="#d4af37" strokeWidth="2" />
         <circle cx="12" cy="7" r="2.5" stroke="#d4af37" fill="#111" />
         <circle cx="12" cy="7" r="1" fill="#d4af37" />
@@ -170,7 +170,11 @@ function SpeakerStaticFallback() {
   );
 }
 
-export default function SpeakerDecoration() {
+interface SpeakerDecorationProps {
+  className?: string;
+}
+
+export default function SpeakerDecoration({ className }: SpeakerDecorationProps) {
   const { ref, inView } = useInView({
     triggerOnce: false,
     threshold: 0.1,
@@ -184,12 +188,14 @@ export default function SpeakerDecoration() {
     setHasWebGL(isWebGLAvailable());
   }, []);
 
+  const sizeClass = className || 'w-[80px] h-[80px] md:w-[100px] md:h-[100px]';
+
   if (!mounted) {
-    return <div className="w-[80px] h-[80px] md:w-[100px] md:h-[100px]" />;
+    return <div className={sizeClass} />;
   }
 
   return (
-    <div ref={ref} className="w-[80px] h-[80px] md:w-[100px] md:h-[100px] relative flex items-center justify-center">
+    <div ref={ref} className={`${sizeClass} relative flex items-center justify-center`}>
       {inView && hasWebGL ? (
         <ThreeErrorBoundary fallback={<SpeakerStaticFallback />}>
           <Suspense fallback={<SpeakerStaticFallback />}>
