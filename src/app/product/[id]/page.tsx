@@ -157,9 +157,21 @@ async function page({ params }: { params: Promise<{ id: string }> }) {
             notFound();
         }
 
+        let categoryBreadcrumb = { name: product.category, url: `/categories/${product.category.toLowerCase()}` };
+        if (product.categoryType === 'SheikhHome') {
+            categoryBreadcrumb = { name: 'لوازم خانگی شیخ', url: '/sheikh-home' };
+        } else if (product.categoryType === 'SheikhDigital') {
+            categoryBreadcrumb = { name: 'شیخ دیجیتال', url: '/sheikh-digital' };
+        } else if (product.categoryType === 'SheikhFood') {
+            categoryBreadcrumb = { name: 'محصولات غذایی شیخ', url: '/products' };
+        } else if (product.categoryType === 'SheikhTech') {
+            categoryBreadcrumb = { name: 'محصولات فناورانه شیخ', url: '/tech-products' };
+        }
+
         const breadcrumbs = [
-            { name: 'Products', url: '/products' },
-            { name: product.category, url: `/categories/${product.category.toLowerCase()}` },
+            { name: 'خانه', url: '/' },
+            { name: 'محصولات', url: '/products' },
+            categoryBreadcrumb,
             { name: product.name, url: `/product/${product.id}` },
         ];
 

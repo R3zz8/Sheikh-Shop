@@ -21,6 +21,7 @@ const categories = [
   { value: 'HONEY', label: 'Honey' },
   { value: 'SAFFRON', label: 'Saffron' },
   { value: 'DATES', label: 'Dates' },
+  { value: 'SheikhHome', label: 'Sheikh Home' },
   { value: 'OTHERS', label: 'Others' },
 ];
 

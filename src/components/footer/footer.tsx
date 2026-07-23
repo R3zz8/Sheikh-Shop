@@ -90,6 +90,7 @@ export default function Footer() {
                     { name: 'خرما ممتاز', href: '#' },
                     { name: 'عسل طبیعی', href: '#' },
                     { name: 'زعفران لوکس', href: '#' },
+                    { name: 'لوازم خانگی شیخ', href: '/sheikh-home' },
                   ].map((item) => (
                     <li key={item.name}>
                       <a
@@ -212,8 +213,8 @@ export default function Footer() {
                   { name: 'خرماهای ممتاز', href: '#' },
                   { name: 'عسل طبیعی کوهستان', href: '#' },
                   { name: 'زعفران سرگل لوکس', href: '#' },
-                  { name: 'شیره خرما و ارده', href: '#' },
-                  { name: 'محصولات انحصاری', href: '#' },
+                  { name: 'لوازم خانگی شیخ', href: '/sheikh-home' },
+                  { name: 'شیخ دیجیتال', href: '/sheikh-digital' },
                 ].map((item) => (
                   <li key={item.name}>
                     <a
