@@ -1046,7 +1046,7 @@ export default function RoyalShowcase() {
                     <div className="flex items-center justify-between w-full mb-1 sm:mb-2">
                       {getBadgeElement(activeProduct.badgeType)}
                       <span className="text-amber-400 text-[11px] sm:text-xs font-bold font-vazirmatn">
-                        {activeProduct.categoryType === 'SheikhDigital' ? 'دیجیتال لوکس' : 'اکوسیستم ممتاز'}
+                        {activeProduct.categoryType === 'SheikhDigital' ? 'دیجیتال لوکس' : activeProduct.categoryType === 'SheikhHome' ? 'لوازم خانگی لوکس' : 'اکوسیستم ممتاز'}
                       </span>
                     </div>
 

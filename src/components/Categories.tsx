@@ -7,6 +7,7 @@ interface Category {
     name: string;
     image: string;
     slug: string;
+    url?: string;
 }
 
 const categories: Category[] = [
@@ -24,6 +25,12 @@ const categories: Category[] = [
         name: 'زعفران',
         image: '/saffron.webp',
         slug: 'saffron'
+    },
+    {
+        name: 'لوازم خانگی شیخ',
+        image: '/other.webp',
+        slug: 'sheikh-home',
+        url: '/sheikh-home'
     },
     {
         name: 'محصولات دیگر',
@@ -53,11 +60,11 @@ export default function Categories() {
                 </div>
 
                 {/* Categories Grid */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 md:gap-8">
                     {categories.map((category) => (
                         <Link
                             key={category.slug}
-                            href={`/categories/${category.slug}`}
+                            href={category.url || `/categories/${category.slug}`}
                             className="group flex flex-col items-center space-y-4 cursor-pointer transition-all duration-300 hover:scale-105"
                         >
                             {/* Circular Image Container */}

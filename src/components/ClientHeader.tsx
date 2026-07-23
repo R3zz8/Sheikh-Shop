@@ -100,6 +100,7 @@ export default function ClientHeader() {
       subItems: [
         { name: 'محصولات غذایی شیخ', href: '/products' },
         { name: 'شیخ دیجیتال', href: '/sheikh-digital' },
+        { name: 'لوازم خانگی شیخ', href: '/sheikh-home' },
         { name: 'محصولات فناورانه شیخ', href: '/tech-products' },
       ],
     },
@@ -117,6 +118,15 @@ export default function ClientHeader() {
 
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/';
+    if (href === '/products') {
+      return (
+        pathname.startsWith('/products') ||
+        pathname.startsWith('/sheikh-digital') ||
+        pathname.startsWith('/sheikh-home') ||
+        pathname.startsWith('/tech-products') ||
+        pathname.startsWith('/product/')
+      );
+    }
     return pathname.startsWith(href);
   };
 
