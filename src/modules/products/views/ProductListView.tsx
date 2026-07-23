@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import ProductList from '../components/ProductList';
+import { ProductListSkeleton } from '@/components/ui';
 import type { ProductsWithImages, Unit } from '@/types';
 
 interface ProductListViewProps {
@@ -20,13 +21,21 @@ function ProductListView({
   variant = 'default',
 }: ProductListViewProps) {
   return (
-    <ProductList
-      products={initialProducts || []}
-      units={initialUnits}
-      title={title}
-      subtitle={subtitle}
-      variant={variant}
-    />
+    <Suspense fallback={
+      <div className="min-h-screen bg-stone-950/95 py-8" dir="rtl">
+        <div className="container mx-auto px-4">
+          <ProductListSkeleton count={12} />
+        </div>
+      </div>
+    }>
+      <ProductList
+        products={initialProducts || []}
+        units={initialUnits}
+        title={title}
+        subtitle={subtitle}
+        variant={variant}
+      />
+    </Suspense>
   );
 }
 

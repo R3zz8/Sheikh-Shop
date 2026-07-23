@@ -58,8 +58,7 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-// Use ISR for better performance instead of force-dynamic
-export const revalidate = 3600; // Revalidate every hour
+export const dynamic = 'force-dynamic';
 
 function serializeProducts(products: any[]) {
   if (!products) return [];

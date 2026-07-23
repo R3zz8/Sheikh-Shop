@@ -2,12 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import type { ProductsWithImages, Unit } from '@/types';
-import ProductItem from './ProductItem';
 import ProductItemResponsive from './ProductItemResponsive';
 import ProductCarouselMobile from '@/components/product/ProductCarouselMobile';
 import { ProductListSkeleton } from '@/components/ui';
 import { Search, Filter, Grid, Smartphone } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
+import LuxuryPagination from '@/components/ui/LuxuryPagination';
 
 const SpeakerDecoration = dynamic(
   () => import('@/components/sheikhDigital/SpeakerDecoration'),
@@ -42,7 +44,45 @@ export default function ProductList({
   const [filteredProducts, setFilteredProducts] = useState<ProductsWithImages[]>(products);
   const [currentMobileLayout, setCurrentMobileLayout] = useState<'grid' | 'carousel'>(mobileLayout === 'auto' ? 'grid' : mobileLayout);
 
-  console.log('ProductList render:', { products, units, filteredProducts, isLoading });
+  // Pagination-specific states
+  const [itemsPerPage, setItemsPerPage] = useState(12);
+  const [isPageChanging, setIsPageChanging] = useState(false);
+
+  // Next.js Navigation Hooks
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
+
+  // Parse current page from URL
+  const urlPage = searchParams ? parseInt(searchParams.get('page') || '1', 10) : 1;
+  const [currentPage, setCurrentPage] = useState(urlPage);
+
+  // Sync state with URL parameter (for back/forward browser navigation)
+  useEffect(() => {
+    if (urlPage !== currentPage) {
+      setCurrentPage(urlPage);
+    }
+  }, [urlPage]);
+
+  // Responsive Items Per Page handler
+  useEffect(() => {
+    const updateItemsPerPage = () => {
+      const width = window.innerWidth;
+      if (width >= 1280) {
+        setItemsPerPage(12);
+      } else if (width >= 768) {
+        setItemsPerPage(9);
+      } else {
+        setItemsPerPage(10);
+      }
+    };
+
+    updateItemsPerPage();
+    window.addEventListener('resize', updateItemsPerPage);
+    return () => window.removeEventListener('resize', updateItemsPerPage);
+  }, []);
+
+  console.log('ProductList render:', { products, units, filteredProducts, isLoading, itemsPerPage, currentPage });
 
   // Update filteredProducts when products change
   useEffect(() => {
@@ -61,6 +101,42 @@ export default function ProductList({
     setFilteredProducts(filtered);
   }, [searchTerm, products]);
 
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+
+  // Clamping page if it gets out of bounds due to search/filters changing
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      const params = new URLSearchParams(window.location.search);
+      params.set('page', '1');
+      router.push(`${pathname}?${params.toString()}`, { scroll: false });
+      setCurrentPage(1);
+    }
+  }, [filteredProducts.length, itemsPerPage, totalPages, currentPage, pathname, router]);
+
+  // Page changing handler
+  const handlePageChange = (newPage: number) => {
+    setIsPageChanging(true);
+
+    // Smooth scroll to product section
+    const container = document.getElementById('product-list-container');
+    if (container) {
+      container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // Delay update slightly to let the smooth scroll trigger and show the premium skeleton
+    setTimeout(() => {
+      const params = new URLSearchParams(window.location.search);
+      params.set('page', newPage.toString());
+      router.push(`${pathname}?${params.toString()}`, { scroll: false });
+      setCurrentPage(newPage);
+
+      setTimeout(() => {
+        setIsPageChanging(false);
+      }, 250);
+    }, 200);
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-900 font-vazirmatn" dir="rtl">
@@ -75,11 +151,16 @@ export default function ProductList({
     );
   }
 
+  // Get active products slice
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
+
   // Debug: Show products count
-  console.log('About to render products:', { productsCount: products?.length, filteredCount: filteredProducts?.length });
+  console.log('About to render products:', { productsCount: products?.length, filteredCount: filteredProducts?.length, paginatedCount: paginatedProducts.length });
 
   return (
-    <div className="min-h-screen relative bg-gradient-to-br from-amber-950/95 via-stone-900/95 to-amber-950/95 font-vazirmatn" dir="rtl">
+    <div id="product-list-container" className="min-h-screen relative bg-gradient-to-br from-amber-950/95 via-stone-900/95 to-amber-950/95 font-vazirmatn scroll-mt-24" dir="rtl">
       <div className="absolute inset-0 bg-[url('/public/assets/pattern.png')] opacity-5"></div>
       <div className="relative z-10">
         <div className="container mx-auto px-4 py-8">
@@ -189,64 +270,117 @@ export default function ProductList({
           {/* Debug Info */}
           <div className="mb-4 p-4 bg-blue-900/20 border border-blue-500/30 rounded-lg text-right">
             <p className="text-blue-300 text-sm">
-              دیباگ: تعداد کل محصولات: {products?.length || 0}، فیلتر شده: {filteredProducts?.length || 0}
+              دیباگ: تعداد کل محصولات: {products?.length || 0}، فیلتر شده: {filteredProducts?.length || 0}، صفحه: {currentPage} از {totalPages || 1}
             </p>
           </div>
 
-          {/* Products Display */}
-          {filteredProducts && filteredProducts.length > 0 ? (
-            <>
-              {/* Mobile: Carousel or Grid based on selection */}
-              <div className="md:hidden">
-                {currentMobileLayout === 'carousel' ? (
-                  <ProductCarouselMobile
-                    products={filteredProducts}
-                    units={units}
-                    title=""
-                    subtitle=""
-                    autoplay={true}
-                    showPagination={true}
-                    showNavigation={false}
-                  />
-                ) : (
-                  <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                    {filteredProducts.map((product, index) => (
-                      <ProductItemResponsive 
-                        key={product.id} 
-                        product={product} 
-                        index={index} 
+          {/* Products Display Container with AnimatePresence to prevent flashing */}
+          <AnimatePresence mode="wait">
+            {isPageChanging ? (
+              <motion.div
+                key="skeleton"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+                className="w-full"
+              >
+                <ProductListSkeleton count={itemsPerPage} />
+              </motion.div>
+            ) : paginatedProducts && paginatedProducts.length > 0 ? (
+              <motion.div
+                key="products-grid"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+                className="w-full"
+              >
+                {/* Mobile: Carousel or Grid based on selection */}
+                <div className="md:hidden">
+                  {currentMobileLayout === 'carousel' ? (
+                    <motion.div
+                      key={`carousel-${currentPage}`}
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.25, ease: 'easeOut' }}
+                    >
+                      <ProductCarouselMobile
+                        products={paginatedProducts}
                         units={units}
-                        variant="compact"
+                        title=""
+                        subtitle=""
+                        autoplay={true}
+                        showPagination={true}
+                        showNavigation={false}
                       />
+                    </motion.div>
+                  ) : (
+                    <div id="mobile-product-grid" className="grid grid-cols-2 gap-3 sm:gap-4">
+                      {paginatedProducts.map((product, index) => (
+                        <motion.div
+                          key={`${product.id}-${currentPage}`}
+                          initial={{ opacity: 0, y: 15 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.25, ease: 'easeOut', delay: index * 0.02 }}
+                        >
+                          <ProductItemResponsive
+                            product={product}
+                            index={index}
+                            units={units}
+                            variant="compact"
+                          />
+                        </motion.div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Desktop: Responsive Grid (min 3 cols) */}
+                <div className="hidden md:block">
+                  <div id="desktop-product-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8 auto-rows-fr">
+                    {paginatedProducts.map((product, index) => (
+                      <motion.div
+                        key={`${product.id}-${currentPage}`}
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.25, ease: 'easeOut', delay: index * 0.02 }}
+                        className="h-full"
+                      >
+                        <ProductItemResponsive
+                          product={product}
+                          index={index}
+                          units={units}
+                          variant="auto"
+                        />
+                      </motion.div>
                     ))}
                   </div>
-                )}
-              </div>
-
-              {/* Desktop: Responsive Grid (min 3 cols) */}
-              <div className="hidden md:block">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8 auto-rows-fr">
-                  {filteredProducts.map((product, index) => (
-                    <ProductItemResponsive 
-                      key={product.id} 
-                      product={product} 
-                      index={index} 
-                      units={units}
-                      variant="auto"
-                    />
-                  ))}
                 </div>
-              </div>
-            </>
-          ) : (
-            <div className="text-center py-12">
-              <p className="text-gray-400 text-lg">
-                {products && products.length > 0 
-                  ? 'هیچ محصولی با معیارهای جستجوی شما مطابقت ندارد.'
-                  : 'در حال حاضر هیچ محصولی موجود نیست.'}
-              </p>
-            </div>
-          )}
+              </motion.div>
+            ) : (
+              <motion.div
+                key="no-products"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="text-center py-12 w-full"
+              >
+                <p className="text-gray-400 text-lg">
+                  {products && products.length > 0
+                    ? 'هیچ محصولی با معیارهای جستجوی شما مطابقت ندارد.'
+                    : 'در حال حاضر هیچ محصولی موجود نیست.'}
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Luxury Pagination Controls */}
+          <LuxuryPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
         </div>
       </div>
     </div>

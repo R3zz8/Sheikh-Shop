@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import CategoryProducts from './_components/CategoryProducts';
 import { generateCategoryMetadata } from '@/lib/seo';
+import React, { Suspense } from 'react';
+import { ProductListSkeleton } from '@/components/ui';
 
 // Force dynamic rendering to prevent build-time database queries
 export const dynamic = 'force-dynamic';
@@ -109,11 +111,17 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                 <div className="absolute inset-0 bg-gradient-to-b from-amber-500/2 via-transparent to-orange-500/2 pointer-events-none" />
 
                 <div className="relative z-10">
-                    <CategoryProducts
-                        products={products as any}
-                        categoryName={categoryDisplayName}
-                        categorySlug={categoryName}
-                    />
+                    <Suspense fallback={
+                        <div className="container mx-auto px-4 py-12" dir="rtl">
+                            <ProductListSkeleton count={12} />
+                        </div>
+                    }>
+                        <CategoryProducts
+                            products={products as any}
+                            categoryName={categoryDisplayName}
+                            categorySlug={categoryName}
+                        />
+                    </Suspense>
                 </div>
             </div>
         );
@@ -121,4 +129,4 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         console.error('Error fetching category products:', error);
         notFound();
     }
-} 
+}

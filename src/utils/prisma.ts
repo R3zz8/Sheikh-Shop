@@ -266,6 +266,71 @@ const mockProducts = [
   }
 ];
 
+// Dynamically expand mockProducts with more high-quality items for pagination testing under MOCK_DB
+for (let i = 5; i <= 25; i++) {
+  mockProducts.push({
+    id: `p_extra_food_${i}`,
+    name: `محصول غذایی فرعی شماره ${i}`,
+    category: 'OTHERS',
+    categoryId: '4',
+    description: `این یک محصول آزمایشی برای تست صفحه‌بندی لوکس فروشگاه شیخ است. محصول غذایی فرعی شماره ${i}.`,
+    basePrice: 500000 + i * 50000,
+    baseUnitId: 'u3',
+    quantity: 50,
+    status: 'ACTIVE',
+    isNew: false,
+    isBestSeller: false,
+    isAmazing: false,
+    categoryType: 'SheikhFood',
+    baseUnit: mockUnits[2],
+    categoryRelation: mockCategories[3],
+    images: [{ id: `img_extra_food_${i}`, image: '/other.webp', secureUrl: '/other.webp', createdAt: new Date() }],
+    discounts: [],
+    units: [
+      { id: `pu_extra_food_${i}`, productId: `p_extra_food_${i}`, name: 'Piece', price: 500000 + i * 50000, unitId: 'u3', unit: mockUnits[2], isActive: true, stock: 50, createdAt: new Date(), updatedAt: new Date() }
+    ],
+    createdAt: new Date(Date.now() - i * 3600000), // separate creation dates to order nicely
+    updatedAt: new Date(),
+  } as any);
+}
+
+for (let i = 5; i <= 25; i++) {
+  mockProducts.push({
+    id: `p_extra_digital_${i}`,
+    name: `گجت دیجیتال فرعی شماره ${i}`,
+    category: 'OTHERS',
+    categoryId: '4',
+    description: `این یک گجت آزمایشی صوتی و دیجیتالی برای تست صفحه‌بندی لوکس فروشگاه شیخ است. گجت دیجیتال فرعی شماره ${i}.`,
+    basePrice: 12000000 + i * 1000000,
+    baseUnitId: 'u3',
+    quantity: 30,
+    status: 'ACTIVE',
+    isNew: false,
+    isBestSeller: false,
+    isAmazing: false,
+    categoryType: 'SheikhDigital',
+    slug: `extra-digital-gadget-${i}`,
+    brand: 'Sheikh Shop',
+    sku: `SH-D-EG${i}`,
+    features: ['طراحی ارگونومیک ممتاز', 'بدنه با مقاومت بالا'],
+    technicalSpecs: { size: 'Standard' },
+    tags: ['دیجیتال', 'لوکس', 'تست'],
+    weight: 0.5,
+    warranty: 'ضمانت طلایی ۲۴ ماهه شیخ',
+    origin: 'ایران',
+    color: 'مشکی طلایی',
+    baseUnit: mockUnits[2],
+    categoryRelation: mockCategories[3],
+    images: [{ id: `img_extra_digital_${i}`, image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=600&auto=format&fit=crop', secureUrl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=600&auto=format&fit=crop', createdAt: new Date() }],
+    discounts: [],
+    units: [
+      { id: `pu_extra_digital_${i}`, productId: `p_extra_digital_${i}`, name: 'Piece', price: 12000000 + i * 1000000, unitId: 'u3', unit: mockUnits[2], isActive: true, stock: 30, createdAt: new Date(), updatedAt: new Date() }
+    ],
+    createdAt: new Date(Date.now() - i * 3600000),
+    updatedAt: new Date(),
+  } as any);
+}
+
 const mockCarousel = [
   { id: 'c1', title: 'Premium Dates', image: 'https://images.unsplash.com/photo-1596797038530-2c107229654b?q=80&w=600&auto=format&fit=crop', link: '/product/p3', order: 1 },
   { id: 'c2', title: 'Mountain Honey', image: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=600&auto=format&fit=crop', link: '/product/p1', order: 2 },
