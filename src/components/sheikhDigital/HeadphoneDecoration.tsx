@@ -141,7 +141,7 @@ function HeadphoneStaticFallback() {
   return (
     <div className="w-full h-full flex items-center justify-center pointer-events-none select-none">
       {/* SVG headphone illustration */}
-      <svg className="w-14 h-14 md:w-16 md:h-16 text-amber-500/80 filter drop-shadow-[0_0_8px_rgba(245,158,11,0.3)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+      <svg className="w-[70%] h-[70%] max-w-[56px] max-h-[56px] text-amber-500/80 filter drop-shadow-[0_0_8px_rgba(245,158,11,0.3)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
         <path d="M3 14c0-4.97 4.03-9 9-9s9 4.03 9 9" stroke="#d4af37" strokeWidth="2.5" strokeLinecap="round" />
         <rect x="2" y="12" width="4" height="6" rx="2" fill="#1e120b" stroke="#d4af37" strokeWidth="1.5" />
         <rect x="18" y="12" width="4" height="6" rx="2" fill="#1e120b" stroke="#d4af37" strokeWidth="1.5" />
@@ -152,7 +152,11 @@ function HeadphoneStaticFallback() {
   );
 }
 
-export default function HeadphoneDecoration() {
+interface HeadphoneDecorationProps {
+  className?: string;
+}
+
+export default function HeadphoneDecoration({ className }: HeadphoneDecorationProps) {
   const { ref, inView } = useInView({
     triggerOnce: false,
     threshold: 0.1,
@@ -166,12 +170,14 @@ export default function HeadphoneDecoration() {
     setHasWebGL(isWebGLAvailable());
   }, []);
 
+  const sizeClass = className || 'w-[80px] h-[80px] md:w-[100px] md:h-[100px]';
+
   if (!mounted) {
-    return <div className="w-[80px] h-[80px] md:w-[100px] md:h-[100px]" />;
+    return <div className={sizeClass} />;
   }
 
   return (
-    <div ref={ref} className="w-[80px] h-[80px] md:w-[100px] md:h-[100px] relative flex items-center justify-center">
+    <div ref={ref} className={`${sizeClass} relative flex items-center justify-center`}>
       {inView && hasWebGL ? (
         <ThreeErrorBoundary fallback={<HeadphoneStaticFallback />}>
           <Suspense fallback={<HeadphoneStaticFallback />}>

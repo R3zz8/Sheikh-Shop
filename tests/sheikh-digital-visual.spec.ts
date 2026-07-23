@@ -43,9 +43,9 @@ test.describe('Sheikh Digital Visual Verification', () => {
     await expect(page).toHaveTitle(/شیخ دیجیتال | فروشگاه بزرگ شیخ/);
 
     // 2. Headings & copy verification (wait for mount)
-    const heroHeading = page.locator('h1', { hasText: 'دنیای دیجیتال مجلل' });
+    const heroHeading = page.locator('h1', { hasText: 'محصولات دیجیتال شیخ' });
     await heroHeading.waitFor({ state: 'visible', timeout: 15000 });
-    await expect(heroHeading).toContainText('دنیای دیجیتال مجلل');
+    await expect(heroHeading).toContainText('محصولات دیجیتال شیخ');
 
     // 3. Scroll to products section to ensure layout updates and image downloads trigger
     const productsSection = page.locator('#digital-products-section');

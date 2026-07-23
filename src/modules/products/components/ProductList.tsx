@@ -131,14 +131,16 @@ export default function ProductList({
                     }`}
                   />
                 </div>
-                <div className="flex gap-2">
-                  <button className="px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-lg transition-colors duration-200 flex items-center gap-2">
-                    <Filter className="w-5 h-5" />
-                    فیلتر
-                  </button>
+                <div className="flex gap-2 items-center flex-nowrap">
+                  {/* Headphones (Right on RTL) - Only visible on Mobile */}
+                  {variant === 'digital' && (
+                    <div className="md:hidden shrink-0 flex items-center justify-center w-9 h-9 min-[375px]:w-10 min-[375px]:h-10 min-[412px]:w-11 min-[412px]:h-11">
+                      <HeadphoneDecoration className="w-full h-full animate-[fade-in_0.5s_ease-out_forwards]" />
+                    </div>
+                  )}
 
                   {/* Mobile Layout Toggle - Only visible on mobile */}
-                  <div className="md:hidden flex bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg overflow-hidden">
+                  <div className="md:hidden flex bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg overflow-hidden shrink-0">
                     <button
                       onClick={() => setCurrentMobileLayout('grid')}
                       className={`px-3 py-3 flex items-center gap-1 transition-colors duration-200 ${
@@ -160,6 +162,18 @@ export default function ProductList({
                       <Smartphone className="w-4 h-4" />
                     </button>
                   </div>
+
+                  <button className="px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-lg transition-colors duration-200 flex items-center gap-2 shrink-0">
+                    <Filter className="w-5 h-5" />
+                    فیلتر
+                  </button>
+
+                  {/* Speaker (Left on RTL) - Only visible on Mobile */}
+                  {variant === 'digital' && (
+                    <div className="md:hidden shrink-0 flex items-center justify-center w-9 h-9 min-[375px]:w-10 min-[375px]:h-10 min-[412px]:w-11 min-[412px]:h-11">
+                      <SpeakerDecoration className="w-full h-full animate-[fade-in_0.5s_ease-out_forwards]" />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
