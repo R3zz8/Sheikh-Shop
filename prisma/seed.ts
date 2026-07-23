@@ -316,13 +316,77 @@ async function main() {
         color: 'طلایی / قهوه‌ای',
       },
     }),
+    prisma.product.upsert({
+      where: { name: 'یخچال فریزر هوشمند لوکس شیخ مدل Royal Frost X9' },
+      update: {},
+      create: {
+        name: 'یخچال فریزر هوشمند لوکس شیخ مدل Royal Frost X9',
+        category: 'OTHERS',
+        categoryId: otherCategory.id,
+        description: 'یخچال فریزر هوشمند با درب شیشه‌ای با قابلیت شفاف‌سازی خودکار، بدنه مشکی مات و اتصالات آبکاری شده با طلای ۲۴ عیار.',
+        basePrice: 89500000,
+        baseUnitId: pcsUnit.id,
+        quantity: 12,
+        status: 'ACTIVE',
+        isNew: true,
+        isBestSeller: true,
+        isAmazing: true,
+        categoryType: 'SheikhHome',
+        slug: 'royal-frost-x9-refrigerator',
+        seoTitle: 'یخچال فریزر هوشمند لوکس شیخ مدل Royal Frost X9 | سیستم‌های برودتی لوکس',
+        seoDescription: 'خرید یخچال فریزر هوشمند و لاکچری شیخ مدل Royal Frost X9 با گلد تریم و برنه مشکی مات گلس.',
+        metaKeywords: ['یخچال شیخ', 'یخچال لوکس', 'لوازم خانگی هوشمند'],
+        canonicalUrl: '/products/royal-frost-x9-refrigerator',
+        brand: 'Sheikh Shop',
+        sku: 'SH-REF-RF9',
+        features: ['درب با تکنولوژی شفاف‌سازی خودکار', 'سیستم برودت هوشمند دوگانه', 'اتصالات آبکاری طلای ۲۴ عیار'],
+        technicalSpecs: { capacity: '30 Cubic Feet', energy: 'A+++', weight: '135kg' },
+        tags: ['یخچال', 'لوکس', 'خانه هوشمند'],
+        weight: 135.0,
+        warranty: 'ضمانت طلایی ۲۴ ماهه شیخ',
+        origin: 'ایران',
+        color: 'مشکی مات / طلایی',
+      },
+    }),
+    prisma.product.upsert({
+      where: { name: 'ماشین لباسشویی لوکس شیخ مدل Golden Spin V2' },
+      update: {},
+      create: {
+        name: 'ماشین لباسشویی لوکس شیخ مدل Golden Spin V2',
+        category: 'OTHERS',
+        categoryId: otherCategory.id,
+        description: 'ماشین لباسشویی هوشمند با بدنه تمام مشکی مات فول لوکس و طوقه دور درب از جنس طلای برس‌خورده.',
+        basePrice: 42500000,
+        baseUnitId: pcsUnit.id,
+        quantity: 18,
+        status: 'ACTIVE',
+        isNew: true,
+        isBestSeller: true,
+        isAmazing: false,
+        categoryType: 'SheikhHome',
+        slug: 'golden-spin-v2-washing-machine',
+        seoTitle: 'ماشین لباسشویی لوکس شیخ مدل Golden Spin V2 | ماشین لباسشویی لوکس',
+        seoDescription: 'خرید ماشین لباسشویی هوشمند و مدرن شیخ با موتور دایرکت درایو بی‌صدا و بدنه مشکی مات طلایی.',
+        metaKeywords: ['لباسشویی هوشمند', 'لباسشویی لوکس', 'لوازم خانگی شیخ'],
+        canonicalUrl: '/products/golden-spin-v2-washing-machine',
+        brand: 'Sheikh Shop',
+        sku: 'SH-WM-GS2',
+        features: ['موتور Direct Drive بدون لرزش و بی‌صدا', 'سیستم حباب‌ساز هوشمند EcoBubble', 'طوقه درخشان طلای برس‌خورده'],
+        technicalSpecs: { capacity: '10kg', rpm: '1400 RPM', weight: '78kg' },
+        tags: ['لباسشویی', 'لوکس', 'شستشو'],
+        weight: 78.0,
+        warranty: 'ضمانت طلایی ۲۴ ماهه شیخ',
+        origin: 'ایران',
+        color: 'مشکی مات / طلایی',
+      },
+    }),
   ]);
 
   console.log(`✅ Created ${newProducts.length} new products`);
 
   // Create ProductUnit and Image entries for our seeded digital speaker products
-  console.log('🔊 Seeding product units & images for digital products...');
-  const digitalSpeakers = newProducts.filter(p => p.categoryType === 'SheikhDigital');
+  console.log('🔊 Seeding product units & images for digital and home products...');
+  const digitalSpeakers = newProducts.filter(p => p.categoryType === 'SheikhDigital' || p.categoryType === 'SheikhHome');
   for (const speaker of digitalSpeakers) {
     await prisma.productUnit.upsert({
       where: { id: `unit_${speaker.id}` },
@@ -341,7 +405,11 @@ async function main() {
       }
     });
 
-    const imageUrl = speaker.slug === 'luxury-x9-speaker'
+    const imageUrl = speaker.slug === 'royal-frost-x9-refrigerator'
+      ? 'https://images.unsplash.com/photo-1571175432247-5c868b1a45b6?q=80&w=600&auto=format&fit=crop'
+      : speaker.slug === 'golden-spin-v2-washing-machine'
+      ? 'https://images.unsplash.com/photo-1582730149719-61113dc52c7b?q=80&w=600&auto=format&fit=crop'
+      : speaker.slug === 'luxury-x9-speaker'
       ? 'https://images.unsplash.com/photo-1545454675-3531b543be5d?q=80&w=600&auto=format&fit=crop'
       : 'https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?q=80&w=600&auto=format&fit=crop';
 

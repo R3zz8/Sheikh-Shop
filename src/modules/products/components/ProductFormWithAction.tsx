@@ -198,6 +198,7 @@ const ProductForm = (props: { product: Product | null }) => {
                   <SelectItem value="SheikhFood">Sheikh Food</SelectItem>
                   <SelectItem value="SheikhDigital">Sheikh Digital</SelectItem>
                   <SelectItem value="SheikhTech">Sheikh Tech</SelectItem>
+                  <SelectItem value="SheikhHome">Sheikh Home</SelectItem>
                 </SelectContent>
               </Select>
               {error?.categoryType && (
