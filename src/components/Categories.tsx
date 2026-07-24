@@ -14,28 +14,26 @@ const categories: Category[] = [
     {
         name: 'لوازم خانگی شیخ',
         image: '/sheikhhome.webp',
-        slug: 'dates'
-    },
-    {
-        name: 'لوازم دیجیتال شیخ',
-        image: '/sheikhdigital.webp',
-        slug: 'honey'
-    },
-    {
-        name: 'انواع گجت شیخ',
-        image: '/sheikhgajet.webp',
-        slug: 'saffron'
-    },
-    {
-        name: 'مواد غذایی شیخ',
-        image: '/food.webp',
         slug: 'sheikh-home',
         url: '/sheikh-home'
     },
     {
-        name: 'محصولات دیگر',
-        image: '/other.webp',
-        slug: 'other'
+        name: 'لوازم دیجیتال شیخ',
+        image: '/sheikhdigital.webp',
+        slug: 'sheikh-digital',
+        url: '/sheikh-digital'
+    },
+    {
+        name: 'انواع گجت شیخ',
+        image: '/sheikhgajet.webp',
+        slug: 'tech-products',
+        url: '/tech-products'
+    },
+    {
+        name: 'مواد غذایی شیخ',
+        image: '/food.webp',
+        slug: 'products',
+        url: '/products'
     }
 ];
 
@@ -55,12 +53,12 @@ export default function Categories() {
                         style={{ opacity: 1, animation: 'none' }}
                         className="text-gray-300 text-[18px] max-w-2xl mx-auto font-vazirmatn leading-relaxed select-none"
                     >
-                        مجموعه‌ای از بهترین محصولات طبیعی و اصیل را در دسته‌بندی‌های متنوع ما کشف کنید.
+                        مجموعه‌ای از برترین محصولات منتخب را در دسته‌بندی‌های اختصاصی شیخ کشف کنید.
                     </p>
                 </div>
 
                 {/* Categories Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 md:gap-8">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
                     {categories.map((category) => (
                         <Link
                             key={category.slug}
@@ -78,7 +76,7 @@ export default function Categories() {
                                     priority
                                     quality={85}
                                     placeholder="blur"
-                                    blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
+                                    blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwPLOAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
                                 />
                                 {/* Overlay for better text readability */}
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
