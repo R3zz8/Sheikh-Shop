@@ -31,6 +31,16 @@ const WashingMachineDecoration = dynamic(
   { ssr: false }
 );
 
+const HoneyJarDecoration = dynamic(
+  () => import('@/components/sheikhFood/HoneyJarDecoration'),
+  { ssr: false }
+);
+
+const DatesDecoration = dynamic(
+  () => import('@/components/sheikhFood/DatesDecoration'),
+  { ssr: false }
+);
+
 interface ProductListProps {
   products: ProductsWithImages[];
   units?: Unit[];
@@ -38,7 +48,7 @@ interface ProductListProps {
   title?: string;
   subtitle?: string;
   mobileLayout?: 'grid' | 'carousel' | 'auto';
-  variant?: 'default' | 'digital' | 'home';
+  variant?: 'default' | 'digital' | 'home' | 'food';
 }
 
 export default function ProductList({
@@ -181,7 +191,7 @@ export default function ProductList({
 
           {/* Search and Filter Bar */}
           <div className="flex flex-row items-center justify-between w-full gap-2 sm:gap-4 mb-8">
-            {/* Speaker or Washing Machine (Rightmost under RTL) - Hidden on extra small screens */}
+            {/* Speaker, Washing Machine, or Dates (Rightmost under RTL) - Hidden on extra small screens */}
             {variant === 'digital' && (
               <div className="hidden sm:flex shrink-0 w-[80px] h-[80px] md:w-[100px] md:h-[100px] items-center justify-center">
                 <SpeakerDecoration />
@@ -192,15 +202,20 @@ export default function ProductList({
                 <WashingMachineDecoration />
               </div>
             )}
+            {variant === 'food' && (
+              <div className="hidden sm:flex shrink-0 w-[80px] h-[80px] md:w-[100px] md:h-[100px] items-center justify-center">
+                <DatesDecoration />
+              </div>
+            )}
 
             {/* Central Search Bar Box inside premium glass card with subtle animated gold glow */}
             <div className={`flex-1 w-full ${
-              variant === 'digital' || variant === 'home'
+              variant === 'digital' || variant === 'home' || variant === 'food'
                 ? 'p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#1c110a]/80 via-[#23150c]/85 to-[#1c110a]/80 border border-amber-500/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] relative overflow-hidden group transition-all duration-300 hover:border-amber-500/40'
                 : 'mb-0'
             }`}>
               {/* Gold glow animation behind */}
-              {(variant === 'digital' || variant === 'home') && (
+              {(variant === 'digital' || variant === 'home' || variant === 'food') && (
                 <>
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-500/5 to-transparent -translate-x-full animate-[shimmer_3s_infinite] pointer-events-none" />
                   <style dangerouslySetInnerHTML={{ __html: `
@@ -221,14 +236,14 @@ export default function ProductList({
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className={`w-full pr-10 pl-4 py-3 bg-white/10 backdrop-blur-sm border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-right transition-colors duration-300 ${
-                      variant === 'digital' || variant === 'home'
+                      variant === 'digital' || variant === 'home' || variant === 'food'
                         ? 'border-amber-500/20 hover:border-amber-500/40'
                         : 'border-white/20'
                     }`}
                   />
                 </div>
                 <div className="flex gap-2 items-center flex-nowrap">
-                  {/* Headphones or Washing Machine (Right on RTL) - Only visible on Mobile */}
+                  {/* Headphones, Washing Machine, or Dates (Right on RTL) - Only visible on Mobile */}
                   {variant === 'digital' && (
                     <div className="md:hidden shrink-0 flex items-center justify-center w-9 h-9 min-[375px]:w-10 min-[375px]:h-10 min-[412px]:w-11 min-[412px]:h-11">
                       <HeadphoneDecoration className="w-full h-full animate-[fade-in_0.5s_ease-out_forwards]" />
@@ -237,6 +252,11 @@ export default function ProductList({
                   {variant === 'home' && (
                     <div className="md:hidden shrink-0 flex items-center justify-center w-9 h-9 min-[375px]:w-10 min-[375px]:h-10 min-[412px]:w-11 min-[412px]:h-11">
                       <WashingMachineDecoration className="w-full h-full animate-[fade-in_0.5s_ease-out_forwards]" />
+                    </div>
+                  )}
+                  {variant === 'food' && (
+                    <div className="md:hidden shrink-0 flex items-center justify-center w-9 h-9 min-[375px]:w-10 min-[375px]:h-10 min-[412px]:w-11 min-[412px]:h-11">
+                      <DatesDecoration className="w-full h-full animate-[fade-in_0.5s_ease-out_forwards]" />
                     </div>
                   )}
 
@@ -280,6 +300,11 @@ export default function ProductList({
                       <RefrigeratorDecoration className="w-full h-full animate-[fade-in_0.5s_ease-out_forwards]" />
                     </div>
                   )}
+                  {variant === 'food' && (
+                    <div className="md:hidden shrink-0 flex items-center justify-center w-9 h-9 min-[375px]:w-10 min-[375px]:h-10 min-[412px]:w-11 min-[412px]:h-11">
+                      <HoneyJarDecoration className="w-full h-full animate-[fade-in_0.5s_ease-out_forwards]" />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -293,6 +318,11 @@ export default function ProductList({
             {variant === 'home' && (
               <div className="hidden sm:flex shrink-0 w-[80px] h-[80px] md:w-[100px] md:h-[100px] items-center justify-center">
                 <RefrigeratorDecoration />
+              </div>
+            )}
+            {variant === 'food' && (
+              <div className="hidden sm:flex shrink-0 w-[80px] h-[80px] md:w-[100px] md:h-[100px] items-center justify-center">
+                <HoneyJarDecoration />
               </div>
             )}
           </div>

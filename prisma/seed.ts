@@ -253,6 +253,64 @@ async function main() {
       },
     }),
     prisma.product.upsert({
+      where: { name: 'Smart Lamp' },
+      update: {},
+      create: {
+        name: 'Smart Lamp',
+        category: 'OTHERS',
+        categoryId: otherCategory.id,
+        description: 'A luxury smart lamp with color tuning, schedule automation, and golden trim.',
+        basePrice: 4500000,
+        baseUnitId: pcsUnit.id,
+        quantity: 50,
+        status: 'ACTIVE',
+        isNew: true,
+        isBestSeller: false,
+        isAmazing: true,
+        categoryType: 'SheikhSmartLiving',
+        slug: 'smart-lamp',
+        seoTitle: 'Smart Lamp | Luxury Smart Lighting',
+        seoDescription: 'Premium luxury smart lamp with color tuning, schedules, and elegant design.',
+        brand: 'Sheikh Shop',
+        sku: 'SH-SM-LAMP',
+        features: ['Color tuning', 'Schedule automation', 'Golden trim'],
+        tags: ['smart-living', 'lighting', 'luxury'],
+        weight: 1.5,
+        warranty: 'ضمانت طلایی ۲۴ ماهه شیخ',
+        origin: 'ایران',
+        color: 'طلایی',
+      },
+    }),
+    prisma.product.upsert({
+      where: { name: 'Smart Hub' },
+      update: {},
+      create: {
+        name: 'Smart Hub',
+        category: 'OTHERS',
+        categoryId: otherCategory.id,
+        description: 'A premium smart hub connecting all your home automation devices seamlessly with a gold-leaf premium design.',
+        basePrice: 12500000,
+        baseUnitId: pcsUnit.id,
+        quantity: 30,
+        status: 'ACTIVE',
+        isNew: true,
+        isBestSeller: true,
+        isAmazing: false,
+        categoryType: 'SheikhSmartLiving',
+        slug: 'smart-hub',
+        seoTitle: 'Smart Hub | Luxury Home Automation',
+        seoDescription: 'Premium smart hub connecting home automation devices with elegant design.',
+        brand: 'Sheikh Shop',
+        sku: 'SH-SM-HUB',
+        features: ['Multi-protocol support', 'Gold-leaf design', 'Instant responses'],
+        tags: ['smart-living', 'hub', 'luxury'],
+        weight: 0.8,
+        warranty: 'ضمانت طلایی ۲۴ ماهه شیخ',
+        origin: 'ایران',
+        color: 'مشکی طلایی',
+      },
+    }),
+    prisma.product.upsert({
       where: { name: 'اسپیکر ایستاده شیخ مدل Luxury X9' },
       update: {},
       create: {
@@ -333,7 +391,7 @@ async function main() {
         isAmazing: true,
         categoryType: 'SheikhHome',
         slug: 'royal-frost-x9-refrigerator',
-        seoTitle: 'یخچال فریزر هوشمند لوکس شیخ مدل Royal Frost X9 | سیستم‌های برودتی لوکس',
+        seoTitle: 'یخچال هوشمند لوکس شیخ Royal Frost X9',
         seoDescription: 'خرید یخچال فریزر هوشمند و لاکچری شیخ مدل Royal Frost X9 با گلد تریم و برنه مشکی مات گلس.',
         metaKeywords: ['یخچال شیخ', 'یخچال لوکس', 'لوازم خانگی هوشمند'],
         canonicalUrl: '/products/royal-frost-x9-refrigerator',
@@ -365,7 +423,7 @@ async function main() {
         isAmazing: false,
         categoryType: 'SheikhHome',
         slug: 'golden-spin-v2-washing-machine',
-        seoTitle: 'ماشین لباسشویی لوکس شیخ مدل Golden Spin V2 | ماشین لباسشویی لوکس',
+        seoTitle: 'ماشین لباسشویی لوکس شیخ Golden Spin V2',
         seoDescription: 'خرید ماشین لباسشویی هوشمند و مدرن شیخ با موتور دایرکت درایو بی‌صدا و بدنه مشکی مات طلایی.',
         metaKeywords: ['لباسشویی هوشمند', 'لباسشویی لوکس', 'لوازم خانگی شیخ'],
         canonicalUrl: '/products/golden-spin-v2-washing-machine',
@@ -386,7 +444,7 @@ async function main() {
 
   // Create ProductUnit and Image entries for our seeded digital speaker products
   console.log('🔊 Seeding product units & images for digital and home products...');
-  const digitalSpeakers = newProducts.filter(p => p.categoryType === 'SheikhDigital' || p.categoryType === 'SheikhHome');
+  const digitalSpeakers = newProducts.filter(p => p.categoryType === 'SheikhDigital' || p.categoryType === 'SheikhHome' || p.categoryType === 'SheikhSmartLiving');
   for (const speaker of digitalSpeakers) {
     await prisma.productUnit.upsert({
       where: { id: `unit_${speaker.id}` },
@@ -411,10 +469,19 @@ async function main() {
       ? 'https://images.unsplash.com/photo-1582730149719-61113dc52c7b?q=80&w=600&auto=format&fit=crop'
       : speaker.slug === 'luxury-x9-speaker'
       ? 'https://images.unsplash.com/photo-1545454675-3531b543be5d?q=80&w=600&auto=format&fit=crop'
+      : speaker.slug === 'smart-lamp'
+      ? 'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?q=80&w=600&auto=format&fit=crop'
+      : speaker.slug === 'smart-hub'
+      ? 'https://images.unsplash.com/photo-1558002038-1055907df827?q=80&w=600&auto=format&fit=crop'
       : 'https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?q=80&w=600&auto=format&fit=crop';
 
-    await prisma.image.create({
-      data: {
+    await prisma.image.upsert({
+      where: { id: `image_${speaker.id}` },
+      update: {
+        image: imageUrl,
+        secureUrl: imageUrl,
+      },
+      create: {
         id: `image_${speaker.id}`,
         productId: speaker.id,
         image: imageUrl,

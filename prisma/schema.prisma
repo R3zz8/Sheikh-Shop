@@ -545,6 +545,7 @@ enum ProductCategoryType {
   SheikhTech
   SheikhDigital
   SheikhHome
+  SheikhSmartLiving
 }
 
 enum ProductStatus {
