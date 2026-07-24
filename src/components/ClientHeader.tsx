@@ -123,6 +123,7 @@ export default function ClientHeader() {
         pathname.startsWith('/products') ||
         pathname.startsWith('/sheikh-digital') ||
         pathname.startsWith('/sheikh-home') ||
+        pathname.startsWith('/sheikh-food') ||
         pathname.startsWith('/tech-products') ||
         pathname.startsWith('/product/')
       );

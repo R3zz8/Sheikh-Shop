@@ -163,7 +163,7 @@ async function page({ params }: { params: Promise<{ id: string }> }) {
         } else if (product.categoryType === 'SheikhDigital') {
             categoryBreadcrumb = { name: 'شیخ دیجیتال', url: '/sheikh-digital' };
         } else if (product.categoryType === 'SheikhFood') {
-            categoryBreadcrumb = { name: 'محصولات غذایی شیخ', url: '/products' };
+            categoryBreadcrumb = { name: 'محصولات غذایی شیخ', url: '/sheikh-food' };
         } else if (product.categoryType === 'SheikhTech') {
             categoryBreadcrumb = { name: 'محصولات فناورانه شیخ', url: '/tech-products' };
         }
