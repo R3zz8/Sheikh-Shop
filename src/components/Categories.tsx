@@ -12,23 +12,23 @@ interface Category {
 
 const categories: Category[] = [
     {
-        name: 'خرما',
-        image: '/dates.webp',
+        name: 'لوازم خانگی شیخ',
+        image: '/sheikhhome.webp',
         slug: 'dates'
     },
     {
-        name: 'عسل طبیعی',
-        image: '/honey.webp',
+        name: 'لوازم دیجیتال شیخ',
+        image: '/sheikhdigital.webp',
         slug: 'honey'
     },
     {
-        name: 'زعفران',
-        image: '/saffron.webp',
+        name: 'انواع گجت شیخ',
+        image: '/sheikhgajet.webp',
         slug: 'saffron'
     },
     {
-        name: 'لوازم خانگی شیخ',
-        image: '/other.webp',
+        name: 'مواد غذایی شیخ',
+        image: '/food.webp',
         slug: 'sheikh-home',
         url: '/sheikh-home'
     },
