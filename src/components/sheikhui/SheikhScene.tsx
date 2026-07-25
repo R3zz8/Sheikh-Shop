@@ -702,10 +702,11 @@ export default function SheikhScene() {
             {/* THREE.JS CANVAS FOR PREMIUM 3D SHEIKH CHARACTER OR Graceful Fallback */}
             <ThreeErrorBoundary fallback={renderFallback}>
               {webGLSupported ? (
-                <div className="w-full h-[400px] sm:h-[480px] lg:h-[520px] relative z-10 pointer-events-auto">
+                <div className="w-full h-[400px] sm:h-[480px] lg:h-[520px] relative z-10 pointer-events-auto overflow-hidden">
                   <Canvas
                     camera={{ position: [0, 0, 4.0], fov: 42 }}
                     gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
+                    style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
                     className="w-full h-full"
                   >
                     {/* Immersive Studio Ambient Lights */}
