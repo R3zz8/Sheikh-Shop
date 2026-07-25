@@ -958,12 +958,13 @@ export default function RoyalShowcase() {
           */}
           <div className="w-[22%] h-full relative overflow-hidden flex items-center justify-center">
             {webGLSupported ? (
-              <div className="w-full h-full pointer-events-auto">
+              <div className="w-full h-full pointer-events-auto relative overflow-hidden">
                 <ThreeErrorBoundary fallback={<StaticSheikhFallback align="left" />}>
                   <Suspense fallback={<StaticSheikhFallback align="left" />}>
                     <Canvas
                       camera={{ position: [0, 0, 2.5], fov: 42 }}
                       gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
+                      style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
                     >
                       <ambientLight intensity={1.1} color="#fffbee" />
                       <directionalLight position={[-1, 3, 2]} intensity={1.5} color="#fff1d0" />
@@ -1138,12 +1139,13 @@ export default function RoyalShowcase() {
           */}
           <div className="w-[22%] h-full relative overflow-hidden flex items-center justify-center">
             {webGLSupported ? (
-              <div className="w-full h-full pointer-events-auto">
+              <div className="w-full h-full pointer-events-auto relative overflow-hidden">
                 <ThreeErrorBoundary fallback={<StaticSheikhFallback align="right" />}>
                   <Suspense fallback={<StaticSheikhFallback align="right" />}>
                     <Canvas
                       camera={{ position: [0, 0, 2.5], fov: 42 }}
                       gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
+                      style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
                     >
                       <ambientLight intensity={1.1} color="#fffbee" />
                       <directionalLight position={[1, 3, 2]} intensity={1.5} color="#fff1d0" />

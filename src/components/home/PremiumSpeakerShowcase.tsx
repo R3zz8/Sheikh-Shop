@@ -676,11 +676,12 @@ export default function PremiumSpeakerShowcase() {
 
             <ThreeErrorBoundary fallback={<Premium2DFallback />}>
               {webGLSupported && !prefersReducedMotion ? (
-                <div className="w-full h-full relative z-10 pointer-events-auto">
+                <div className="w-full h-full relative z-10 pointer-events-auto overflow-hidden">
                   <Suspense fallback={<CanvasFallback />}>
                     <Canvas
                       camera={{ position: [0, 0, 3.4], fov: 40 }}
                       gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
+                      style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
                       className="w-full h-full"
                     >
                       {/* Premium Studio Lights */}

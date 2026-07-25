@@ -197,13 +197,14 @@ export default function DatesDecoration({ className }: DatesDecorationProps) {
   }
 
   return (
-    <div ref={ref} className={`${sizeClass} relative flex items-center justify-center`}>
+    <div ref={ref} className={`${sizeClass} relative flex items-center justify-center overflow-hidden`}>
       {inView && hasWebGL ? (
         <ThreeErrorBoundary fallback={<DatesStaticFallback />}>
           <Suspense fallback={<DatesStaticFallback />}>
             <Canvas
               camera={{ position: [0, 0, 1.4], fov: 45 }}
               gl={{ antialias: true, alpha: true }}
+              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
               className="w-full h-full"
             >
               <ambientLight intensity={0.9} />
