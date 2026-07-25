@@ -163,12 +163,6 @@ export default function EnhancedAISearch({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Focus input on mount
-  useEffect(() => {
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, []);
 
   const getSortIcon = () => {
     switch (sortBy) {
