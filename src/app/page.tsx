@@ -26,6 +26,9 @@ export async function generateMetadata(): Promise<Metadata> {
     title: 'به دنیای فروشگاه شیخ خوش آمدید | اکوسیستم شیخ',
     description: 'فروشگاه شیخ تنها یک فروشگاه اینترنتی نیست؛ اکوسیستمی از محصولات و خدمات متنوع شامل کالاهای دیجیتال، لوازم خودرو، عطر و ادکلن، تجهیزات هوشمند و خدمات تخصصی طراحی وب.',
     keywords: ['natural honey', 'premium dates', 'saffron', 'sheikh shop', 'free shipping', 'طراحی سایت', 'کالای دیجیتال'],
+    other: {
+      enamad: '35545964',
+    },
     alternates: {
       canonical: canonicalUrl,
       languages: buildLanguageAlternates(canonicalPath),
