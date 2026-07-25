@@ -132,35 +132,37 @@ export default function PalmTreeContainer({
 
   return (
     <div
-      className={`relative w-full ${heightClass} ${className}`.trim()}
+      className={`relative w-full overflow-hidden ${heightClass} ${className}`.trim()}
       style={containerStyle}
     >
       <ErrorBoundary fallback={<StaticPalmTree />}>
         <Suspense fallback={<PalmTreeFallback />}>
-          <Canvas
-            shadows
-            camera={{ 
-              position: [0, 0, cameraDistance], 
-              fov: cameraFov,
-              near: 0.1,
-              far: 100,
-            }}
-            gl={{
-              antialias: true,
-              alpha: true,
-              powerPreference: 'high-performance',
-            }}
-            dpr={devicePixelRatio}
-            style={{ width: '100%', height: '100%' }}
-            frameloop="always"
-          >
-            <PalmTreeScene
-              enableControls={enableControls}
-              autoRotate={autoRotate}
-              intensity={intensity}
-              scale={modelScale}
-            />
-          </Canvas>
+          <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
+            <Canvas
+              shadows
+              camera={{
+                position: [0, 0, cameraDistance],
+                fov: cameraFov,
+                near: 0.1,
+                far: 100,
+              }}
+              gl={{
+                antialias: true,
+                alpha: true,
+                powerPreference: 'high-performance',
+              }}
+              dpr={devicePixelRatio}
+              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'auto' }}
+              frameloop="always"
+            >
+              <PalmTreeScene
+                enableControls={enableControls}
+                autoRotate={autoRotate}
+                intensity={intensity}
+                scale={modelScale}
+              />
+            </Canvas>
+          </div>
         </Suspense>
       </ErrorBoundary>
     </div>
