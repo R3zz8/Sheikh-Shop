@@ -457,6 +457,25 @@ export default function SheikhUniverse() {
     setMounted(true);
     if (typeof window === 'undefined') return;
 
+    // Instrumentation telemetry logging for hydration and viewport issues (development environment only)
+    let observer: ResizeObserver | null = null;
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[SheikhUniverse Layout Telemetry] mounted:', {
+        scrollWidth: document.documentElement.scrollWidth,
+        bodyScrollWidth: document.body.scrollWidth,
+        innerWidth: window.innerWidth,
+      });
+
+      observer = new ResizeObserver(() => {
+        console.log('[SheikhUniverse Layout Telemetry] resize observed:', {
+          scrollWidth: document.documentElement.scrollWidth,
+          bodyScrollWidth: document.body.scrollWidth,
+          innerWidth: window.innerWidth,
+        });
+      });
+      observer.observe(document.documentElement);
+    }
+
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     setPrefersReducedMotion(mediaQuery.matches);
 
@@ -465,7 +484,12 @@ export default function SheikhUniverse() {
     };
 
     mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
+    return () => {
+      mediaQuery.removeEventListener('change', handleChange);
+      if (observer) {
+        observer.disconnect();
+      }
+    };
   }, []);
 
   if (!mounted) {
@@ -484,21 +508,23 @@ export default function SheikhUniverse() {
         <div className="absolute w-full h-full bg-gradient-to-b from-stone-950/10 via-transparent to-stone-950/40" />
       </div>
 
-      <Canvas
-        camera={{ position: [0, 0, 7.5], fov: 45 }}
-        gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
-        style={{ pointerEvents: 'auto' }}
-        className="relative z-10 w-full h-full"
-      >
-        <SceneController disabled={prefersReducedMotion} />
+      {/* Decouple canvas using absolute position and a relative, overflow-hidden wrapper to prevent mobile layout explosion */}
+      <div className="absolute inset-0 z-10 w-full h-full overflow-hidden pointer-events-none">
+        <Canvas
+          camera={{ position: [0, 0, 7.5], fov: 45 }}
+          gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
+          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'auto' }}
+        >
+          <SceneController disabled={prefersReducedMotion} />
 
-        {/* Safe navigation controls fallback */}
-        <OrbitControls
-          enableZoom={false}
-          enablePan={false}
-          enableRotate={false}
-        />
-      </Canvas>
+          {/* Safe navigation controls fallback */}
+          <OrbitControls
+            enableZoom={false}
+            enablePan={false}
+            enableRotate={false}
+          />
+        </Canvas>
+      </div>
     </div>
   );
 }
