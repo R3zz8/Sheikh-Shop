@@ -211,7 +211,7 @@ export default function ProductList({
             {/* Central Search Bar Box inside premium glass card with subtle animated gold glow */}
             <div className={`flex-1 w-full ${
               variant === 'digital' || variant === 'home' || variant === 'food'
-                ? 'p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#1c110a]/80 via-[#23150c]/85 to-[#1c110a]/80 border border-amber-500/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] relative overflow-hidden group transition-all duration-300 hover:border-amber-500/40'
+                ? 'p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#1c110a]/80 via-[#23150c]/85 to-[#1c110a]/80 border border-amber-500/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] relative overflow-hidden group transition-colors duration-300 hover:border-amber-500/40 isolate'
                 : 'mb-0'
             }`}>
               {/* Gold glow animation behind */}

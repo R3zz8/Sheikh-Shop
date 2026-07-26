@@ -15,6 +15,7 @@ import { generatePageSEO } from '@/lib/seo/core';
 import AccessibilityEnhancements from '@/components/accessibility/AccessibilityEnhancements';
 import { ShoppingChatbot, EnhancedAISearch } from '@/components/DynamicClientComponents';
 import AMPHead from '@/components/seo/AMPHead';
+import LayoutDebugger from '@/components/LayoutDebugger';
 import Script from 'next/script';
 import Link from 'next/link';
 import { Inter, Tajawal, Poppins, JetBrains_Mono, Vazirmatn } from 'next/font/google';
@@ -124,6 +125,7 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${tajawal.variable} ${poppins.variable} ${jetbrainsMono.variable} ${vazirmatn.variable} antialiased font-sans font-vazirmatn`}
       >
+        {process.env.NODE_ENV === 'development' && <LayoutDebugger />}
         <AMPHead />
         <AccessibilityEnhancements />
         <ErrorBoundary>
