@@ -125,7 +125,7 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${tajawal.variable} ${poppins.variable} ${jetbrainsMono.variable} ${vazirmatn.variable} antialiased font-sans font-vazirmatn`}
       >
-        {process.env.NODE_ENV === 'development' && <LayoutDebugger />}
+        <LayoutDebugger />
         <AMPHead />
         <AccessibilityEnhancements />
         <ErrorBoundary>
