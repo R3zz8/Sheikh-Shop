@@ -145,6 +145,8 @@
     mix-blend-mode: normal !important;
     transform: none !important;
     perspective: none !important;
+    max-width: 100%;
+    overflow-x: hidden;
   }
 
   /* Mobile menu overlay protection */
