@@ -9,8 +9,6 @@ export default function AccessibilityEnhancements() {
     skipLink.href = '#main-content';
     skipLink.textContent = 'Skip to main content';
     skipLink.className = 'sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-amber-600 text-white px-4 py-2 rounded z-50';
-    skipLink.style.position = 'absolute';
-    skipLink.style.left = '-9999px';
     skipLink.style.zIndex = '9999';
     
     document.body.insertBefore(skipLink, document.body.firstChild);
