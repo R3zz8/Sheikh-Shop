@@ -97,24 +97,22 @@ export default function Home() {
         {/* Royal 3D Showcase */}
         <RoyalShowcase />
 
-        {/* Hero Section with 3D Palm Tree - Always Horizontal */}
-        <section className="container-fluid pt-1 sm:pt-4 md:pt-8 pb-1 sm:pb-4 md:pb-8">
-          <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
-            {/* Grid with 2 columns that never wrap - scales proportionally */}
+        {/* Desktop-only Hero Section with 3D Palm Tree */}
+        <section className="hidden md:block container-fluid pt-4 pb-8">
+          <div className="max-w-7xl mx-auto px-6 lg:px-8">
             <div
               className="grid items-center overflow-hidden"
               style={{
                 gridTemplateColumns: '1fr 1fr',
-                gap: 'clamp(0.5rem, 3vw, 2rem)',
-                minHeight: 'clamp(200px, 60vh, 700px)',
+                gap: 'clamp(1rem, 3vw, 2rem)',
+                minHeight: 'clamp(300px, 60vh, 700px)',
                 width: '100%',
               }}
             >
               {/* Text Content - Left Column */}
-              <div className="text-right overflow-hidden flex flex-col justify-center pl-2 sm:pl-4">
-                {/* Desktop/Tablet Heading */}
+              <div className="text-right overflow-hidden flex flex-col justify-center pl-4">
                 <h1
-                  className="font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent mb-4 sm:mb-6 md:mb-8 hidden md:block"
+                  className="font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent mb-8"
                   style={{
                     fontSize: 'clamp(38px, 4vw + 14px, 56px)',
                     lineHeight: '1.2',
@@ -123,18 +121,8 @@ export default function Home() {
                 >
                   به فروشگاه شیخ خوش آمدید
                 </h1>
-                {/* Mobile Heading */}
-                <h1
-                  className="font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent mb-2 md:hidden text-[30px] sm:text-[34px] leading-tight"
-                  style={{
-                    wordBreak: 'break-word',
-                  }}
-                >
-                  به فروشگاه شیخ خوش آمدید
-                </h1>
-                {/* Desktop/Tablet Description */}
                 <p
-                  className="text-gray-200 mb-6 sm:mb-8 md:mb-10 leading-[1.8] font-normal hidden md:block"
+                  className="text-gray-200 mb-10 leading-[1.8] font-normal"
                   style={{
                     fontSize: 'clamp(20px, 1.5vw + 12px, 22px)',
                     maxWidth: '550px',
@@ -142,16 +130,7 @@ export default function Home() {
                 >
                   با مجموعه‌ای از بهترین خرماهای ممتاز، عسل طبیعی، ارده، شیره خرما و محصولات اصیل، طعم واقعی کیفیت را تجربه کنید. فروشگاه شیخ با الهام از اصالت و مهمان‌نوازی شرقی، محصولاتی تازه، سالم و باکیفیت را برای خانواده شما فراهم کرده است.
                 </p>
-                {/* Mobile Description */}
-                <p
-                  className="text-gray-200 mb-3 leading-[1.45] font-normal md:hidden text-[14px] sm:text-[15px]"
-                  style={{
-                    maxWidth: '100%',
-                  }}
-                >
-                  با مجموعه‌ای از بهترین خرماهای ممتاز، عسل طبیعی، ارده، شیره خرما و محصولات اصیل، طعم واقعی کیفیت را تجربه کنید.
-                </p>
-                <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+                <div className="flex flex-wrap items-center gap-4">
                   <Link href="/products">
                     <Button
                       className="btn-primary whitespace-nowrap transition-all duration-300 font-bold"
@@ -183,8 +162,8 @@ export default function Home() {
               <div
                 className="relative w-full flex items-center justify-center overflow-hidden"
                 style={{
-                  height: 'clamp(200px, 40vw, 600px)',
-                  minHeight: '200px',
+                  height: 'clamp(300px, 40vw, 600px)',
+                  minHeight: '300px',
                 }}
               >
                 <OptimizedPalmTree
@@ -196,6 +175,53 @@ export default function Home() {
                   posterImage="/tree3d.jpeg"
                 />
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Premium Mobile-optimized Hero Section */}
+        <section className="block md:hidden px-5 pt-10 pb-8">
+          <div className="max-w-lg mx-auto flex flex-col gap-6">
+            {/* Centered Hero Row */}
+            <div className="flex items-center justify-between gap-4 w-full">
+              {/* 3D Palm Tree Container - Fixed width/height & Vertically Centered */}
+              <div className="relative overflow-hidden flex-shrink-0 w-[140px] h-[140px] xs:w-[160px] xs:h-[160px] rounded-2xl bg-stone-900/40 border border-amber-500/10 shadow-2xl flex items-center justify-center">
+                <OptimizedPalmTree
+                  height="100%"
+                  minHeight="100%"
+                  enableControls={true}
+                  autoRotate={true}
+                  intensity={1.2}
+                  className="rounded-2xl"
+                  posterImage="/tree3d.jpeg"
+                />
+              </div>
+
+              {/* Text Block - Vertically Centered */}
+              <div className="flex flex-col justify-center text-right flex-1 min-w-0">
+                <h1 className="text-2xl xs:text-[28px] font-black bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent leading-tight mb-2">
+                  به فروشگاه
+                  <br />
+                  شیخ خوش آمدید
+                </h1>
+                <p className="text-gray-300 text-[13px] xs:text-[14px] leading-relaxed font-normal">
+                  با مجموعه‌ای از بهترین خرماهای ممتاز، عسل طبیعی، زعفران اصل و محصولات طبیعی، تجربه‌ای از کیفیت و اصالت را تجربه کنید.
+                </p>
+              </div>
+            </div>
+
+            {/* Premium Buttons */}
+            <div className="flex flex-col min-[400px]:flex-row gap-3 w-full">
+              <Link href="/products" className="w-full min-[400px]:flex-1">
+                <Button className="w-full bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 hover:brightness-110 active:scale-95 text-stone-950 font-black text-sm h-12 rounded-xl transition-all duration-300 shadow-lg shadow-amber-500/20 border border-yellow-300/20">
+                  مشاهده محصولات
+                </Button>
+              </Link>
+              <Link href="/register" className="w-full min-[400px]:flex-1">
+                <Button className="w-full bg-neutral-900/80 hover:bg-neutral-800/90 active:scale-95 text-amber-100 border border-amber-500/25 backdrop-blur font-bold text-sm h-12 rounded-xl transition-all duration-300">
+                  ثبت نام
+                </Button>
+              </Link>
             </div>
           </div>
         </section>

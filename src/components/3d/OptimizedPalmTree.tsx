@@ -19,6 +19,7 @@ const PalmTreeContainer = dynamic(() => import('./PalmTree'), {
 
 interface OptimizedPalmTreeProps {
   height?: string;
+  minHeight?: string;
   enableControls?: boolean;
   autoRotate?: boolean;
   intensity?: number;
@@ -28,6 +29,7 @@ interface OptimizedPalmTreeProps {
 
 export default function OptimizedPalmTree({
   height = '500px',
+  minHeight,
   enableControls = true,
   autoRotate = true,
   intensity = 1.2,
@@ -79,7 +81,7 @@ export default function OptimizedPalmTree({
 
   // Handle both fixed heights (like "500px") and percentage heights (like "100%")
   const heightStyle = height === '100%' 
-    ? { height: '100%', minHeight: '250px' }
+    ? { height: '100%', minHeight: minHeight || '250px' }
     : { height };
 
   // Show static poster only if user prefers reduced motion
