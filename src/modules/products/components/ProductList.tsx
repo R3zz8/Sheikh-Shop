@@ -217,7 +217,10 @@ export default function ProductList({
               {/* Gold glow animation behind */}
               {(variant === 'digital' || variant === 'home' || variant === 'food') && (
                 <>
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-500/5 to-transparent -translate-x-full animate-[shimmer_3s_infinite] pointer-events-none" />
+                  {/* Fixed: Wrapped infinite translation in a static, non-transitioning absolute wrapper to prevent mobile GPU overflow containment leak */}
+                  <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none isolate">
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-500/5 to-transparent -translate-x-full animate-[shimmer_3s_infinite]" />
+                  </div>
                   <style dangerouslySetInnerHTML={{ __html: `
                     @keyframes shimmer {
                       0% { transform: translateX(-100%); }
