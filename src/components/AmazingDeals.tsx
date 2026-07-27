@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Clock, Star, Zap, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
-import { formatPrice } from '@/lib/currency'; // فقط formatPrice استفاده می‌کنیم
+import { Clock, Star, Zap, ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
+import { formatPrice } from '@/lib/currency';
 import { useAmazingDeals } from '@/hooks/useAmazingDeals';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Autoplay, Keyboard } from 'swiper/modules';
@@ -18,6 +18,7 @@ interface Product {
   id: string;
   name: string;
   basePrice: number;
+  slug?: string;
   images: { id: string; image: string }[];
   baseUnit: { id: string; name: string; symbol: string };
   units: { id: string; name: string; price: number; stock: number; isActive: boolean }[];
@@ -29,7 +30,6 @@ export default function AmazingDeals() {
   const [isClient, setIsClient] = useState(false);
   const { products, loading, error } = useAmazingDeals();
 
-  // همیشه یورو — ثابت
   const CURRENCY = 'EUR';
 
   useEffect(() => {
@@ -37,6 +37,7 @@ export default function AmazingDeals() {
   }, []);
 
   const [timeLeft, setTimeLeft] = useState({
+    days: 0,
     hours: 23,
     minutes: 59,
     seconds: 59,
@@ -51,9 +52,11 @@ export default function AmazingDeals() {
         } else if (prev.minutes > 0) {
           return { ...prev, minutes: prev.minutes - 1, seconds: 59 };
         } else if (prev.hours > 0) {
-          return { hours: prev.hours - 1, minutes: 59, seconds: 59 };
+          return { ...prev, hours: prev.hours - 1, minutes: 59, seconds: 59 };
+        } else if (prev.days > 0) {
+          return { days: prev.days - 1, hours: 23, minutes: 59, seconds: 59 };
         }
-        return { hours: 23, minutes: 59, seconds: 59 }; // Reset to 24 hours
+        return { days: 0, hours: 23, minutes: 59, seconds: 59 }; // Reset
       });
     }, 1000);
 
@@ -62,50 +65,39 @@ export default function AmazingDeals() {
 
   // Animation variants
   const containerVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 15 },
     visible: {
       opacity: 1,
       y: 0,
       transition: {
-        duration: 0.6,
-        staggerChildren: 0.1,
+        duration: 0.5,
+        staggerChildren: 0.08,
       },
     },
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 20, scale: 0.95 },
+    hidden: { opacity: 0, y: 15, scale: 0.97 },
     visible: {
       opacity: 1,
       y: 0,
       scale: 1,
       transition: {
-        duration: 0.5,
+        duration: 0.4,
         ease: "easeOut" as const,
       },
     },
   };
 
-  const cardVariants = {
-    hover: {
-      y: -8,
-      scale: 1.02,
-      transition: {
-        duration: 0.3,
-        ease: "easeOut" as const,
-      },
-    },
-  };
-
-  // Don't render anything until client-side hydration is complete
+  // Loading state placeholder with responsive spacing and Persian text
   if (!isClient) {
     return (
-      <section className="container-fluid section-padding">
+      <section className="container-fluid pt-[16px] pb-6 md:section-padding">
         <div className="max-w-6xl mx-auto">
           <div className="text-center">
             <div className="animate-pulse">
-              <div className="h-8 bg-gray-700 rounded w-64 mx-auto mb-4"></div>
-              <div className="h-4 bg-gray-700 rounded w-96 mx-auto mb-8"></div>
+              <div className="h-7 bg-amber-950/40 border border-amber-500/10 rounded w-48 mx-auto mb-3"></div>
+              <div className="h-4 bg-amber-950/40 border border-amber-500/10 rounded w-72 mx-auto mb-6"></div>
             </div>
           </div>
         </div>
@@ -116,22 +108,22 @@ export default function AmazingDeals() {
   // Show loading state
   if (loading) {
     return (
-      <section className="container-fluid section-padding">
+      <section className="container-fluid pt-[16px] pb-6 md:section-padding">
         <div className="max-w-6xl mx-auto">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.5 }}
             className="text-center"
           >
-            <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent mb-4">
-              Amazing Deals
+            <h2 className="text-[24px] xs:text-[28px] md:text-4xl font-extrabold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent mb-3">
+              🔥 پیشنهادهای ویژه شیخ
             </h2>
-            <p className="text-gray-300 text-lg max-w-2xl mx-auto mb-8">
-              Loading amazing deals...
+            <p className="text-gray-300 text-[14px] xs:text-[15px] leading-[1.6] max-w-2xl mx-auto mb-6">
+              در حال بارگذاری پیشنهادهای ویژه...
             </p>
             <div className="flex justify-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-400"></div>
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-amber-400"></div>
             </div>
           </motion.div>
         </div>
@@ -142,28 +134,28 @@ export default function AmazingDeals() {
   // Show error state
   if (error) {
     return (
-      <section className="container-fluid section-padding">
+      <section className="container-fluid pt-[16px] pb-6 md:section-padding">
         <div className="max-w-6xl mx-auto">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.5 }}
             className="text-center"
           >
-            <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent mb-4">
-              Amazing Deals
+            <h2 className="text-[24px] xs:text-[28px] md:text-4xl font-extrabold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent mb-3">
+              🔥 پیشنهادهای ویژه شیخ
             </h2>
-            <p className="text-gray-300 text-lg max-w-2xl mx-auto mb-8">
-              Unable to load amazing deals
+            <p className="text-gray-300 text-[14px] xs:text-[15px] leading-[1.6] max-w-2xl mx-auto mb-6">
+              امکان بارگذاری پیشنهادهای ویژه وجود ندارد
             </p>
-            <div className="bg-gradient-to-br from-red-900/20 via-stone-800/20 to-red-800/20 rounded-2xl border border-red-500/20 p-12 max-w-md mx-auto">
-              <div className="text-red-400/60 mb-4">
-                <Zap size={48} className="mx-auto" />
+            <div className="bg-gradient-to-br from-red-900/20 via-stone-800/20 to-red-800/20 rounded-2xl border border-red-500/20 p-8 max-w-md mx-auto">
+              <div className="text-red-400/60 mb-3">
+                <Zap size={40} className="mx-auto" />
               </div>
-              <h3 className="text-xl font-semibold text-red-200 mb-2">
-                Error Loading Deals
+              <h3 className="text-lg font-semibold text-red-200 mb-2 font-vazirmatn">
+                خطا در بارگذاری پیشنهادها
               </h3>
-              <p className="text-gray-400 text-sm">
+              <p className="text-gray-400 text-xs">
                 {error}
               </p>
             </div>
@@ -176,31 +168,30 @@ export default function AmazingDeals() {
   // If no products, show empty state
   if (products.length === 0) {
     return (
-      <section className="container-fluid section-padding">
+      <section className="container-fluid pt-[16px] pb-6 md:section-padding">
         <div className="max-w-6xl mx-auto">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.5 }}
             className="text-center"
           >
-            <h2 className="text-3xl md:text-4xl font-old bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent mb-4">
-              Amazing Deals
+            <h2 className="text-[24px] xs:text-[28px] md:text-4xl font-extrabold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent mb-3">
+              🔥 پیشنهادهای ویژه شیخ
             </h2>
-            <p className="text-gray-300 text-lg max-w-2xl mx-auto mb-8">
-              Discover incredible offers on our premium products
+            <p className="text-gray-300 text-[14px] xs:text-[15px] leading-[1.6] max-w-2xl mx-auto mb-6">
+              بهترین پیشنهادهای محدود با تخفیف اختصاصی
             </p>
             
-            {/* Empty State Card */}
-            <div className="bg-gradient-to-br from-amber-900/20 via-stone-800/20 to-amber-800/20 rounded-2xl border border-amber-500/20 p-12 max-w-md mx-auto">
-              <div className="text-amber-400/60 mb-4">
-                <Zap size={48} className="mx-auto" />
+            <div className="bg-gradient-to-br from-amber-900/10 via-stone-900/30 to-amber-800/10 rounded-2xl border border-amber-500/10 p-8 max-w-md mx-auto">
+              <div className="text-amber-400/60 mb-3">
+                <Zap size={40} className="mx-auto" />
               </div>
-              <h3 className="text-xl font-semibold text-amber-200 mb-2">
-                No Deals Available
+              <h3 className="text-lg font-semibold text-amber-200 mb-2 font-vazirmatn">
+                پیشنهادی در حال حاضر موجود نیست
               </h3>
-              <p className="text-gray-400 text-sm">
-                Check back soon for amazing offers!
+              <p className="text-gray-400 text-xs">
+                به زودی با پیشنهادهای شگفت‌انگیز دیگر بازگردید!
               </p>
             </div>
           </motion.div>
@@ -210,42 +201,73 @@ export default function AmazingDeals() {
   }
 
   return (
-    <section className="container-fluid section-padding">
+    <section className="container-fluid pt-[16px] pb-6 md:section-padding">
       <div className="max-w-6xl mx-auto">
         {/* Section Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-12"
+          transition={{ duration: 0.5 }}
+          className="text-center mb-5 md:mb-10 flex flex-col items-center"
         >
-          <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent mb-4">
-            Amazing Deals
+          <h2 className="text-[24px] xs:text-[28px] md:text-4xl font-extrabold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent mb-1.5 leading-tight select-none">
+            🔥 پیشنهادهای ویژه شیخ
           </h2>
-          <p className="text-gray-300 text-lg max-w-2xl mx-auto mb-6">
-            Limited time offers on our premium collection
+          <p className="text-gray-300 text-[14px] xs:text-[15px] leading-[1.6] max-w-2xl mx-auto mb-3 font-normal select-none">
+            بهترین پیشنهادهای محدود با تخفیف اختصاصی
           </p>
           
-          {/* Countdown Timer */}
-          <div className="flex justify-center items-center gap-4 mb-6">
-            <Clock className="text-amber-400 w-5 h-5" />
-            <span className="text-amber-200 text-sm font-medium">Deals end in:</span>
-            <div className="flex gap-2">
-              <div className="bg-gradient-to-br from-amber-600/80 to-amber-800/80 rounded-lg px-3 py-2 min-w-[3rem] text-center">
-                <span className="text-amber-100 font-bold text-lg">
+          {/* Countdown Timer - Luxury Glass Redesign */}
+          <div className="flex flex-col items-center gap-2 mt-2" dir="rtl">
+            <div className="flex items-center gap-1.5 text-amber-300 font-medium text-[13px] xs:text-[14px] md:text-sm select-none">
+              <Clock className="w-3.5 h-3.5 xs:w-4 xs:h-4 text-amber-400" />
+              <span>⏳ پایان پیشنهاد تا</span>
+            </div>
+
+            <div className="flex items-center gap-1 xs:gap-1.5 select-none">
+              {/* Card 1: روز */}
+              <div className="bg-neutral-900/60 backdrop-blur-md border border-amber-500/20 rounded-lg py-1 px-1.5 xs:py-1.5 xs:px-2 md:py-2.5 md:px-3 min-w-[42px] xs:min-w-[48px] md:min-w-[64px] text-center shadow-lg shadow-black/40">
+                <span className="block text-amber-400 font-bold text-[16px] xs:text-[18px] md:text-2xl leading-none">
+                  {timeLeft.days.toString().padStart(2, '0')}
+                </span>
+                <span className="block text-stone-400 text-[9px] xs:text-[10px] md:text-xs mt-1 leading-none font-medium">
+                  روز
+                </span>
+              </div>
+
+              <span className="text-amber-500/60 font-bold text-xs xs:text-sm md:text-base">:</span>
+
+              {/* Card 2: ساعت */}
+              <div className="bg-neutral-900/60 backdrop-blur-md border border-amber-500/20 rounded-lg py-1 px-1.5 xs:py-1.5 xs:px-2 md:py-2.5 md:px-3 min-w-[42px] xs:min-w-[48px] md:min-w-[64px] text-center shadow-lg shadow-black/40">
+                <span className="block text-amber-400 font-bold text-[16px] xs:text-[18px] md:text-2xl leading-none">
                   {timeLeft.hours.toString().padStart(2, '0')}
                 </span>
-              </div>
-              <span className="text-amber-400 text-lg font-bold">:</span>
-              <div className="bg-gradient-to-br from-amber-600/80 to-amber-800/80 rounded-lg px-3 py-2 min-w-[3rem] text-center">
-                <span className="text-amber-100 font-bold text-lg">
-                  {timeLeft.minutes.toString().padStart(2, '0')}
+                <span className="block text-stone-400 text-[9px] xs:text-[10px] md:text-xs mt-1 leading-none font-medium">
+                  ساعت
                 </span>
               </div>
-              <span className="text-amber-400 text-lg font-bold">:</span>
-              <div className="bg-gradient-to-br from-amber-600/80 to-amber-800/80 rounded-lg px-3 py-2 min-w-[3rem] text-center">
-                <span className="text-amber-100 font-bold text-lg">
+
+              <span className="text-amber-500/60 font-bold text-xs xs:text-sm md:text-base">:</span>
+
+              {/* Card 3: دقیقه */}
+              <div className="bg-neutral-900/60 backdrop-blur-md border border-amber-500/20 rounded-lg py-1 px-1.5 xs:py-1.5 xs:px-2 md:py-2.5 md:px-3 min-w-[42px] xs:min-w-[48px] md:min-w-[64px] text-center shadow-lg shadow-black/40">
+                <span className="block text-amber-400 font-bold text-[16px] xs:text-[18px] md:text-2xl leading-none">
+                  {timeLeft.minutes.toString().padStart(2, '0')}
+                </span>
+                <span className="block text-stone-400 text-[9px] xs:text-[10px] md:text-xs mt-1 leading-none font-medium">
+                  دقیقه
+                </span>
+              </div>
+
+              <span className="text-amber-500/60 font-bold text-xs xs:text-sm md:text-base">:</span>
+
+              {/* Card 4: ثانیه */}
+              <div className="bg-neutral-900/60 backdrop-blur-md border border-amber-500/20 rounded-lg py-1 px-1.5 xs:py-1.5 xs:px-2 md:py-2.5 md:px-3 min-w-[42px] xs:min-w-[48px] md:min-w-[64px] text-center shadow-lg shadow-black/40">
+                <span className="block text-amber-400 font-bold text-[16px] xs:text-[18px] md:text-2xl leading-none">
                   {timeLeft.seconds.toString().padStart(2, '0')}
+                </span>
+                <span className="block text-stone-400 text-[9px] xs:text-[10px] md:text-xs mt-1 leading-none font-medium">
+                  ثانیه
                 </span>
               </div>
             </div>
@@ -261,8 +283,8 @@ export default function AmazingDeals() {
         >
           <Swiper
             modules={[Navigation, Autoplay, Keyboard]}
-            spaceBetween={16}
-            slidesPerView={2}
+            spaceBetween={12}
+            slidesPerView={1}
             centeredSlides={false}
             grabCursor={true}
             loop={true}
@@ -287,7 +309,7 @@ export default function AmazingDeals() {
             }}
             className="amazing-deals-swiper"
           >
-            {products.map((product, index) => {
+            {products.map((product) => {
               const mainImage = product.images[0]?.image || '/placeholder-product.jpg';
               const hasDiscount = product.discounts && product.discounts.length > 0;
               const discount = hasDiscount ? product.discounts[0] : null;
@@ -316,11 +338,18 @@ export default function AmazingDeals() {
                 <SwiperSlide key={product.id}>
                   <motion.div
                     variants={itemVariants}
-                    whileHover="hover"
+                    whileHover={{
+                      y: -6,
+                      scale: 1.01,
+                      transition: {
+                        duration: 0.25,
+                        ease: "easeOut"
+                      }
+                    }}
                     className="group h-full"
                   >
                     <Link href={`/products/${product.slug || product.id}`} className="block h-full">
-                      <div className="bg-gradient-to-br from-amber-900/40 via-stone-800/40 to-amber-800/40 rounded-xl border border-amber-500/20 shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden h-full flex flex-col">
+                      <div className="bg-gradient-to-br from-amber-900/40 via-stone-800/40 to-amber-800/40 rounded-xl border border-amber-500/20 shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden h-full flex flex-col" dir="rtl">
                         {/* Product Image */}
                         <div className="relative aspect-square overflow-hidden">
                           <Image
@@ -336,39 +365,39 @@ export default function AmazingDeals() {
                           
                           {/* Discount Badge */}
                           {hasDiscount && (
-                            <div className="absolute top-3 left-3 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg">
-                              -{discountPercentage}%
+                            <div className="absolute top-3 right-3 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-lg">
+                              {discountPercentage}-٪
                             </div>
                           )}
                           
                           {/* Amazing Deals Badge */}
-                          <div className="absolute top-3 right-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg flex items-center gap-1">
-                            <Zap size={12} />
-                            DEAL
+                          <div className="absolute top-3 left-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-lg flex items-center gap-1">
+                            <Zap size={11} />
+                            ویژه
                           </div>
                         </div>
 
                         {/* Product Info */}
-                        <div className="p-3 md:p-4 space-y-2 md:space-y-3 flex-grow flex flex-col">
+                        <div className="p-3 md:p-4 space-y-2 md:space-y-3 flex-grow flex flex-col text-right">
                           {/* Product Name */}
-                          <h2 className="text-xs md:text-sm font-semibold text-white group-hover:text-amber-200 transition-colors duration-300 leading-tight truncate md:line-clamp-2">
+                          <h2 className="text-xs md:text-sm font-semibold text-white group-hover:text-amber-200 transition-colors duration-300 leading-tight truncate md:line-clamp-2 font-vazirmatn">
                             {product.name}
                           </h2>
 
                           {/* Price Section */}
                           <div className="space-y-1">
-                            <div className="flex items-baseline gap-2">
-                              <span className="text-base md:text-lg font-bold text-amber-200">
-                                {hasMultipleUnits ? 'from ' : ''}{formatPrice(finalPrice, CURRENCY)}
+                            <div className="flex flex-col xs:flex-row xs:items-baseline gap-1 xs:gap-2">
+                              <span className="text-sm xs:text-base md:text-lg font-bold text-amber-200 whitespace-nowrap">
+                                {hasMultipleUnits ? 'از ' : ''}{formatPrice(finalPrice, CURRENCY)}
                               </span>
                               {hasDiscount && (
-                                <span className="text-xs md:text-sm text-gray-400 line-through">
-                                  {hasMultipleUnits ? 'from ' : ''}{formatPrice(product.basePrice, CURRENCY)}
+                                <span className="text-[11px] xs:text-xs md:text-sm text-gray-400 line-through whitespace-nowrap">
+                                  {hasMultipleUnits ? 'از ' : ''}{formatPrice(product.basePrice, CURRENCY)}
                                 </span>
                               )}
                             </div>
-                            <p className="text-[10px] md:text-xs text-amber-300/80">
-                              {hasMultipleUnits ? 'multiple units available' : `per ${product.baseUnit.symbol}`}
+                            <p className="text-[10px] md:text-xs text-amber-300/80 font-vazirmatn">
+                              {hasMultipleUnits ? 'تنوع در ابعاد' : `هر ${product.baseUnit?.symbol || ''}`}
                             </p>
                           </div>
 
@@ -378,21 +407,21 @@ export default function AmazingDeals() {
                               {[1, 2, 3, 4, 5].map((star) => (
                                 <Star
                                   key={star}
-                                  size={12}
+                                  size={11}
                                   className={`${
                                     star <= 4 ? 'text-amber-400 fill-current' : 'text-gray-600'
                                   }`}
                                 />
                               ))}
                             </div>
-                            <span className="text-[10px] md:text-xs text-gray-400 ml-1">(4.8)</span>
+                            <span className="text-[10px] md:text-xs text-gray-400 mr-1">(۴.۸)</span>
                           </div>
 
                           {/* View Details Button */}
                           <div className="pt-1 md:pt-2 mt-auto">
                             <div className="flex items-center justify-between text-amber-400 group-hover:text-amber-300 transition-colors duration-300">
-                              <span className="text-[11px] md:text-xs font-medium">View Details</span>
-                              <ArrowRight size={12} className="md:size-[14px] group-hover:translate-x-1 transition-transform duration-300" />
+                              <span className="text-[11px] md:text-xs font-medium font-vazirmatn">مشاهده جزئیات</span>
+                              <ArrowLeft size={12} className="md:size-[14px] group-hover:-translate-x-1 transition-transform duration-300" />
                             </div>
                           </div>
                         </div>
@@ -406,33 +435,33 @@ export default function AmazingDeals() {
 
           {/* Custom Navigation Arrows */}
           <button
-            className="swiper-button-prev-amazing absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 w-12 h-12 bg-gradient-to-r from-amber-600/90 to-orange-600/90 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:from-amber-700 hover:to-orange-700 hover:scale-110 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-amber-400/30 z-10 shadow-lg border border-amber-400/20"
+            className="swiper-button-prev-amazing absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 w-11 h-11 bg-gradient-to-r from-amber-600/90 to-orange-600/90 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:from-amber-700 hover:to-orange-700 hover:scale-110 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-amber-400/30 z-10 shadow-lg border border-amber-400/20"
             aria-label="Previous deals"
           >
-            <ChevronLeft className="w-6 h-6" />
+            <ChevronLeft className="w-5.5 h-5.5" />
           </button>
           
           <button
-            className="swiper-button-next-amazing absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 w-12 h-12 bg-gradient-to-r from-amber-600/90 to-orange-600/90 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:from-amber-700 hover:to-orange-700 hover:scale-110 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-amber-400/30 z-10 shadow-lg border border-amber-400/20"
+            className="swiper-button-next-amazing absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 w-11 h-11 bg-gradient-to-r from-amber-600/90 to-orange-600/90 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:from-amber-700 hover:to-orange-700 hover:scale-110 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-amber-400/30 z-10 shadow-lg border border-amber-400/20"
             aria-label="Next deals"
           >
-            <ChevronRight className="w-6 h-6" />
+            <ChevronRight className="w-5.5 h-5.5" />
           </button>
         </motion.div>
 
         {/* View All Deals Button */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="text-center mt-12"
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="text-center mt-6 md:mt-12"
         >
           <Link
             href="/deals"
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white font-semibold px-8 py-3 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/25 hover:scale-105"
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white font-bold px-6 py-2.5 md:px-8 md:py-3 rounded-xl text-sm md:text-base transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/25 hover:scale-105"
           >
-            View All Deals
-            <ArrowRight size={20} />
+            مشاهده همه پیشنهادها
+            <ArrowLeft size={18} className="md:size-5" />
           </Link>
         </motion.div>
       </div>
@@ -467,7 +496,7 @@ export default function AmazingDeals() {
           }
           
           .amazing-deals-swiper {
-            padding: 0 20px !important;
+            padding: 0 12px !important;
           }
         }
         
