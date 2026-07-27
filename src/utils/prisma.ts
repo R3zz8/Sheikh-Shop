@@ -447,6 +447,7 @@ for (let i = 5; i <= 25; i++) {
 const mockCarousel = [
   { id: 'c1', title: 'Premium Dates', image: 'https://images.unsplash.com/photo-1596797038530-2c107229654b?q=80&w=600&auto=format&fit=crop', link: '/product/p3', order: 1 },
   { id: 'c2', title: 'Mountain Honey', image: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=600&auto=format&fit=crop', link: '/product/p1', order: 2 },
+  { id: 'c3', title: 'International Store', image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?q=80&w=600&auto=format&fit=crop', link: '/categories/international', order: 3 },
 ];
 
 const mockShowcaseConfig = [
