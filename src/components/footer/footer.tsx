@@ -164,6 +164,38 @@ export default function Footer() {
               </div>
             </div>
 
+            {/* Trust Section - Mobile */}
+            <div className="bg-amber-950/20 backdrop-blur-md rounded-xl border border-amber-500/25 p-5 mb-6 text-center overflow-hidden flex flex-col items-center justify-center">
+              <h4 className="text-[15px] font-bold text-amber-200 mb-3 tracking-wide">
+                نماد اعتماد الکترونیکی
+              </h4>
+
+              <div className="bg-neutral-900/50 rounded-lg p-2 border border-amber-500/10 inline-flex items-center justify-center mb-3 transition-colors duration-300 hover:border-amber-500/30">
+                <a
+                  referrerPolicy="origin"
+                  target="_blank"
+                  href="https://trustseal.enamad.ir/?id=764844&Code=llkuvWwCWtMYak50jjDsj3yYjWoxjTdF"
+                  className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 rounded-lg p-1 block"
+                  aria-label="نماد اعتماد الکترونیکی فروشگاه شیخ"
+                >
+                  <img
+                    referrerPolicy="origin"
+                    src="https://trustseal.enamad.ir/logo.aspx?id=764844&Code=llkuvWwCWtMYak50jjDsj3yYjWoxjTdF"
+                    alt="نماد اعتماد الکترونیکی فروشگاه شیخ"
+                    style={{ cursor: 'pointer' }}
+                    width={100}
+                    height={100}
+                    className="object-contain w-[100px] h-[100px]"
+                    {...{ code: "llkuvWwCWtMYak50jjDsj3yYjWoxjTdF" }}
+                  />
+                </a>
+              </div>
+
+              <p className="text-gray-300 text-[13px] leading-relaxed max-w-[280px] mx-auto opacity-90">
+                فروشگاه شیخ دارای نماد اعتماد الکترونیکی می‌باشد.
+              </p>
+            </div>
+
             {/* Essential Links - Mobile */}
             <div className="text-center">
               <div className="flex items-center justify-center gap-4 text-gray-400 text-sm mb-3">
@@ -304,6 +336,45 @@ export default function Footer() {
                 <div className="flex items-center gap-3 text-gray-300 text-[16px] lg:text-[17px] xl:text-[18px] justify-start">
                   <MapPin className="w-4 h-4 text-amber-300" />
                   <span>ایران، بوشهر، مرکز شهر</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Trust & Certifications Section - Desktop */}
+          <div className="border-t border-amber-200/10 pt-8 mb-8" dir="rtl">
+            <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-amber-500/20 shadow-xl shadow-amber-950/20 p-8 flex flex-col items-center gap-6 transition-all duration-300 hover:border-amber-500/40 hover:shadow-amber-500/5 hover:scale-[1.01] group">
+              <h3 className="text-[18px] font-bold text-white tracking-wide border-b border-amber-500/20 pb-2 mb-2">
+                نمادها و مجوزهای فروشگاه شیخ
+              </h3>
+
+              {/* Badges Container - visually centered with space for future additional badges */}
+              <div className="flex flex-wrap items-center justify-center gap-12">
+                {/* eNamad Trust Seal */}
+                <div className="relative p-3 bg-neutral-900/60 rounded-xl border border-amber-500/15 shadow-inner flex items-center justify-center transition-all duration-300 hover:border-amber-500/30 w-[150px] h-[150px] overflow-hidden">
+                  <a
+                    referrerPolicy="origin"
+                    target="_blank"
+                    href="https://trustseal.enamad.ir/?id=764844&Code=llkuvWwCWtMYak50jjDsj3yYjWoxjTdF"
+                    className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 rounded-lg p-1 block"
+                    aria-label="نماد اعتماد الکترونیکی فروشگاه شیخ"
+                  >
+                    <img
+                      referrerPolicy="origin"
+                      src="https://trustseal.enamad.ir/logo.aspx?id=764844&Code=llkuvWwCWtMYak50jjDsj3yYjWoxjTdF"
+                      alt="نماد اعتماد الکترونیکی فروشگاه شیخ"
+                      style={{ cursor: 'pointer' }}
+                      width={125}
+                      height={125}
+                      className="object-contain w-[125px] h-[125px]"
+                      {...{ code: "llkuvWwCWtMYak50jjDsj3yYjWoxjTdF" }}
+                    />
+                  </a>
+                </div>
+
+                {/* Placeholder for future badges */}
+                <div className="relative p-3 bg-neutral-900/20 rounded-xl border border-dashed border-white/5 flex items-center justify-center w-[150px] h-[150px] select-none text-center">
+                  <span className="text-xs text-gray-500 font-medium">مجوزهای دیگر<br/>(بزودی)</span>
                 </div>
               </div>
             </div>
