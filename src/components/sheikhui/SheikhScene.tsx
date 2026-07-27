@@ -593,21 +593,21 @@ export default function SheikhScene() {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.3 }}
-              className="flex flex-col sm:flex-row gap-4.5 items-stretch sm:items-center"
+              className="flex flex-col sm:flex-row gap-[14px] sm:gap-4.5 items-center sm:items-stretch justify-center sm:justify-start w-full sm:w-auto pb-[30px] sm:pb-0"
             >
               {/* Primary: Shop Products */}
-              <Link href="/products" className="group">
-                <button className="w-full sm:w-auto relative overflow-hidden bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 px-8 py-4.5 rounded-2xl text-stone-950 text-base font-black font-vazirmatn shadow-[0_8px_30px_rgb(245,158,11,0.25)] hover:shadow-[0_12px_40px_rgb(245,158,11,0.4)] transition-all duration-300 hover:scale-[1.03] active:scale-[0.98] flex items-center justify-center gap-3">
+              <Link href="/products" className="group w-full sm:w-auto flex justify-center">
+                <button className="w-full max-w-[340px] sm:max-w-none sm:w-auto h-[48px] sm:h-auto relative overflow-hidden bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 sm:from-amber-500 sm:via-orange-500 sm:to-amber-600 px-6 sm:px-8 sm:py-4.5 rounded-full sm:rounded-2xl text-stone-950 text-sm sm:text-base font-black font-vazirmatn shadow-[0_8px_30px_rgb(245,158,11,0.25)] hover:shadow-[0_12px_40px_rgb(245,158,11,0.4)] transition-all duration-300 hover:scale-[1.03] active:scale-[0.96] flex items-center justify-center gap-2 sm:gap-3">
                   <span>مشاهده محصولات</span>
-                  <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform duration-300" />
+                  <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 group-hover:-translate-x-1 transition-transform duration-300" />
                 </button>
               </Link>
 
               {/* Secondary: Custom Website Development */}
-              <Link href="/contact" className="group">
-                <button className="w-full sm:w-auto bg-stone-950/80 hover:bg-stone-900 border border-amber-500/25 hover:border-amber-400/40 px-8 py-4.5 rounded-2xl text-amber-200 text-base font-bold font-vazirmatn transition-all duration-300 hover:scale-[1.03] active:scale-[0.98] flex items-center justify-center gap-3 backdrop-blur-md">
+              <Link href="/contact" className="group w-full sm:w-auto flex justify-center">
+                <button className="w-full max-w-[340px] sm:max-w-none sm:w-auto h-[44px] sm:h-auto bg-stone-950/40 sm:bg-stone-950/80 hover:bg-stone-900 border border-amber-500/20 sm:border-amber-500/25 hover:border-amber-400/40 px-6 sm:px-8 sm:py-4.5 rounded-full sm:rounded-2xl text-amber-200/90 sm:text-amber-200 text-xs sm:text-base font-bold font-vazirmatn transition-all duration-300 hover:scale-[1.03] active:scale-[0.96] flex items-center justify-center gap-2 sm:gap-3 backdrop-blur-md shadow-md">
                   <span>سفارش طراحی سایت</span>
-                  <Code2 className="w-5 h-5 text-amber-400 group-hover:rotate-12 transition-transform duration-300" />
+                  <Code2 className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400/90 sm:text-amber-400 group-hover:rotate-12 transition-transform duration-300" />
                 </button>
               </Link>
             </motion.div>

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import Categories from '@/components/Categories';
+import { ChevronLeft, Code2 } from 'lucide-react';
 import FAQSchema from '@/components/seo/FAQSchema';
 import type { Metadata } from 'next';
 import { buildLanguageAlternates } from '@/lib/seo/hreflang';
@@ -211,16 +212,21 @@ export default function Home() {
             </div>
 
             {/* Premium Buttons */}
-            <div className="flex flex-col min-[400px]:flex-row gap-3 w-full">
-              <Link href="/products" className="w-full min-[400px]:flex-1">
-                <Button className="w-full bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 hover:brightness-110 active:scale-95 text-stone-950 font-black text-sm h-12 rounded-xl transition-all duration-300 shadow-lg shadow-amber-500/20 border border-yellow-300/20">
-                  مشاهده محصولات
-                </Button>
+            <div className="flex flex-col gap-[14px] items-center justify-center w-full pb-[30px]">
+              {/* Primary: Shop Products */}
+              <Link href="/products" className="group w-full flex justify-center">
+                <button className="w-full max-w-[340px] h-[48px] relative overflow-hidden bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 px-6 rounded-full text-stone-950 text-sm font-black font-vazirmatn shadow-[0_8px_30px_rgb(245,158,11,0.25)] hover:shadow-[0_12px_40px_rgb(245,158,11,0.4)] transition-all duration-300 hover:scale-[1.03] active:scale-[0.96] flex items-center justify-center gap-2">
+                  <span>مشاهده محصولات</span>
+                  <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-300" />
+                </button>
               </Link>
-              <Link href="/register" className="w-full min-[400px]:flex-1">
-                <Button className="w-full bg-neutral-900/80 hover:bg-neutral-800/90 active:scale-95 text-amber-100 border border-amber-500/25 backdrop-blur font-bold text-sm h-12 rounded-xl transition-all duration-300">
-                  ثبت نام
-                </Button>
+
+              {/* Secondary: Custom Website Development */}
+              <Link href="/contact" className="group w-full flex justify-center">
+                <button className="w-full max-w-[340px] h-[44px] bg-neutral-900/60 border border-amber-500/20 hover:border-amber-400/40 px-6 rounded-full text-amber-200/90 text-xs font-bold font-vazirmatn transition-all duration-300 hover:scale-[1.03] active:scale-[0.96] flex items-center justify-center gap-2 backdrop-blur-md shadow-md">
+                  <span>سفارش طراحی سایت</span>
+                  <Code2 className="w-4 h-4 text-amber-400/90 group-hover:rotate-12 transition-transform duration-300" />
+                </button>
               </Link>
             </div>
           </div>
