@@ -22,13 +22,14 @@ import { unstable_noStore as noStore } from 'next/cache';
 export const dynamic = 'force-dynamic';
 
 interface ArticlePageProps {
-    params: {
+    params: Promise<{
         slug: string;
-    };
-    searchParams?: { [key: string]: string | string[] | undefined };
+    }>;
+    searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export async function generateMetadata({ params: { slug } }: ArticlePageProps) {
+export async function generateMetadata({ params }: ArticlePageProps) {
+    const { slug } = await params;
     const result = await getArticleBySlug(slug);
 
     if (!result.success || !result.data) {
@@ -115,7 +116,8 @@ function formatAuthorName(author: any): string {
     return author.email.split('@')[0];
 }
 
-export default async function ArticlePage({ params: { slug } }: ArticlePageProps) {
+export default async function ArticlePage({ params }: ArticlePageProps) {
+    const { slug } = await params;
     const article = await getArticle(slug);
 
     if (!article) {

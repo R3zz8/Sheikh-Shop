@@ -581,12 +581,22 @@ const makeMockModel = (name: string, data: any[]) => {
       }
       if (prop === 'findFirst' || prop === 'findUnique') {
         return async (args?: any) => {
-          const id = args?.where?.id || args?.where?.slug || args?.where?.name;
-          if (id) {
-            const item = data.find(item => item.id === id || item.slug === id || item.name === id) || data[0] || null;
-            return normalizeMockProduct(item);
+          if (args?.where) {
+            const where = args.where;
+            const item = data.find(item => {
+              for (const key in where) {
+                if (where[key] !== undefined && item[key] !== where[key]) {
+                  return false;
+                }
+              }
+              return true;
+            });
+            return normalizeMockProduct(item || null);
           }
-          return normalizeMockProduct(data[0] || null);
+          if (prop === 'findFirst') {
+            return normalizeMockProduct(data[0] || null);
+          }
+          return null;
         };
       }
       if (prop === 'count') {
@@ -631,12 +641,22 @@ const makeMockModelWithWrites = (name: string, data: any[]) => {
       }
       if (prop === 'findFirst' || prop === 'findUnique') {
         return async (args?: any) => {
-          const id = args?.where?.id || args?.where?.slug || args?.where?.name;
-          if (id) {
-            const item = localData.find(item => item.id === id || item.slug === id || item.name === id) || localData[0] || null;
-            return normalizeMockProduct(item);
+          if (args?.where) {
+            const where = args.where;
+            const item = localData.find(item => {
+              for (const key in where) {
+                if (where[key] !== undefined && item[key] !== where[key]) {
+                  return false;
+                }
+              }
+              return true;
+            });
+            return normalizeMockProduct(item || null);
           }
-          return normalizeMockProduct(localData[0] || null);
+          if (prop === 'findFirst') {
+            return normalizeMockProduct(localData[0] || null);
+          }
+          return null;
         };
       }
       if (prop === 'create') {
@@ -783,9 +803,143 @@ const mockLuxuryUnboxingSettings = [
   }
 ];
 
+const mockArticles = [
+  {
+    id: 'art1',
+    title: 'عسل طبیعی کوهستان',
+    slug: 'honey',
+    imageUrl: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=600&auto=format&fit=crop',
+    summary: 'خواص بی‌نظیر عسل طبیعی کوهستان برای سلامتی و تقویت سیستم ایمنی بدن.',
+    content: '<p>عسل طبیعی کوهستان یکی از بهترین و غنی‌ترین محصولات طبیعی است که دارای خواص بسیار زیادی برای سلامتی انسان است.</p><h2>خواص عسل طبیعی</h2><p>عسل حاوی آنتی‌اکسیدان‌ها، آنزیم‌ها و مواد معدنی مفید است که به تقویت سیستم ایمنی و درمان بیماری‌ها کمک می‌کند.</p>',
+    status: 'PUBLISHED',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    authorId: 'mock-user-id',
+    category: 'Honey',
+    tags: ['عسل', 'سلامت', 'طبیعی'],
+    excerpt: 'خواص بی‌نظیر عسل طبیعی کوهستان برای سلامتی',
+    externalLinks: ['https://wikipedia.org'],
+    internalLinks: ['https://sheikhshops.com/product/p1'],
+    keywords: ['عسل طبیعی', 'عسل کوهستان', 'خواص عسل'],
+    metaTitle: 'عسل طبیعی کوهستان | فواید و خواص برای سلامتی',
+    metaDescription: 'درباره خواص شگفت‌انگیز عسل طبیعی کوهستان برای سلامت بدن بیشتر بدانید.',
+    language: 'fa',
+    views: 120,
+    shares: 15,
+    likes: 45,
+    author: mockUser[0],
+    comments: [],
+  },
+  {
+    id: 'art2',
+    title: 'زعفران نگین خراسان',
+    slug: 'saffron',
+    imageUrl: 'https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?q=80&w=600&auto=format&fit=crop',
+    summary: 'بررسی جامع زعفران نگین و فواید آن در بهبود خلق و خو و ارتقای سلامتی.',
+    content: '<p>زعفران نگین خراسان با عطر و طعم استثنایی و قدرت رنگ‌دهی بالا، مرغوب‌ترین نوع زعفران در جهان به شمار می‌رود.</p><h2>چرا زعفران نگین؟</h2><p>این نوع زعفران حاوی کروسین بالایی است که عامل اصلی رنگ‌دهی و خواص درمانی بی‌شمار آن است.</p>',
+    status: 'PUBLISHED',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    authorId: 'mock-user-id',
+    category: 'Saffron',
+    tags: ['زعفران', 'ادویه', 'صادراتی'],
+    excerpt: 'بررسی جامع زعفران نگین خراسان و فواید آن',
+    externalLinks: ['https://wikipedia.org'],
+    internalLinks: ['https://sheikhshops.com/product/p2'],
+    keywords: ['زعفران نگین', 'زعفران خراسان', 'خواص زعفران'],
+    metaTitle: 'زعفران نگین خراسان | طلای سرخ ایران',
+    metaDescription: 'خرید و شناخت زعفران نگین اصل خراسان با بهترین کیفیت رنگ‌دهی و عطر.',
+    language: 'fa',
+    views: 250,
+    shares: 30,
+    likes: 85,
+    author: mockUser[0],
+    comments: [],
+  },
+  {
+    id: 'art3',
+    title: 'خرمای مجول پادشاه خرماها',
+    slug: 'dates',
+    imageUrl: 'https://images.unsplash.com/photo-1596797038530-2c107229654b?q=80&w=600&auto=format&fit=crop',
+    summary: 'آشنایی با خرمای مجول، ارزش غذایی فوق‌العاده و تاثیر آن بر انرژی روزانه.',
+    content: '<p>خرمای مجول به دلیل اندازه بزرگ، بافت نرم و طعم کاراملی لذیذ به عنوان پادشاه خرماها شناخته می‌شود.</p><h2>ارزش غذایی خرمای مجول</h2><p>سرشار از پتاسیم، فیبر و قندهای طبیعی که منبع فوق‌العاده‌ای برای تامین انرژی پایدار است.</p>',
+    status: 'PUBLISHED',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    authorId: 'mock-user-id',
+    category: 'Dates',
+    tags: ['خرما', 'انرژی', 'سالم'],
+    excerpt: 'آشنایی با ارزش غذایی فوق‌العاده خرمای مجول',
+    externalLinks: ['https://wikipedia.org'],
+    internalLinks: ['https://sheikhshops.com/product/p3'],
+    keywords: ['خرمای مجول', 'خرما مجول', 'ارزش غذایی خرما'],
+    metaTitle: 'خرمای مجول پادشاه خرماها | خواص و ارزش غذایی',
+    metaDescription: 'درباره خرمای مجول لوکس و تاثیرات شگفت‌انگیز آن بر افزایش سطح انرژی بیشتر بخوانید.',
+    language: 'fa',
+    views: 180,
+    shares: 20,
+    likes: 60,
+    author: mockUser[0],
+    comments: [],
+  },
+  {
+    id: 'art4',
+    title: 'زرشک پفکی سوپرفود ایرانی',
+    slug: 'premium-barberries-superfood',
+    imageUrl: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?q=80&w=600&auto=format&fit=crop',
+    summary: 'خواص زرشک پفکی ممتاز برای سلامت قلب، کبد و شادابی پوست.',
+    content: '<p>زرشک پفکی سوپرفود ایرانی با رنگ سرخ درخشان و طعم ترش بی‌نظیر، سرشار از ویتامین C و آنتی‌اکسیدان‌هاست.</p><h2>فواید بیوشیمیایی زرشک</h2><p>زرشک حاوی بربرین است که به تنظیم قند خون و چربی کبد کمک شایانی می‌کند.</p>',
+    status: 'PUBLISHED',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    authorId: 'mock-user-id',
+    category: 'Other',
+    tags: ['زرشک', 'سوپرفود', 'سلامتی'],
+    excerpt: 'خواص زرشک پفکی ممتاز برای سلامت قلب و کبد',
+    externalLinks: ['https://wikipedia.org'],
+    internalLinks: ['https://sheikhshops.com/product/p4'],
+    keywords: ['زرشک پفکی', 'زرشک ممتاز', 'خواص زرشک'],
+    metaTitle: 'زرشک پفکی سوپرفود ایرانی | خواص درمانی بی‌نظیر',
+    metaDescription: 'درباره خواص زرشک پفکی ممتاز و تاثیر آن در تنظیم قند خون و پاکسازی کبد بخوانید.',
+    language: 'fa',
+    views: 95,
+    shares: 8,
+    likes: 32,
+    author: mockUser[0],
+    comments: [],
+  },
+  {
+    id: 'art5',
+    title: 'زرشک کوهی ممتاز',
+    slug: 'barberries',
+    imageUrl: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?q=80&w=600&auto=format&fit=crop',
+    summary: 'خواص زرشک کوهی ممتاز برای سلامت قلب، کبد و شادابی پوست.',
+    content: '<p>زرشک کوهی با رنگ سرخ درخشان و طعم ترش بی‌نظیر، سرشار از ویتامین C و آنتی‌اکسیدان‌هاست.</p><h2>فواید بیوشیمیایی زرشک</h2><p>زرشک حاوی بربرین است که به تنظیم قند خون و چربی کبد کمک شایانی می‌کند.</p>',
+    status: 'PUBLISHED',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    authorId: 'mock-user-id',
+    category: 'Other',
+    tags: ['زرشک', 'سوپرفود', 'سلامتی'],
+    excerpt: 'خواص زرشک کوهی ممتاز برای سلامت قلب و کبد',
+    externalLinks: ['https://wikipedia.org'],
+    internalLinks: ['https://sheikhshops.com/product/p4'],
+    keywords: ['زرشک کوهی', 'زرشک ممتاز', 'خواص زرشک'],
+    metaTitle: 'زرشک کوهی ممتاز | خواص درمانی بی‌نظیر',
+    metaDescription: 'درباره خواص زرشک کوهی ممتاز و تاثیر آن در تنظیم قند خون و پاکسازی کبد بخوانید.',
+    language: 'fa',
+    views: 99,
+    shares: 9,
+    likes: 33,
+    author: mockUser[0],
+    comments: [],
+  }
+];
+
 const createMockPrisma = () => {
   return new Proxy({}, {
     get(target, prop) {
+      if (prop === 'article') return makeMockModelWithWrites('article', mockArticles);
       if (prop === 'product') return makeMockModel('product', mockProducts);
       if (prop === 'category') return makeMockModel('category', mockCategories);
       if (prop === 'unit') return makeMockModel('unit', mockUnits);

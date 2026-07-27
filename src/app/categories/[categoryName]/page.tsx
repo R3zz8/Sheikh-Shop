@@ -10,9 +10,9 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 3600; // Revalidate every hour
 
 interface CategoryPageProps {
-    params: {
+    params: Promise<{
         categoryName: string;
-    };
+    }>;
 }
 
 // Map URL slugs to database enum values
