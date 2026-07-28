@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Package, ShoppingCart, Percent, ArrowRight } from 'lucide-react';
+import { Package, ShoppingCart, Percent, ArrowRight, Sparkles } from 'lucide-react';
 import type { ProductsWithImages } from '@/types';
 import type { BundleRecommendation, RecommendationContext } from '@/lib/recommendations';
 import { useUserBehavior } from '@/hooks/useUserBehavior';
 import { createRecommendationEngine } from '@/lib/recommendations';
-import { formatPrice, convertCurrency } from '@/lib/currency';
+import { formatToToman } from '@/lib/currency';
 import { Button } from '@/components/ui';
 
 interface BundleRecommendationsProps {
@@ -26,6 +26,7 @@ export default function BundleRecommendations({
   const [bundles, setBundles] = useState<BundleRecommendation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
   const { getRecommendationContext = () => ({
     currentProductId: currentProduct?.id,
     currentCategoryId: currentProduct?.category,
@@ -39,8 +40,6 @@ export default function BundleRecommendations({
     },
     recentActivity: []
   }), trackProductView = () => {} } = useUserBehavior() || {};
-  // Always use EUR currency for bundle deals (unified with product detail page)
-  const currency = 'EUR';
 
   useEffect(() => {
     const generateBundles = async () => {
@@ -82,11 +81,11 @@ export default function BundleRecommendations({
 
   if (loading) {
     return (
-      <div className="space-y-4">
-        <div className="h-6 bg-gray-200 animate-pulse rounded w-1/3"></div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="space-y-4" dir="rtl">
+        <div className="h-6 bg-white/5 animate-pulse rounded-lg w-1/4"></div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {Array.from({ length: limit }).map((_, i) => (
-            <div key={i} className="h-48 bg-gray-200 animate-pulse rounded-lg"></div>
+            <div key={i} className="h-64 bg-white/5 animate-pulse rounded-3xl border border-white/5"></div>
           ))}
         </div>
       </div>
@@ -95,8 +94,8 @@ export default function BundleRecommendations({
 
   if (error) {
     return (
-      <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
-        <p className="text-red-300 text-sm">{error}</p>
+      <div className="bg-rose-500/10 border border-rose-500/20 rounded-3xl p-5 text-right" dir="rtl">
+        <p className="text-rose-400 text-xs">امکان بارگذاری پکیج‌های پیشنهادی میسر نشد.</p>
       </div>
     );
   }
@@ -106,98 +105,115 @@ export default function BundleRecommendations({
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-2">
-        <Package className="w-5 h-5 text-amber-400" />
-        <h3 className="text-xl font-semibold text-white">Bundle Deals</h3>
-        <div className="flex-1 h-px bg-gradient-to-r from-amber-400/20 to-transparent"></div>
+    <div className="space-y-8 font-vazirmatn text-right" dir="rtl">
+      {/* Title Header */}
+      <div className="flex items-center gap-3">
+        <div className="w-9 h-9 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 shadow-lg shrink-0">
+          <Package className="w-4 h-4" />
+        </div>
+        <div>
+          <h3 className="text-xl md:text-2xl font-black bg-gradient-to-l from-amber-200 via-white to-amber-100 bg-clip-text text-transparent">
+            پکیج‌های خرید شگفت‌انگیز (باندل مچ)
+          </h3>
+          <p className="text-xs text-stone-400 mt-1">با خرید همزمان این محصولات، تخفیف مضاعف روی سبد خرید خود دریافت کنید.</p>
+        </div>
+        <div className="flex-1 h-px bg-gradient-to-l from-amber-500/10 to-transparent"></div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {bundles.map((bundle, index) => (
           <motion.div
             key={bundle.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: index * 0.1 }}
-            className="bg-white/5 backdrop-blur-sm border border-amber-200/20 rounded-xl p-6 hover:border-amber-300/40 transition-all duration-300"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            whileHover={{ y: -3 }}
+            transition={{ duration: 0.5, delay: index * 0.1 }}
+            className="bg-neutral-900/80 border border-amber-500/25 backdrop-blur-md rounded-3xl p-6 md:p-8 flex flex-col justify-between gap-6 shadow-2xl relative overflow-hidden group/card"
           >
-            {/* Bundle Header */}
-            <div className="flex items-center justify-between mb-4">
+            {/* Ambient luxury glow inside the card */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full blur-3xl pointer-events-none group-hover/card:bg-amber-500/10 transition-colors duration-500" />
+
+            {/* Bundle Header info */}
+            <div className="flex items-start justify-between gap-4 border-b border-white/5 pb-5">
               <div>
-                <h4 className="text-lg font-semibold text-white">{bundle.name}</h4>
-                <p className="text-sm text-gray-300">{bundle.description}</p>
+                <h4 className="text-lg font-black text-white flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-amber-400" />
+                  <span>{bundle.name === `${currentProduct?.category} Bundle` ? 'بسته ترکیبی طلایی' : bundle.name}</span>
+                </h4>
+                <p className="text-xs text-stone-400 mt-1 leading-relaxed">
+                  خرید مکمل محصولات با تخفیف ویژه اختصاصی سبد خرید.
+                </p>
               </div>
-              <div className="text-right">
-                <div className="text-2xl font-bold text-amber-200">
-                  {formatPrice(convertCurrency(bundle.totalPrice, 'EUR', currency), currency)}
+
+              <div className="text-left shrink-0">
+                <div className="text-xl font-black text-amber-300">
+                  {formatToToman(bundle.totalPrice)}
                 </div>
-                <div className="text-sm text-green-400">
-                  Save {formatPrice(convertCurrency(bundle.savings, 'EUR', currency), currency)}
+                <div className="text-xs text-emerald-400 font-bold mt-1">
+                  میزان سود شما: {formatToToman(bundle.savings)}
                 </div>
               </div>
             </div>
 
-            {/* Discount Badge */}
-            <div className="flex items-center gap-2 mb-4">
-              <div className="bg-green-500/20 border border-green-500/30 rounded-full px-3 py-1">
-                <div className="flex items-center gap-1">
-                  <Percent className="w-3 h-3 text-green-400" />
-                  <span className="text-green-400 text-sm font-medium">
-                    {bundle.discountPercentage}% OFF
-                  </span>
-                </div>
-              </div>
+            {/* Discount Percentage Badge */}
+            <div className="flex items-center gap-2">
+              <span className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-black px-3 py-1 rounded-full flex items-center gap-1">
+                <Percent className="w-3.5 h-3.5" />
+                <span>{bundle.discountPercentage}٪ تخفیف کل پکیج</span>
+              </span>
             </div>
 
-            {/* Products in Bundle */}
-            <div className="space-y-3 mb-6">
+            {/* Products inside this Bundle list */}
+            <div className="space-y-3">
               {bundle.products.map((product, productIndex) => (
                 <div
                   key={product.id}
-                  className="flex items-center gap-3 p-3 bg-white/5 rounded-lg border border-amber-200/10"
+                  className="flex items-center gap-3 p-3 bg-neutral-950/40 rounded-2xl border border-white/5 hover:border-amber-500/15 transition-all"
                 >
-                  <div className="w-12 h-12 rounded-lg overflow-hidden bg-white/10">
+                  <div className="w-14 h-14 rounded-xl overflow-hidden bg-neutral-900 border border-white/5 shrink-0 relative">
                     {product.images && product.images.length > 0 ? (
                       <img
                         src={product.images[0]?.image || ''}
-                        alt={product.name || 'Product'}
-                        className="w-full h-full object-cover"
+                        alt={product.name || 'محصول'}
+                        className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-500"
                         onClick={() => trackProductView(product.id, product.category)}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <Package className="w-6 h-6 text-gray-400" />
+                        <Package className="w-5 h-5 text-stone-600" />
                       </div>
                     )}
                   </div>
                   
-                  <div className="flex-1">
-                    <h5 className="text-sm font-medium text-white">{product.name}</h5>
-                    <div className="text-xs text-gray-400">
-                      {formatPrice(convertCurrency(product.basePrice, 'EUR', currency), currency)}
+                  <div className="flex-1 min-w-0">
+                    <h5 className="text-sm font-bold text-stone-200 truncate">{product.name}</h5>
+                    <div className="text-xs text-stone-400 mt-1 font-semibold">
+                      قیمت تک: {formatToToman(product.basePrice)}
                     </div>
                   </div>
                   
                   {productIndex < bundle.products.length - 1 && (
-                    <ArrowRight className="w-4 h-4 text-gray-400" />
+                    <div className="w-8 h-8 rounded-full bg-neutral-900 flex items-center justify-center border border-white/5 shrink-0 text-stone-400">
+                      +
+                    </div>
                   )}
                 </div>
               ))}
             </div>
 
-            {/* Bundle Actions */}
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-400">
-                {bundle.products.length} products included
+            {/* Action buttons */}
+            <div className="flex flex-wrap items-center justify-between gap-4 border-t border-white/5 pt-5 mt-2">
+              <div className="text-xs text-stone-400 font-medium">
+                شامل {bundle.products.length} محصول درجه یک
               </div>
               
               <Button
                 onClick={() => handleAddToCart(bundle)}
-                className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-6 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2"
+                className="bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 hover:from-amber-400 hover:via-amber-500 hover:to-amber-600 text-stone-950 px-6 py-2.5 rounded-2xl font-black text-xs transition-all duration-300 flex items-center gap-2 shadow-lg shadow-amber-500/5 border border-amber-400/20 group/btn"
               >
-                <ShoppingCart className="w-4 h-4" />
-                Add Bundle to Cart
+                <ShoppingCart className="w-4 h-4 text-stone-950" />
+                <span>افزودن کل پکیج به سبد خرید</span>
               </Button>
             </div>
           </motion.div>
@@ -206,4 +222,3 @@ export default function BundleRecommendations({
     </div>
   );
 }
-
