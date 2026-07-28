@@ -1075,3 +1075,25 @@
 .scrollbar-hide::-webkit-scrollbar {
   display: none;  /* Safari and Chrome */
 }
+
+/* Moving Amber Light Glow & Soft Breathing Glow around Price Card */
+.border-gradient-amber {
+  border-image: linear-gradient(to right, #d97706, #fbbf24, #f59e0b) 1;
+}
+
+@keyframes animateMovingGlow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-moving-glow {
+  background-size: 200% 200%;
+  animation: animateMovingGlow 12s ease infinite;
+}
