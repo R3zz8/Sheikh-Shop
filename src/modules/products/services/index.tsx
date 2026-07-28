@@ -167,6 +167,10 @@ export const getProductByIdOrSlug = async (identifier: string) => {
     // Try slug lookup (for both UUIDs and slugs)
     const bySlug = await getProductBySlug(identifier);
     if (bySlug) return bySlug;
+
+    // Try ID lookup as a final fallback (e.g. for mock non-UUID IDs like pd_speaker_1)
+    const byIdFallback = await getProductById(identifier);
+    if (byIdFallback) return byIdFallback;
     
     // Product not found by either ID or slug
     console.error('Product not found by ID or slug:', identifier);

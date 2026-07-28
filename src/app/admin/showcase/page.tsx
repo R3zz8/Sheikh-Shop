@@ -131,7 +131,7 @@ export default function ShowcaseAdminPage() {
       badgeType: 'BEST_SELLER',
       categoryEffect: 'SPEAKER',
       ctaText: 'مشاهده محصول',
-      ctaLink: `/product/${selectedProductIdToAdd}`,
+      ctaLink: `/products/${selectedProductIdToAdd}`,
     };
 
     setFeaturedProducts([...featuredProducts, newFP]);
@@ -416,7 +416,7 @@ export default function ShowcaseAdminPage() {
                             value={fp.ctaLink || ''}
                             onChange={(e) => handleFieldChange(i, 'ctaLink', e.target.value)}
                             className="w-full mt-1.5 bg-stone-900 border border-stone-800 rounded-lg px-3 py-2 text-xs text-stone-200 outline-none"
-                            placeholder={`/product/${fp.productId}`}
+                            placeholder={`/products/${fp.productId}`}
                           />
                         </div>
                       </div>

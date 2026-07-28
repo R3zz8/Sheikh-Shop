@@ -402,7 +402,7 @@ export class SEOContentGenerator {
     // Add product pages
     this.products.forEach(product => {
       urls.push({
-        url: `/product/${product.id}`,
+        url: `/products/${product.slug || product.id}`,
         lastmod: new Date().toISOString(),
         changefreq: 'weekly',
         priority: 0.8

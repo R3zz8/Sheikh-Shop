@@ -582,6 +582,7 @@ interface ProductWithMetadata {
   categoryEffect?: string;
   ctaText?: string;
   ctaLink?: string;
+  slug?: string;
 }
 
 const DEFAULT_PRODUCTS: ProductWithMetadata[] = [
@@ -727,7 +728,8 @@ export default function RoyalShowcase() {
                 badgeType: fp.badgeType,
                 categoryEffect: fp.categoryEffect,
                 ctaText: fp.ctaText,
-                ctaLink: fp.ctaLink,
+                ctaLink: fp.ctaLink || `/products/${baseProd?.slug || fp.productId}`,
+                slug: baseProd?.slug,
               };
             });
             setProducts(mapped);
@@ -754,7 +756,8 @@ export default function RoyalShowcase() {
                 badgeType: f.badgeType,
                 categoryEffect: f.categoryEffect,
                 ctaText: f.ctaText,
-                ctaLink: `/product/${f.id}`,
+                ctaLink: `/products/${baseProd?.slug || f.id}`,
+                slug: baseProd?.slug,
               };
             });
             setProducts(mockFeatured);
@@ -1095,7 +1098,7 @@ export default function RoyalShowcase() {
 
                     {/* Footer Actions Panel */}
                     <div className="flex gap-1.5 sm:gap-2.5 mt-2 justify-between">
-                      <Link href={`/product/${activeProduct.id}`} className="flex-1">
+                      <Link href={activeProduct.slug ? `/products/${activeProduct.slug}` : `/products/${activeProduct.id}`} className="flex-1">
                         <button className="w-full py-1 sm:py-2.5 px-2 bg-stone-950/70 border border-amber-500/25 hover:border-amber-500/50 hover:bg-stone-900 rounded-[8px] sm:rounded-xl text-amber-200 text-[8px] sm:text-[12px] font-bold font-vazirmatn transition-all duration-300 flex items-center justify-center gap-1">
                           <Eye className="w-3 h-3 sm:w-4 sm:h-4 text-amber-400 shrink-0" />
                           <span>{activeProduct.ctaText || 'مشاهده'}</span>
