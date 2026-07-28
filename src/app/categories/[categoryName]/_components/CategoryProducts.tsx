@@ -20,6 +20,7 @@ interface Product {
         id: string;
         image: string;
     }>;
+    slug?: string | null;
 }
 
 interface CategoryProductsProps {
@@ -171,7 +172,7 @@ export default function CategoryProducts({ products, categoryName, categorySlug 
                                         className="h-full"
                                     >
                                         <Link
-                                            href={`/product/${product.id}`}
+                                            href={`/products/${product.slug || product.id}`}
                                             className="group card p-3 sm:p-4 hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] h-full flex flex-col justify-between"
                                         >
                                             <div>

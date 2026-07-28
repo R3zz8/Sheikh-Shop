@@ -98,7 +98,7 @@ export async function POST(request: Request) {
             badgeType: item.badgeType || 'BEST_SELLER',
             categoryEffect: item.categoryEffect || 'SPEAKER',
             ctaText: item.ctaText || 'مشاهده محصول',
-            ctaLink: item.ctaLink || `/product/${item.productId}`,
+            ctaLink: item.ctaLink || `/products/${item.productId}`,
           },
         });
         createdFeatured.push(fp);
