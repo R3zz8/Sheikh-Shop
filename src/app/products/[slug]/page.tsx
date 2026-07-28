@@ -211,11 +211,15 @@ export default async function ProductPage({
       notFound();
     }
 
-    const breadcrumbs = [
-      { name: 'Products', url: '/products' },
-      { name: product.category, url: `/categories/${product.category.toLowerCase()}` },
-      { name: product.name, url: `/products/${product.slug || product.id}` },
-    ];
+    const categoryName =
+      product.categoryType === 'SheikhHome' ? 'لوازم خانگی شیخ' :
+      product.categoryType === 'SheikhDigital' ? 'شیخ دیجیتال' :
+      product.categoryType === 'SheikhFood' ? 'محصولات غذایی شیخ' : 'محصولات';
+
+    const categoryUrl =
+      product.categoryType === 'SheikhHome' ? '/sheikh-home' :
+      product.categoryType === 'SheikhDigital' ? '/sheikh-digital' :
+      product.categoryType === 'SheikhFood' ? '/sheikh-food' : '/products';
 
     const rating = product.isBestSeller ? { ratingValue: 4.8, reviewCount: 127 } : undefined;
 
@@ -228,9 +232,8 @@ export default async function ProductPage({
 
     // Generate breadcrumb schema
     const breadcrumbItems = [
-      { name: 'Home', url: '/' },
-      { name: 'Products', url: '/products' },
-      { name: product.category, url: `/categories/${product.category.toLowerCase()}` },
+      { name: 'خانه', url: '/' },
+      { name: categoryName, url: categoryUrl },
       { name: product.name, url: `/products/${product.slug || product.id}` },
     ];
 
