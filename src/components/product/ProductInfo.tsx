@@ -1,15 +1,15 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Star, Package, Tag, Smartphone, Building2, Hash, MapPin, Award, Ruler, Weight, Shield, Info } from 'lucide-react';
+import { Star, Package, Tag, Smartphone, Building2, Hash, MapPin, Award, Ruler, Weight, Shield, Info, ArrowRight, Layers, Sparkles, Check, ChevronDown } from 'lucide-react';
 import type { ProductsWithImages, Unit, ProductUnit } from '@/types';
 import AddToCartButton from './AddToCartButton';
-import UnitSelector from '@/components/ui/UnitSelector';
+import { Label } from '@/components/ui';
 import DiscountBadge from '@/components/ui/DiscountBadge';
 import ProductBadge from '@/components/ui/ProductBadge';
 import CompactProductUnitSelector from '@/components/ui/CompactProductUnitSelector';
 import { resolveProductPrice } from '@/lib/product-pricing';
-import { formatPrice } from '@/lib/currency';
+import { formatToToman } from '@/lib/currency';
 import { useUnits } from '@/hooks/useUnits';
 import { useUserBehavior } from '@/hooks/useUserBehavior';
 import { useState, useMemo, useEffect } from 'react';
@@ -29,13 +29,13 @@ export default function ProductInfo({ product }: ProductInfoProps) {
     const [showAR, setShowAR] = useState(false);
 
     const { units: availableUnits = [], loading: unitsLoading = false, error: unitsError = null } = useUnits() || {};
-    const { trackProductView = () => {}, trackProductClick = () => {} } = useUserBehavior() || {};
+    const { trackProductClick = () => {} } = useUserBehavior() || {};
 
     if (!product) {
         console.error('ProductInfo: Product is null or undefined');
         return (
-            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-6 text-center">
-                <p className="text-red-300">Product data is missing</p>
+            <div className="bg-neutral-900/80 border border-red-500/20 rounded-3xl p-6 text-center shadow-2xl">
+                <p className="text-red-400 font-bold">اطلاعات محصول یافت نشد</p>
             </div>
         );
     }
@@ -63,9 +63,9 @@ export default function ProductInfo({ product }: ProductInfoProps) {
     const pricing = resolveProductPrice(product, selectedProductUnit);
 
     const getStockStatus = (quantity: number) => {
-        if (quantity === 0) return { text: 'Out of Stock', color: 'text-red-400' };
-        if (quantity <= 5) return { text: 'Low Stock', color: 'text-yellow-400' };
-        return { text: 'In Stock', color: 'text-green-400' };
+        if (quantity === 0) return { text: 'ناموجود', color: 'text-rose-400 bg-rose-500/10' };
+        if (quantity <= 5) return { text: 'موجودی محدود', color: 'text-amber-400 bg-amber-500/10' };
+        return { text: 'موجود در انبار ویژه', color: 'text-emerald-400 bg-emerald-500/10' };
     };
 
     const getCurrentStock = () => {
@@ -82,566 +82,537 @@ export default function ProductInfo({ product }: ProductInfoProps) {
     const h1Text = product.h1Override || product.seoTitle || product.name;
     const h1Content = sanitizeHeading(h1Text);
 
+    // Filter dynamic specifications to check if any exist
+    const hasTechnicalSpecs = !!product.technicalSpecs && Object.keys(product.technicalSpecs).length > 0;
+    const hasMaterials = !!product.materials && product.materials.length > 0;
+    const hasWeightOrDims = !!product.weight || (!!product.dimensions && Object.keys(product.dimensions).length > 0);
+    const hasWarranty = !!product.warranty;
+    const hasSensoryOrHeritage = !!product.color || !!product.scent || !!product.flavor || !!product.origin;
+    const hasSpecsSection = hasTechnicalSpecs || hasMaterials || hasWeightOrDims || hasWarranty || hasSensoryOrHeritage;
+
     return (
-        <div className="space-y-4 md:space-y-8">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}>
-                <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent leading-tight">
-                    {h1Content}
-                </h1>
-            </motion.div>
+        <div className="space-y-8 md:space-y-12 text-right font-vazirmatn" dir="rtl">
 
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.15 }}>
-                <div className="flex items-center justify-between gap-3">
-                    <div className="flex-1" />
-                    <ProductBadge isNew={product.isNew} isBestSeller={product.isBestSeller} size="md" className="md:scale-100 scale-90" />
-                </div>
-            </motion.div>
-
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }} className="space-y-4">
-                <div className="space-y-3">
-                    <div className="flex items-baseline gap-3 flex-wrap">
-                        <span className="text-3xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
-                            {formatPrice(pricing.price)}
+            {/* Header / Title / Badges Section */}
+            <div className="space-y-4">
+                <div className="flex flex-wrap items-center gap-2.5">
+                    {product.isNew && (
+                        <span className="bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[11px] font-black px-3 py-1 rounded-full tracking-wider shadow-inner">
+                            ✨ نوآوری جدید
                         </span>
-                        {pricing.oldPrice && (
-                            <span className="text-lg text-gray-400 line-through">
-                                {formatPrice(pricing.oldPrice)}
-                            </span>
-                        )}
-                    </div>
-                    <div className="flex items-center justify-between gap-4">
-                        <p className="text-sm md:text-lg text-amber-200/80">
-                            per {useProductUnits && selectedProductUnit ? selectedProductUnit.name : (product.baseUnit?.name || 'unit')}
-                        </p>
-                        {useProductUnits && (
-                            <CompactProductUnitSelector
-                                productUnits={availableProductUnits}
-                                selectedProductUnit={selectedProductUnit}
-                                onProductUnitChange={setSelectedProductUnit}
-                                variant="detail"
-                                className="flex-shrink-0"
-                            />
-                        )}
-                    </div>
-                </div>
-
-                {pricing.hasDiscount && (
-                    <DiscountBadge 
-                        discountPercentage={pricing.discountPercentage}
-                        showCountdown={true}
-                        className="text-base"
-                    />
-                )}
-            </motion.div>
-
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.3 }} className="flex items-center gap-3">
-                <div className="flex items-center gap-1">
-                    {Array.from({ length: 5 }, (_, i) => (
-                        <Star
-                            key={i + 1}
-                            className={`w-5 h-5 ${(i + 1) <= 4 ? 'fill-amber-400 text-amber-400' : 'text-gray-600'}`}
-                        />
-                    ))}
-                </div>
-                <span className="text-gray-300 font-medium">4.8 (124 reviews)</span>
-            </motion.div>
-
-            {/* 🚚 Luxury Shipping Details Section & Timeline */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.52 }}
-                className="p-6 border-2 border-amber-500/20 bg-gradient-to-br from-stone-950 via-stone-900 to-black backdrop-blur-xl rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.7)] font-vazirmatn text-right space-y-6 relative overflow-hidden"
-                dir="rtl"
-            >
-                {/* Visual Accent Glow */}
-                <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full blur-3xl pointer-events-none"></div>
-
-                <div className="flex items-center justify-between gap-3 pb-3 border-b border-white/10">
-                    <div className="flex items-center gap-2.5 text-right">
-                        <span className="text-lg">🚚</span>
-                        <h3 className="text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-100 to-amber-300">
-                            جزئیات و هزینه ارسال لوکس
-                        </h3>
-                    </div>
-                    {/* Animated Premium badge */}
-                    {product.allowFreeShipping ? (
-                        <motion.span
-                            animate={{ scale: [1, 1.05, 1], boxShadow: ['0 0 0 rgba(16,185,129,0)', '0 0 15px rgba(16,185,129,0.3)', '0 0 0 rgba(16,185,129,0)'] }}
-                            transition={{ repeat: Infinity, duration: 2 }}
-                            className="bg-gradient-to-r from-green-500 to-emerald-600 text-white text-[11px] font-bold px-3 py-1 rounded-full border border-green-400/20"
-                        >
-                            🎁 ارسال رایگان
-                        </motion.span>
-                    ) : product.shippingPriority === 'Express' ? (
-                        <motion.span
-                            animate={{ scale: [1, 1.03, 1] }}
-                            transition={{ repeat: Infinity, duration: 2.5 }}
-                            className="bg-gradient-to-r from-amber-500 to-orange-600 text-white text-[11px] font-bold px-3 py-1 rounded-full border border-amber-400/20"
-                        >
-                            ⚡ ارسال اکسپرس
-                        </motion.span>
-                    ) : product.shippingDescription === 'ارسال سنگین' ? (
-                        <span className="bg-gradient-to-r from-stone-700 to-stone-900 text-amber-200 text-[11px] font-bold px-3 py-1 rounded-full border border-amber-500/25">
-                            🏋️ ارسال سنگین
+                    )}
+                    {product.isBestSeller && (
+                        <span className="bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-200 border border-amber-500/30 text-[11px] font-black px-3 py-1 rounded-full shadow-lg">
+                            🏆 محبوب‌ترین انتخاب
                         </span>
-                    ) : product.shippingDescription === 'ارسال اقتصادی' ? (
-                        <span className="bg-gradient-to-r from-blue-900/60 to-slate-900 text-blue-200 text-[11px] font-bold px-3 py-1 rounded-full border border-blue-500/20">
-                            📦 ارسال اقتصادی
-                        </span>
-                    ) : (
-                        <span className="bg-gradient-to-r from-amber-950/80 to-stone-900 text-amber-300 text-[11px] font-bold px-3 py-1 rounded-full border border-amber-500/20">
-                            🚚 ارسال ویژه لوکس
+                    )}
+                    {product.isAmazing && (
+                        <span className="bg-rose-500/15 text-rose-300 border border-rose-500/20 text-[11px] font-black px-3 py-1 rounded-full animate-pulse">
+                            🔥 پیشنهاد شگفت‌انگیز
                         </span>
                     )}
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {/* Cost Detail block */}
-                    <div className="bg-white/5 p-4 rounded-2xl border border-white/5 hover:border-amber-500/20 transition-all duration-300">
-                        <span className="text-[11px] text-gray-400 font-semibold block mb-1">هزینه نهایی تحویل کالا</span>
-                        {product.allowFreeShipping ? (
-                            <span className="text-sm font-extrabold text-green-400">کاملاً رایگان (مهمان فروشگاه)</span>
-                        ) : (
-                            <div className="flex items-baseline gap-1">
-                                <span className="text-lg font-black text-amber-400">
-                                    {formatPrice(product.shippingCost !== undefined && product.shippingCost !== null ? product.shippingCost : 200000)}
-                                </span>
-                            </div>
-                        )}
-                    </div>
+                <motion.h1
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="text-3xl md:text-4xl lg:text-5xl font-black bg-gradient-to-l from-amber-200 via-white to-amber-100 bg-clip-text text-transparent leading-tight tracking-tight"
+                >
+                    {h1Content}
+                </motion.h1>
 
-                    {/* Mode Detail block */}
-                    <div className="bg-white/5 p-4 rounded-2xl border border-white/5 hover:border-amber-500/20 transition-all duration-300">
-                        <span className="text-[11px] text-gray-400 font-semibold block mb-1">پروتکل توزیع لجستیک</span>
-                        <span className="text-sm font-bold text-gray-200">
-                            {product.shippingDescription || 'ارسال ویژه با بیمه طلایی'}
-                        </span>
-                    </div>
-                </div>
-
-                {/* Shipping Timeline Phase Display */}
-                <div className="space-y-4 pt-2">
-                    <div className="flex items-center gap-2">
-                        <span className="text-xs">⏱</span>
-                        <h4 className="text-xs font-bold text-amber-400/80">زمان‌بندی و فازهای ارسال کالا</h4>
-                    </div>
-
-                    <div className="relative flex justify-between items-center px-2 py-4">
-                        {/* Connecting Line */}
-                        <div className="absolute top-[28px] left-8 right-8 h-1 bg-gradient-to-r from-amber-500/20 via-amber-500/50 to-amber-500/20 rounded-full z-0"></div>
-
-                        {/* Phase 1: ثبت سفارش */}
-                        <div className="flex flex-col items-center gap-2 relative z-10">
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white text-[11px] font-black shadow-lg shadow-amber-500/20 border-2 border-stone-950">
-                                ✓
-                            </div>
-                            <span className="text-[11px] font-bold text-amber-300">ثبت سفارش</span>
-                        </div>
-
-                        {/* Phase 2: آماده‌سازی */}
-                        <div className="flex flex-col items-center gap-2 relative z-10">
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white text-[11px] font-black shadow-lg shadow-amber-500/20 border-2 border-stone-950">
-                                ✓
-                            </div>
-                            <span className="text-[11px] font-bold text-amber-300">آماده‌سازی</span>
-                        </div>
-
-                        {/* Phase 3: ارسال */}
-                        <div className="flex flex-col items-center gap-2 relative z-10">
-                            <motion.div
-                                animate={{ rotate: [0, 5, -5, 0] }}
-                                transition={{ repeat: Infinity, duration: 3 }}
-                                className="w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-400 text-xs shadow-lg border-2 border-amber-500 z-10 bg-stone-900"
-                            >
-                                🚚
-                            </motion.div>
-                            <span className="text-[11px] font-medium text-gray-300">ارسال کالا</span>
-                        </div>
-
-                        {/* Phase 4: تحویل */}
-                        <div className="flex flex-col items-center gap-2 relative z-10">
-                            <div className="w-8 h-8 rounded-full bg-stone-900 flex items-center justify-center text-gray-500 text-xs border-2 border-white/10">
-                                🎁
-                            </div>
-                            <span className="text-[11px] font-medium text-gray-500">تحویل نهایی</span>
-                        </div>
-                    </div>
-
-                    <p className="text-[10px] text-stone-400 text-center leading-relaxed">
-                        🚚 تخمین زمان تحویل نهایی: <span className="text-amber-300 font-bold">
-                            {product.shippingPriority === 'Express' ? '۱ تا ۲ روز کاری (اکسپرس)' : '۳ تا ۷ روز کاری'}
-                        </span> از زمان ثبت فاکتور پرداخت‌شده.
-                    </p>
-                </div>
-            </motion.div>
-
-            {arAvailable && (
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.35 }}>
-                    <button
-                        onClick={() => setShowAR(true)}
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-amber-200/30 bg-white/10 text-white hover:bg-white/15 transition-colors"
-                    >
-                        <Smartphone className="w-4 h-4" />
-                        View in AR
-                    </button>
-                </motion.div>
-            )}
-
-            {/* Product Meta Information */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.4 }} className="space-y-3">
-                <div className="flex flex-wrap items-center gap-3">
-                    <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2">
-                        <Tag className="w-4 h-4 text-amber-400" />
-                        <span className="text-gray-200 font-medium">{product.category}</span>
-                    </div>
+                {/* Sub-header Brand & Category */}
+                <div className="flex flex-wrap items-center gap-3 text-sm text-stone-400">
                     {product.brand && (
-                        <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2">
-                            <Building2 className="w-4 h-4 text-amber-400" />
-                            <span className="text-gray-200 font-medium">{product.brand}</span>
+                        <div className="flex items-center gap-1">
+                            <Building2 className="w-4 h-4 text-amber-500/70" />
+                            <span>برند: <span className="font-bold text-stone-200">{product.brand}</span></span>
+                        </div>
+                    )}
+                    {product.category && (
+                        <div className="flex items-center gap-1 border-r border-white/10 pr-3">
+                            <Tag className="w-4 h-4 text-amber-500/70" />
+                            <span>دسته‌بندی: <span className="font-bold text-stone-200">{product.category}</span></span>
                         </div>
                     )}
                     {product.sku && (
-                        <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2">
-                            <Hash className="w-4 h-4 text-amber-400" />
-                            <span className="text-gray-200 font-medium text-sm">SKU: {product.sku}</span>
-                        </div>
-                    )}
-                    {product.origin && (
-                        <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2">
-                            <MapPin className="w-4 h-4 text-amber-400" />
-                            <span className="text-gray-200 font-medium">{product.origin}</span>
+                        <div className="flex items-center gap-1 border-r border-white/10 pr-3">
+                            <span className="text-xs text-stone-500 font-mono">SKU: {product.sku}</span>
                         </div>
                     )}
                 </div>
-            </motion.div>
 
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.5 }} className="flex items-center gap-2 text-sm md:text-base">
-                <Package className="w-5 h-5 text-gray-400" />
-                <span className={`font-medium ${stockStatus.color}`}>{stockStatus.text}</span>
-                <span className="text-gray-400">•</span>
-                <span className="text-gray-400">{currentStock} units available</span>
-            </motion.div>
-
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.55 }}>
-                {useProductUnits ? (
-                    <div className="space-y-4">
-                        <div className="bg-white/5 backdrop-blur-sm border border-amber-200/20 rounded-lg p-6">
-                            <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                                <Package className="w-5 h-5 text-amber-400" />
-                                Choose Your Size
-                            </h3>
-                            <div className="space-y-3">
-                                {availableProductUnits.map((productUnit: ProductUnit, index: number) => {
-                                    const isSelected = selectedProductUnit?.id === productUnit.id;
-                                    const isOutOfStock = productUnit.stock === 0;
-                                    const isLowStock = productUnit.stock > 0 && productUnit.stock <= 5;
-                                    const isPopular = (productUnit as any).isFeatured || index === 0;
-
-                                    return (
-                                        <div
-                                            key={productUnit.id}
-                                            className={`relative p-4 rounded-xl border cursor-pointer transition-all duration-300 ${
-                                                isSelected
-                                                    ? 'border-amber-400 bg-amber-500/15 shadow-lg shadow-amber-500/20'
-                                                    : isOutOfStock
-                                                        ? 'border-red-200/20 bg-red-500/5 opacity-60 cursor-not-allowed'
-                                                        : 'border-amber-200/20 bg-white/5 hover:border-amber-300/40 hover:bg-white/8 hover:shadow-md'
-                                            }`}
-                                            onClick={() => {
-                                                if (!isOutOfStock) {
-                                                    setSelectedProductUnit(productUnit);
-                                                    trackProductClick(product.id, product.category, productUnit.id);
-                                                }
-                                            }}
-                                        >
-                                            {isPopular && (
-                                                <div className="absolute -top-2 -right-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg">
-                                                    POPULAR
-                                                </div>
-                                            )}
-                                            <div className="flex items-start gap-4">
-                                                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 ${
-                                                    isSelected ? 'border-amber-400 bg-amber-400' : 'border-amber-200/40'
-                                                }`}>
-                                                    {isSelected && <div className="w-2 h-2 bg-white rounded-full"></div>}
-                                                </div>
-                                                <div className="flex-1">
-                                                    <div className="flex justify-between items-start">
-                                                        <div>
-                                                            <div className="font-semibold text-white text-lg">{productUnit.name}</div>
-                                                            <div className="text-amber-200 font-medium">
-                                                                {formatPrice(Number(productUnit.price), 'EUR')}
-                                                            </div>
-                                                        </div>
-                                                        <div className="flex items-center gap-2">
-                                                            {isOutOfStock ? (
-                                                                <span className="flex items-center gap-1 text-red-400 text-sm font-medium">
-                                                                    <span className="w-2 h-2 bg-red-400 rounded-full"></span>
-                                                                    Out of Stock
-                                                                </span>
-                                                            ) : isLowStock ? (
-                                                                <span className="flex items-center gap-1 text-yellow-400 text-sm font-medium">
-                                                                    <span className="w-2 h-2 bg-yellow-400 rounded-full"></span>
-                                                                    Low Stock
-                                                                </span>
-                                                            ) : (
-                                                                <span className="flex items-center gap-1 text-green-400 text-sm font-medium">
-                                                                    <span className="w-2 h-2 bg-green-400 rounded-full"></span>
-                                                                    In Stock
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                    {!isOutOfStock && (
-                                                        <div className="text-gray-400 text-sm mt-1">{productUnit.stock} units available</div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-
-                        {selectedProductUnit && (
-                            <div className="bg-white/5 backdrop-blur-sm border border-amber-200/20 rounded-lg p-4">
-                                <div className="flex items-center justify-between mb-3">
-                                    <label className="text-sm font-medium text-gray-200">Quantity</label>
-                                    <span className="text-xs text-gray-400">Max: {selectedProductUnit.stock} units</span>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <button
-                                        onClick={() => setSelectedQuantity(Math.max(1, selectedQuantity - 1))}
-                                        disabled={selectedQuantity <= 1}
-                                        className="w-10 h-10 rounded-lg border border-amber-200/20 bg-white/8 text-white hover:bg-white/12 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
-                                    >
-                                        −
-                                    </button>
-                                    <input
-                                        type="number"
-                                        min="1"
-                                        max={selectedProductUnit.stock}
-                                        value={selectedQuantity}
-                                        onChange={(e) => setSelectedQuantity(Math.max(1, Math.min(selectedProductUnit.stock, parseInt(e.target.value) || 1)))}
-                                        className="w-20 px-3 py-2 bg-white/8 border border-amber-200/20 rounded-lg text-white text-center focus:ring-2 focus:ring-amber-400 focus:border-amber-300/40"
-                                    />
-                                    <button
-                                        onClick={() => setSelectedQuantity(Math.min(selectedProductUnit.stock, selectedQuantity + 1))}
-                                        disabled={selectedQuantity >= selectedProductUnit.stock}
-                                        className="w-10 h-10 rounded-lg border border-amber-200/20 bg-white/8 text-white hover:bg-white/12 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
-                                    >
-                                        +
-                                    </button>
-                                </div>
-                                <div className="flex gap-2 mt-3">
-                                    {[1, 3, 5].map(qty => (
-                                        <button
-                                            key={qty}
-                                            onClick={() => setSelectedQuantity(Math.min(selectedProductUnit.stock, qty))}
-                                            disabled={qty > selectedProductUnit.stock}
-                                            className={`px-3 py-1 text-xs rounded-full border transition-colors ${
-                                                selectedQuantity === qty
-                                                    ? 'border-amber-400 bg-amber-500/20 text-amber-200'
-                                                    : 'border-amber-200/20 bg-white/5 text-gray-300 hover:bg-white/8 disabled:opacity-50'
-                                            }`}
-                                        >
-                                            {qty}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                ) : (
-                    <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
-                        <p className="text-red-300 text-sm">No units available for this product</p>
+                {/* Premium Gold-outlined Tags */}
+                {product.tags && product.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                        {product.tags.map((tag, idx) => (
+                            <span
+                                key={idx}
+                                className="bg-amber-500/5 hover:bg-amber-500/10 border border-amber-500/10 transition-colors text-[10px] font-medium text-amber-300/90 px-2 py-0.5 rounded-md"
+                            >
+                                # {tag}
+                            </span>
+                        ))}
                     </div>
                 )}
-            </motion.div>
+            </div>
 
-            {/* Excerpt (above the fold) */}
-            {(product.excerpt || product.description) && (
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.5 }} className="space-y-2">
-                    <p className="text-gray-300 leading-relaxed text-base md:text-lg max-w-prose">
-                        {product.excerpt || (product.description ? generateExcerpt(product.description, 200) : null) || 'No description available.'}
-                    </p>
-                </motion.div>
-            )}
+            {/* Ratings Summary */}
+            <div className="flex items-center gap-3 pb-6 border-b border-white/5">
+                <div className="flex items-center gap-1">
+                    {Array.from({ length: 5 }, (_, i) => (
+                        <Star
+                            key={i}
+                            className={`w-4 h-4 ${(i + 1) <= 4 ? 'fill-amber-400 text-amber-400' : 'text-stone-700'}`}
+                        />
+                    ))}
+                </div>
+                <span className="text-sm font-bold text-stone-300">۴.۸</span>
+                <span className="text-xs text-stone-500 pr-2 border-r border-white/10">(۱۲۰ دیدگاه خریداران)</span>
+                <span className="mr-auto px-3 py-1 rounded-full text-xs font-bold transition-all shadow-inner border border-white/5 h-auto leading-none flex items-center justify-center gap-1.5 p-1.5 bg-neutral-900/60 text-stone-300">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    تحویل آنی لوکس
+                </span>
+            </div>
 
-            {/* Features List */}
-            {product.features && product.features.length > 0 && (
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.55 }} className="space-y-3">
-                    <h3 className="text-xl font-semibold text-white">Key Features</h3>
-                    <ul className="space-y-2 text-gray-300">
-                        {product.features.map((feature, index) => (
-                            <li key={index} className="flex items-start gap-2">
-                                <div className="w-2 h-2 bg-amber-400 rounded-full mt-2 flex-shrink-0" />
-                                <span>{feature}</span>
-                            </li>
-                        ))}
-                    </ul>
-                </motion.div>
-            )}
+            {/* Price Presentation Block */}
+            <div className="bg-neutral-950/40 border border-white/5 rounded-3xl p-6 relative overflow-hidden shadow-2xl">
+                <div className="absolute top-0 left-0 w-32 h-32 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
+                <div className="flex flex-col gap-3">
+                    <span className="text-xs text-stone-400 font-bold">بهای این اثر نفیس:</span>
+                    <div className="flex items-baseline gap-2 flex-wrap">
+                        <span className="text-4xl md:text-5xl lg:text-6xl font-black bg-gradient-to-l from-amber-300 via-yellow-200 to-amber-100 bg-clip-text text-transparent">
+                            {formatToToman(pricing.price)}
+                        </span>
+                        {pricing.oldPrice && (
+                            <span className="text-lg text-stone-500 line-through decoration-rose-500/50">
+                                {formatToToman(pricing.oldPrice)}
+                            </span>
+                        )}
+                    </div>
 
-            {/* Full Description */}
-            {product.description && (
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.6 }} className="space-y-3">
-                    <h3 className="text-2xl font-semibold text-white">Description</h3>
-                    <MarkdownDescription content={product.description} />
-                </motion.div>
-            )}
+                    <div className="flex items-center justify-between gap-4 mt-1 border-t border-white/5 pt-3 text-xs">
+                        <p className="text-stone-300 font-medium">
+                            مبنای هر واحد: <span className="font-bold text-amber-300">{useProductUnits && selectedProductUnit ? selectedProductUnit.name : (product.baseUnit?.name || 'عدد')}</span>
+                        </p>
+                        {pricing.hasDiscount && (
+                            <span className="bg-rose-500 text-white font-black px-2.5 py-1 rounded-full shadow-lg shadow-rose-500/20 text-[11px]">
+                                {pricing.discountPercentage}٪ تخفیف انحصاری
+                            </span>
+                        )}
+                    </div>
+                </div>
+            </div>
 
-            {/* Collapsible Sections */}
-            {(product.technicalSpecs || product.materials?.length || product.warranty || product.weight || product.dimensions) && (
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.65 }} className="space-y-4">
-                    <Accordion type="single" collapsible className="w-full space-y-3">
-                        {/* Technical Specifications */}
-                        {product.technicalSpecs && (
-                            <AccordionItem value="specs" className="border border-amber-200/20 rounded-xl overflow-hidden bg-white/5 backdrop-blur-sm">
-                                <AccordionTrigger className="px-6 py-4 hover:bg-white/10 transition-colors">
-                                    <div className="flex items-center gap-3">
-                                        <Info className="w-5 h-5 text-amber-400" />
-                                        <span className="text-lg font-semibold text-white">Technical Specifications</span>
+            {/* Dynamic Variants (Product Units Selection) */}
+            {useProductUnits && (
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                        <Label className="text-sm font-black text-amber-200 flex items-center gap-1.5">
+                            <Layers className="w-4 h-4 text-amber-400" />
+                            <span>انتخاب بسته یا نوع ارائه کالا:</span>
+                        </Label>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {availableProductUnits.map((productUnit: ProductUnit, index: number) => {
+                            const isSelected = selectedProductUnit?.id === productUnit.id;
+                            const isOutOfStock = productUnit.stock === 0;
+                            const isPopular = (productUnit as any).isFeatured || index === 0;
+
+                            return (
+                                <motion.div
+                                    key={productUnit.id}
+                                    whileHover={!isOutOfStock ? { scale: 1.01 } : {}}
+                                    whileTap={!isOutOfStock ? { scale: 0.99 } : {}}
+                                    className={`relative p-4 rounded-2xl border cursor-pointer transition-all duration-300 flex flex-col justify-between gap-3 ${
+                                        isSelected
+                                            ? 'border-amber-500 bg-amber-500/10 shadow-xl shadow-amber-500/5'
+                                            : isOutOfStock
+                                                ? 'border-rose-500/10 bg-rose-500/5 opacity-50 cursor-not-allowed'
+                                                : 'border-white/5 bg-neutral-900/40 hover:border-white/10'
+                                    }`}
+                                    onClick={() => {
+                                        if (!isOutOfStock) {
+                                            setSelectedProductUnit(productUnit);
+                                            trackProductClick(product.id, product.category, productUnit.id);
+                                        }
+                                    }}
+                                >
+                                    {isPopular && (
+                                        <div className="absolute top-2 left-2 bg-gradient-to-l from-amber-500 to-amber-600 text-stone-950 text-[9px] font-black px-2 py-0.5 rounded-full shadow-md">
+                                            پیشنهادی
+                                        </div>
+                                    )}
+
+                                    <div className="flex items-start gap-3">
+                                        <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center mt-1 shrink-0 ${
+                                            isSelected ? 'border-amber-400 bg-amber-400' : 'border-stone-700'
+                                        }`}>
+                                            {isSelected && <div className="w-1.5 h-1.5 bg-neutral-950 rounded-full"></div>}
+                                        </div>
+                                        <div>
+                                            <div className="font-bold text-white text-base">{productUnit.name}</div>
+                                            <div className="text-amber-200/90 font-black text-sm mt-1">
+                                                {formatToToman(Number(productUnit.price))}
+                                            </div>
+                                        </div>
                                     </div>
-                                </AccordionTrigger>
-                                <AccordionContent className="px-6 pb-6">
-                                    <div className="space-y-2 text-gray-300">
-                                        {typeof product.technicalSpecs === 'object' ? (
-                                            Object.entries(product.technicalSpecs).map(([key, value]) => (
-                                                <div key={key} className="flex justify-between py-2 border-b border-white/10">
-                                                    <span className="font-medium capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}:</span>
-                                                    <span>{String(value)}</span>
-                                                </div>
-                                            ))
+
+                                    <div className="flex items-center justify-between text-[11px] border-t border-white/5 pt-2 mt-1">
+                                        <span className="text-stone-400">موجودی: {productUnit.stock} عدد</span>
+                                        {isOutOfStock ? (
+                                            <span className="text-rose-400 font-bold">ناموجود</span>
                                         ) : (
-                                            <p>{String(product.technicalSpecs)}</p>
+                                            <span className="text-emerald-400 font-bold">آماده ارسال</span>
                                         )}
                                     </div>
-                                </AccordionContent>
-                            </AccordionItem>
-                        )}
-
-                        {/* Materials */}
-                        {product.materials && product.materials.length > 0 && (
-                            <AccordionItem value="materials" className="border border-amber-200/20 rounded-xl overflow-hidden bg-white/5 backdrop-blur-sm">
-                                <AccordionTrigger className="px-6 py-4 hover:bg-white/10 transition-colors">
-                                    <div className="flex items-center gap-3">
-                                        <Package className="w-5 h-5 text-amber-400" />
-                                        <span className="text-lg font-semibold text-white">Materials</span>
-                                    </div>
-                                </AccordionTrigger>
-                                <AccordionContent className="px-6 pb-6">
-                                    <ul className="space-y-2 text-gray-300">
-                                        {product.materials.map((material, index) => (
-                                            <li key={index} className="flex items-center gap-2">
-                                                <div className="w-2 h-2 bg-amber-400 rounded-full" />
-                                                <span>{material}</span>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </AccordionContent>
-                            </AccordionItem>
-                        )}
-
-                        {/* Weight & Dimensions */}
-                        {(product.weight || product.dimensions) && (
-                            <AccordionItem value="dimensions" className="border border-amber-200/20 rounded-xl overflow-hidden bg-white/5 backdrop-blur-sm">
-                                <AccordionTrigger className="px-6 py-4 hover:bg-white/10 transition-colors">
-                                    <div className="flex items-center gap-3">
-                                        <Ruler className="w-5 h-5 text-amber-400" />
-                                        <span className="text-lg font-semibold text-white">Weight & Dimensions</span>
-                                    </div>
-                                </AccordionTrigger>
-                                <AccordionContent className="px-6 pb-6">
-                                    <div className="space-y-3 text-gray-300">
-                                        {product.weight && (
-                                            <div className="flex items-center gap-2">
-                                                <Weight className="w-4 h-4 text-amber-400" />
-                                                <span>Weight: {product.weight} {product.weightUnit || 'kg'}</span>
-                                            </div>
-                                        )}
-                                        {product.dimensions && typeof product.dimensions === 'object' && (
-                                            <div className="flex items-center gap-2">
-                                                <Ruler className="w-4 h-4 text-amber-400" />
-                                                <span>
-                                                    Dimensions: {product.dimensions.length || 'N/A'} × {product.dimensions.width || 'N/A'} × {product.dimensions.height || 'N/A'} {product.dimensions.unit || 'cm'}
-                                                </span>
-                                            </div>
-                                        )}
-                                    </div>
-                                </AccordionContent>
-                            </AccordionItem>
-                        )}
-
-                        {/* Warranty */}
-                        {product.warranty && (
-                            <AccordionItem value="warranty" className="border border-amber-200/20 rounded-xl overflow-hidden bg-white/5 backdrop-blur-sm">
-                                <AccordionTrigger className="px-6 py-4 hover:bg-white/10 transition-colors">
-                                    <div className="flex items-center gap-3">
-                                        <Shield className="w-5 h-5 text-amber-400" />
-                                        <span className="text-lg font-semibold text-white">Warranty</span>
-                                    </div>
-                                </AccordionTrigger>
-                                <AccordionContent className="px-6 pb-6">
-                                    <p className="text-gray-300">{product.warranty}</p>
-                                </AccordionContent>
-                            </AccordionItem>
-                        )}
-                    </Accordion>
-                </motion.div>
+                                </motion.div>
+                            );
+                        })}
+                    </div>
+                </div>
             )}
 
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.8 }} className="pt-4">
+            {/* Quantity Selector & Add to Cart Card */}
+            {selectedProductUnit && !useProductUnits && (
+                <div className="bg-neutral-900/40 border border-white/5 rounded-3xl p-5 space-y-4">
+                    <div className="flex items-center justify-between text-xs">
+                        <span className="text-stone-300">موجودی این کالا:</span>
+                        <span className="text-amber-400 font-bold">{selectedProductUnit.stock} عدد</span>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => setSelectedQuantity(Math.max(1, selectedQuantity - 1))}
+                            disabled={selectedQuantity <= 1}
+                            className="w-11 h-11 rounded-xl border border-white/10 bg-neutral-950/40 text-white hover:bg-white/5 disabled:opacity-30 flex items-center justify-center transition-all text-xl"
+                        >
+                            −
+                        </button>
+                        <input
+                            type="number"
+                            min="1"
+                            max={selectedProductUnit.stock}
+                            value={selectedQuantity}
+                            onChange={(e) => setSelectedQuantity(Math.max(1, Math.min(selectedProductUnit.stock, parseInt(e.target.value) || 1)))}
+                            className="flex-1 h-11 bg-neutral-950/40 border border-white/10 rounded-xl text-white text-center focus:ring-1 focus:ring-amber-500 focus:outline-none font-bold font-mono"
+                        />
+                        <button
+                            onClick={() => setSelectedQuantity(Math.min(selectedProductUnit.stock, selectedQuantity + 1))}
+                            disabled={selectedQuantity >= selectedProductUnit.stock}
+                            className="w-11 h-11 rounded-xl border border-white/10 bg-neutral-950/40 text-white hover:bg-white/5 disabled:opacity-30 flex items-center justify-center transition-all text-xl"
+                        >
+                            +
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* AR Viewer & Primary CTA Container */}
+            <div className="space-y-4 pt-2">
                 <div className="w-full flex">
-                    <div className="w-full max-w-sm mx-auto">
-                        <AddToCartButton 
-                            product={product} 
+                    <div className="w-full">
+                        <AddToCartButton
+                            product={product}
                             selectedQuantity={selectedQuantity}
                             selectedProductUnit={selectedProductUnit}
                             pricing={pricing}
                         />
                     </div>
                 </div>
-            </motion.div>
 
-            {currentStock <= 5 && currentStock > 0 && (
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.85 }} className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3">
-                    <p className="text-yellow-200 text-sm text-center">
-                        Warning: Only {currentStock} units left in stock!
-                    </p>
-                </motion.div>
+                {arAvailable && (
+                    <motion.button
+                        whileHover={{ scale: 1.01 }}
+                        whileTap={{ scale: 0.99 }}
+                        onClick={() => setShowAR(true)}
+                        className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-2xl border border-amber-500/20 bg-amber-500/5 text-amber-200 hover:bg-amber-500/10 transition-all font-bold text-sm shadow-lg shadow-amber-500/5"
+                    >
+                        <Smartphone className="w-4 h-4 text-amber-400" />
+                        <span>مشاهده کالا با واقعیت افزوده AR 📱</span>
+                    </motion.button>
+                )}
+            </div>
+
+            {/* Dynamic Highlights / Key Features ( hidding section if empty ) */}
+            {product.features && product.features.length > 0 && (
+                <div className="space-y-4 bg-neutral-950/20 border border-white/5 p-6 rounded-3xl">
+                    <h3 className="text-sm font-black text-amber-200 flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-amber-400" />
+                        <span>ویژگی‌های برجسته و کلیدی کالا:</span>
+                    </h3>
+                    <ul className="grid grid-cols-1 gap-3 text-sm text-stone-300">
+                        {product.features.map((feature, idx) => (
+                            <li key={idx} className="flex items-start gap-2.5 leading-relaxed">
+                                <span className="w-5 h-5 rounded-full bg-amber-500/10 text-amber-400 flex items-center justify-center shrink-0 border border-amber-500/20 mt-0.5">
+                                    <Check className="w-3 h-3" />
+                                </span>
+                                <span>{feature}</span>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
             )}
 
-            {currentStock === 0 && (
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.85 }} className="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
-                    <p className="text-red-200 text-sm text-center">
-                        Cross: This product is currently out of stock
-                    </p>
-                </motion.div>
+            {/* Dynamic Specifications Accordion ( hidding completely if no specs exist ) */}
+            {hasSpecsSection && (
+                <div className="space-y-4">
+                    <h3 className="text-sm font-black text-amber-200 flex items-center gap-2">
+                        <Info className="w-4 h-4 text-amber-400" />
+                        <span>مشخصات فنی و فیزیکی اثر:</span>
+                    </h3>
+
+                    <Accordion type="single" collapsible className="w-full space-y-3">
+                        {/* Technical Specs Object */}
+                        {hasTechnicalSpecs && (
+                            <AccordionItem value="tech-specs" className="border border-white/5 rounded-2xl overflow-hidden bg-neutral-900/30 backdrop-blur-md px-4">
+                                <AccordionTrigger className="hover:no-underline py-4 flex items-center justify-between text-stone-200 hover:text-white font-bold text-sm">
+                                    <div className="flex items-center gap-2">
+                                        <Layers className="w-4 h-4 text-amber-400" />
+                                        <span>پارامترهای فنی کالا</span>
+                                    </div>
+                                    <ChevronDown className="w-4 h-4 text-stone-400 shrink-0 transition-transform duration-300" />
+                                </AccordionTrigger>
+                                <AccordionContent className="pb-4 pt-1 text-xs leading-relaxed text-stone-300 border-t border-white/5">
+                                    <div className="grid grid-cols-1 gap-2.5 pt-2">
+                                        {Object.entries(product.technicalSpecs).map(([key, val]) => (
+                                            <div key={key} className="flex justify-between items-center py-2 px-3 bg-neutral-950/40 rounded-xl border border-white/5">
+                                                <span className="text-stone-400 font-medium capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
+                                                <span className="font-bold text-stone-100">{String(val)}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </AccordionContent>
+                            </AccordionItem>
+                        )}
+
+                        {/* Physical attributes (materials) */}
+                        {hasMaterials && (
+                            <AccordionItem value="materials-spec" className="border border-white/5 rounded-2xl overflow-hidden bg-neutral-900/30 backdrop-blur-md px-4">
+                                <AccordionTrigger className="hover:no-underline py-4 flex items-center justify-between text-stone-200 hover:text-white font-bold text-sm">
+                                    <div className="flex items-center gap-2">
+                                        <Package className="w-4 h-4 text-amber-400" />
+                                        <span>مواد اولیه و متریال تشکیل‌دهنده</span>
+                                    </div>
+                                    <ChevronDown className="w-4 h-4 text-stone-400 shrink-0 transition-transform duration-300" />
+                                </AccordionTrigger>
+                                <AccordionContent className="pb-4 pt-1 text-xs leading-relaxed text-stone-300 border-t border-white/5">
+                                    <div className="flex flex-wrap gap-2 pt-3">
+                                        {product.materials.map((material, idx) => (
+                                            <span key={idx} className="bg-neutral-950/60 border border-white/5 text-stone-200 px-3.5 py-1.5 rounded-xl font-medium">
+                                                🌿 {material}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </AccordionContent>
+                            </AccordionItem>
+                        )}
+
+                        {/* Weight & dimensions */}
+                        {hasWeightOrDims && (
+                            <AccordionItem value="dims-spec" className="border border-white/5 rounded-2xl overflow-hidden bg-neutral-900/30 backdrop-blur-md px-4">
+                                <AccordionTrigger className="hover:no-underline py-4 flex items-center justify-between text-stone-200 hover:text-white font-bold text-sm">
+                                    <div className="flex items-center gap-2">
+                                        <Ruler className="w-4 h-4 text-amber-400" />
+                                        <span>جرم، ابعاد و مشخصات فیزیکی</span>
+                                    </div>
+                                    <ChevronDown className="w-4 h-4 text-stone-400 shrink-0 transition-transform duration-300" />
+                                </AccordionTrigger>
+                                <AccordionContent className="pb-4 pt-1 text-xs leading-relaxed text-stone-300 border-t border-white/5 space-y-3.5">
+                                    {product.weight && (
+                                        <div className="flex justify-between items-center py-2 px-3 bg-neutral-950/40 rounded-xl border border-white/5 mt-2">
+                                            <span className="text-stone-400 flex items-center gap-1">
+                                                <Weight className="w-3.5 h-3.5 text-amber-500/75" />
+                                                وزن خالص کالا
+                                            </span>
+                                            <span className="font-bold text-stone-100">{product.weight} {product.weightUnit || 'گرم'}</span>
+                                        </div>
+                                    )}
+                                    {product.dimensions && typeof product.dimensions === 'object' && (
+                                        <div className="flex justify-between items-center py-2 px-3 bg-neutral-950/40 rounded-xl border border-white/5">
+                                            <span className="text-stone-400 flex items-center gap-1">
+                                                <Ruler className="w-3.5 h-3.5 text-amber-500/75" />
+                                                ابعاد هندسی (طول × عرض × ارتفاع)
+                                            </span>
+                                            <span className="font-bold text-stone-100 font-mono">
+                                                {product.dimensions.length || '—'} × {product.dimensions.width || '—'} × {product.dimensions.height || '—'} {product.dimensions.unit || 'سانتی‌متر'}
+                                            </span>
+                                        </div>
+                                    )}
+                                </AccordionContent>
+                            </AccordionItem>
+                        )}
+
+                        {/* Sensory, Flavor, Scent, Color & Heritage Specs */}
+                        {hasSensoryOrHeritage && (
+                            <AccordionItem value="sensory-spec" className="border border-white/5 rounded-2xl overflow-hidden bg-neutral-900/30 backdrop-blur-md px-4">
+                                <AccordionTrigger className="hover:no-underline py-4 flex items-center justify-between text-stone-200 hover:text-white font-bold text-sm">
+                                    <div className="flex items-center gap-2">
+                                        <Sparkles className="w-4 h-4 text-amber-400" />
+                                        <span>مشخصات حسی و اصالت کالا</span>
+                                    </div>
+                                    <ChevronDown className="w-4 h-4 text-stone-400 shrink-0 transition-transform duration-300" />
+                                </AccordionTrigger>
+                                <AccordionContent className="pb-4 pt-1 text-xs leading-relaxed text-stone-300 border-t border-white/5 space-y-3.5">
+                                    {product.color && (
+                                        <div className="flex justify-between items-center py-2 px-3 bg-neutral-950/40 rounded-xl border border-white/5 mt-2">
+                                            <span className="text-stone-400">رنگ ظاهری</span>
+                                            <span className="font-bold text-stone-100">{product.color}</span>
+                                        </div>
+                                    )}
+                                    {product.scent && (
+                                        <div className="flex justify-between items-center py-2 px-3 bg-neutral-950/40 rounded-xl border border-white/5">
+                                            <span className="text-stone-400">عطر و رایحه</span>
+                                            <span className="font-bold text-stone-100">{product.scent}</span>
+                                        </div>
+                                    )}
+                                    {product.flavor && (
+                                        <div className="flex justify-between items-center py-2 px-3 bg-neutral-950/40 rounded-xl border border-white/5">
+                                            <span className="text-stone-400">طعم و مزه</span>
+                                            <span className="font-bold text-stone-100">{product.flavor}</span>
+                                        </div>
+                                    )}
+                                    {product.origin && (
+                                        <div className="flex justify-between items-center py-2 px-3 bg-neutral-950/40 rounded-xl border border-white/5">
+                                            <span className="text-stone-400 flex items-center gap-1">
+                                                <MapPin className="w-3.5 h-3.5 text-amber-500/75" />
+                                                خاستگاه و کشور تولیدکننده
+                                            </span>
+                                            <span className="font-bold text-stone-100">{product.origin}</span>
+                                        </div>
+                                    )}
+                                </AccordionContent>
+                            </AccordionItem>
+                        )}
+
+                        {/* Warranty information */}
+                        {hasWarranty && (
+                            <AccordionItem value="warranty-spec" className="border border-white/5 rounded-2xl overflow-hidden bg-neutral-900/30 backdrop-blur-md px-4">
+                                <AccordionTrigger className="hover:no-underline py-4 flex items-center justify-between text-stone-200 hover:text-white font-bold text-sm">
+                                    <div className="flex items-center gap-2">
+                                        <Shield className="w-4 h-4 text-amber-400" />
+                                        <span>خدمات پس از فروش و گارانتی اصالت</span>
+                                    </div>
+                                    <ChevronDown className="w-4 h-4 text-stone-400 shrink-0 transition-transform duration-300" />
+                                </AccordionTrigger>
+                                <AccordionContent className="pb-4 pt-1 text-xs leading-relaxed text-stone-300 border-t border-white/5">
+                                    <div className="p-3 bg-neutral-950/40 rounded-xl border border-white/5 mt-2 flex items-center gap-2.5">
+                                        <Award className="w-5 h-5 text-amber-400 shrink-0" />
+                                        <span className="font-bold text-stone-200 leading-relaxed">{product.warranty}</span>
+                                    </div>
+                                </AccordionContent>
+                            </AccordionItem>
+                        )}
+                    </Accordion>
+                </div>
             )}
 
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.9 }} className="grid grid-cols-4 gap-2 md:gap-4 pt-6 border-t border-white/10">
-                <div className="text-center">
-                    <div className="text-sm font-semibold text-amber-400">Free Shipping</div>
-                    <div className="text-xs text-gray-400 mt-1">Worldwide Shipping Available</div>
-                </div>
-                <div className="text-center">
-                    <div className="text-sm font-semibold text-amber-400">Estimated Delivery</div>
-                    <div className="text-xs text-gray-400 mt-1">5–10 Business Days</div>
-                </div>
-                <div className="text-center">
-                    <div className="text-sm font-semibold text-amber-400">Premium Quality</div>
-                    <div className="text-xs text-gray-400 mt-1">100% Authentic Product</div>
-                </div>
-                <div className="text-center">
-                    <div className="text-sm font-semibold text-amber-400">Secure Packaging</div>
-                    <div className="text-xs text-gray-400 mt-1">Fresh & Safe Delivery</div>
-                </div>
-            </motion.div>
+            {/* Live Premium Shipping Tracker & Logistics details */}
+            <div className="p-6 border border-amber-500/20 bg-gradient-to-br from-neutral-950 via-neutral-900/60 to-neutral-950 backdrop-blur-xl rounded-3xl shadow-xl space-y-6 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
 
+                <div className="flex items-center justify-between gap-3 pb-3 border-b border-white/5">
+                    <div className="flex items-center gap-2.5">
+                        <span className="text-xl">🚚</span>
+                        <h3 className="text-sm font-black text-transparent bg-clip-text bg-gradient-to-l from-amber-200 via-white to-amber-300">
+                            جزئیات ارسال و بیمه لجستیک
+                        </h3>
+                    </div>
+                    {product.allowFreeShipping ? (
+                        <span className="bg-gradient-to-r from-emerald-500 to-green-600 text-white text-[10px] font-black px-3 py-1 rounded-full border border-green-400/20 shadow-md">
+                            🎁 ارسال رایگان
+                        </span>
+                    ) : product.shippingPriority === 'Express' ? (
+                        <span className="bg-gradient-to-r from-amber-500 to-orange-600 text-stone-950 text-[10px] font-black px-3 py-1 rounded-full shadow-md">
+                            ⚡ ارسال اکسپرس
+                        </span>
+                    ) : (
+                        <span className="bg-neutral-950 text-amber-300 border border-amber-500/20 text-[10px] font-black px-3 py-1 rounded-full shadow-md">
+                            📦 لجستیک بیمه‌شده
+                        </span>
+                    )}
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <div className="bg-neutral-950/60 p-4 rounded-2xl border border-white/5">
+                        <span className="text-[10px] text-stone-400 font-bold block mb-1">تعرفه تحویل لوکس:</span>
+                        {product.allowFreeShipping ? (
+                            <span className="text-sm font-black text-emerald-400">کاملاً رایگان (مهمان فروشگاه)</span>
+                        ) : (
+                            <span className="text-base font-black text-amber-300">
+                                {formatToToman(product.shippingCost !== undefined && product.shippingCost !== null ? product.shippingCost : 200000)}
+                            </span>
+                        )}
+                    </div>
+
+                    <div className="bg-neutral-950/60 p-4 rounded-2xl border border-white/5">
+                        <span className="text-[10px] text-stone-400 font-bold block mb-1">پروتکل آماده‌سازی:</span>
+                        <span className="text-sm font-bold text-stone-200">
+                            {product.shippingDescription || 'سفارشی ویژه با بسته‌بندی نفیس'}
+                        </span>
+                    </div>
+                </div>
+
+                {/* Elegant Delivery Tracker Timeline */}
+                <div className="space-y-4 pt-2">
+                    <div className="flex items-center gap-2">
+                        <span className="text-xs text-amber-400">⏱</span>
+                        <h4 className="text-xs font-black text-stone-300">مراحل لجستیک تحویل شاهکار:</h4>
+                    </div>
+
+                    <div className="relative flex justify-between items-center px-1 py-4">
+                        <div className="absolute top-[28px] left-6 right-6 h-[2px] bg-gradient-to-l from-amber-500/40 via-amber-500/10 to-stone-800 rounded-full z-0 pointer-events-none" />
+
+                        {/* Phase 1 */}
+                        <div className="flex flex-col items-center gap-2 relative z-10">
+                            <div className="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center text-neutral-950 text-xs font-black shadow-lg shadow-amber-500/20">
+                                ✓
+                            </div>
+                            <span className="text-[10px] font-bold text-amber-200">سفارش</span>
+                        </div>
+
+                        {/* Phase 2 */}
+                        <div className="flex flex-col items-center gap-2 relative z-10">
+                            <div className="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center text-neutral-950 text-xs font-black shadow-lg shadow-amber-500/20">
+                                ✓
+                            </div>
+                            <span className="text-[10px] font-bold text-amber-200">آماده‌سازی</span>
+                        </div>
+
+                        {/* Phase 3 */}
+                        <div className="flex flex-col items-center gap-2 relative z-10">
+                            <motion.div
+                                animate={{ y: [0, -3, 0] }}
+                                transition={{ repeat: Infinity, duration: 2.5, ease: 'easeInOut' }}
+                                className="w-8 h-8 rounded-full bg-neutral-900 border border-amber-500 flex items-center justify-center text-amber-400 text-xs shadow-md shadow-amber-500/10"
+                            >
+                                🚚
+                            </motion.div>
+                            <span className="text-[10px] font-bold text-stone-200">حمل ویژه</span>
+                        </div>
+
+                        {/* Phase 4 */}
+                        <div className="flex flex-col items-center gap-2 relative z-10">
+                            <div className="w-8 h-8 rounded-full bg-neutral-950 border border-white/5 flex items-center justify-center text-stone-600 text-xs">
+                                🎁
+                            </div>
+                            <span className="text-[10px] font-medium text-stone-500">تحویل</span>
+                        </div>
+                    </div>
+
+                    <p className="text-[10px] text-stone-400 text-center leading-relaxed bg-neutral-950/40 py-2 rounded-xl border border-white/5">
+                        📦 زمان تقریبی دریافت کالا: <span className="text-amber-300 font-bold">
+                            {product.shippingPriority === 'Express' ? '۱ الی ۲ روز کاری (اکسپرس)' : '۳ الی ۵ روز کاری'}
+                        </span>
+                    </p>
+                </div>
+            </div>
+
+            {/* AR Overlay portal */}
             {showAR && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md">
                     <div className="relative w-full max-w-4xl mx-4">
                         <ARProductViewer product={product} onClose={() => setShowAR(false)} />
                     </div>
