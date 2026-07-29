@@ -5,14 +5,14 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui';
 import { ShoppingCart, Star } from 'lucide-react';
-import type { ProductsWithImages, Unit } from '@/types';
+import type { ProductsWithImages, Unit, ProductUnit } from '@/types';
 import { useCart } from '@/hooks/useCart';
 import { cn } from '@/lib/utils';
-import { formatEUR } from '@/lib/currency';
+import { formatToToman } from '@/lib/currency';
 import FlyToCartAnimation from '@/components/cart/FlyToCartAnimation';
 import DiscountBadge from '@/components/ui/DiscountBadge';
 import ProductBadge from '@/components/ui/ProductBadge';
-import { calculateFinalPricing } from '@/lib/pricing';
+import { resolveProductPrice } from '@/lib/product-pricing';
 
 export default function ProductItemCompact({ 
   product, 
@@ -27,37 +27,27 @@ export default function ProductItemCompact({
   const [isImageLoaded, setIsImageLoaded] = useState(false);
   const [showFlyAnimation, setShowFlyAnimation] = useState(false);
   const [animationPosition, setAnimationPosition] = useState({ x: 0, y: 0 });
-  const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null);
   const productRef = useRef<HTMLDivElement>(null);
   const cartButtonRef = useRef<HTMLButtonElement>(null);
 
-  // Set default unit when availableUnits are loaded
-  useEffect(() => {
-    if (availableUnits.length > 0 && !selectedUnit) {
-      const defaultUnit = availableUnits.find(u => u.id === product.baseUnitId) || availableUnits[0];
-      setSelectedUnit(defaultUnit || null);
-    }
-  }, [availableUnits, product.baseUnitId]);
+  // Parse variations / product units
+  const availableProductUnits = React.useMemo(() => {
+    const units = product.units?.filter(unit => unit.isActive) || [];
+    return units.sort((a, b) => Number(a.price) - Number(b.price));
+  }, [product.units]);
 
-  // Fallback if no units are available
-  if (!selectedUnit || availableUnits.length === 0) {
-    return (
-      <div className="product-card relative bg-white/8 backdrop-blur-sm border border-amber-200/20 rounded-xl overflow-hidden aspect-square">
-        <div className="flex flex-col items-center justify-center h-full p-4 text-center">
-          <h2 className="text-white font-bold text-sm mb-2 line-clamp-2">{product.name}</h2>
-          <p className="text-amber-300 font-semibold text-lg">{formatEUR(product.basePrice)}</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Calculate pricing with discounts
-  const pricing = calculateFinalPricing(
-    product.basePrice,
-    selectedUnit,
-    1, // Default quantity for compact view
-    product.discounts
+  const [selectedProductUnit, setSelectedProductUnit] = useState<ProductUnit | null>(
+    availableProductUnits.length > 0 ? availableProductUnits[0] ?? null : null
   );
+
+  useEffect(() => {
+    if (availableProductUnits.length > 0 && !selectedProductUnit) {
+      setSelectedProductUnit(availableProductUnits[0] ?? null);
+    }
+  }, [availableProductUnits, selectedProductUnit]);
+
+  // Calculate pricing with discounts using single source of truth
+  const pricing = resolveProductPrice(product, selectedProductUnit);
 
   // Generate deterministic rating based on product ID hash
   const idHash = product.id.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
@@ -85,6 +75,7 @@ export default function ProductItemCompact({
     try {
       await addToCartMutation.mutateAsync({ 
         productId: product.id,
+        unitId: selectedProductUnit?.id || product.baseUnitId,
         quantity: 1
       });
     } catch (error) {
@@ -109,23 +100,23 @@ export default function ProductItemCompact({
               <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-yellow-500/10 animate-pulse rounded-full" />
             )}
             <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden">
-            <Image
-              src={product?.images[0]?.secureUrl || product?.images[0]?.image || '/assets/noImage.jpg'}
-              alt={`${product?.name || 'Product'} - Premium ${product?.category || 'product'} from Sheikh Shop`}
+              <Image
+                src={product?.images?.[0]?.secureUrl || product?.images?.[0]?.image || '/assets/noImage.jpg'}
+                alt={`${product?.name || 'Product'} - Premium ${product?.category || 'product'} from Sheikh Shop`}
                 fill
-              className={cn(
+                className={cn(
                   'object-cover transition-all duration-300',
-                isImageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95',
-              )}
-              loading={index < 4 ? 'eager' : 'lazy'}
-              priority={index < 4}
-              sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
-              quality={80}
-              placeholder="blur"
-              blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
-              onLoad={() => setIsImageLoaded(true)}
-              onError={() => setIsImageLoaded(true)}
-            />
+                  isImageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95',
+                )}
+                loading={index < 4 ? 'eager' : 'lazy'}
+                priority={index < 4}
+                sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
+                quality={80}
+                placeholder="blur"
+                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
+                onLoad={() => setIsImageLoaded(true)}
+                onError={() => setIsImageLoaded(true)}
+              />
             </div>
           </div>
         </Link>
@@ -135,9 +126,9 @@ export default function ProductItemCompact({
           {/* Product Name */}
           <Link href={`/products/${product.slug || product.id}`} className="block mb-2">
             <h2 className="text-sm font-semibold text-white group-hover:text-amber-200 transition-colors duration-300 cursor-pointer line-clamp-2 leading-tight text-center">
-                {product?.name}
-              </h2>
-            </Link>
+              {product?.name}
+            </h2>
+          </Link>
             
           {/* Star Rating with Review Count */}
           <div className="flex items-center justify-center gap-1 mb-2">
@@ -155,17 +146,17 @@ export default function ProductItemCompact({
             <span className="text-xs text-amber-200/60">({reviewCount})</span>
           </div>
 
-            {/* Price */}
+          {/* Price */}
           <div className="text-center mb-3">
-                <p className="text-base sm:text-lg font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
-                  {formatEUR(pricing.finalPrice)}
-                </p>
-                {pricing.hasDiscount && (
-                  <p className="text-xs text-gray-400 line-through">
-                    {formatEUR(pricing.originalPrice)}
-                  </p>
-                )}
-              </div>
+            <p className="text-base sm:text-lg font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
+              {formatToToman(pricing.price)}
+            </p>
+            {pricing.hasDiscount && pricing.oldPrice && (
+              <p className="text-xs text-gray-400 line-through">
+                {formatToToman(pricing.oldPrice)}
+              </p>
+            )}
+          </div>
 
           {/* Product Badges - Below price */}
           <div className="flex justify-center gap-1 mb-3">
@@ -177,17 +168,17 @@ export default function ProductItemCompact({
             {pricing.hasDiscount && (
               <DiscountBadge 
                 discount={{
-                  type: product.discounts[0]?.discountType || 'PERCENTAGE',
-                  value: product.discounts[0]?.value || 0,
-                  amount: pricing.discountAmount,
+                  type: product.discounts?.[0]?.discountType || 'PERCENTAGE',
+                  value: product.discounts?.[0]?.value || 0,
+                  amount: pricing.oldPrice ? pricing.oldPrice - pricing.price : 0,
                   percentage: pricing.discountPercentage,
-                  endDate: product.discounts[0]?.endDate || new Date(),
+                  endDate: product.discounts?.[0]?.endDate || new Date(),
                   isActive: true,
                 }}
                 showCountdown={false}
               />
             )}
-            </div>
+          </div>
         </div>
 
         {/* Button Container - Fixed at bottom */}
@@ -208,7 +199,7 @@ export default function ProductItemCompact({
       {/* Fly to Cart Animation */}
       <FlyToCartAnimation
         isVisible={showFlyAnimation}
-        productImage={product?.images[0]?.image || '/assets/noImage.jpg'}
+        productImage={product?.images?.[0]?.image || '/assets/noImage.jpg'}
         productName={product?.name || 'محصول'}
         onAnimationComplete={handleAnimationComplete}
       />
