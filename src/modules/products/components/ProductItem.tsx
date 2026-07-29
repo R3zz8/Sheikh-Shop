@@ -8,68 +8,15 @@ import { Star, ShoppingCart, Zap, ChevronDown, ChevronUp } from 'lucide-react';
 import type { ProductsWithImages, Unit, ProductUnit } from '@/types';
 import { useCart } from '@/hooks/useCart';
 import { cn } from '@/lib/utils';
-import { formatEUR } from '@/lib/currency';
+import { formatToToman } from '@/lib/currency';
 import FlyToCartAnimation from '@/components/cart/FlyToCartAnimation';
-import UnitSelector from '@/components/ui/UnitSelector';
 import DiscountBadge from '@/components/ui/DiscountBadge';
 import ProductBadge from '@/components/ui/ProductBadge';
 import CompactProductUnitSelector from '@/components/ui/CompactProductUnitSelector';
-import { calculateFinalPricing } from '@/lib/pricing';
+import { resolveProductPrice } from '@/lib/product-pricing';
 import { getOrGenerateExcerpt, stripHtmlTags } from '@/lib/seo/sanitize';
 import { useLuxuryUnboxing } from '@/components/3d/LuxuryUnboxingProvider';
 import { Gift } from 'lucide-react';
-
-// ProductDescription component for read more/less functionality
-function ProductDescription({ description }: { description: string }) {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [showToggle, setShowToggle] = useState(false);
-  const textRef = useRef<HTMLParagraphElement>(null);
-
-  // Sanitize description to plain text (strip HTML, collapse whitespace)
-  const cleanDescription = stripHtmlTags(description)
-    .replace(/\s+/g, ' ')
-    .trim();
-
-  useEffect(() => {
-    if (textRef.current) {
-      const lineHeight = parseInt(getComputedStyle(textRef.current).lineHeight);
-      const maxHeight = lineHeight * 3;
-      setShowToggle(textRef.current.scrollHeight > maxHeight);
-    }
-  }, [cleanDescription]);
-
-  return (
-    <div>
-      <p 
-        ref={textRef}
-        className={cn(
-          'text-amber-200/80 text-sm transition-all duration-300',
-          !isExpanded && 'line-clamp-3'
-        )}
-      >
-        {cleanDescription}
-      </p>
-      {showToggle && (
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="flex items-center gap-1 text-amber-400 hover:text-amber-300 text-xs mt-1 transition-colors duration-200"
-        >
-          {isExpanded ? (
-            <>
-              <ChevronUp className="w-3 h-3" />
-              Read less
-            </>
-          ) : (
-            <>
-              <ChevronDown className="w-3 h-3" />
-              Read more
-            </>
-          )}
-        </button>
-      )}
-    </div>
-  );
-}
 
 export default function ProductItem({ 
   product, 
@@ -85,10 +32,7 @@ export default function ProductItem({
   const [isImageLoaded, setIsImageLoaded] = useState(false);
   const [showFlyAnimation, setShowFlyAnimation] = useState(false);
   const [animationPosition, setAnimationPosition] = useState({ x: 0, y: 0 });
-  const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null);
   const [selectedQuantity, setSelectedQuantity] = useState(1);
-  const [showUnitSelector, setShowUnitSelector] = useState(false);
-  const [selectedProductUnit, setSelectedProductUnit] = useState<ProductUnit | null>(null);
   const productRef = useRef<HTMLDivElement>(null);
   const cartButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -104,44 +48,18 @@ export default function ProductItem({
 
   const useProductUnits = availableProductUnits.length > 0;
 
-  useEffect(() => {
-    if (availableUnits.length > 0 && !selectedUnit) {
-      const defaultUnit = availableUnits.find(u => u.id === product.baseUnitId) || availableUnits[0];
-      setSelectedUnit(defaultUnit || null);
-    }
-  }, [availableUnits, product.baseUnitId]);
+  const [selectedProductUnit, setSelectedProductUnit] = useState<ProductUnit | null>(
+    availableProductUnits.length > 0 ? availableProductUnits[0] ?? null : null
+  );
 
   useEffect(() => {
     if (availableProductUnits.length > 0 && !selectedProductUnit) {
-      setSelectedProductUnit(availableProductUnits[0] || null);
+      setSelectedProductUnit(availableProductUnits[0] ?? null);
     }
-  }, [availableProductUnits]);
+  }, [availableProductUnits, selectedProductUnit]);
 
-  if (!selectedUnit || availableUnits.length === 0) {
-    return (
-      <div className="product-card relative bg-white/8 backdrop-blur-sm border border-amber-200/20 rounded-2xl overflow-hidden p-6">
-        <div className="text-center">
-          <h2 className="text-white font-bold text-lg mb-2">{product.name}</h2>
-          <p className="text-gray-300 text-sm mb-3">
-            {stripHtmlTags(product.description || '')
-              .replace(/\s+/g, ' ')
-              .trim() || 'Premium quality product'}
-          </p>
-          <p className="text-amber-300 font-semibold">{formatEUR(product.basePrice)}</p>
-          <p className="text-gray-400 text-xs mt-2">Units: {availableUnits.length}</p>
-        </div>
-      </div>
-    );
-  }
-
-  const pricing = calculateFinalPricing(
-    useProductUnits && selectedProductUnit ? Number(selectedProductUnit.price) : product.basePrice,
-    selectedUnit,
-    selectedQuantity,
-    product.discounts
-  );
-
-  const isPremium = (pricing.finalPrice || 0) > 50;
+  // Pricing using single source of truth
+  const pricing = resolveProductPrice(product, selectedProductUnit);
 
   const idHash = product.id.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
   const rating = 4 + (idHash % 2);
@@ -164,6 +82,7 @@ export default function ProductItem({
     try {
       await addToCartMutation.mutateAsync({ 
         productId: product.id,
+        unitId: selectedProductUnit?.id || product.baseUnitId,
         quantity: selectedQuantity
       });
     } catch (error) {
@@ -173,10 +92,6 @@ export default function ProductItem({
 
   const handleAnimationComplete = () => {
     setShowFlyAnimation(false);
-  };
-
-  const toggleUnitSelector = () => {
-    setShowUnitSelector(!showUnitSelector);
   };
 
   return (
@@ -195,7 +110,7 @@ export default function ProductItem({
 
             {/* Main Image - Contain, Center, Full View, No Crop */}
             <Image
-              src={product?.images[0]?.secureUrl || product?.images[0]?.image || '/assets/noImage.jpg'}
+              src={product?.images?.[0]?.secureUrl || product?.images?.[0]?.image || '/assets/noImage.jpg'}
               alt={`${product?.name || 'Product'} - Premium ${product?.category || 'product'} from Sheikh Shop`}
               fill
               className={cn(
@@ -226,11 +141,11 @@ export default function ProductItem({
               <div className="absolute top-3 right-3 z-20">
                 <DiscountBadge 
                   discount={{
-                    type: product.discounts[0]?.discountType || 'PERCENTAGE',
-                    value: product.discounts[0]?.value || 0,
-                    amount: pricing.discountAmount,
+                    type: product.discounts?.[0]?.discountType || 'PERCENTAGE',
+                    value: product.discounts?.[0]?.value || 0,
+                    amount: pricing.oldPrice ? pricing.oldPrice - pricing.price : 0,
                     percentage: pricing.discountPercentage,
-                    endDate: product.discounts[0]?.endDate || new Date(),
+                    endDate: product.discounts?.[0]?.endDate || new Date(),
                     isActive: true,
                   }}
                   showCountdown={false}
@@ -258,7 +173,7 @@ export default function ProductItem({
         </Link>
 
         {/* Product Content */}
-        <div className="relative z-10 p-4 flex flex-col flex-grow min-h-0">
+        <div className="relative z-10 p-4 flex flex-col flex-grow min-h-0 text-right" dir="rtl">
           <Link href={`/products/${product.slug || product.id}`} className="block mb-2">
             <h2 className="text-base font-semibold text-white group-hover:text-amber-200 transition-colors duration-300 cursor-pointer line-clamp-2 leading-tight">
               {product?.name}
@@ -283,7 +198,7 @@ export default function ProductItem({
           </p>
 
           {/* Star Rating */}
-          <div className="flex items-center gap-1 mb-2">
+          <div className="flex items-center gap-1 mb-2 justify-start">
             {[1, 2, 3, 4, 5].map((star) => (
               <Star
                 key={`product-item-star-${star}`}
@@ -300,10 +215,10 @@ export default function ProductItem({
 
           {/* Price Section */}
           <div className="mb-2 space-y-1">
-            {pricing.hasDiscount && (
-              <div className="flex items-center gap-2">
+            {pricing.hasDiscount && pricing.oldPrice && (
+              <div className="flex items-center gap-2 justify-start">
                 <p className="text-sm text-gray-400 line-through font-medium">
-                  {formatEUR(pricing.originalPrice)}
+                  {formatToToman(pricing.oldPrice)}
                 </p>
                 <span className="text-xs bg-red-500/20 text-red-300 px-2 py-0.5 rounded-full font-semibold">
                   -{Math.round(pricing.discountPercentage)}%
@@ -312,12 +227,12 @@ export default function ProductItem({
             )}
             
             <div className="flex items-center justify-between gap-2">
-              <div className="flex flex-col flex-1">
+              <div className="flex flex-col flex-1 items-start">
                 <p className="text-xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
-                  {formatEUR(pricing.finalPrice)}
+                  {formatToToman(pricing.price)}
                 </p>
                 <p className="text-xs text-amber-200/60">
-                  per {useProductUnits && selectedProductUnit ? selectedProductUnit.name : selectedUnit.symbol}
+                  {useProductUnits && selectedProductUnit ? selectedProductUnit.name : product.baseUnit?.name || 'عدد'}
                 </p>
               </div>
               
@@ -333,13 +248,13 @@ export default function ProductItem({
             </div>
             
             {useProductUnits && selectedProductUnit && (
-              <div className="text-xs text-amber-200/60">
+              <div className="text-xs text-amber-200/60 text-right">
                 {selectedProductUnit.stock === 0 ? (
-                  <span className="text-red-400">Out of stock</span>
+                  <span className="text-red-400">ناموجود</span>
                 ) : selectedProductUnit.stock <= 5 ? (
-                  <span className="text-yellow-400">Low stock ({selectedProductUnit.stock} left)</span>
+                  <span className="text-yellow-400">تنها ({selectedProductUnit.stock}) عدد باقی مانده</span>
                 ) : (
-                  <span>{selectedProductUnit.stock} units available</span>
+                  <span>{selectedProductUnit.stock} عدد موجود در انبار</span>
                 )}
               </div>
             )}
@@ -363,7 +278,7 @@ export default function ProductItem({
       {/* Fly to Cart Animation */}
       <FlyToCartAnimation
         isVisible={showFlyAnimation}
-        productImage={product?.images[0]?.secureUrl || '/assets/noImage.jpg'}
+        productImage={product?.images?.[0]?.secureUrl || '/assets/noImage.jpg'}
         productName={product?.name || 'محصول'}
         onAnimationComplete={handleAnimationComplete}
       />
