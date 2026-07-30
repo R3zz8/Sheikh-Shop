@@ -214,12 +214,14 @@ export default async function ProductPage({
     const categoryName =
       product.categoryType === 'SheikhHome' ? 'لوازم خانگی شیخ' :
       product.categoryType === 'SheikhDigital' ? 'شیخ دیجیتال' :
-      product.categoryType === 'SheikhFood' ? 'محصولات غذایی شیخ' : 'محصولات';
+      product.categoryType === 'SheikhFood' ? 'محصولات غذایی شیخ' :
+      product.categoryType === 'SheikhTech' ? 'شیخ نوا' : 'محصولات';
 
     const categoryUrl =
       product.categoryType === 'SheikhHome' ? '/sheikh-home' :
       product.categoryType === 'SheikhDigital' ? '/sheikh-digital' :
-      product.categoryType === 'SheikhFood' ? '/sheikh-food' : '/products';
+      product.categoryType === 'SheikhFood' ? '/sheikh-food' :
+      product.categoryType === 'SheikhTech' ? '/tech-products' : '/products';
 
     const rating = product.isBestSeller ? { ratingValue: 4.8, reviewCount: 127 } : undefined;
 

@@ -24,7 +24,7 @@ const categories: Category[] = [
         url: '/sheikh-digital'
     },
     {
-        name: 'انواع گجت شیخ',
+        name: 'شیخ نوا',
         image: '/sheikhgajet.webp',
         slug: 'tech-products',
         url: '/tech-products'

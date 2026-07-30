@@ -172,7 +172,7 @@ export default function PremiumMobileMenu({
         { name: 'محصولات غذایی شیخ', href: '/products', icon: Beef },
         { name: 'شیخ دیجیتال', href: '/sheikh-digital', icon: Sparkles },
         { name: 'لوازم خانگی شیخ', href: '/sheikh-home', icon: Sparkles },
-        { name: 'محصولات فناورانه شیخ', href: '/tech-products', icon: Cpu },
+        { name: 'شیخ نوا', href: '/tech-products', icon: Cpu },
       ]
     },
     { name: 'درباره ما',    href: '/about-us',  icon: Users },

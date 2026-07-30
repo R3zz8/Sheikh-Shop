@@ -101,7 +101,7 @@ export default function ClientHeader() {
         { name: 'محصولات غذایی شیخ', href: '/products' },
         { name: 'شیخ دیجیتال', href: '/sheikh-digital' },
         { name: 'لوازم خانگی شیخ', href: '/sheikh-home' },
-        { name: 'محصولات فناورانه شیخ', href: '/tech-products' },
+        { name: 'شیخ نوا', href: '/tech-products' },
       ],
     },
     {
