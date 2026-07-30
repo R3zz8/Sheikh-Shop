@@ -41,6 +41,16 @@ const DatesDecoration = dynamic(
   { ssr: false }
 );
 
+const SmartSpeakerDecoration = dynamic(
+  () => import('@/components/sheikhNava/SmartSpeakerDecoration'),
+  { ssr: false }
+);
+
+const GalaxyProjectorDecoration = dynamic(
+  () => import('@/components/sheikhNava/GalaxyProjectorDecoration'),
+  { ssr: false }
+);
+
 interface ProductListProps {
   products: ProductsWithImages[];
   units?: Unit[];
@@ -48,7 +58,7 @@ interface ProductListProps {
   title?: string;
   subtitle?: string;
   mobileLayout?: 'grid' | 'carousel' | 'auto';
-  variant?: 'default' | 'digital' | 'home' | 'food';
+  variant?: 'default' | 'digital' | 'home' | 'food' | 'nava';
 }
 
 export default function ProductList({
@@ -184,14 +194,45 @@ export default function ProductList({
       <div className="absolute inset-0 bg-[url('/public/assets/pattern.png')] opacity-5"></div>
       <div className="relative z-10">
         <div className="container mx-auto px-4 py-8">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2">{title}</h1>
-            <p className="text-gray-400">{subtitle}</p>
-          </div>
+          {variant === 'nava' ? (
+            <div className="relative text-center mb-12 mt-4 px-6 overflow-hidden rounded-[2.5rem] bg-gradient-to-b from-[#1b110b]/60 via-[#160d07]/70 to-[#120a05]/80 border border-amber-500/15 py-12 shadow-[0_20px_50px_rgba(0,0,0,0.8)] backdrop-blur-md">
+              {/* Premium Background Ambient Glow */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-amber-500/10 rounded-full blur-[100px] pointer-events-none" />
+              <div className="absolute top-0 right-10 w-[150px] h-[150px] bg-yellow-500/5 rounded-full blur-[80px] pointer-events-none" />
+
+              <div className="relative z-10 max-w-4xl mx-auto flex flex-col items-center">
+                {/* Branded crown / accent */}
+                <div className="mb-4 relative">
+                  <div className="absolute inset-0 blur-md bg-amber-500/30 rounded-full animate-pulse" />
+                  <div className="w-12 h-12 rounded-full border border-amber-500/30 flex items-center justify-center bg-stone-900/60 relative z-10">
+                    <span className="text-amber-400 font-bold text-lg">ن</span>
+                  </div>
+                </div>
+
+                {/* Main Premium Title */}
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold bg-gradient-to-r from-amber-200 via-yellow-100 to-amber-300 bg-clip-text text-transparent mb-6 font-vazirmatn drop-shadow-[0_2px_15px_rgba(212,175,55,0.15)] leading-tight">
+                  {title}
+                </h1>
+
+                {/* Description */}
+                <p className="text-gray-300 text-[16px] sm:text-[18px] md:text-[20px] max-w-3xl mx-auto font-vazirmatn leading-relaxed select-none">
+                  {subtitle}
+                </p>
+
+                {/* Sub-decorative divider line */}
+                <div className="w-24 h-[1px] bg-gradient-to-r from-transparent via-amber-500/35 to-transparent mt-8" />
+              </div>
+            </div>
+          ) : (
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-bold text-white mb-2">{title}</h1>
+              <p className="text-gray-400">{subtitle}</p>
+            </div>
+          )}
 
           {/* Search and Filter Bar */}
           <div className="flex flex-row items-center justify-between w-full gap-2 sm:gap-4 mb-8">
-            {/* Speaker, Washing Machine, or Dates (Rightmost under RTL) - Hidden on extra small screens */}
+            {/* Speaker, Washing Machine, Dates, or Smart Speaker (Rightmost under RTL) - Hidden on extra small screens */}
             {variant === 'digital' && (
               <div className="hidden sm:flex shrink-0 w-[80px] h-[80px] md:w-[100px] md:h-[100px] items-center justify-center">
                 <SpeakerDecoration />
@@ -207,15 +248,20 @@ export default function ProductList({
                 <DatesDecoration />
               </div>
             )}
+            {variant === 'nava' && (
+              <div className="hidden sm:flex shrink-0 w-[80px] h-[80px] md:w-[100px] md:h-[100px] items-center justify-center">
+                <SmartSpeakerDecoration />
+              </div>
+            )}
 
             {/* Central Search Bar Box inside premium glass card with subtle animated gold glow */}
             <div className={`flex-1 w-full ${
-              variant === 'digital' || variant === 'home' || variant === 'food'
+              variant === 'digital' || variant === 'home' || variant === 'food' || variant === 'nava'
                 ? 'p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#1c110a]/80 via-[#23150c]/85 to-[#1c110a]/80 border border-amber-500/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] relative overflow-hidden group transition-colors duration-300 hover:border-amber-500/40 isolate'
                 : 'mb-0'
             }`}>
               {/* Gold glow animation behind */}
-              {(variant === 'digital' || variant === 'home' || variant === 'food') && (
+              {(variant === 'digital' || variant === 'home' || variant === 'food' || variant === 'nava') && (
                 <>
                   {/* Fixed: Wrapped infinite translation in a static, non-transitioning absolute wrapper to prevent mobile GPU overflow containment leak */}
                   <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none isolate">
@@ -239,14 +285,14 @@ export default function ProductList({
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className={`w-full pr-10 pl-4 py-3 bg-white/10 backdrop-blur-sm border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-right transition-colors duration-300 ${
-                      variant === 'digital' || variant === 'home' || variant === 'food'
+                      variant === 'digital' || variant === 'home' || variant === 'food' || variant === 'nava'
                         ? 'border-amber-500/20 hover:border-amber-500/40'
                         : 'border-white/20'
                     }`}
                   />
                 </div>
                 <div className="flex gap-2 items-center flex-nowrap">
-                  {/* Headphones, Washing Machine, or Dates (Right on RTL) - Only visible on Mobile */}
+                  {/* Headphones, Washing Machine, Dates, or Smart Speaker (Right on RTL) - Only visible on Mobile */}
                   {variant === 'digital' && (
                     <div className="md:hidden shrink-0 flex items-center justify-center w-9 h-9 min-[375px]:w-10 min-[375px]:h-10 min-[412px]:w-11 min-[412px]:h-11">
                       <HeadphoneDecoration className="w-full h-full animate-[fade-in_0.5s_ease-out_forwards]" />
@@ -260,6 +306,11 @@ export default function ProductList({
                   {variant === 'food' && (
                     <div className="md:hidden shrink-0 flex items-center justify-center w-9 h-9 min-[375px]:w-10 min-[375px]:h-10 min-[412px]:w-11 min-[412px]:h-11">
                       <DatesDecoration className="w-full h-full animate-[fade-in_0.5s_ease-out_forwards]" />
+                    </div>
+                  )}
+                  {variant === 'nava' && (
+                    <div className="md:hidden shrink-0 flex items-center justify-center w-9 h-9 min-[375px]:w-10 min-[375px]:h-10 min-[412px]:w-11 min-[412px]:h-11">
+                      <SmartSpeakerDecoration className="w-full h-full animate-[fade-in_0.5s_ease-out_forwards]" />
                     </div>
                   )}
 
@@ -292,7 +343,7 @@ export default function ProductList({
                     فیلتر
                   </button>
 
-                  {/* Speaker or Refrigerator (Left on RTL) - Only visible on Mobile */}
+                  {/* Speaker, Refrigerator, Honey Jar, or Galaxy Projector (Left on RTL) - Only visible on Mobile */}
                   {variant === 'digital' && (
                     <div className="md:hidden shrink-0 flex items-center justify-center w-9 h-9 min-[375px]:w-10 min-[375px]:h-10 min-[412px]:w-11 min-[412px]:h-11">
                       <SpeakerDecoration className="w-full h-full animate-[fade-in_0.5s_ease-out_forwards]" />
@@ -308,11 +359,16 @@ export default function ProductList({
                       <HoneyJarDecoration className="w-full h-full animate-[fade-in_0.5s_ease-out_forwards]" />
                     </div>
                   )}
+                  {variant === 'nava' && (
+                    <div className="md:hidden shrink-0 flex items-center justify-center w-9 h-9 min-[375px]:w-10 min-[375px]:h-10 min-[412px]:w-11 min-[412px]:h-11">
+                      <GalaxyProjectorDecoration className="w-full h-full animate-[fade-in_0.5s_ease-out_forwards]" />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
 
-            {/* Headphone or Refrigerator (Leftmost under RTL) */}
+            {/* Headphone, Refrigerator, Honey Jar, or Galaxy Projector (Leftmost under RTL) */}
             {variant === 'digital' && (
               <div className="hidden sm:flex shrink-0 w-[80px] h-[80px] md:w-[100px] md:h-[100px] items-center justify-center">
                 <HeadphoneDecoration />
@@ -326,6 +382,11 @@ export default function ProductList({
             {variant === 'food' && (
               <div className="hidden sm:flex shrink-0 w-[80px] h-[80px] md:w-[100px] md:h-[100px] items-center justify-center">
                 <HoneyJarDecoration />
+              </div>
+            )}
+            {variant === 'nava' && (
+              <div className="hidden sm:flex shrink-0 w-[80px] h-[80px] md:w-[100px] md:h-[100px] items-center justify-center">
+                <GalaxyProjectorDecoration />
               </div>
             )}
           </div>

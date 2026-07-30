@@ -145,6 +145,7 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
       case 'SheikhDigital': return 'شیخ دیجیتال';
       case 'SheikhFood': return 'محصولات غذایی شیخ';
       case 'SheikhSmartLiving': return 'خانه هوشمند شیخ';
+      case 'SheikhTech': return 'شیخ نوا';
       default: return 'فروشگاه شیخ';
     }
   }, [product.categoryType]);
@@ -155,6 +156,7 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
       case 'SheikhDigital': return '/sheikh-digital';
       case 'SheikhFood': return '/sheikh-food';
       case 'SheikhSmartLiving': return '/sheikh-digital';
+      case 'SheikhTech': return '/tech-products';
       default: return '/products';
     }
   }, [product.categoryType]);

@@ -10,7 +10,7 @@ interface ProductListViewProps {
   units?: Unit[];
   title?: string;
   subtitle?: string;
-  variant?: 'default' | 'digital' | 'home' | 'food';
+  variant?: 'default' | 'digital' | 'home' | 'food' | 'nava';
 }
 
 function ProductListView({
