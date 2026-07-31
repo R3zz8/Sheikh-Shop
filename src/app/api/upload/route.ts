@@ -3,15 +3,12 @@ import { getCloudinary, pingCloudinary } from '@/lib/cloudinary-safe';
 import { checkAccess } from '@/lib/checkAccess';
 import { prisma } from '@/lib/prisma';
 import { rateLimit } from '@/lib/rateLimit';
-import { getServerSession as getNextAuthServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-const MAX_SIZE_BYTES = 2 * 1024 * 1024; // 2MB
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/webm', 'video/quicktime'];
+const MAX_SIZE_BYTES = 15 * 1024 * 1024; // 15MB for video, images are validated within the handler
 
 export async function POST(req: NextRequest) {
     // RBAC: Only SUPER_ADMIN, ADMIN, EDITOR
-    // Get user role from middleware headers (middleware handles auth)
     const allowed = await checkAccess(req, ['SUPERADMIN', 'ADMIN', 'EDITOR']);
     if (!allowed) {
         console.warn('[UPLOAD RBAC] Unauthorized upload attempt');
@@ -25,66 +22,57 @@ export async function POST(req: NextRequest) {
     try {
         console.log('[UPLOAD] Starting upload process...');
         
-        // Basic rate limit: 20 requests per 60s per IP
         const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
-        console.log('[UPLOAD] Checking rate limit for IP:', ip);
         const rl = await rateLimit(`upload:${ip}`, 20, 60);
         if (!rl.allowed) {
-            console.log('[UPLOAD] Rate limit exceeded');
             return NextResponse.json({ error: 'Too many requests', retryAfter: rl.retryAfter }, { status: 429 });
         }
-        console.log('[UPLOAD] Rate limit check passed');
 
-        console.log('[UPLOAD] Parsing form data...');
         const formData = await req.formData();
         const file = formData.get('file');
         const productId = formData.get('productId');
-        console.log('[UPLOAD] Form data parsed, file:', file ? 'present' : 'missing', 'productId:', productId);
 
         if (!file || !(file instanceof File)) {
-            console.log('[UPLOAD] No file provided');
             return NextResponse.json({ error: 'No file provided' }, { status: 400 });
         }
 
         if (!ALLOWED_TYPES.includes(file.type)) {
-            console.log('[UPLOAD] Invalid file type:', file.type);
-            return NextResponse.json({ error: 'Invalid file type. Only JPG, PNG, WEBP allowed.' }, { status: 400 });
+            return NextResponse.json({ error: 'Invalid file type. Only JPG, PNG, WEBP images or MP4, WebM, MOV videos are allowed.' }, { status: 400 });
         }
 
-        if (file.size > MAX_SIZE_BYTES) {
-            console.log('[UPLOAD] File too large:', file.size);
-            return NextResponse.json({ error: 'File too large. Max size is 2MB.' }, { status: 413 });
+        const isImage = file.type.startsWith('image/');
+        const isVideo = file.type.startsWith('video/');
+
+        // Image-specific size limit (2MB)
+        if (isImage && file.size > 2 * 1024 * 1024) {
+            return NextResponse.json({ error: 'Image too large. Max size is 2MB.' }, { status: 413 });
         }
 
-        console.log('[UPLOAD] File validation passed, converting to buffer...');
-        // Convert to buffer for upload_stream
+        // Video-specific size limit (15MB)
+        if (isVideo && file.size > MAX_SIZE_BYTES) {
+            return NextResponse.json({ error: 'Video too large. Max size is 15MB.' }, { status: 413 });
+        }
+
         const arrayBuffer = await file.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
-        console.log('[UPLOAD] Buffer created, size:', buffer.length);
 
-        // Diagnostics: verify Cloudinary credentials via ping before upload
-        const ping = await pingCloudinary();
-        console.log('[UPLOAD] Cloudinary ping:', {
-            ok: ping.ok,
-            error: ping.ok ? undefined : (ping.error && (ping.error as any).message),
-        });
-        console.log('[UPLOAD] Starting Cloudinary upload...');
         const cloudinary = getCloudinary();
-        
+        const resourceType = isImage ? 'image' : 'video';
+        const folder = isImage ? 'digitalshop/products/images' : 'digitalshop/products/videos';
+
         const uploadResult: any = await new Promise((resolve, reject) => {
             const stream = cloudinary.uploader.upload_stream(
                 {
-                    folder: 'digitalshop/products',
-                    resource_type: 'image',
+                    folder,
+                    resource_type: resourceType,
                     overwrite: false,
-                    transformation: [{ quality: 'auto', fetch_format: 'auto' }],
+                    transformation: isImage ? [{ quality: 'auto', fetch_format: 'auto' }] : undefined,
                 },
                 (error: any, result: any) => {
                     if (error) {
                         console.error('[UPLOAD] Cloudinary upload error:', error);
                         reject(error);
                     } else {
-                        console.log('[UPLOAD] Cloudinary upload successful:', result?.public_id);
                         resolve(result);
                     }
                 },
@@ -92,52 +80,45 @@ export async function POST(req: NextRequest) {
             stream.end(buffer);
         });
 
-        console.log('[UPLOAD] Saving to database...');
-        // Persist to DB with metadata if prisma is available
-        const created = await prisma.image.create({
-            data: {
-                image: uploadResult.secure_url as string,
-                secureUrl: uploadResult.secure_url as string,
-                publicId: uploadResult.public_id as string,
-                width: uploadResult.width as number | undefined,
-                height: uploadResult.height as number | undefined,
-                format: uploadResult.format as string | undefined,
-                bytes: uploadResult.bytes as number | undefined,
-                productId: typeof productId === 'string' && productId.length > 0 ? productId : null,
-            },
-        });
-        console.log('[UPLOAD] Database save successful, ID:', created.id);
+        const prodId = typeof productId === 'string' && productId.length > 0 ? productId : null;
 
-        return NextResponse.json(
-            {
-                success: true,
-                data: created,
-            },
-            { status: 200 }
-        );
+        if (isImage) {
+            const createdImage = await prisma.image.create({
+                data: {
+                    image: uploadResult.secure_url as string,
+                    secureUrl: uploadResult.secure_url as string,
+                    publicId: uploadResult.public_id as string,
+                    width: uploadResult.width as number | undefined,
+                    height: uploadResult.height as number | undefined,
+                    format: uploadResult.format as string | undefined,
+                    bytes: uploadResult.bytes as number | undefined,
+                    productId: prodId,
+                },
+            });
+            return NextResponse.json({ success: true, type: 'image', data: createdImage }, { status: 200 });
+        } else {
+            if (!prodId) {
+                return NextResponse.json({ error: 'Product ID is required for video uploads' }, { status: 400 });
+            }
+            const createdVideo = await prisma.video.create({
+                data: {
+                    url: uploadResult.secure_url as string,
+                    thumbnailUrl: uploadResult.secure_url?.replace(/\.[^/.]+$/, '.jpg') || null, // Generates static poster frame from video
+                    productId: prodId,
+                },
+            });
+            return NextResponse.json({ success: true, type: 'video', data: createdVideo }, { status: 200 });
+        }
     } catch (err) {
         console.error('[UPLOAD] Upload error:', err);
-        console.error('[UPLOAD] Error details:', {
-            message: err instanceof Error ? err.message : 'Unknown error',
-            stack: err instanceof Error ? err.stack : undefined,
-            name: err instanceof Error ? err.name : undefined
-        });
-        return NextResponse.json({ 
-            error: 'Upload failed', 
-            details: process.env.NODE_ENV !== 'production' ? (err instanceof Error ? err.message : 'Unknown error') : undefined
-        }, { status: 500 });
+        return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
     }
 }
 
-// Optional: list images by productId to support UI without local /api/image
+// GET: list images AND videos by productId
 export async function GET(req: NextRequest) {
-    // RBAC: Only SUPER_ADMIN, ADMIN, EDITOR can list product images
-    // Get user role from middleware headers (middleware handles auth)
     const allowed = await checkAccess(req, ['SUPERADMIN', 'ADMIN', 'EDITOR']);
     if (!allowed) {
-        if (process.env.NODE_ENV !== 'production') {
-            console.warn('[UPLOAD LIST RBAC] Unauthorized list attempt');
-        }
         return NextResponse.json({ error: 'You are not authorized to perform this action.' }, { status: 403 });
     }
 
@@ -151,11 +132,12 @@ export async function GET(req: NextRequest) {
             where: { productId },
             orderBy: { createdAt: 'desc' },
         });
-        return NextResponse.json({ images }, { status: 200 });
+        const videos = await prisma.video.findMany({
+            where: { productId },
+            orderBy: { createdAt: 'desc' },
+        });
+        return NextResponse.json({ images, videos }, { status: 200 });
     } catch (err) {
-        if (process.env.NODE_ENV !== 'production') {
-            console.error('Cloudinary list error:', err);
-        }
-        return NextResponse.json({ error: 'Failed to fetch images' }, { status: 500 });
+        return NextResponse.json({ error: 'Failed to fetch media assets' }, { status: 500 });
     }
 }
