@@ -59,6 +59,8 @@ model Product {
   baseUnit       Unit                @relation(fields: [baseUnitId], references: [id])
   Category       Category?           @relation(fields: [categoryId], references: [id])
   units          ProductUnit[]
+  reviews        Review[]
+  videos         Video[]
 
   @@index([category])
   @@index([basePrice])
@@ -143,10 +145,14 @@ model Image {
   publicId  String?  @db.VarChar(255)
   secureUrl String?  @db.VarChar(500)
   width     Int?
+  sortOrder  Int      @default(0)
+  isFeatured Boolean  @default(false)
+  isVisible  Boolean  @default(true)
   product   Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@index([productId])
   @@index([publicId])
+  @@index([sortOrder])
 }
 
 model CartItem {
@@ -201,6 +207,7 @@ model User {
   recoveryCodes                 RecoveryCode[]
   sessions                      Session[]
   likes                         UserLike[]
+  reviews                       Review[]
 
   @@index([email])
   @@index([role])
@@ -651,4 +658,56 @@ model LuxuryUnboxingSettings {
   description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model Review {
+  id             String       @id @default(cuid())
+  productId      String
+  userId         String?
+  userName       String
+  rating         Int          @default(5)
+  title          String?      @db.VarChar(255)
+  comment        String       @db.Text
+  pros           String[]     @default([])
+  cons           String[]     @default([])
+  images         String[]     @default([])
+  videos         String[]     @default([])
+  status         ReviewStatus @default(PENDING)
+  isVerified     Boolean      @default(false)
+  isFeatured     Boolean      @default(false)
+  helpfulCount   Int          @default(0)
+  helpfulUserIds String[]     @default([])
+  reply          String?      @db.Text
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  product        Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user           User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([productId])
+  @@index([userId])
+  @@index([status])
+  @@index([isFeatured])
+  @@index([createdAt])
+}
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Video {
+  id           String   @id @default(cuid())
+  url          String   @db.VarChar(500)
+  thumbnailUrl String?  @db.VarChar(500)
+  productId    String
+  sortOrder    Int      @default(0)
+  isFeatured   Boolean  @default(false)
+  isVisible    Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@index([sortOrder])
 }

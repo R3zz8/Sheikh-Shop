@@ -63,12 +63,26 @@ export async function generateMetadata({
       canonical: canonicalPath,
   });
   
+  const productVideos = product.videos || [];
+  const ogVideo = productVideos.length > 0 ? {
+      url: productVideos[0].url,
+      width: 1280,
+      height: 720,
+      type: 'video/mp4',
+  } : undefined;
+
   // Enhance with product-specific metadata
   return {
     ...baseSEO,
     openGraph: {
         ...baseSEO.openGraph,
         type: 'website',
+        ...(ogVideo ? { videos: [ogVideo] } : {}),
+    },
+    twitter: {
+        ...baseSEO.twitter,
+        card: (ogVideo ? 'player' : 'summary_large_image') as any,
+        ...(ogVideo ? { players: [{ playerUrl: ogVideo.url, width: 1280, height: 720 }] } : {}),
     },
     alternates: {
         ...baseSEO.alternates,
@@ -100,6 +114,13 @@ function serializeProduct(product: any) {
       ? product.images.map((img: any) => ({
           ...img,
           createdAt: img.createdAt?.toISOString() || null,
+        }))
+      : [],
+    videos: Array.isArray(product.videos)
+      ? product.videos.map((vid: any) => ({
+          ...vid,
+          createdAt: vid.createdAt?.toISOString() || null,
+          updatedAt: vid.updatedAt?.toISOString() || null,
         }))
       : [],
     baseUnit: product.baseUnit ? { ...product.baseUnit } : null,
@@ -144,6 +165,7 @@ async function getProduct(identifier: string) {
       where: { id: product.id },
       include: { 
         images: true,
+        videos: true,
         baseUnit: true,
         units: true,
         discounts: true,
