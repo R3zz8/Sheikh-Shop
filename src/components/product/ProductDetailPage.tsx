@@ -76,7 +76,7 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
   }, [availableProductUnits, selectedProductUnit]);
 
   // Pricing calculation
-  const pricing = resolveProductPrice(product, selectedProductUnit);
+  const pricing = resolveProductPrice(product, selectedProductUnit, selectedQuantity);
   const currentStock = selectedProductUnit ? selectedProductUnit.stock : product.quantity;
 
   // Rating & Review hashing to prevent hydration mismatches
@@ -486,7 +486,7 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
                 <div className="flex justify-between items-center border-t border-stone-800/80 pt-3.5">
                   <span className="font-bold text-stone-200">مبلغ کل فاکتور:</span>
                   <span className="text-amber-400 font-black text-lg sm:text-xl tracking-tight">
-                    {formatToToman(pricing.price * selectedQuantity)}
+                    {formatToToman(pricing.price)}
                   </span>
                 </div>
               </div>

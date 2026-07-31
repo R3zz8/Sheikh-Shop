@@ -60,7 +60,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
     }, [availableProductUnits, selectedProductUnit]);
 
     const useProductUnits = availableProductUnits.length > 0;
-    const pricing = resolveProductPrice(product, selectedProductUnit);
+    const pricing = resolveProductPrice(product, selectedProductUnit, selectedQuantity);
 
     const getStockStatus = (quantity: number) => {
         if (quantity === 0) return { text: 'Out of Stock', color: 'text-red-400' };
