@@ -36,7 +36,8 @@ export interface ResolvedPrice {
  */
 export function resolveProductPrice(
   product: ProductsWithImages,
-  selectedUnit: ProductUnit | null = null
+  selectedUnit: ProductUnit | null = null,
+  quantity: number = 1
 ): ResolvedPrice {
   let basePrice: number;
   let baseOldPrice: number | null = null;
@@ -69,8 +70,8 @@ export function resolveProductPrice(
 
   // Ensure oldPrice is only considered if it's higher than the current price.
   const isValidOldPrice = baseOldPrice !== null && baseOldPrice > basePrice;
-  const price = basePrice;
-  const oldPrice = isValidOldPrice ? baseOldPrice : null;
+  const price = basePrice * quantity;
+  const oldPrice = baseOldPrice !== null && baseOldPrice > basePrice ? baseOldPrice * quantity : null;
   const hasDiscount = isValidOldPrice;
 
   let discountPercentage = 0;
