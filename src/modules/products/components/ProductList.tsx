@@ -31,13 +31,13 @@ const WashingMachineDecoration = dynamic(
   { ssr: false }
 );
 
-const HoneyJarDecoration = dynamic(
-  () => import('@/components/sheikhFood/HoneyJarDecoration'),
+const DateBowlDecoration = dynamic(
+  () => import('@/components/sheikhFood/DateBowlDecoration'),
   { ssr: false }
 );
 
-const DatesDecoration = dynamic(
-  () => import('@/components/sheikhFood/DatesDecoration'),
+const LuxuryFoodBasketDecoration = dynamic(
+  () => import('@/components/sheikhFood/LuxuryFoodBasketDecoration'),
   { ssr: false }
 );
 
@@ -221,7 +221,7 @@ export default function ProductList({
             )}
             {variant === 'food' && (
               <div className="hidden sm:flex shrink-0 w-[80px] h-[80px] md:w-[100px] md:h-[100px] items-center justify-center">
-                <DatesDecoration />
+                <LuxuryFoodBasketDecoration />
               </div>
             )}
             {variant === 'nava' && (
@@ -281,7 +281,7 @@ export default function ProductList({
                   )}
                   {variant === 'food' && (
                     <div className="md:hidden shrink-0 flex items-center justify-center w-9 h-9 min-[375px]:w-10 min-[375px]:h-10 min-[412px]:w-11 min-[412px]:h-11">
-                      <DatesDecoration className="w-full h-full animate-[fade-in_0.5s_ease-out_forwards]" />
+                      <LuxuryFoodBasketDecoration className="w-full h-full animate-[fade-in_0.5s_ease-out_forwards]" />
                     </div>
                   )}
                   {variant === 'nava' && (
@@ -332,7 +332,7 @@ export default function ProductList({
                   )}
                   {variant === 'food' && (
                     <div className="md:hidden shrink-0 flex items-center justify-center w-9 h-9 min-[375px]:w-10 min-[375px]:h-10 min-[412px]:w-11 min-[412px]:h-11">
-                      <HoneyJarDecoration className="w-full h-full animate-[fade-in_0.5s_ease-out_forwards]" />
+                      <DateBowlDecoration className="w-full h-full animate-[fade-in_0.5s_ease-out_forwards]" />
                     </div>
                   )}
                   {variant === 'nava' && (
@@ -357,7 +357,7 @@ export default function ProductList({
             )}
             {variant === 'food' && (
               <div className="hidden sm:flex shrink-0 w-[80px] h-[80px] md:w-[100px] md:h-[100px] items-center justify-center">
-                <HoneyJarDecoration />
+                <DateBowlDecoration />
               </div>
             )}
             {variant === 'nava' && (
