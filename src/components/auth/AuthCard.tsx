@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { motion } from "framer-motion";
 import { Crown } from "lucide-react";
 
@@ -11,7 +12,7 @@ interface AuthCardProps {
     showBrand?: boolean;
 }
 
-export default function AuthCard({ children, title, subtitle, footer, showBrand = true }: AuthCardProps) {
+const AuthCard = React.memo(({ children, title, subtitle, footer, showBrand = true }: AuthCardProps) => {
     return (
         <motion.div
             initial={{ opacity: 0, y: 30, scale: 0.98 }}
@@ -100,4 +101,8 @@ export default function AuthCard({ children, title, subtitle, footer, showBrand 
             </div>
         </motion.div>
     );
-}
+});
+
+AuthCard.displayName = "AuthCard";
+
+export default AuthCard;

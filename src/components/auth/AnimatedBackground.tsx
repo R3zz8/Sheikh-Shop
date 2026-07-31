@@ -1,12 +1,13 @@
 "use client";
 
+import React from "react";
 import { motion } from "framer-motion";
 
 interface AnimatedBackgroundProps {
     children: React.ReactNode;
 }
 
-export default function AnimatedBackground({ children }: AnimatedBackgroundProps) {
+const AnimatedBackground = React.memo(({ children }: AnimatedBackgroundProps) => {
     // Elegant, slow-moving particle details
     const particles = [
         { size: 4, x: "10%", y: "20%", duration: 15, delay: 0 },
@@ -105,4 +106,8 @@ export default function AnimatedBackground({ children }: AnimatedBackgroundProps
             </div>
         </div>
     );
-}
+});
+
+AnimatedBackground.displayName = "AnimatedBackground";
+
+export default AnimatedBackground;
