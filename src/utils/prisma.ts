@@ -25,6 +25,28 @@ const mockUnits = [
 
 const mockProducts = [
   {
+    id: 'p_simple_stock_50',
+    name: 'محصول تستی با موجودی ۵۰',
+    category: 'OTHERS',
+    categoryId: '4',
+    description: 'یک محصول تستی بدون واحدهای متغیر (ProductUnit) که دارای ۵۰ عدد موجودی در انبار است.',
+    basePrice: 100000,
+    baseUnitId: 'u3',
+    quantity: 50,
+    status: 'ACTIVE',
+    isNew: true,
+    isBestSeller: false,
+    isAmazing: false,
+    categoryType: 'SheikhFood',
+    baseUnit: mockUnits[2],
+    categoryRelation: mockCategories[3],
+    images: [{ id: 'img_simple', image: '/other.webp', secureUrl: '/other.webp', createdAt: new Date() }],
+    discounts: [],
+    units: [],
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
     id: 'p1',
     name: 'Premium Iranian Honey',
     category: 'HONEY',
@@ -661,7 +683,19 @@ const makeMockModelWithWrites = (name: string, data: any[]) => {
       }
       if (prop === 'create') {
         return async (args: any) => {
-          const newItem = { id: `mock-${Date.now()}-${Math.random()}`, ...args.data, createdAt: new Date(), updatedAt: new Date() };
+          let newItem = { id: Date.now() + Math.floor(Math.random() * 1000), ...args.data, createdAt: new Date(), updatedAt: new Date() };
+          if (name === 'cartItem') {
+            const product = mockProducts.find(p => p.id === newItem.productId);
+            let unit = mockUnits.find(u => u.id === newItem.unitId);
+            if (product && !unit) {
+              unit = product.units?.find((u: any) => u.id === newItem.unitId) || product.baseUnit;
+            }
+            newItem = {
+              ...newItem,
+              product,
+              unit,
+            };
+          }
           localData.push(newItem);
           return normalizeMockProduct(newItem);
         };
@@ -672,7 +706,20 @@ const makeMockModelWithWrites = (name: string, data: any[]) => {
           if (id) {
             const index = localData.findIndex(item => item.id === id);
             if (index !== -1) {
-              localData[index] = { ...localData[index], ...args.data, updatedAt: new Date() };
+              let updatedItem = { ...localData[index], ...args.data, updatedAt: new Date() };
+              if (name === 'cartItem') {
+                const product = mockProducts.find(p => p.id === updatedItem.productId);
+                let unit = mockUnits.find(u => u.id === updatedItem.unitId);
+                if (product && !unit) {
+                  unit = product.units?.find((u: any) => u.id === updatedItem.unitId) || product.baseUnit;
+                }
+                updatedItem = {
+                  ...updatedItem,
+                  product,
+                  unit,
+                };
+              }
+              localData[index] = updatedItem;
               return normalizeMockProduct(localData[index]);
             }
           }
@@ -729,21 +776,21 @@ const mockCartItems = [
   {
     id: 1,
     userId: 'mock-user-id',
-    productId: 'p1',
-    quantity: 2,
-    unitId: 'pu1',
-    unitPrice: 1250000,
+    productId: 'p_simple_stock_50',
+    quantity: 1,
+    unitId: 'u3',
+    unitPrice: 100000,
     product: mockProducts[0],
-    unit: mockUnits[1],
+    unit: mockUnits[2],
   },
   {
     id: 2,
     userId: 'mock-user-id',
-    productId: 'p3',
-    quantity: 1,
-    unitId: 'pu3',
-    unitPrice: 890000,
-    product: mockProducts[2],
+    productId: 'p1',
+    quantity: 2,
+    unitId: 'pu1',
+    unitPrice: 1250000,
+    product: mockProducts[1],
     unit: mockUnits[1],
   }
 ];

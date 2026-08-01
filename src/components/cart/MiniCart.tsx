@@ -16,7 +16,7 @@ interface MiniCartProps {
 }
 
 export default function MiniCart({ isOpen, onClose }: MiniCartProps) {
-  const { cart, cartTotals, updateCartItemMutation, removeCartItemMutation } = useCart();
+  const { cart, cartTotals, incrementQuantity, decrementQuantity, removeCartItemById } = useCart();
   const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
@@ -35,14 +35,6 @@ export default function MiniCart({ isOpen, onClose }: MiniCartProps) {
   const handleClose = () => {
     setIsAnimating(false);
     setTimeout(onClose, 200);
-  };
-
-  const handleQuantityChange = (productId: string, newQuantity: number) => {
-    if (newQuantity <= 0) {
-      removeCartItemMutation.mutate({ cartItemId: productId as unknown as number });
-    } else {
-      updateCartItemMutation.mutate({ cartItemId: productId as unknown as number, quantity: newQuantity });
-    }
   };
 
   const getCrossSellProducts = () => {
@@ -125,7 +117,7 @@ export default function MiniCart({ isOpen, onClose }: MiniCartProps) {
             <>
               {/* Cart Items */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {cart?.items?.map((item: any) => (
+                {cart?.map((item: any) => (
                   <div key={item.id} className="flex items-center gap-3 p-3 border rounded-lg">
                     <div className="relative w-16 h-16 flex-shrink-0">
                       <Image
@@ -151,7 +143,7 @@ export default function MiniCart({ isOpen, onClose }: MiniCartProps) {
                             variant="outline"
                             size="sm"
                             className="h-6 w-6 p-0"
-                            onClick={() => handleQuantityChange(item.productId, item.quantity - 1)}
+                            onClick={() => decrementQuantity(Number(item.id))}
                             aria-label="کاهش تعداد"
                           >
                             <Minus className="h-3 w-3" />
@@ -163,7 +155,7 @@ export default function MiniCart({ isOpen, onClose }: MiniCartProps) {
                             variant="outline"
                             size="sm"
                             className="h-6 w-6 p-0"
-                            onClick={() => handleQuantityChange(item.productId, item.quantity + 1)}
+                            onClick={() => incrementQuantity(Number(item.id))}
                             aria-label="افزایش تعداد"
                           >
                             <Plus className="h-3 w-3" />
@@ -174,7 +166,7 @@ export default function MiniCart({ isOpen, onClose }: MiniCartProps) {
                           variant="ghost"
                           size="sm"
                           className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
-                          onClick={() => removeCartItemMutation.mutate({ cartItemId: item.productId as unknown as number })}
+                          onClick={() => removeCartItemById(Number(item.id))}
                           aria-label="حذف"
                         >
                           <Trash2 className="h-3 w-3" />
