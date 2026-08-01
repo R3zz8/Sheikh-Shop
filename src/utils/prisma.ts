@@ -688,12 +688,12 @@ const makeMockModelWithWrites = (name: string, data: any[]) => {
             const product = mockProducts.find(p => p.id === newItem.productId);
             let unit = mockUnits.find(u => u.id === newItem.unitId);
             if (product && !unit) {
-              unit = product.units?.find((u: any) => u.id === newItem.unitId) || product.baseUnit;
+              unit = (product.units?.find((u: any) => u.id === newItem.unitId) || product.baseUnit) as any;
             }
             newItem = {
               ...newItem,
               product,
-              unit,
+              unit: unit as any,
             };
           }
           localData.push(newItem);
@@ -711,12 +711,12 @@ const makeMockModelWithWrites = (name: string, data: any[]) => {
                 const product = mockProducts.find(p => p.id === updatedItem.productId);
                 let unit = mockUnits.find(u => u.id === updatedItem.unitId);
                 if (product && !unit) {
-                  unit = product.units?.find((u: any) => u.id === updatedItem.unitId) || product.baseUnit;
+                  unit = (product.units?.find((u: any) => u.id === updatedItem.unitId) || product.baseUnit) as any;
                 }
                 updatedItem = {
                   ...updatedItem,
                   product,
-                  unit,
+                  unit: unit as any,
                 };
               }
               localData[index] = updatedItem;

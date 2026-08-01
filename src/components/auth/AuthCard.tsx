@@ -2,7 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { Crown } from "lucide-react";
+import BrandLogo from "../ui/BrandLogo";
 
 interface AuthCardProps {
     children: React.ReactNode;
@@ -45,12 +45,10 @@ const AuthCard = React.memo(({ children, title, subtitle, footer, showBrand = tr
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.6, delay: 0.15 }}
-                            className="flex flex-col items-center justify-center gap-1.5 mb-6"
+                            className="flex flex-col items-center justify-center gap-3 mb-6"
                         >
-                            <div className="relative p-2.5 rounded-full bg-gradient-to-b from-amber-500/10 to-transparent border border-amber-500/20 shadow-inner">
-                                <Crown className="size-6 text-amber-500 animate-pulse" aria-hidden />
-                            </div>
-                            <span className="text-xl sm:text-2xl font-bold tracking-wide bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 bg-clip-text text-transparent font-vazirmatn">
+                            <BrandLogo size={90} />
+                            <span className="text-xl sm:text-2xl font-black tracking-wide bg-gradient-to-r from-amber-300 via-amber-400 to-amber-500 bg-clip-text text-transparent font-vazirmatn">
                                 فروشگاه شیخ
                             </span>
                         </motion.div>
