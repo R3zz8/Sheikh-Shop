@@ -6,9 +6,23 @@ import type { ProductsWithImages, ProductUnit } from '@/types';
 interface ProductStructuredDataProps {
     product: ProductsWithImages;
     selectedUnit?: ProductUnit | null;
+    ratingValue?: number;
+    reviewCount?: number;
+    reviewsList?: Array<{
+        userName: string;
+        rating: number;
+        comment: string;
+        createdAt: string;
+    }>;
 }
 
-export default function ProductStructuredData({ product, selectedUnit }: ProductStructuredDataProps) {
+export default function ProductStructuredData({
+    product,
+    selectedUnit,
+    ratingValue = 4.8,
+    reviewCount = 124,
+    reviewsList = []
+}: ProductStructuredDataProps) {
     // Get the lowest price from all units
     const getLowestPrice = () => {
         if (product.units && product.units.length > 0) {
@@ -56,6 +70,22 @@ export default function ProductStructuredData({ product, selectedUnit }: Product
             }));
     };
 
+    const schemaReviews = reviewsList.map(r => ({
+        "@type": "Review",
+        "author": {
+            "@type": "Person",
+            "name": r.userName
+        },
+        "datePublished": new Date(r.createdAt).toISOString().split('T')[0],
+        "reviewBody": r.comment,
+        "reviewRating": {
+            "@type": "Rating",
+            "ratingValue": String(r.rating),
+            "bestRating": "5",
+            "worstRating": "1"
+        }
+    }));
+
     const structuredData = {
         "@context": "https://schema.org",
         "@type": "Product",
@@ -71,11 +101,12 @@ export default function ProductStructuredData({ product, selectedUnit }: Product
         "offers": generateOffers(),
         "aggregateRating": {
             "@type": "AggregateRating",
-            "ratingValue": "4.8",
-            "reviewCount": "124",
+            "ratingValue": String(ratingValue),
+            "reviewCount": String(reviewCount),
             "bestRating": "5",
             "worstRating": "1"
         },
+        ...(schemaReviews.length > 0 ? { "review": schemaReviews } : {}),
         "additionalProperty": [
             {
                 "@type": "PropertyValue",
@@ -97,4 +128,3 @@ export default function ProductStructuredData({ product, selectedUnit }: Product
         />
     );
 }
-

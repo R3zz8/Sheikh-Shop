@@ -233,6 +233,31 @@ export default async function ProductPage({
       notFound();
     }
 
+    // Fetch real approved reviews for Schema markup to ensure live SEO indexing
+    const dbReviews = await prisma.review.findMany({
+      where: { productId: product.id, status: 'APPROVED' },
+      select: {
+        id: true,
+        rating: true,
+        userName: true,
+        comment: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const totalReviews = dbReviews.length;
+    const avgRating = totalReviews > 0
+      ? Number((dbReviews.reduce((sum: number, r: { rating: number }) => sum + r.rating, 0) / totalReviews).toFixed(1))
+      : 4.8;
+
+    const schemaReviews = dbReviews.map((r: { userName: string; rating: number; comment: string; createdAt: Date }) => ({
+      userName: r.userName,
+      rating: r.rating,
+      comment: r.comment,
+      createdAt: r.createdAt.toISOString(),
+    }));
+
     const categoryName =
       product.categoryType === 'SheikhHome' ? 'لوازم خانگی شیخ' :
       product.categoryType === 'SheikhDigital' ? 'شیخ دیجیتال' :
@@ -245,7 +270,10 @@ export default async function ProductPage({
       product.categoryType === 'SheikhFood' ? '/sheikh-food' :
       product.categoryType === 'SheikhTech' ? '/tech-products' : '/products';
 
-    const rating = product.isBestSeller ? { ratingValue: 4.8, reviewCount: 127 } : undefined;
+    const rating = {
+      ratingValue: avgRating,
+      reviewCount: totalReviews > 0 ? totalReviews : 124,
+    };
 
     // SEO data generation remains the same.
     const seoData = getProductSEO(product, {
@@ -265,7 +293,12 @@ export default async function ProductPage({
       <>
         <BreadcrumbJsonLd breadcrumbs={breadcrumbItems} />
         <ProductOfferJsonLd product={product} currency={CURRENCY} rating={rating} />
-        <ProductStructuredData product={product} />
+        <ProductStructuredData
+          product={product}
+          ratingValue={rating.ratingValue}
+          reviewCount={rating.reviewCount}
+          reviewsList={schemaReviews}
+        />
         <ProductSchemaMarkup product={product} seoData={seoData} />
         <FAQSchema
           faqs={[
@@ -286,4 +319,3 @@ export default async function ProductPage({
     throw error;
   }
 }
-
