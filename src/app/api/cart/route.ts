@@ -164,20 +164,30 @@ export async function POST(request: NextRequest) {
         // If unitId is provided, validate it and get its price
         if (unitId) {
             const productUnit = product.units.find((unit: any) => unit.id === unitId);
-            if (!productUnit || !productUnit.isActive) {
-                return NextResponse.json(
-                    { error: 'Invalid or inactive product unit' },
-                    { status: 400 }
-                );
-            }
-            unitPrice = Number(productUnit.price);
-            
-            // Check ProductUnit stock
-            if (!hasSufficientStock(productUnit.stock, quantity)) {
-                return NextResponse.json(
-                    { error: 'Insufficient stock for selected unit' },
-                    { status: 400 }
-                );
+            if (productUnit) {
+                if (!productUnit.isActive) {
+                    return NextResponse.json(
+                        { error: 'Invalid or inactive product unit' },
+                        { status: 400 }
+                    );
+                }
+                unitPrice = Number(productUnit.price);
+
+                // Check ProductUnit stock
+                if (!hasSufficientStock(productUnit.stock, quantity)) {
+                    return NextResponse.json(
+                        { error: 'Insufficient stock' },
+                        { status: 400 }
+                    );
+                }
+            } else {
+                // Fallback: This is a standard unit, check product base stock
+                if (product.quantity < quantity) {
+                    return NextResponse.json(
+                        { error: 'Insufficient stock' },
+                        { status: 400 }
+                    );
+                }
             }
         } else {
             // Use legacy stock check for backward compatibility
@@ -319,6 +329,9 @@ export async function PUT(request: NextRequest) {
             const productUnit = cartItem.product.units.find((unit: any) => unit.id === cartItem.unitId);
             if (productUnit) {
                 hasStock = hasSufficientStock(productUnit.stock, quantity);
+            } else {
+                // Fallback to legacy stock if the unit is a standard unit without custom ProductUnit row
+                hasStock = cartItem.product.quantity >= quantity;
             }
         } else {
             // Legacy stock check
