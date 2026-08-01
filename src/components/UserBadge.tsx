@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { motion } from 'framer-motion';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -58,7 +59,7 @@ export default function UserBadge({
     return user.email.split('@')[0]; // Use email prefix as fallback
   };
 
-  // Get initials for avatar fallback
+  // Get initials for avatar fallback (retained for backward compatibility or aria/title if needed)
   const getInitials = () => {
     if (user.firstName && user.lastName) {
       return `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
@@ -105,7 +106,6 @@ export default function UserBadge({
   const roleInfo = getRoleInfo();
   const GenderIcon = getGenderIcon();
   const displayName = getDisplayName();
-  const initials = getInitials();
 
   // Load gamification summary lazily when dropdown opens
   useEffect(() => {
@@ -139,24 +139,24 @@ export default function UserBadge({
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               className={cn(
-                'h-8 w-8 rounded-full p-0',
-                'bg-white/8 backdrop-blur-sm border border-white/20',
-                'hover:bg-white/12 hover:border-white/30',
+                'h-8 w-8 rounded-full p-0 flex items-center justify-center outline-none',
+                'bg-stone-950/50 backdrop-blur-md border border-amber-500/20 shadow-[0_4px_10px_-2px_rgba(0,0,0,0.5)]',
+                'hover:bg-stone-900/60 hover:border-amber-400/40 hover:shadow-[0_0_10px_rgba(245,158,11,0.25)]',
                 'transition-all duration-300',
                 className
               )}
             >
               <Avatar className="h-8 w-8">
                 <AvatarImage src={user.profilePicture || undefined} alt={displayName} />
-                <AvatarFallback className="bg-gradient-to-br from-amber-400 to-orange-400 text-white text-xs font-semibold">
-                  {initials}
+                <AvatarFallback className="bg-stone-950/90 border border-amber-500/30 text-amber-400 flex items-center justify-center w-full h-full rounded-full">
+                  <User2 className="w-4 h-4 text-amber-400" />
                 </AvatarFallback>
               </Avatar>
-            </Button>
+            </motion.button>
           </TooltipTrigger>
           <TooltipContent side="bottom" className="bg-amber-950/95 backdrop-blur-xl border border-amber-200/20">
             <div className="flex items-center gap-2">
@@ -172,14 +172,14 @@ export default function UserBadge({
   if (variant === 'mobile') {
     return (
       <div className={cn(
-        'flex items-center gap-3 p-4 bg-white/8 backdrop-blur-sm rounded-xl border border-white/20',
-        'transition-all duration-300 hover:bg-white/12',
+        'flex items-center gap-3 p-4 bg-stone-950/50 backdrop-blur-md rounded-xl border border-amber-500/20 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.5)]',
+        'transition-all duration-300 hover:bg-stone-900/60 hover:border-amber-400/40 hover:shadow-[0_0_15px_rgba(245,158,11,0.25)]',
         className
       )}>
         <Avatar className="h-10 w-10">
           <AvatarImage src={user.profilePicture || undefined} alt={displayName} />
-          <AvatarFallback className="bg-gradient-to-br from-amber-400 to-orange-400 text-white font-semibold">
-            {initials}
+          <AvatarFallback className="bg-stone-950/90 border border-amber-500/30 text-amber-400 flex items-center justify-center w-full h-full rounded-full">
+            <User2 className="w-5 h-5 text-amber-400" />
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
@@ -196,12 +196,13 @@ export default function UserBadge({
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
+        <motion.button
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.98 }}
           className={cn(
-            'flex items-center gap-3 px-3 py-2 rounded-xl',
-            'bg-white/8 backdrop-blur-sm border border-white/20',
-            'hover:bg-white/12 hover:border-white/30',
+            'flex items-center gap-3 px-3 py-2 rounded-xl text-left outline-none',
+            'bg-stone-950/50 backdrop-blur-md border border-amber-500/20 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.5)]',
+            'hover:bg-stone-900/60 hover:border-amber-400/40 hover:shadow-[0_0_15px_rgba(245,158,11,0.25)]',
             'transition-all duration-300',
             'focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2',
             className
@@ -209,8 +210,8 @@ export default function UserBadge({
         >
           <Avatar className="h-8 w-8">
             <AvatarImage src={user.profilePicture || undefined} alt={displayName} />
-            <AvatarFallback className="bg-gradient-to-br from-amber-400 to-orange-400 text-white text-sm font-semibold">
-              {initials}
+            <AvatarFallback className="bg-stone-950/90 border border-amber-500/30 text-amber-400 flex items-center justify-center w-full h-full rounded-full">
+              <User2 className="w-4 h-4 text-amber-400" />
             </AvatarFallback>
           </Avatar>
 
@@ -229,7 +230,7 @@ export default function UserBadge({
             roleInfo.bg,
             roleInfo.color.replace('text-', 'border-')
           )} />
-        </Button>
+        </motion.button>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
@@ -243,8 +244,8 @@ export default function UserBadge({
           <div className="flex items-center gap-3">
             <Avatar className="h-12 w-12">
               <AvatarImage src={user.profilePicture || undefined} alt={displayName} />
-              <AvatarFallback className="bg-gradient-to-br from-amber-400 to-orange-400 text-white font-semibold">
-                {initials}
+              <AvatarFallback className="bg-stone-950/90 border border-amber-500/30 text-amber-400 flex items-center justify-center w-full h-full rounded-full">
+                <User2 className="w-6 h-6 text-amber-400" />
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
