@@ -19,6 +19,7 @@ import LayoutDebugger from '@/components/LayoutDebugger';
 import Script from 'next/script';
 import Link from 'next/link';
 import { Inter, Tajawal, Poppins, JetBrains_Mono, Vazirmatn } from 'next/font/google';
+import PWAResponsiveSplash from '@/components/PWAResponsiveSplash';
 
 // FIXED: Optimized font loading to eliminate render-blocking CSS.
 // Using next/font automatically self-hosts fonts and inlines the critical font-face CSS,
@@ -82,10 +83,10 @@ export default function RootLayout({
   return (
     <html lang={lang} dir={isArabic ? 'rtl' : 'ltr'}>
       <head>
-        <meta name="application-name" content="SheikhShops" />
+        <meta name="application-name" content="فروشگاه شیخ" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="SheikhShops" />
+        <meta name="apple-mobile-web-app-title" content="فروشگاه شیخ" />
         <meta name="mobile-web-app-capable" content="yes" />
         <link rel="icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
@@ -125,36 +126,38 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${tajawal.variable} ${poppins.variable} ${jetbrainsMono.variable} ${vazirmatn.variable} antialiased font-sans font-vazirmatn`}
       >
-        <LayoutDebugger />
-        <AMPHead />
-        <AccessibilityEnhancements />
-        <ErrorBoundary>
-          <ReactQueryProvider>
-            <CurrencyProvider>
-              <UIProvider>
-                <LuxuryUnboxingProvider>
-                  <div className="flex flex-col min-h-screen">
-                    <ClientHeader />
-                    <div className="sticky top-20 z-40 w-full bg-amber-950/90 backdrop-blur supports-[backdrop-filter]:bg-amber-950/70 border-b border-amber-200/10">
-                      <div className="max-w-7xl mx-auto px-6 md:px-8 py-3 flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
-                        <div className="w-full md:max-w-xl">
-                          <EnhancedAISearch showAdvancedOptions={false} showVRStoreButton={true} />
+        <PWAResponsiveSplash>
+          <LayoutDebugger />
+          <AMPHead />
+          <AccessibilityEnhancements />
+          <ErrorBoundary>
+            <ReactQueryProvider>
+              <CurrencyProvider>
+                <UIProvider>
+                  <LuxuryUnboxingProvider>
+                    <div className="flex flex-col min-h-screen">
+                      <ClientHeader />
+                      <div className="sticky top-20 z-40 w-full bg-amber-950/90 backdrop-blur supports-[backdrop-filter]:bg-amber-950/70 border-b border-amber-200/10">
+                        <div className="max-w-7xl mx-auto px-6 md:px-8 py-3 flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
+                          <div className="w-full md:max-w-xl">
+                            <EnhancedAISearch showAdvancedOptions={false} showVRStoreButton={true} />
+                          </div>
                         </div>
                       </div>
+                      <main id="main-content" className="flex-1 pt-20 pb-20 md:pb-0">
+                        {children}
+                      </main>
+                      <Footer />
+                      <MobileFooter />
                     </div>
-                    <main id="main-content" className="flex-1 pt-20 pb-20 md:pb-0">
-                      {children}
-                    </main>
-                    <Footer />
-                    <MobileFooter />
-                  </div>
-                  <Toaster />
-                  <ShoppingChatbot />
-                </LuxuryUnboxingProvider>
-              </UIProvider>
-            </CurrencyProvider>
-          </ReactQueryProvider>
-        </ErrorBoundary>
+                    <Toaster />
+                    <ShoppingChatbot />
+                  </LuxuryUnboxingProvider>
+                </UIProvider>
+              </CurrencyProvider>
+            </ReactQueryProvider>
+          </ErrorBoundary>
+        </PWAResponsiveSplash>
       </body>
     </html>
   );
