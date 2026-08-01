@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useRequireRole } from '@/hooks/useRBAC';
-import { Package, Users, FileText, CreditCard, BarChart3 } from 'lucide-react';
+import { Package, Users, FileText, CreditCard, BarChart3, MessageSquare } from 'lucide-react';
 
 export default function DashboardClient() {
   const hasAccess = useRequireRole(['ADMIN', 'SUPERADMIN']);
@@ -27,6 +27,12 @@ export default function DashboardClient() {
       description: 'Manage your products',
       href: '/dashboard/products',
       icon: Package,
+    },
+    {
+      title: 'Reviews',
+      description: 'Manage and moderate product reviews',
+      href: '/dashboard/reviews',
+      icon: MessageSquare,
     },
     {
       title: 'Users',

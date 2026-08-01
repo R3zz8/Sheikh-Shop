@@ -19,6 +19,8 @@ import { toast } from 'sonner';
 import BundleRecommendations from '@/components/recommendations/BundleRecommendations';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import MarkdownDescription from './MarkdownDescription';
+import ReviewSubmissionCard from './ReviewSubmissionCard';
+import DynamicReviewSection from './DynamicReviewSection';
 
 interface ProductDetailPageProps {
   product: ProductsWithImages;
@@ -46,6 +48,10 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
 
   // Sticky Buy Bar State for Mobile
   const [showStickyBar, setShowStickyBar] = useState(false);
+
+  // Review refresh trigger state
+  const [reviewRefreshTrigger, setReviewRefreshTrigger] = useState(0);
+  const handleReviewChange = () => setReviewRefreshTrigger(prev => prev + 1);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -803,55 +809,27 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
           </div>
         )}
 
+        <div className="mt-20">
+          <ReviewSubmissionCard
+            productId={product.id}
+            productName={product.name}
+            onReviewChange={handleReviewChange}
+          />
+        </div>
+
         {/* 7. REVIEWS */}
-        <div className="mt-20 bg-neutral-900/20 border border-amber-500/10 rounded-[2.5rem] p-6 sm:p-10 space-y-8">
+        <div className="mt-10 bg-neutral-900/20 border border-amber-500/10 rounded-[2.5rem] p-6 sm:p-10 space-y-8">
           <div className="flex items-center justify-between border-b border-stone-800/60 pb-6">
             <div className="flex items-center gap-3">
               <MessageSquare className="w-6 h-6 text-amber-400" />
               <h3 className="text-xl font-black text-white">نظرات و دیدگاه‌های کاربران</h3>
             </div>
-            <span className="text-xs text-stone-500">مجموعاً {hashedRating.reviewCount} دیدگاه خریداران</span>
           </div>
 
-          <div className="space-y-6">
-            <div className="bg-[#120a06]/40 border border-amber-500/5 rounded-3xl p-6 flex flex-col gap-4 items-start shadow-xl">
-              <div className="w-full space-y-3 text-right">
-                <div className="flex items-center justify-between w-full">
-                  <div className="space-y-0.5">
-                    <span className="text-xs sm:text-sm font-black text-stone-200">رضا دهقانی (خریدار رسمی کالا)</span>
-                    <div className="flex items-center gap-0.5 mt-1">
-                      {Array.from({ length: 5 }, (_, i) => (
-                        <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                      ))}
-                    </div>
-                  </div>
-                  <span className="text-[10px] text-stone-500">۱۴۰۵/۰۲/۱۵</span>
-                </div>
-                <p className="text-xs sm:text-sm text-stone-300 leading-relaxed text-justify">
-                  طراحی بی نظیر و با جزئیات لوکس بالا. بسته‌بندی عالی بود و در کمترین زمان ممکن بدستم رسید. واقعا ارزش خرید داشت و ممنون از فروشگاه شیک شیخ.
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-[#120a06]/40 border border-amber-500/5 rounded-3xl p-6 flex flex-col gap-4 items-start shadow-xl">
-              <div className="w-full space-y-3 text-right">
-                <div className="flex items-center justify-between w-full">
-                  <div className="space-y-0.5">
-                    <span className="text-xs sm:text-sm font-black text-stone-200">سارا محمدی</span>
-                    <div className="flex items-center gap-0.5 mt-1">
-                      {Array.from({ length: 5 }, (_, i) => (
-                        <Star key={i} className={`w-3.5 h-3.5 ${i < 4 ? 'fill-amber-400 text-amber-400' : 'text-stone-800'}`} />
-                      ))}
-                    </div>
-                  </div>
-                  <span className="text-[10px] text-stone-500">۱۴۰۵/۰۳/۰۴</span>
-                </div>
-                <p className="text-xs sm:text-sm text-stone-300 leading-relaxed text-justify">
-                  فوق‌العاده زیبا و کیفیت فوق‌العاده. به تمامی جزئیات توجه شده و متریال با کیفیتی دارد. تشکر ویژه از ارسال سریع اکسپرس.
-                </p>
-              </div>
-            </div>
-          </div>
+          <DynamicReviewSection
+            productId={product.id}
+            refreshTrigger={reviewRefreshTrigger}
+          />
         </div>
 
         </div> {/* 🖥️ END DESKTOP VIEW */}
@@ -1284,6 +1262,14 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
             </div>
           )}
 
+          <div className="mt-8">
+            <ReviewSubmissionCard
+              productId={product.id}
+              productName={product.name}
+              onReviewChange={handleReviewChange}
+            />
+          </div>
+
           {/* Compact Reviews Section */}
           <div className="mt-8 bg-neutral-900/20 border border-amber-500/10 rounded-3xl p-5 space-y-4">
             <div className="flex items-center justify-between border-b border-stone-800/60 pb-3">
@@ -1291,27 +1277,12 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
                 <MessageSquare className="w-4 h-4 text-amber-400" />
                 <h3 className="text-xs sm:text-sm font-black text-white">دیدگاه‌های کاربران</h3>
               </div>
-              <span className="text-[10px] text-stone-500">{hashedRating.reviewCount} نظر تایید شده</span>
             </div>
 
-            <div className="space-y-4">
-              <div className="bg-[#120a06]/40 border border-amber-500/5 rounded-2xl p-4 flex flex-col gap-2.5 items-start">
-                <div className="w-full space-y-1 text-right text-[11px]">
-                  <div className="flex items-center justify-between w-full">
-                    <span className="font-black text-stone-200">رضا دهقانی (خریدار رسمی)</span>
-                    <span className="text-[8px] text-stone-500">۱۴۰۵/۰۲/۱۵</span>
-                  </div>
-                  <div className="flex items-center gap-0.5">
-                    {Array.from({ length: 5 }, (_, i) => (
-                      <Star key={i} className="w-3 h-3 fill-amber-400 text-amber-400" />
-                    ))}
-                  </div>
-                  <p className="text-[10px] text-stone-300 leading-relaxed text-justify mt-1">
-                    طراحی بی نظیر و با جزئیات لوکس بالا. بسته‌بندی عالی بود و واقعا ارزش خرید دارد.
-                  </p>
-                </div>
-              </div>
-            </div>
+            <DynamicReviewSection
+              productId={product.id}
+              refreshTrigger={reviewRefreshTrigger}
+            />
           </div>
 
         </div>
