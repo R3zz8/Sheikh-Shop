@@ -155,17 +155,17 @@ export default function DynamicReviewSection({
 
             {/* 1. Review Statistics Dashboard */}
             {stats && stats.totalReviews > 0 && (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 bg-gradient-to-br from-[#120a06]/40 to-[#0a0503]/40 border border-amber-500/10 rounded-[2rem] p-6 sm:p-8 shadow-2xl backdrop-blur-md">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 bg-[#2A1A12] border border-amber-500/25 rounded-[2rem] p-6 sm:p-8 shadow-2xl backdrop-blur-md text-stone-100">
                     {/* Left Column: Big Average Score */}
-                    <div className="flex flex-col items-center justify-center text-center p-4 border-b lg:border-b-0 lg:border-l border-stone-850/80">
+                    <div className="flex flex-col items-center justify-center text-center p-4 border-b lg:border-b-0 lg:border-l border-[#5D4037]/35">
                         <div className="text-5xl font-black text-amber-400 mb-2">{stats.averageRating}</div>
                         <div className="flex items-center gap-0.5 mb-2">
                             {Array.from({ length: 5 }, (_, i) => {
                                 const starFill = i + 1 <= Math.round(stats.averageRating);
-                                return <Star key={i} className={`w-5 h-5 ${starFill ? 'fill-amber-400 text-amber-400' : 'text-stone-800'}`} />;
+                                return <Star key={i} className={`w-5 h-5 ${starFill ? 'fill-amber-400 text-amber-400' : 'text-[#FAF6EE]/20'}`} />;
                             })}
                         </div>
-                        <div className="text-xs text-stone-400">میانگین امتیاز از مجموع {stats.totalReviews} دیدگاه</div>
+                        <div className="text-xs text-stone-300">میانگین امتیاز از مجموع {stats.totalReviews} دیدگاه</div>
                     </div>
 
                     {/* Middle Column: Rating Progress Distribution */}
@@ -272,17 +272,17 @@ export default function DynamicReviewSection({
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -15 }}
                                     transition={{ duration: 0.3, delay: index * 0.05 }}
-                                    className="bg-gradient-to-br from-[#120a06]/40 to-[#0a0503]/40 border border-stone-850/60 rounded-3xl p-5 sm:p-6 shadow-xl flex flex-col gap-4 relative overflow-hidden"
+                                    className="bg-[#2A1A12] border border-[#5D4037]/30 rounded-3xl p-5 sm:p-6 shadow-xl flex flex-col gap-4 relative overflow-hidden"
                                 >
                                     {/* Top Metadata row */}
-                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-stone-850/40 pb-4">
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-amber-500/15 pb-4">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-[#1c120e] border border-amber-500/10 flex items-center justify-center shadow-inner">
+                                            <div className="w-10 h-10 rounded-full bg-[#1C120C] border border-amber-500/20 flex items-center justify-center shadow-inner">
                                                 <span className="text-xs font-black text-amber-500">{review.userName.substring(0, 1)}</span>
                                             </div>
                                             <div className="space-y-0.5">
                                                 <div className="flex items-center gap-2">
-                                                    <span className="text-xs sm:text-sm font-black text-stone-200">{review.userName}</span>
+                                                    <span className="text-xs sm:text-sm font-black text-stone-100">{review.userName}</span>
                                                     {review.isVerified && (
                                                         <span className="inline-flex items-center gap-0.5 bg-green-500/10 border border-green-500/25 text-green-400 text-[9px] font-black px-2 py-0.5 rounded-full">
                                                             <ShieldCheck className="w-3 h-3" />
@@ -292,13 +292,13 @@ export default function DynamicReviewSection({
                                                 </div>
                                                 <div className="flex items-center gap-0.5">
                                                     {Array.from({ length: 5 }, (_, i) => (
-                                                        <Star key={i} className={`w-3.5 h-3.5 ${i < review.rating ? 'fill-amber-400 text-amber-400' : 'text-stone-800'}`} />
+                                                        <Star key={i} className={`w-3.5 h-3.5 ${i < review.rating ? 'fill-amber-400 text-amber-400' : 'text-[#FAF6EE]/20'}`} />
                                                     ))}
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <div className="flex items-center gap-1.5 self-end sm:self-auto text-[10px] text-stone-500">
+                                        <div className="flex items-center gap-1.5 self-end sm:self-auto text-[10px] text-stone-300">
                                             <Calendar className="w-3.5 h-3.5" />
                                             <span>{displayDate}</span>
                                         </div>
@@ -394,12 +394,12 @@ export default function DynamicReviewSection({
 
                                     {/* Nestled Admin Reply */}
                                     {review.reply && (
-                                        <div className="mt-4 bg-gradient-to-br from-[#1c120c]/60 to-[#120a06]/60 border border-amber-500/5 rounded-2xl p-4 flex flex-col gap-1.5 text-xs shadow-inner">
+                                        <div className="mt-4 bg-[#1C120C]/90 border border-amber-500/10 rounded-2xl p-4 flex flex-col gap-1.5 text-xs shadow-inner">
                                             <div className="flex items-center gap-1.5 text-amber-400 font-black">
                                                 <CheckCircle2 className="w-4 h-4" />
                                                 <span>پاسخ رسمی پشتیبانی شیخ شاپ</span>
                                             </div>
-                                            <p className="text-stone-400 leading-relaxed text-justify whitespace-pre-wrap">{review.reply}</p>
+                                            <p className="text-stone-300 leading-relaxed text-justify whitespace-pre-wrap">{review.reply}</p>
                                         </div>
                                     )}
                                 </motion.div>
