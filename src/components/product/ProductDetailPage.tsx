@@ -22,6 +22,17 @@ import MarkdownDescription from './MarkdownDescription';
 import ReviewSubmissionCard from './ReviewSubmissionCard';
 import DynamicReviewSection from './DynamicReviewSection';
 
+// Imports from LuxuryEffects
+import {
+  AnimatedBorder,
+  AmbientGlow,
+  GlassReflection,
+  HoverGlow,
+  LuxuryCard,
+  LuxuryButton,
+  MotionWrapper
+} from '@/components/ui/LuxuryEffects';
+
 interface ProductDetailPageProps {
   product: ProductsWithImages;
   allProducts?: ProductsWithImages[];
@@ -212,625 +223,698 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
 
       <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10 max-w-7xl">
 
-        {/* 🖥️ DESKTOP VIEW - UNTOUCHED & UNCHANGED */}
+        {/* 🖥️ DESKTOP VIEW - UPGRADED TO MAXIMUM LUXURY */}
         <div className="hidden md:block">
 
           {/* 🗺️ BREADCRUMBS with beautiful Apple-like minimal design */}
-        <nav className="flex items-center gap-1.5 text-xs text-[#5D4037] mb-8 md:mb-10 bg-[#FAF6EE]/80 backdrop-blur-sm py-2.5 px-5 rounded-2xl border border-amber-500/15 inline-flex shadow-sm" aria-label="Breadcrumb">
-          <Link href="/" className="hover:text-amber-700 transition-colors">خانه</Link>
-          <ChevronRight className="w-3 h-3 text-amber-800 shrink-0 transform rotate-180" />
-          <Link href={categoryUrl} className="hover:text-amber-700 transition-colors">{categoryName}</Link>
-          <ChevronRight className="w-3 h-3 text-amber-800 shrink-0 transform rotate-180" />
-          <span className="text-[#2C1A11] font-black truncate max-w-[160px] sm:max-w-none">{product.name}</span>
-        </nav>
+          <nav className="flex items-center gap-1.5 text-xs text-[#5D4037] mb-8 md:mb-10 bg-[#FAF6EE]/80 backdrop-blur-sm py-2.5 px-5 rounded-2xl border border-amber-500/15 inline-flex shadow-sm" aria-label="Breadcrumb">
+            <Link href="/" className="hover:text-amber-700 transition-colors">خانه</Link>
+            <ChevronRight className="w-3 h-3 text-amber-800 shrink-0 transform rotate-180" />
+            <Link href={categoryUrl} className="hover:text-amber-700 transition-colors">{categoryName}</Link>
+            <ChevronRight className="w-3 h-3 text-amber-800 shrink-0 transform rotate-180" />
+            <span className="text-[#2C1A11] font-black truncate max-w-[160px] sm:max-w-none">{product.name}</span>
+          </nav>
 
-        {/* 🌟 HERO MAIN PRODUCT CARD - LUXURY GLASS PANEL */}
-        <div className="relative grid lg:grid-cols-12 gap-8 lg:gap-14 items-start bg-[#2A1A12]/85 backdrop-blur-xl border border-amber-500/25 rounded-[3.5rem] p-5 sm:p-8 lg:p-14 shadow-[0_30px_70px_-15px_rgba(42,26,18,0.3)] overflow-hidden">
+          {/* 🌟 HERO MAIN PRODUCT CARD - LUXURY GLASS PANEL */}
+          <HoverGlow>
+            <div className="relative grid lg:grid-cols-12 gap-8 lg:gap-14 items-start bg-[#2A1A12]/85 backdrop-blur-xl border border-amber-500/10 rounded-[3.5rem] p-5 sm:p-8 lg:p-14 shadow-[0_30px_70px_-15px_rgba(42,26,18,0.4)] overflow-hidden">
 
-          {/* Animated subtle border reflection overlay */}
-          <div className="absolute inset-0 border border-gradient-amber pointer-events-none rounded-[3.5rem] opacity-40" />
+              {/* Animated Gold border flow */}
+              <AnimatedBorder color="gold" borderWidth={1.5} />
 
-          {/* 1. HERO GALLERY (RIGHT COLUMN - occupies 6 columns) */}
-          <div className="lg:col-span-6 space-y-8 w-full">
-            <div className="relative bg-[#1C120C]/90 border border-amber-500/20 rounded-[2.5rem] p-6 shadow-xl overflow-hidden group/gallery flex flex-col justify-between aspect-[1.1] min-h-[400px] md:min-h-[500px]">
+              {/* Gold Ambient light behind main card */}
+              <AmbientGlow color="gold" opacity={0.15} blur={160} className="absolute -top-[10%] -left-[10%] w-[120%] h-[120%] z-0" />
 
-              {/* Subtle light reflection on hover */}
-              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-amber-500/[0.04] to-transparent opacity-0 group-hover/gallery:opacity-100 transition-opacity duration-1000 pointer-events-none" />
+              {/* Subtle glass reflection sweeping diagonal line */}
+              <GlassReflection duration={14} />
 
-              {/* Special Tag Overlay */}
-              <div className="absolute top-6 right-6 z-20">
-                <span className="bg-[#1C120C]/95 border border-amber-500/40 text-amber-400 text-[10px] sm:text-xs font-bold tracking-wider px-4 py-2 rounded-full shadow-2xl backdrop-blur-md flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-ping" />
-                  ★ سفارش اختصاصی شیخ
-                </span>
-              </div>
+              {/* 1. HERO GALLERY (RIGHT COLUMN - occupies 6 columns) */}
+              <div className="lg:col-span-6 space-y-8 w-full relative z-10">
+                <div className="relative bg-[#1C120C]/90 border border-amber-500/15 rounded-[2.5rem] p-6 shadow-xl overflow-hidden group/gallery flex flex-col justify-between aspect-[1.1] min-h-[400px] md:min-h-[500px]">
 
-              {/* Main Image View with smooth fade transitions */}
-              <div className="relative flex-1 w-full flex items-center justify-center p-4">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={selectedImageIndex}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                    className="w-full h-full relative"
-                  >
-                    <Image
-                      src={images[selectedImageIndex]?.secureUrl || images[selectedImageIndex]?.image || '/noImage.jpg'}
-                      alt={`${product.name} - تصویر ${selectedImageIndex + 1}`}
-                      fill
-                      className="object-contain transition-transform duration-700 group-hover/gallery:scale-[1.03]"
-                      sizes="(max-width: 1024px) 100vw, 50vw"
-                      priority
-                      quality={95}
-                    />
-                  </motion.div>
-                </AnimatePresence>
-              </div>
+                  {/* Gentle golden ambient light behind product image */}
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(217,119,6,0.08)_0%,transparent_60%)] rounded-full blur-2xl pointer-events-none z-0 animate-pulse" style={{ animationDuration: '4s' }} />
 
-              {/* Arrow navigation inside gallery */}
-              {images.length > 1 && (
-                <div className="absolute inset-y-0 inset-x-6 flex items-center justify-between pointer-events-none">
-                  <button
-                    onClick={() => setSelectedImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1))}
-                    className="pointer-events-auto w-12 h-12 rounded-full bg-[#1C120C]/90 hover:bg-amber-500 hover:text-[#1C120C] text-amber-400 border border-amber-500/30 hover:border-amber-500 flex items-center justify-center transition-all duration-300 shadow-xl"
-                    aria-label="تصویر قبلی"
-                  >
-                    <ChevronRight className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={() => setSelectedImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1))}
-                    className="pointer-events-auto w-12 h-12 rounded-full bg-[#1C120C]/90 hover:bg-amber-500 hover:text-[#1C120C] text-amber-400 border border-amber-500/30 hover:border-amber-500 flex items-center justify-center transition-all duration-300 shadow-xl"
-                    aria-label="تصویر بعدی"
-                  >
-                    <ChevronLeft className="w-5 h-5" />
-                  </button>
-                </div>
-              )}
-            </div>
+                  {/* Subtle light reflection on hover */}
+                  <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-amber-500/[0.04] to-transparent opacity-0 group-hover/gallery:opacity-100 transition-opacity duration-1000 pointer-events-none z-10" />
 
-            {/* Thumbnail selector beneath gallery with active state and premium borders */}
-            {images.length > 1 && (
-              <div className="flex gap-4 justify-center overflow-x-auto py-2 px-1 scrollbar-thin">
-                {images.map((image, index) => (
-                  <button
-                    key={image.id}
-                    onClick={() => setSelectedImageIndex(index)}
-                    className={`relative w-20 h-20 rounded-2xl overflow-hidden border transition-all duration-300 shrink-0 ${
-                      index === selectedImageIndex
-                        ? 'border-amber-400 bg-amber-500/10 shadow-lg shadow-amber-500/10 scale-105'
-                        : 'border-[#5D4037]/30 hover:border-amber-500/35 bg-[#1C120C]/65'
-                    }`}
-                  >
-                    <Image
-                      src={image.secureUrl || image.image || '/noImage.jpg'}
-                      alt={`${product.name} بند انگشتی ${index + 1}`}
-                      fill
-                      className="object-contain p-2"
-                      sizes="90px"
-                    />
-                  </button>
-                ))}
-              </div>
-            )}
+                  {/* Special Tag Overlay */}
+                  <div className="absolute top-6 right-6 z-20">
+                    <span className="bg-[#1C120C]/95 border border-amber-500/40 text-amber-400 text-[10px] sm:text-xs font-bold tracking-wider px-4 py-2 rounded-full shadow-2xl backdrop-blur-md flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-ping" />
+                      ★ سفارش اختصاصی شیخ
+                    </span>
+                  </div>
 
-            {/* ✨ LUXURY UNBOXING TRIGGER - Elegant gold box */}
-            {unboxingConfig?.isEnabled !== false && (
-              <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.1 }}
-                className="bg-gradient-to-b from-[#3E2723] to-[#2A1A12] border border-amber-500/25 rounded-[2rem] p-6 shadow-2xl relative overflow-hidden flex flex-col sm:flex-row items-center gap-6 text-right"
-              >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/[0.04] rounded-full blur-3xl pointer-events-none" />
+                  {/* Main Image View with elegant floating and breathing transition */}
+                  <div className="relative flex-1 w-full flex items-center justify-center p-4 z-10">
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={selectedImageIndex}
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{
+                          opacity: 1,
+                          scale: [1, 1.015, 1],
+                          y: [0, -8, 0]
+                        }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{
+                          duration: 8,
+                          repeat: Infinity,
+                          ease: 'easeInOut'
+                        }}
+                        className="w-full h-full relative"
+                      >
+                        <Image
+                          src={images[selectedImageIndex]?.secureUrl || images[selectedImageIndex]?.image || '/noImage.jpg'}
+                          alt={`${product.name} - تصویر ${selectedImageIndex + 1}`}
+                          fill
+                          className="object-contain transition-transform duration-700 group-hover/gallery:scale-[1.03]"
+                          sizes="(max-width: 1024px) 100vw, 50vw"
+                          priority
+                          quality={95}
+                        />
+                      </motion.div>
+                    </AnimatePresence>
+                  </div>
 
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-500/20 to-amber-600/5 border border-amber-500/35 flex items-center justify-center text-3xl shadow-lg shrink-0">
-                  📦
+                  {/* Arrow navigation inside gallery */}
+                  {images.length > 1 && (
+                    <div className="absolute inset-y-0 inset-x-6 flex items-center justify-between pointer-events-none z-20">
+                      <button
+                        onClick={() => setSelectedImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1))}
+                        className="pointer-events-auto w-12 h-12 rounded-full bg-[#1C120C]/90 hover:bg-amber-500 hover:text-[#1C120C] text-amber-400 border border-amber-500/30 hover:border-amber-500 flex items-center justify-center transition-all duration-300 shadow-xl"
+                        aria-label="تصویر قبلی"
+                      >
+                        <ChevronRight className="w-5 h-5" />
+                      </button>
+                      <button
+                        onClick={() => setSelectedImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1))}
+                        className="pointer-events-auto w-12 h-12 rounded-full bg-[#1C120C]/90 hover:bg-amber-500 hover:text-[#1C120C] text-amber-400 border border-amber-500/30 hover:border-amber-500 flex items-center justify-center transition-all duration-300 shadow-xl"
+                        aria-label="تصویر بعدی"
+                      >
+                        <ChevronLeft className="w-5 h-5" />
+                      </button>
+                    </div>
+                  )}
                 </div>
 
-                <div className="flex-1 space-y-1">
-                  <h3 className="text-sm font-black text-amber-200 flex items-center gap-1.5">
-                    <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />
-                    <span>تجربه لوکس آنباکسینگ سه‌بعدی</span>
-                  </h3>
-                  <p className="text-xs text-stone-300 leading-relaxed max-w-md">
-                    پیش از خرید، لذت گشودن نمادین جعبه چرمی این محصول را با جزئیات سه‌بعدی و زرین به صورت زنده تماشا کنید.
-                  </p>
-                </div>
-
-                <button
-                  onClick={() => triggerUnboxing(product)}
-                  className="w-full sm:w-auto bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 hover:from-amber-400 hover:via-amber-500 hover:to-amber-600 text-stone-950 font-black py-3 px-6 rounded-xl shadow-lg transition-all duration-300 text-xs flex items-center justify-center gap-2 shrink-0 active:scale-95"
-                >
-                  <Gift className="w-4 h-4 text-stone-950" />
-                  <span>آنباکس سه‌بعدی کالا</span>
-                </button>
-              </motion.div>
-            )}
-          </div>
-
-          {/* 2. PRODUCT DETAILS & BUYING SYSTEM (LEFT COLUMN - occupies 6 columns) */}
-          <div className="lg:col-span-6 space-y-8 w-full">
-
-            {/* A. PRODUCT TITLE & INFO BLOCK */}
-            <div className="space-y-4">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="bg-amber-500/10 border border-amber-500/25 text-amber-800 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider">
-                  {categoryName}
-                </span>
-                {product.brand && (
-                  <span className="bg-[#FAF6EE] border border-[#5D4037]/25 text-[#5D4037] text-[10px] font-bold px-3 py-1 rounded-full shadow-sm">
-                    برند: {product.brand}
-                  </span>
-                )}
-              </div>
-
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#2C1A11] leading-tight tracking-tight">
-                {product.name}
-              </h1>
-
-              {/* Sub-header ratings, stock, status info */}
-              <div className="flex flex-wrap items-center gap-4 text-xs text-[#5D4037] pt-1">
-                <div className="flex items-center gap-1.5">
-                  <div className="flex items-center gap-0.5">
-                    {Array.from({ length: 5 }, (_, i) => (
-                      <Star
-                        key={i}
-                        className={`w-4 h-4 ${
-                          i < Math.floor(Number(hashedRating.ratingValue)) ? 'fill-amber-500 text-amber-500' : 'text-stone-300'
+                {/* Thumbnail selector beneath gallery with active state and premium borders */}
+                {images.length > 1 && (
+                  <div className="flex gap-4 justify-center overflow-x-auto py-2 px-1 scrollbar-thin">
+                    {images.map((image, index) => (
+                      <button
+                        key={image.id}
+                        onClick={() => setSelectedImageIndex(index)}
+                        className={`relative w-20 h-20 rounded-2xl overflow-hidden border transition-all duration-300 shrink-0 ${
+                          index === selectedImageIndex
+                            ? 'border-amber-400 bg-amber-500/10 shadow-lg shadow-amber-500/10 scale-105'
+                            : 'border-[#5D4037]/30 hover:border-amber-500/35 bg-[#1C120C]/65'
                         }`}
-                      />
+                      >
+                        <Image
+                          src={image.secureUrl || image.image || '/noImage.jpg'}
+                          alt={`${product.name} بند انگشتی ${index + 1}`}
+                          fill
+                          className="object-contain p-2"
+                          sizes="90px"
+                        />
+                      </button>
                     ))}
                   </div>
-                  <span className="font-extrabold text-amber-700 text-sm mr-1">{hashedRating.ratingValue}</span>
-                  <span className="text-stone-300">|</span>
-                  <span className="hover:text-amber-800 font-medium transition-colors">({hashedRating.reviewCount} دیدگاه تایید شده)</span>
-                </div>
-
-                {product.sku && (
-                  <>
-                    <span className="text-stone-300">|</span>
-                    <span className="font-mono text-[#5D4037] font-medium">شناسه: {product.sku}</span>
-                  </>
                 )}
-              </div>
-            </div>
 
-            {/* B. PREMIUM PRICE VIEW - THE STRONGEST VISUAL ELEMENT */}
-            <div className="relative group bg-[#1C120C] border border-amber-500/25 rounded-3xl p-6 md:p-8 overflow-hidden shadow-[0_15px_30px_rgba(42,26,18,0.2)]">
-
-              {/* Soft moving amber light reflection around price box */}
-              <div className="absolute inset-0 bg-gradient-to-r from-amber-500/[0.05] to-transparent pointer-events-none animate-pulse-glow" />
-
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 relative z-10">
-                <div className="space-y-1.5">
-                  <span className="text-[10px] sm:text-xs font-bold text-stone-300 block uppercase tracking-wider">قیمت خرید ویژه</span>
-                  <div className="flex items-baseline gap-2.5">
-                    <span className="text-3xl sm:text-4.5xl font-black text-amber-400 tracking-tight leading-none">
-                      {formatToToman(pricing.price)}
-                    </span>
-                    {pricing.oldPrice && (
-                      <span className="text-stone-400 text-sm sm:text-base line-through decoration-red-500/50 decoration-2 font-bold">
-                        {formatToToman(pricing.oldPrice)}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex flex-col items-start sm:items-end gap-2 shrink-0">
-                  {pricing.hasDiscount && (
-                    <span className="bg-gradient-to-r from-red-600 to-red-500 border border-red-500/30 text-white text-[11px] font-black px-4 py-1.5 rounded-full shadow-lg flex items-center gap-1">
-                      <BadgePercent className="w-4 h-4" />
-                      <span>{pricing.discountPercentage}٪ تخفیف ویژه شیخ</span>
-                    </span>
-                  )}
-
-                  <span className="flex items-center gap-2 text-xs">
-                    <span className={`w-2.5 h-2.5 rounded-full ${currentStock > 0 ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
-                    <span className={currentStock > 0 ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold'}>
-                      {currentStock > 0 ? `آماده ارسال (موجود در انبار شیخ)` : 'ناموجود'}
-                    </span>
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* C. APPLE-STYLE VARIANTS SELECTOR */}
-            {availableProductUnits.length > 0 && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-[#5D4037] uppercase tracking-wider">انتخاب ظرفیت / مشخصات کالا</label>
-                  <span className="text-[10px] text-amber-700 font-bold">مشاهده تغییرات قیمت</span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                  {availableProductUnits.map((unit) => {
-                    const isSelected = selectedProductUnit?.id === unit.id;
-                    return (
-                      <button
-                        key={unit.id}
-                        onClick={() => setSelectedProductUnit(unit)}
-                        className={`relative p-4 rounded-2xl border text-right transition-all duration-300 flex flex-col justify-between h-20 ${
-                          isSelected
-                            ? 'border-amber-500 bg-amber-500/[0.08] shadow-xl scale-102'
-                            : 'border-[#5D4037]/25 hover:border-amber-500/35 bg-[#FAF6EE]/90 hover:bg-[#FAF6EE]'
-                        }`}
-                      >
-                        <span className="text-xs font-black text-[#2C1A11] block truncate">{unit.name}</span>
-                        <div className="flex items-center justify-between w-full mt-1">
-                          <span className="text-amber-700 font-black text-sm">{formatToToman(Number(unit.price))}</span>
-                          {isSelected && <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0" />}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* D. LUXURY CTA / ORDER ACTION BLOCK */}
-            <div className="bg-[#2A1A12] border border-amber-500/25 rounded-3xl p-6 space-y-6 shadow-2xl">
-
-              {/* Factor Breakdown */}
-              <div className="bg-[#1C120C]/90 border border-amber-500/10 rounded-2xl p-4.5 space-y-3.5 text-xs sm:text-sm text-stone-300">
-                <div className="flex justify-between items-center">
-                  <span className="text-stone-300">کالای انتخابی:</span>
-                  <span className="text-stone-100 font-bold">{product.name}</span>
-                </div>
-                {selectedProductUnit && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-stone-300">مدل انتخابی:</span>
-                    <span className="text-amber-400 font-black">{selectedProductUnit.name}</span>
-                  </div>
-                )}
-                <div className="flex justify-between items-center">
-                  <span className="text-stone-300">تعداد درخواستی:</span>
-                  <span className="text-stone-100 font-bold">{selectedQuantity} عدد</span>
-                </div>
-
-                <div className="flex justify-between items-center border-t border-amber-500/15 pt-3.5">
-                  <span className="font-bold text-stone-200">مبلغ کل فاکتور:</span>
-                  <span className="text-amber-400 font-black text-lg sm:text-xl tracking-tight">
-                    {formatToToman(pricing.price)}
-                  </span>
-                </div>
-              </div>
-
-              {/* CTAs with dynamic scale / loading state */}
-              <div className="flex flex-col sm:flex-row items-stretch gap-4">
-
-                {/* Quantity adjuster */}
-                <div className="flex items-center justify-between sm:justify-start gap-4 bg-[#1C120C] border border-[#5D4037]/30 rounded-2xl p-2 shrink-0">
-                  <button
-                    onClick={() => setSelectedQuantity((prev) => Math.max(1, prev - 1))}
-                    disabled={selectedQuantity <= 1}
-                    className="w-11 h-11 rounded-xl bg-[#2A1A12] hover:bg-[#3E2723] border border-amber-500/15 flex items-center justify-center text-stone-300 transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
-                    aria-label="کاهش تعداد"
+                {/* ✨ LUXURY UNBOXING TRIGGER - Elegant gold box */}
+                {unboxingConfig?.isEnabled !== false && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 0.1 }}
+                    className="bg-gradient-to-b from-[#3E2723] to-[#2A1A12] border border-amber-500/25 rounded-[2rem] p-6 shadow-2xl relative overflow-hidden flex flex-col sm:flex-row items-center gap-6 text-right group"
                   >
-                    <Minus className="w-4 h-4" />
-                  </button>
-                  <span className="text-base font-black text-center w-10 text-stone-100">{selectedQuantity}</span>
-                  <button
-                    onClick={() => setSelectedQuantity((prev) => Math.min(currentStock, prev + 1))}
-                    disabled={selectedQuantity >= currentStock}
-                    className="w-11 h-11 rounded-xl bg-[#2A1A12] hover:bg-[#3E2723] border border-amber-500/15 flex items-center justify-center text-stone-300 transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
-                    aria-label="افزایش تعداد"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </button>
-                </div>
+                    {/* Tiny emerald / gold glow */}
+                    <AmbientGlow color="gold" opacity={0.1} blur={50} className="absolute -top-[10%] -right-[10%] w-[120%] h-[120%] z-0" />
 
-                {/* Primary Add To Cart with luxurious gradient animation */}
-                <button
-                  onClick={handleAddToCart}
-                  disabled={currentStock === 0 || addToCartMutation.isPending}
-                  className="flex-1 bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 hover:from-amber-400 hover:via-amber-500 hover:to-amber-600 text-stone-950 font-black py-4 px-6 rounded-2xl shadow-xl transition-all duration-300 text-sm flex items-center justify-center gap-2.5 active:scale-98 disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  <ShoppingBag className="w-5 h-5 text-stone-950" />
-                  <span>{addToCartMutation.isPending ? 'در حال ثبت...' : 'افزودن به سبد خرید'}</span>
-                </button>
-              </div>
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-500/20 to-amber-600/5 border border-amber-500/35 flex items-center justify-center text-3xl shadow-lg shrink-0 z-10">
+                      📦
+                    </div>
 
-              {/* Instant Purchase */}
-              <button
-                onClick={handleInstantPurchase}
-                disabled={currentStock === 0 || addToCartMutation.isPending}
-                className="w-full bg-[#1C120C] hover:bg-amber-500/15 text-amber-400 hover:text-amber-300 font-bold py-3.5 px-6 rounded-2xl border border-amber-500/30 hover:border-amber-500/50 transition-all duration-300 text-xs flex items-center justify-center gap-2 active:scale-98 cursor-pointer"
-              >
-                <span>⚡ خرید فوری و تسویه سریع حساب</span>
-              </button>
-
-              {/* Heart, Compare, Share actions */}
-              <div className="flex items-center justify-center gap-8 text-xs text-stone-300 border-t border-amber-500/15 pt-4">
-                <button
-                  onClick={() => {
-                    setIsFavorited(!isFavorited);
-                    toast.success(isFavorited ? 'از علاقه‌مندی‌ها حذف شد.' : 'به علاقه‌مندی‌ها اضافه شد.');
-                  }}
-                  className={`hover:text-amber-400 transition-colors flex items-center gap-2 ${isFavorited ? 'text-amber-400' : ''}`}
-                >
-                  <Heart className={`w-4 h-4 ${isFavorited ? 'fill-amber-400' : ''}`} />
-                  <span>{isFavorited ? 'محبوب شما' : 'افزودن به علاقه‌مندی'}</span>
-                </button>
-
-                <span className="text-amber-500/20">|</span>
-
-                <button
-                  onClick={() => {
-                    setIsCompared(!isCompared);
-                    toast.success(isCompared ? 'از لیست مقایسه حذف شد.' : 'به لیست مقایسه افزوده شد.');
-                  }}
-                  className={`hover:text-amber-400 transition-colors flex items-center gap-2 ${isCompared ? 'text-amber-400' : ''}`}
-                >
-                  <BarChart3 className="w-4 h-4" />
-                  <span>مقایسه محصول</span>
-                </button>
-
-                <span className="text-amber-500/20">|</span>
-
-                <button
-                  onClick={handleShare}
-                  className="hover:text-amber-400 transition-colors flex items-center gap-2"
-                >
-                  <Share2 className="w-4 h-4" />
-                  <span>اشتراک‌گذاری</span>
-                </button>
-              </div>
-            </div>
-
-            {/* E. PREMIUM TRUST BADGES WITH GLASSMORPHISM */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div className="bg-[#FAF6EE]/90 border border-amber-500/20 rounded-2xl p-4 text-center space-y-2.5 backdrop-blur-sm shadow-md">
-                <CreditCard className="w-6 h-6 text-amber-700 mx-auto" />
-                <h4 className="text-[11px] font-black text-[#2C1A11]">پرداخت امن VIP</h4>
-                <p className="text-[9px] text-[#5D4037] leading-normal font-bold">درگاه بانکی با بیمه امنیتی</p>
-              </div>
-              <div className="bg-[#FAF6EE]/90 border border-amber-500/20 rounded-2xl p-4 text-center space-y-2.5 backdrop-blur-sm shadow-md">
-                <ShieldCheck className="w-6 h-6 text-amber-700 mx-auto" />
-                <h4 className="text-[11px] font-black text-[#2C1A11]">اصالت واقعی کالا</h4>
-                <p className="text-[9px] text-[#5D4037] leading-normal font-bold">تضمین ۱۰۰٪ لوکس کالا</p>
-              </div>
-              <div className="bg-[#FAF6EE]/90 border border-amber-500/20 rounded-2xl p-4 text-center space-y-2.5 backdrop-blur-sm shadow-md">
-                <Truck className="w-6 h-6 text-amber-700 mx-auto" />
-                <h4 className="text-[11px] font-black text-[#2C1A11]">ارسال اکسپرس VIP</h4>
-                <p className="text-[9px] text-[#5D4037] leading-normal font-bold">بسته‌بندی محافظ چرمی</p>
-              </div>
-              <div className="bg-[#FAF6EE]/90 border border-amber-500/20 rounded-2xl p-4 text-center space-y-2.5 backdrop-blur-sm shadow-md">
-                <Headphones className="w-6 h-6 text-amber-700 mx-auto" />
-                <h4 className="text-[11px] font-black text-[#2C1A11]">پشتیبان اختصاصی</h4>
-                <p className="text-[9px] text-[#5D4037] leading-normal font-bold">پاسخگویی ۲۴ ساعته VIP</p>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        {/* 3. ROW OF DYNAMIC FEATURES BADGES */}
-        {hasFeatures && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mt-16">
-            {product.features.map((feature, idx) => (
-              <div key={idx} className="bg-[#FAF6EE]/80 backdrop-blur-md border border-[#5D4037]/25 rounded-2xl p-4 flex items-center gap-3.5 transition-all duration-300 hover:border-amber-500/35 shadow-sm">
-                <div className="w-7 h-7 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-700 font-bold text-xs shrink-0">
-                  ✓
-                </div>
-                <span className="text-xs sm:text-sm font-bold text-[#2C1A11]">{feature}</span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* 4. SPECIFICATIONS & SAFE DESCRIPTION ACCORDION */}
-        {anySpecsAvailable && (
-          <div className="mt-16 bg-[#2A1A12] border border-amber-500/20 rounded-[2.5rem] p-6 sm:p-10 space-y-6 shadow-2xl">
-            <h2 className="text-xl sm:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-400 mb-6">جزئیات و مشخصات فنی کالا</h2>
-            <div className="space-y-4">
-
-              {/* Product description / Story (SAFE RENDER USING MARKDOWN AND DOMPURIFY) */}
-              {hasDescription && (
-                <div className="border-b border-amber-500/15 pb-4">
-                  <button
-                    onClick={() => setActiveAccordion(activeAccordion === 'story' ? null : 'story')}
-                    className="w-full flex items-center justify-between py-4 text-right"
-                  >
-                    <span className="text-sm sm:text-base font-bold text-stone-200">توضیحات و داستان محصول</span>
-                    <ChevronDown className={`w-4 h-4 text-amber-400 transition-transform duration-300 ${activeAccordion === 'story' ? 'transform rotate-180' : ''}`} />
-                  </button>
-                  <AnimatePresence>
-                    {activeAccordion === 'story' && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.3 }}
-                        className="overflow-hidden pt-2 pb-4 px-1"
-                      >
-                        <MarkdownDescription content={product.description} />
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              )}
-
-              {/* Technical Specifications */}
-              {hasSpecs && (
-                <div className="border-b border-amber-500/15 pb-4">
-                  <button
-                    onClick={() => setActiveAccordion(activeAccordion === 'specs' ? null : 'specs')}
-                    className="w-full flex items-center justify-between py-4 text-right"
-                  >
-                    <span className="text-sm sm:text-base font-bold text-stone-200">مشخصات فنی و سخت‌افزاری</span>
-                    <ChevronDown className={`w-4 h-4 text-amber-400 transition-transform duration-300 ${activeAccordion === 'specs' ? 'transform rotate-180' : ''}`} />
-                  </button>
-                  <AnimatePresence>
-                    {activeAccordion === 'specs' && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.3 }}
-                        className="overflow-hidden pt-2 pb-4 px-1"
-                      >
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-[#1C120C]/90 rounded-2xl p-6 border border-amber-500/10">
-                          {Object.entries(product.technicalSpecs as Record<string, any>).map(([key, val]) => (
-                            <div key={key} className="flex justify-between border-b border-amber-500/10 py-3 text-xs sm:text-sm">
-                              <span className="text-stone-300 font-medium">{key}</span>
-                              <span className="text-stone-100 font-bold">{String(val)}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              )}
-
-              {/* Shipping protocol info */}
-              <div className="border-b border-amber-500/15 pb-4">
-                <button
-                  onClick={() => setActiveAccordion(activeAccordion === 'shipping' ? null : 'shipping')}
-                  className="w-full flex items-center justify-between py-4 text-right"
-                >
-                  <span className="text-sm sm:text-base font-bold text-stone-200">ارسال و تحویل لوکس</span>
-                  <ChevronDown className={`w-4 h-4 text-amber-400 transition-transform duration-300 ${activeAccordion === 'shipping' ? 'transform rotate-180' : ''}`} />
-                </button>
-                <AnimatePresence>
-                  {activeAccordion === 'shipping' && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="overflow-hidden text-xs sm:text-sm text-stone-300 leading-relaxed pt-2 pb-4 px-1 space-y-4"
-                    >
-                      <p>
-                        تمامی سفارشات ثبت‌شده در بسته‌بندی‌های لوکس و ضدضربه‌ مخصوص فروشگاه بزرگ شیخ ارسال خواهند شد. سفارشات تهران ظرف ۲۴ ساعت و شهرستان‌ها بین ۳ تا ۵ روز تحویل می‌گردند.
+                    <div className="flex-1 space-y-1 z-10">
+                      <h3 className="text-sm font-black text-amber-200 flex items-center gap-1.5">
+                        <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />
+                        <span>تجربه لوکس آنباکسینگ سه‌بعدی</span>
+                      </h3>
+                      <p className="text-xs text-stone-300 leading-relaxed max-w-md">
+                        پیش از خرید، لذت گشودن نمادین جعبه چرمی این محصول را با جزئیات سه‌بعدی و زرین به صورت زنده تماشا کنید.
                       </p>
-                      <div className="grid grid-cols-2 gap-6 bg-[#1C120C]/90 p-6 rounded-2xl border border-amber-500/10">
-                        <div>
-                          <span className="text-stone-400 block mb-1 text-[11px] sm:text-xs">پروتکل توزیع لجستیک</span>
-                          <span className="font-bold text-stone-200">{product.shippingDescription || 'ارسال ویژه با بیمه طلایی'}</span>
-                        </div>
-                        <div>
-                          <span className="text-stone-400 block mb-1 text-[11px] sm:text-xs">هزینه نهایی تحویل</span>
-                          <span className="font-bold text-amber-400">{product.allowFreeShipping ? 'رایگان (مهمان فروشگاه)' : '۲۰۰,۰۰۰ تومان'}</span>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                    </div>
+
+                    <LuxuryButton
+                      onClick={() => triggerUnboxing(product)}
+                      variant="gold"
+                      className="w-full sm:w-auto py-3 px-6 text-xs shrink-0 z-10"
+                    >
+                      <Gift className="w-4 h-4 text-stone-950" />
+                      <span>آنباکس سه‌بعدی کالا</span>
+                    </LuxuryButton>
+                  </motion.div>
+                )}
               </div>
 
-              {/* Warranty details */}
-              {hasWarranty && (
-                <div className="border-b border-amber-500/15 pb-4">
-                  <button
-                    onClick={() => setActiveAccordion(activeAccordion === 'warranty' ? null : 'warranty')}
-                    className="w-full flex items-center justify-between py-4 text-right"
-                  >
-                    <span className="text-sm sm:text-base font-bold text-stone-200">گارانتی و خدمات پس از فروش</span>
-                    <ChevronDown className={`w-4 h-4 text-amber-400 transition-transform duration-300 ${activeAccordion === 'warranty' ? 'transform rotate-180' : ''}`} />
-                  </button>
-                  <AnimatePresence>
-                    {activeAccordion === 'warranty' && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.3 }}
-                        className="overflow-hidden text-xs sm:text-sm text-stone-300 leading-relaxed pt-2 pb-4 px-1"
-                      >
-                        <p className="bg-[#1C120C]/90 p-6 rounded-2xl border border-amber-500/10">
-                          🛡️ گارانتی رسمی محصول: <span className="text-amber-300 font-bold">{product.warranty}</span> شامل تعویض بدون قید و شرط قطعات و خدمات ویژه فروشگاه شیخ.
-                        </p>
-                      </motion.div>
+              {/* 2. PRODUCT DETAILS & BUYING SYSTEM (LEFT COLUMN - occupies 6 columns) */}
+              <div className="lg:col-span-6 space-y-8 w-full relative z-10">
+
+                {/* A. PRODUCT TITLE & INFO BLOCK */}
+                <div className="space-y-4">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="bg-amber-500/10 border border-amber-500/25 text-amber-800 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider">
+                      {categoryName}
+                    </span>
+                    {product.brand && (
+                      <span className="bg-[#FAF6EE] border border-[#5D4037]/25 text-[#5D4037] text-[10px] font-bold px-3 py-1 rounded-full shadow-sm">
+                        برند: {product.brand}
+                      </span>
                     )}
-                  </AnimatePresence>
-                </div>
-              )}
+                  </div>
 
-            </div>
-          </div>
-        )}
+                  <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#2C1A11] leading-tight tracking-tight">
+                    {product.name}
+                  </h1>
 
-        {/* 5. BUNDLE RECOMMENDATIONS */}
-        {allProducts.length > 0 && (
-          <div className="mt-16 bg-[#2A1A12]/90 rounded-[2.5rem] p-6 sm:p-10 border border-amber-500/20 shadow-2xl">
-            <ErrorBoundary>
-              <BundleRecommendations
-                currentProduct={product}
-                products={allProducts}
-                limit={2}
-              />
-            </ErrorBoundary>
-          </div>
-        )}
-
-        {/* 6. RELATED PRODUCTS (Apple style luxury cards) */}
-        {relatedProducts.length > 0 && (
-          <div className="mt-20 space-y-8">
-            <div className="flex items-center gap-3">
-              <span className="text-amber-500 text-2xl">👑</span>
-              <h3 className="text-2xl font-black text-[#2C1A11]">محصولات پیشنهادی و مرتبط</h3>
-              <div className="flex-1 h-px bg-gradient-to-r from-amber-500/20 to-transparent" />
-            </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
-              {relatedProducts.map((relProduct) => {
-                const relPricing = resolveProductPrice(relProduct, null);
-                return (
-                  <Link
-                    href={`/products/${relProduct.slug || relProduct.id}`}
-                    key={relProduct.id}
-                    className="group bg-[#2A1A12] border border-amber-500/20 rounded-[2rem] p-4 flex flex-col h-full transition-all duration-300 hover:scale-[1.02] shadow-xl hover:shadow-[0_20px_40px_rgba(217,119,6,0.05)]"
-                  >
-                    <div className="relative aspect-square rounded-2xl overflow-hidden bg-[#1C120C]/90 mb-4 flex items-center justify-center p-3 border border-amber-500/10">
-                      <Image
-                        src={relProduct.images?.[0]?.secureUrl || relProduct.images?.[0]?.image || '/noImage.jpg'}
-                        alt={relProduct.name}
-                        fill
-                        className="object-contain p-4 transition-transform duration-500 group-hover:scale-105"
-                        sizes="(max-width: 768px) 50vw, 20vw"
-                      />
+                  {/* Sub-header ratings, stock, status info */}
+                  <div className="flex flex-wrap items-center gap-4 text-xs text-[#5D4037] pt-1">
+                    <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-0.5">
+                        {Array.from({ length: 5 }, (_, i) => (
+                          <Star
+                            key={i}
+                            className={`w-4 h-4 ${
+                              i < Math.floor(Number(hashedRating.ratingValue)) ? 'fill-amber-500 text-amber-500' : 'text-stone-300'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <span className="font-extrabold text-amber-700 text-sm mr-1">{hashedRating.ratingValue}</span>
+                      <span className="text-stone-300">|</span>
+                      <span className="hover:text-amber-800 font-medium transition-colors">({hashedRating.reviewCount} دیدگاه تایید شده)</span>
                     </div>
-                    <h4 className="text-xs sm:text-sm font-bold text-stone-200 group-hover:text-amber-400 transition-colors line-clamp-1 mb-2 text-right">
-                      {relProduct.name}
-                    </h4>
-                    <div className="mt-auto pt-2 flex items-center justify-between">
-                      <span className="text-stone-400 text-[10px]">فروشگاه بزرگ شیخ</span>
-                      <span className="text-xs sm:text-sm font-black text-amber-400">
-                        {formatToToman(relPricing.price)}
+
+                    {product.sku && (
+                      <>
+                        <span className="text-stone-300">|</span>
+                        <span className="font-mono text-[#5D4037] font-medium">شناسه: {product.sku}</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* B. PREMIUM PRICE VIEW - THE STRONGEST VISUAL ELEMENT */}
+                <div className="relative group bg-[#1C120C] border border-amber-500/20 rounded-3xl p-6 md:p-8 overflow-hidden shadow-[0_15px_30px_rgba(42,26,18,0.2)]">
+
+                  {/* Moving neon amber border pulse */}
+                  <AnimatedBorder color="amber" borderWidth={1} />
+
+                  {/* Soft moving amber light reflection around price box */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-amber-500/[0.05] to-transparent pointer-events-none animate-pulse-glow" />
+
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 relative z-10">
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] sm:text-xs font-bold text-stone-300 block uppercase tracking-wider">قیمت خرید ویژه</span>
+                      <div className="flex items-baseline gap-2.5">
+                        <span className="text-3xl sm:text-4.5xl font-black text-amber-400 tracking-tight leading-none text-glow">
+                          {formatToToman(pricing.price)}
+                        </span>
+                        {pricing.oldPrice && (
+                          <span className="text-stone-400 text-sm sm:text-base line-through decoration-red-500/50 decoration-2 font-bold">
+                            {formatToToman(pricing.oldPrice)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col items-start sm:items-end gap-2 shrink-0">
+                      {pricing.hasDiscount && (
+                        <span className="bg-gradient-to-r from-red-600 to-red-500 border border-red-500/30 text-white text-[11px] font-black px-4 py-1.5 rounded-full shadow-lg flex items-center gap-1">
+                          <BadgePercent className="w-4 h-4" />
+                          <span>{pricing.discountPercentage}٪ تخفیف ویژه شیخ</span>
+                        </span>
+                      )}
+
+                      <span className="flex items-center gap-2 text-xs">
+                        <span className={`w-2.5 h-2.5 rounded-full ${currentStock > 0 ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
+                        <span className={currentStock > 0 ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold'}>
+                          {currentStock > 0 ? `آماده ارسال (موجود در انبار شیخ)` : 'ناموجود'}
+                        </span>
                       </span>
                     </div>
-                  </Link>
-                );
-              })}
+                  </div>
+                </div>
+
+                {/* C. APPLE-STYLE VARIANTS SELECTOR */}
+                {availableProductUnits.length > 0 && (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-bold text-[#5D4037] uppercase tracking-wider">انتخاب ظرفیت / مشخصات کالا</label>
+                      <span className="text-[10px] text-amber-700 font-bold">مشاهده تغییرات قیمت</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                      {availableProductUnits.map((unit) => {
+                        const isSelected = selectedProductUnit?.id === unit.id;
+                        return (
+                          <button
+                            key={unit.id}
+                            onClick={() => setSelectedProductUnit(unit)}
+                            className={`relative p-4 rounded-2xl border text-right transition-all duration-300 flex flex-col justify-between h-20 overflow-hidden ${
+                              isSelected
+                                ? 'border-amber-500 bg-amber-500/[0.08] shadow-xl scale-102'
+                                : 'border-[#5D4037]/25 hover:border-amber-500/35 bg-[#FAF6EE]/90 hover:bg-[#FAF6EE]'
+                            }`}
+                          >
+                            {isSelected && <AnimatedBorder color="amber" borderWidth={1} />}
+                            <span className="text-xs font-black text-[#2C1A11] block truncate relative z-10">{unit.name}</span>
+                            <div className="flex items-center justify-between w-full mt-1 relative z-10">
+                              <span className="text-amber-700 font-black text-sm">{formatToToman(Number(unit.price))}</span>
+                              {isSelected && <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0" />}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* D. LUXURY CTA / ORDER ACTION BLOCK */}
+                <div className="relative bg-[#2A1A12] border border-amber-500/20 rounded-3xl p-6 space-y-6 shadow-2xl overflow-hidden">
+
+                  {/* Neon Golden border & subtle ambient reflection */}
+                  <AnimatedBorder color="gold" borderWidth={1} />
+                  <AmbientGlow color="gold" opacity={0.1} blur={90} className="absolute -bottom-[20%] -left-[20%] w-[120%] h-[120%] z-0" />
+
+                  {/* Factor Breakdown */}
+                  <div className="bg-[#1C120C]/95 border border-amber-500/10 rounded-2xl p-4.5 space-y-3.5 text-xs sm:text-sm text-stone-300 relative z-10">
+                    <div className="flex justify-between items-center">
+                      <span className="text-stone-300">کالای انتخابی:</span>
+                      <span className="text-stone-100 font-bold">{product.name}</span>
+                    </div>
+                    {selectedProductUnit && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-stone-300">مدل انتخابی:</span>
+                        <span className="text-amber-400 font-black">{selectedProductUnit.name}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between items-center">
+                      <span className="text-stone-300">تعداد درخواستی:</span>
+                      <span className="text-stone-100 font-bold">{selectedQuantity} عدد</span>
+                    </div>
+
+                    <div className="flex justify-between items-center border-t border-amber-500/15 pt-3.5">
+                      <span className="font-bold text-stone-200">مبلغ کل فاکتور:</span>
+                      <span className="text-amber-400 font-black text-lg sm:text-xl tracking-tight">
+                        {formatToToman(pricing.price)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* CTAs upgraded to Luxury design */}
+                  <div className="flex flex-col sm:flex-row items-stretch gap-4 relative z-10">
+
+                    {/* Quantity adjuster */}
+                    <div className="flex items-center justify-between sm:justify-start gap-4 bg-[#1C120C] border border-[#5D4037]/30 rounded-2xl p-2 shrink-0">
+                      <button
+                        onClick={() => setSelectedQuantity((prev) => Math.max(1, prev - 1))}
+                        disabled={selectedQuantity <= 1}
+                        className="w-11 h-11 rounded-xl bg-[#2A1A12] hover:bg-[#3E2723] border border-amber-500/15 flex items-center justify-center text-stone-300 transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
+                        aria-label="کاهش تعداد"
+                      >
+                        <Minus className="w-4 h-4" />
+                      </button>
+                      <span className="text-base font-black text-center w-10 text-stone-100">{selectedQuantity}</span>
+                      <button
+                        onClick={() => setSelectedQuantity((prev) => Math.min(currentStock, prev + 1))}
+                        disabled={selectedQuantity >= currentStock}
+                        className="w-11 h-11 rounded-xl bg-[#2A1A12] hover:bg-[#3E2723] border border-amber-500/15 flex items-center justify-center text-stone-300 transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
+                        aria-label="افزایش تعداد"
+                      >
+                        <Plus className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    {/* Primary Add To Cart with luxurious gradient animation */}
+                    <LuxuryButton
+                      onClick={handleAddToCart}
+                      disabled={currentStock === 0 || addToCartMutation.isPending}
+                      isLoading={addToCartMutation.isPending}
+                      variant="gold"
+                      className="flex-1 py-4 text-sm"
+                    >
+                      <ShoppingBag className="w-5 h-5 text-stone-950" />
+                      <span>افزودن به سبد خرید</span>
+                    </LuxuryButton>
+                  </div>
+
+                  {/* Instant Purchase upgraded to Luxury button */}
+                  <LuxuryButton
+                    onClick={handleInstantPurchase}
+                    disabled={currentStock === 0 || addToCartMutation.isPending}
+                    variant="dark"
+                    className="w-full py-3.5 text-xs relative z-10"
+                  >
+                    <span>⚡ خرید فوری و تسویه سریع حساب</span>
+                  </LuxuryButton>
+
+                  {/* Heart, Compare, Share actions */}
+                  <div className="flex items-center justify-center gap-8 text-xs text-stone-300 border-t border-amber-500/15 pt-4 relative z-10">
+                    <button
+                      onClick={() => {
+                        setIsFavorited(!isFavorited);
+                        toast.success(isFavorited ? 'از علاقه‌مندی‌ها حذف شد.' : 'به علاقه‌مندی‌ها اضافه شد.');
+                      }}
+                      className={`hover:text-amber-400 transition-colors flex items-center gap-2 ${isFavorited ? 'text-amber-400' : ''}`}
+                    >
+                      <Heart className={`w-4 h-4 ${isFavorited ? 'fill-amber-400' : ''}`} />
+                      <span>{isFavorited ? 'محبوب شما' : 'افزودن به علاقه‌مندی'}</span>
+                    </button>
+
+                    <span className="text-amber-500/20">|</span>
+
+                    <button
+                      onClick={() => {
+                        setIsCompared(!isCompared);
+                        toast.success(isCompared ? 'از لیست مقایسه حذف شد.' : 'به لیست مقایسه افزوده شد.');
+                      }}
+                      className={`hover:text-amber-400 transition-colors flex items-center gap-2 ${isCompared ? 'text-amber-400' : ''}`}
+                    >
+                      <BarChart3 className="w-4 h-4" />
+                      <span>مقایسه محصول</span>
+                    </button>
+
+                    <span className="text-amber-500/20">|</span>
+
+                    <button
+                      onClick={handleShare}
+                      className="hover:text-amber-400 transition-colors flex items-center gap-2"
+                    >
+                      <Share2 className="w-4 h-4" />
+                      <span>اشتراک‌گذاری</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* E. PREMIUM TRUST BADGES WITH GLASSMORPHISM */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div className="bg-[#FAF6EE]/90 border border-amber-500/20 rounded-2xl p-4 text-center space-y-2.5 backdrop-blur-sm shadow-md relative overflow-hidden group">
+                    <GlassReflection duration={11} />
+                    <CreditCard className="w-6 h-6 text-amber-700 mx-auto transition-transform group-hover:scale-105" />
+                    <h4 className="text-[11px] font-black text-[#2C1A11]">پرداخت امن VIP</h4>
+                    <p className="text-[9px] text-[#5D4037] leading-normal font-bold">درگاه بانکی با بیمه امنیتی</p>
+                  </div>
+                  <div className="bg-[#FAF6EE]/90 border border-amber-500/20 rounded-2xl p-4 text-center space-y-2.5 backdrop-blur-sm shadow-md relative overflow-hidden group">
+                    <GlassReflection duration={12} />
+                    <ShieldCheck className="w-6 h-6 text-amber-700 mx-auto transition-transform group-hover:scale-105" />
+                    <h4 className="text-[11px] font-black text-[#2C1A11]">اصالت واقعی کالا</h4>
+                    <p className="text-[9px] text-[#5D4037] leading-normal font-bold">تضمین ۱۰۰٪ لوکس کالا</p>
+                  </div>
+                  <div className="bg-[#FAF6EE]/90 border border-amber-500/20 rounded-2xl p-4 text-center space-y-2.5 backdrop-blur-sm shadow-md relative overflow-hidden group">
+                    <GlassReflection duration={10} />
+                    <Truck className="w-6 h-6 text-amber-700 mx-auto transition-transform group-hover:scale-105" />
+                    <h4 className="text-[11px] font-black text-[#2C1A11]">ارسال اکسپرس VIP</h4>
+                    <p className="text-[9px] text-[#5D4037] leading-normal font-bold">بسته‌بندی محافظ چرمی</p>
+                  </div>
+                  <div className="bg-[#FAF6EE]/90 border border-amber-500/20 rounded-2xl p-4 text-center space-y-2.5 backdrop-blur-sm shadow-md relative overflow-hidden group">
+                    <GlassReflection duration={13} />
+                    <Headphones className="w-6 h-6 text-amber-700 mx-auto transition-transform group-hover:scale-105" />
+                    <h4 className="text-[11px] font-black text-[#2C1A11]">پشتیبان اختصاصی</h4>
+                    <p className="text-[9px] text-[#5D4037] leading-normal font-bold">پاسخگویی ۲۴ ساعته VIP</p>
+                  </div>
+                </div>
+
+              </div>
             </div>
-          </div>
-        )}
+          </HoverGlow>
 
-        <div className="mt-20">
-          <ReviewSubmissionCard
-            productId={product.id}
-            productName={product.name}
-            onReviewChange={handleReviewChange}
-          />
-        </div>
-
-        {/* 7. REVIEWS */}
-        <div className="mt-10 bg-[#2A1A12]/95 border border-amber-500/20 rounded-[2.5rem] p-6 sm:p-10 space-y-8 shadow-2xl">
-          <div className="flex items-center justify-between border-[#5D4037]/35 pb-6 border-b">
-            <div className="flex items-center gap-3">
-              <MessageSquare className="w-6 h-6 text-amber-400" />
-              <h3 className="text-xl font-black text-white">نظرات و دیدگاه‌های کاربران</h3>
+          {/* 3. ROW OF DYNAMIC FEATURES BADGES */}
+          {hasFeatures && (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mt-16">
+              {product.features.map((feature, idx) => (
+                <div key={idx} className="relative overflow-hidden bg-[#FAF6EE]/80 backdrop-blur-md border border-[#5D4037]/25 rounded-2xl p-4 flex items-center gap-3.5 transition-all duration-300 hover:border-amber-500/35 shadow-sm group">
+                  <GlassReflection duration={9} />
+                  <div className="w-7 h-7 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-700 font-bold text-xs shrink-0 z-10">
+                    ✓
+                  </div>
+                  <span className="text-xs sm:text-sm font-bold text-[#2C1A11] z-10">{feature}</span>
+                </div>
+              ))}
             </div>
+          )}
+
+          {/* 4. SPECIFICATIONS & SAFE DESCRIPTION ACCORDION */}
+          {anySpecsAvailable && (
+            <HoverGlow>
+              <div className="relative mt-16 bg-[#2A1A12] border border-amber-500/15 rounded-[2.5rem] p-6 sm:p-10 space-y-6 shadow-2xl overflow-hidden">
+
+                {/* Neon soft amber pulse border and ambient light */}
+                <AnimatedBorder color="amber" borderWidth={1.5} />
+                <AmbientGlow color="amber" opacity={0.14} blur={150} className="absolute -top-[15%] -left-[15%] w-[130%] h-[130%] z-0" />
+                <GlassReflection duration={15} />
+
+                <h2 className="text-xl sm:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-400 mb-6 relative z-10">جزئیات و مشخصات فنی کالا</h2>
+                <div className="space-y-4 relative z-10">
+
+                  {/* Product description / Story with Custom Animated Border & Glow */}
+                  {hasDescription && (
+                    <div className="border-b border-amber-500/15 pb-4">
+                      <button
+                        onClick={() => setActiveAccordion(activeAccordion === 'story' ? null : 'story')}
+                        className="w-full flex items-center justify-between py-4 text-right"
+                      >
+                        <span className="text-sm sm:text-base font-bold text-stone-200">توضیحات و داستان محصول</span>
+                        <ChevronDown className={`w-4 h-4 text-amber-400 transition-transform duration-300 ${activeAccordion === 'story' ? 'transform rotate-180' : ''}`} />
+                      </button>
+                      <AnimatePresence>
+                        {activeAccordion === 'story' && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="overflow-hidden pt-2 pb-4 px-1"
+                          >
+                            <div className="relative bg-[#1C120C]/90 rounded-2xl p-6 border border-amber-500/10 overflow-hidden">
+                              {/* Soft amber border & subtle glow around description card */}
+                              <AnimatedBorder color="amber" borderWidth={1} />
+                              <AmbientGlow color="amber" opacity={0.08} blur={90} className="absolute -inset-10 z-0" />
+                              <GlassReflection duration={12} />
+
+                              <div className="relative z-10">
+                                <MarkdownDescription content={product.description} />
+                              </div>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  )}
+
+                  {/* Technical Specifications */}
+                  {hasSpecs && (
+                    <div className="border-b border-amber-500/15 pb-4">
+                      <button
+                        onClick={() => setActiveAccordion(activeAccordion === 'specs' ? null : 'specs')}
+                        className="w-full flex items-center justify-between py-4 text-right"
+                      >
+                        <span className="text-sm sm:text-base font-bold text-stone-200">مشخصات فنی و سخت‌افزاری</span>
+                        <ChevronDown className={`w-4 h-4 text-amber-400 transition-transform duration-300 ${activeAccordion === 'specs' ? 'transform rotate-180' : ''}`} />
+                      </button>
+                      <AnimatePresence>
+                        {activeAccordion === 'specs' && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="overflow-hidden pt-2 pb-4 px-1"
+                          >
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-[#1C120C]/90 rounded-2xl p-6 border border-amber-500/10 relative overflow-hidden">
+                              <GlassReflection duration={13} />
+                              {Object.entries(product.technicalSpecs as Record<string, any>).map(([key, val]) => (
+                                <div key={key} className="flex justify-between border-b border-amber-500/10 py-3 text-xs sm:text-sm relative z-10">
+                                  <span className="text-stone-300 font-medium">{key}</span>
+                                  <span className="text-stone-100 font-bold">{String(val)}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  )}
+
+                  {/* Shipping protocol info */}
+                  <div className="border-b border-amber-500/15 pb-4">
+                    <button
+                      onClick={() => setActiveAccordion(activeAccordion === 'shipping' ? null : 'shipping')}
+                      className="w-full flex items-center justify-between py-4 text-right"
+                    >
+                      <span className="text-sm sm:text-base font-bold text-stone-200">ارسال و تحویل لوکس</span>
+                      <ChevronDown className={`w-4 h-4 text-amber-400 transition-transform duration-300 ${activeAccordion === 'shipping' ? 'transform rotate-180' : ''}`} />
+                    </button>
+                    <AnimatePresence>
+                      {activeAccordion === 'shipping' && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.3 }}
+                          className="overflow-hidden text-xs sm:text-sm text-stone-300 leading-relaxed pt-2 pb-4 px-1 space-y-4"
+                        >
+                          <p>
+                            تمامی سفارشات ثبت‌شده در بسته‌بندی‌های لوکس و ضدضربه‌ مخصوص فروشگاه بزرگ شیخ ارسال خواهند شد. سفارشات تهران ظرف ۲۴ ساعت و شهرستان‌ها بین ۳ تا ۵ روز تحویل می‌گردند.
+                          </p>
+                          <div className="grid grid-cols-2 gap-6 bg-[#1C120C]/90 p-6 rounded-2xl border border-amber-500/10 relative overflow-hidden">
+                            <GlassReflection duration={12} />
+                            <div className="relative z-10">
+                              <span className="text-stone-400 block mb-1 text-[11px] sm:text-xs">پروتکل توزیع لجستیک</span>
+                              <span className="font-bold text-stone-200">{product.shippingDescription || 'ارسال ویژه با بیمه طلایی'}</span>
+                            </div>
+                            <div className="relative z-10">
+                              <span className="text-stone-400 block mb-1 text-[11px] sm:text-xs">هزینه نهایی تحویل</span>
+                              <span className="font-bold text-amber-400">{product.allowFreeShipping ? 'رایگان (مهمان فروشگاه)' : '۲۰۰,۰۰۰ تومان'}</span>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+
+                  {/* Warranty details */}
+                  {hasWarranty && (
+                    <div className="border-b border-amber-500/15 pb-4">
+                      <button
+                        onClick={() => setActiveAccordion(activeAccordion === 'warranty' ? null : 'warranty')}
+                        className="w-full flex items-center justify-between py-4 text-right"
+                      >
+                        <span className="text-sm sm:text-base font-bold text-stone-200">گارانتی و خدمات پس از فروش</span>
+                        <ChevronDown className={`w-4 h-4 text-amber-400 transition-transform duration-300 ${activeAccordion === 'warranty' ? 'transform rotate-180' : ''}`} />
+                      </button>
+                      <AnimatePresence>
+                        {activeAccordion === 'warranty' && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="overflow-hidden text-xs sm:text-sm text-stone-300 leading-relaxed pt-2 pb-4 px-1"
+                          >
+                            <p className="bg-[#1C120C]/90 p-6 rounded-2xl border border-amber-500/10 relative overflow-hidden">
+                              <GlassReflection duration={11} />
+                              🛡️ گارانتی رسمی محصول: <span className="text-amber-300 font-bold relative z-10">{product.warranty}</span> شامل تعویض بدون قید و شرط قطعات و خدمات ویژه فروشگاه شیخ.
+                            </p>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  )}
+
+                </div>
+              </div>
+            </HoverGlow>
+          )}
+
+          {/* 5. BUNDLE RECOMMENDATIONS */}
+          {allProducts.length > 0 && (
+            <div className="mt-16">
+              <ErrorBoundary>
+                <BundleRecommendations
+                  currentProduct={product}
+                  products={allProducts}
+                  limit={2}
+                />
+              </ErrorBoundary>
+            </div>
+          )}
+
+          {/* 6. RELATED PRODUCTS (Apple style luxury cards) */}
+          {relatedProducts.length > 0 && (
+            <div className="mt-20 space-y-8">
+              <div className="flex items-center gap-3">
+                <span className="text-amber-500 text-2xl">👑</span>
+                <h3 className="text-2xl font-black text-[#2C1A11]">محصولات پیشنهادی و مرتبط</h3>
+                <div className="flex-1 h-px bg-gradient-to-r from-amber-500/20 to-transparent" />
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
+                {relatedProducts.map((relProduct) => {
+                  const relPricing = resolveProductPrice(relProduct, null);
+                  return (
+                    <Link
+                      href={`/products/${relProduct.slug || relProduct.id}`}
+                      key={relProduct.id}
+                      className="group bg-[#2A1A12] border border-amber-500/15 rounded-[2rem] p-4 flex flex-col h-full transition-all duration-300 hover:scale-[1.02] shadow-xl hover:shadow-[0_20px_40px_rgba(217,119,6,0.08)] relative overflow-hidden"
+                    >
+                      {/* Orange luxury border sweeps & ambient glows on hover */}
+                      <AnimatedBorder color="orange" borderWidth={1.2} className="opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <AmbientGlow color="orange" opacity={0.12} blur={80} className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-0" />
+                      <GlassReflection duration={11} />
+
+                      <div className="relative aspect-square rounded-2xl overflow-hidden bg-[#1C120C]/90 mb-4 flex items-center justify-center p-3 border border-amber-500/10 z-10">
+                        <Image
+                          src={relProduct.images?.[0]?.secureUrl || relProduct.images?.[0]?.image || '/noImage.jpg'}
+                          alt={relProduct.name}
+                          fill
+                          className="object-contain p-4 transition-transform duration-700 ease-[0.16, 1, 0.3, 1] group-hover:scale-106"
+                          sizes="(max-width: 768px) 50vw, 20vw"
+                        />
+                      </div>
+                      <h4 className="text-xs sm:text-sm font-bold text-stone-200 group-hover:text-amber-400 transition-colors duration-300 line-clamp-1 mb-2 text-right z-10">
+                        {relProduct.name}
+                      </h4>
+                      <div className="mt-auto pt-2 flex items-center justify-between z-10">
+                        <span className="text-stone-400 text-[10px]">فروشگاه بزرگ شیخ</span>
+                        <span className="text-xs sm:text-sm font-black text-amber-400 group-hover:text-amber-300 transition-colors duration-300 text-glow">
+                          {formatToToman(relPricing.price)}
+                        </span>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Review form gets its own card styling with glowing borders */}
+          <div className="mt-20 relative overflow-hidden rounded-[2.5rem]">
+            <ReviewSubmissionCard
+              productId={product.id}
+              productName={product.name}
+              onReviewChange={handleReviewChange}
+            />
           </div>
 
-          <DynamicReviewSection
-            productId={product.id}
-            refreshTrigger={reviewRefreshTrigger}
-          />
-        </div>
+          {/* 7. REVIEWS */}
+          <HoverGlow>
+            <div className="relative mt-10 bg-[#2A1A12]/95 border border-amber-500/15 rounded-[2.5rem] p-6 sm:p-10 space-y-8 shadow-2xl overflow-hidden">
+
+              {/* Blue-Gold premium border, glow, reflection sweep */}
+              <AnimatedBorder color="blue" borderWidth={1.5} />
+              <AmbientGlow color="blue" opacity={0.15} blur={160} className="absolute -top-[15%] -left-[15%] w-[130%] h-[130%] z-0" />
+              <GlassReflection duration={14} />
+
+              <div className="flex items-center justify-between border-[#5D4037]/35 pb-6 border-b relative z-10">
+                <div className="flex items-center gap-3">
+                  <MessageSquare className="w-6 h-6 text-amber-400" />
+                  <h3 className="text-xl font-black text-white">نظرات و دیدگاه‌های کاربران</h3>
+                </div>
+              </div>
+
+              <div className="relative z-10">
+                <DynamicReviewSection
+                  productId={product.id}
+                  refreshTrigger={reviewRefreshTrigger}
+                />
+              </div>
+            </div>
+          </HoverGlow>
 
         </div> {/* 🖥️ END DESKTOP VIEW */}
 
@@ -842,6 +926,10 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
             {/* 1. IMAGE GALLERY */}
             <div className="relative w-full max-w-md mx-auto aspect-[1.1] max-h-[280px] bg-[#1C120C]/90 border border-amber-500/20 rounded-3xl p-4 shadow-[0_15px_30px_rgba(42,26,18,0.25)] overflow-hidden group/gallery flex flex-col justify-between">
 
+              {/* Simple slow breathing glow and subtle border animation on mobile */}
+              <AnimatedBorder color="gold" borderWidth={1} />
+              <AmbientGlow color="gold" opacity={0.08} blur={60} className="absolute inset-0" />
+
               {/* Custom floating vip tag */}
               <div className="absolute top-3 right-3 z-10">
                 <span className="bg-[#1C120C]/95 border border-amber-500/35 text-amber-400 text-[9px] font-black tracking-wider px-2.5 py-1 rounded-full shadow-lg backdrop-blur-md flex items-center gap-1">
@@ -851,14 +939,22 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
               </div>
 
               {/* Main Image Slider with swipe / navigation */}
-              <div className="relative flex-1 w-full h-[180px] flex items-center justify-center p-2">
+              <div className="relative flex-1 w-full h-[180px] flex items-center justify-center p-2 z-10">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={selectedImageIndex}
                     initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
+                    animate={{
+                      opacity: 1,
+                      scale: [1, 1.012, 1],
+                      y: [0, -4, 0]
+                    }}
                     exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ duration: 0.3 }}
+                    transition={{
+                      duration: 8,
+                      repeat: Infinity,
+                      ease: 'easeInOut'
+                    }}
                     className="w-full h-full relative"
                   >
                     <Image
@@ -896,7 +992,7 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
 
               {/* Tiny Dot Indicators */}
               {images.length > 1 && (
-                <div className="flex justify-center gap-1 mt-1">
+                <div className="flex justify-center gap-1 mt-1 z-10">
                   {images.map((_, idx) => (
                     <span
                       key={idx}
@@ -969,8 +1065,9 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
             {/* 4. PRICE - THE LUXURY FOCUS */}
             <div className="w-full px-3">
               <div className="relative overflow-hidden rounded-3xl p-5 bg-[#1C120C] border border-amber-500/25 shadow-[0_15px_30px_rgba(42,26,18,0.25)]">
-                {/* Soft breathing light element */}
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(217,119,6,0.05)_0%,transparent_80%)] pointer-events-none" />
+                {/* Subtle border / glow */}
+                <AnimatedBorder color="amber" borderWidth={1} />
+                <AmbientGlow color="amber" opacity={0.08} blur={50} className="absolute inset-0" />
 
                 <div className="relative z-10 flex flex-col items-center space-y-1">
                   <span className="text-[9px] font-bold text-stone-300 tracking-wider uppercase">قیمت ویژه اعضای شیخ</span>
@@ -1012,16 +1109,17 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
                       <button
                         key={unit.id}
                         onClick={() => setSelectedProductUnit(unit)}
-                        className={`w-full p-3.5 rounded-2xl border text-right transition-all duration-300 flex items-center justify-between h-14 ${
+                        className={`w-full p-3.5 rounded-2xl border text-right transition-all duration-300 flex items-center justify-between h-14 relative overflow-hidden ${
                           isSelected
                             ? 'border-amber-500 bg-amber-500/[0.08] shadow-md scale-102'
                             : 'border-[#5D4037]/25 bg-[#FAF6EE]/90 hover:bg-[#FAF6EE]'
                         }`}
                       >
-                        <div className="text-right">
+                        {isSelected && <AnimatedBorder color="amber" borderWidth={1} />}
+                        <div className="text-right relative z-10">
                           <span className="text-xs font-black text-[#2C1A11] block truncate">{unit.name}</span>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 relative z-10">
                           <span className="text-amber-700 font-bold text-xs">{formatToToman(Number(unit.price))}</span>
                           {isSelected && <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0" />}
                         </div>
@@ -1058,22 +1156,25 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
 
             {/* 7. ADD TO CART CTA (FULL WIDTH 56PX) */}
             <div className="w-full px-3 space-y-3.5">
-              <button
+              <LuxuryButton
                 onClick={handleAddToCart}
                 disabled={currentStock === 0 || addToCartMutation.isPending}
-                className="w-full h-[56px] bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-black rounded-2xl shadow-xl transition-all duration-300 text-sm flex items-center justify-center gap-2 active:scale-98 disabled:opacity-40 disabled:cursor-not-allowed"
+                isLoading={addToCartMutation.isPending}
+                variant="gold"
+                className="w-full h-[56px] text-sm"
               >
                 <ShoppingBag className="w-5 h-5 text-stone-950" />
-                <span>{addToCartMutation.isPending ? 'در حال ثبت سفارش...' : 'افزودن به سبد خرید ویژه'}</span>
-              </button>
+                <span>افزودن به سبد خرید ویژه</span>
+              </LuxuryButton>
 
-              <button
+              <LuxuryButton
                 onClick={handleInstantPurchase}
                 disabled={currentStock === 0 || addToCartMutation.isPending}
-                className="w-full h-11 bg-[#1C120C] hover:bg-amber-500/15 text-amber-400 font-bold rounded-2xl border border-amber-500/25 transition-all text-[11px] flex items-center justify-center gap-1.5 active:scale-98 cursor-pointer"
+                variant="dark"
+                className="w-full h-11 text-[11px]"
               >
                 <span>⚡ خرید فوری و تسویه سریع حساب</span>
-              </button>
+              </LuxuryButton>
             </div>
 
             {/* 8. QUICK FEATURES */}
@@ -1081,11 +1182,12 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
               <div className="w-full px-3 py-1">
                 <div className="grid grid-cols-2 gap-2.5 text-right">
                   {product.features.slice(0, 4).map((feature, idx) => (
-                    <div key={idx} className="bg-[#FAF6EE]/80 backdrop-blur-md border border-[#5D4037]/25 rounded-xl p-2.5 flex items-center gap-2 shadow-sm">
-                      <div className="w-5 h-5 rounded-md bg-amber-500/10 flex items-center justify-center text-amber-700 font-bold text-[10px] shrink-0">
+                    <div key={idx} className="bg-[#FAF6EE]/80 backdrop-blur-md border border-[#5D4037]/25 rounded-xl p-2.5 flex items-center gap-2 shadow-sm relative overflow-hidden">
+                      <GlassReflection duration={10} />
+                      <div className="w-5 h-5 rounded-md bg-amber-500/10 flex items-center justify-center text-amber-700 font-bold text-[10px] shrink-0 z-10">
                         ✓
                       </div>
-                      <span className="text-[10px] font-bold text-[#2C1A11] truncate">{feature}</span>
+                      <span className="text-[10px] font-bold text-[#2C1A11] truncate z-10">{feature}</span>
                     </div>
                   ))}
                 </div>
@@ -1095,22 +1197,26 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
             {/* 9. PREMIUM GLASS TRUST BADGES */}
             <div className="w-full px-3">
               <div className="grid grid-cols-2 gap-3">
-                <div className="bg-[#FAF6EE]/90 border border-amber-500/20 rounded-2xl p-3.5 text-center space-y-1.5 backdrop-blur-sm shadow-md">
+                <div className="bg-[#FAF6EE]/90 border border-amber-500/20 rounded-2xl p-3.5 text-center space-y-1.5 backdrop-blur-sm shadow-md relative overflow-hidden">
+                  <GlassReflection duration={11} />
                   <CreditCard className="w-5 h-5 text-amber-750 mx-auto" />
                   <h4 className="text-[10px] font-black text-[#2C1A11]">پرداخت امن VIP</h4>
                   <p className="text-[8px] text-[#5D4037] font-bold">درگاه بانکی با بیمه امنیتی</p>
                 </div>
-                <div className="bg-[#FAF6EE]/90 border border-amber-500/20 rounded-2xl p-3.5 text-center space-y-1.5 backdrop-blur-sm shadow-md">
+                <div className="bg-[#FAF6EE]/90 border border-amber-500/20 rounded-2xl p-3.5 text-center space-y-1.5 backdrop-blur-sm shadow-md relative overflow-hidden">
+                  <GlassReflection duration={12} />
                   <ShieldCheck className="w-5 h-5 text-amber-750 mx-auto" />
                   <h4 className="text-[10px] font-black text-[#2C1A11]">اصالت واقعی کالا</h4>
                   <p className="text-[8px] text-[#5D4037] font-bold">تضمین ۱۰۰٪ لوکس کالا</p>
                 </div>
-                <div className="bg-[#FAF6EE]/90 border border-amber-500/20 rounded-2xl p-3.5 text-center space-y-1.5 backdrop-blur-sm shadow-md">
+                <div className="bg-[#FAF6EE]/90 border border-amber-500/20 rounded-2xl p-3.5 text-center space-y-1.5 backdrop-blur-sm shadow-md relative overflow-hidden">
+                  <GlassReflection duration={10} />
                   <Truck className="w-5 h-5 text-amber-750 mx-auto" />
                   <h4 className="text-[10px] font-black text-[#2C1A11]">ارسال اکسپرس VIP</h4>
                   <p className="text-[8px] text-[#5D4037] font-bold">بسته‌بندی محافظ چرمی</p>
                 </div>
-                <div className="bg-[#FAF6EE]/90 border border-amber-500/20 rounded-2xl p-3.5 text-center space-y-1.5 backdrop-blur-sm shadow-md">
+                <div className="bg-[#FAF6EE]/90 border border-amber-500/20 rounded-2xl p-3.5 text-center space-y-1.5 backdrop-blur-sm shadow-md relative overflow-hidden">
+                  <GlassReflection duration={13} />
                   <Headphones className="w-5 h-5 text-amber-750 mx-auto" />
                   <h4 className="text-[10px] font-black text-[#2C1A11]">پشتیبان اختصاصی</h4>
                   <p className="text-[8px] text-[#5D4037] font-bold">پاسخگویی ۲۴ ساعته VIP</p>
@@ -1121,9 +1227,12 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
           </div>
 
           {/* Collapsible Accordion (Description & Specs) */}
-          <div className="mt-8 bg-[#2A1A12] border border-amber-500/20 rounded-3xl p-5 space-y-4 shadow-2xl">
+          <div className="mt-8 bg-[#2A1A12] border border-amber-500/15 rounded-3xl p-5 space-y-4 shadow-2xl relative overflow-hidden">
+            <AnimatedBorder color="amber" borderWidth={1} />
+            <AmbientGlow color="amber" opacity={0.06} blur={60} className="absolute inset-0" />
+
             {hasDescription && (
-              <div className="border-b border-amber-500/15 pb-3">
+              <div className="border-b border-amber-500/15 pb-3 relative z-10">
                 <button
                   onClick={() => setActiveAccordion(activeAccordion === 'story' ? null : 'story')}
                   className="w-full flex items-center justify-between py-3 text-right"
@@ -1148,7 +1257,7 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
             )}
 
             {anySpecsAvailable && (
-              <div className="border-b border-amber-500/15 pb-3">
+              <div className="border-b border-amber-500/15 pb-3 relative z-10">
                 <button
                   onClick={() => setActiveAccordion(activeAccordion === 'specs' ? null : 'specs')}
                   className="w-full flex items-center justify-between py-3 text-right"
@@ -1165,33 +1274,34 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
                       transition={{ duration: 0.25 }}
                       className="overflow-hidden pt-1 pb-3 px-1"
                     >
-                      <div className="space-y-2 bg-[#1C120C]/90 rounded-xl p-4 border border-amber-500/10 text-[11px]">
+                      <div className="space-y-2 bg-[#1C120C]/90 rounded-xl p-4 border border-amber-500/10 text-[11px] relative overflow-hidden">
+                        <GlassReflection duration={11} />
                         {hasWeight && (
-                          <div className="flex justify-between py-1.5 border-b border-amber-500/10">
+                          <div className="flex justify-between py-1.5 border-b border-amber-500/10 relative z-10">
                             <span className="text-stone-350">وزن</span>
                             <span className="text-stone-100 font-bold">{product.weight} {product.weightUnit}</span>
                           </div>
                         )}
                         {hasOrigin && (
-                          <div className="flex justify-between py-1.5 border-b border-amber-500/10">
+                          <div className="flex justify-between py-1.5 border-b border-amber-500/10 relative z-10">
                             <span className="text-stone-350">کشور سازنده</span>
                             <span className="text-stone-100 font-bold">{product.origin}</span>
                           </div>
                         )}
                         {hasWarranty && (
-                          <div className="flex justify-between py-1.5 border-b border-amber-500/10">
+                          <div className="flex justify-between py-1.5 border-b border-amber-500/10 relative z-10">
                             <span className="text-stone-350">گارانتی</span>
                             <span className="text-stone-100 font-bold">{product.warranty}</span>
                           </div>
                         )}
                         {hasColor && (
-                          <div className="flex justify-between py-1.5 border-b border-amber-500/10">
+                          <div className="flex justify-between py-1.5 border-b border-amber-500/10 relative z-10">
                             <span className="text-stone-350">رنگ</span>
                             <span className="text-stone-100 font-bold">{product.color}</span>
                           </div>
                         )}
                         {hasSpecs && Object.entries(product.technicalSpecs as Record<string, any>).map(([key, val]) => (
-                          <div key={key} className="flex justify-between py-1.5 border-b border-amber-500/10">
+                          <div key={key} className="flex justify-between py-1.5 border-b border-amber-500/10 relative z-10">
                             <span className="text-stone-350">{key}</span>
                             <span className="text-stone-100 font-bold">{String(val)}</span>
                           </div>
@@ -1206,9 +1316,11 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
 
           {/* Bundle Section */}
           {allProducts.length > 0 && (
-            <div className="mt-8 bg-[#2A1A12] rounded-3xl p-5 border border-amber-500/20 shadow-2xl">
+            <div className="mt-8 bg-[#2A1A12] rounded-3xl p-5 border border-amber-500/20 shadow-2xl relative overflow-hidden">
+              <AnimatedBorder color="emerald" borderWidth={1} />
+              <AmbientGlow color="emerald" opacity={0.06} blur={60} className="absolute inset-0" />
               <ErrorBoundary>
-                <div className="scale-95 origin-top">
+                <div className="scale-95 origin-top relative z-10">
                   <BundleRecommendations
                     currentProduct={product}
                     products={allProducts}
@@ -1235,9 +1347,12 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
                     <Link
                       href={`/products/${relProduct.slug || relProduct.id}`}
                       key={relProduct.id}
-                      className="group bg-[#2A1A12] border border-amber-500/20 rounded-2xl p-3 flex flex-col h-full transition-all duration-300 hover:scale-[1.01] shadow-md"
+                      className="group bg-[#2A1A12] border border-amber-500/20 rounded-2xl p-3 flex flex-col h-full transition-all duration-300 hover:scale-[1.01] shadow-md relative overflow-hidden"
                     >
-                      <div className="relative aspect-square rounded-xl overflow-hidden bg-[#1C120C]/90 mb-2 flex items-center justify-center p-2 h-24 border border-amber-500/10">
+                      <AnimatedBorder color="orange" borderWidth={1} className="opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <GlassReflection duration={11} />
+
+                      <div className="relative aspect-square rounded-xl overflow-hidden bg-[#1C120C]/90 mb-2 flex items-center justify-center p-2 h-24 border border-amber-500/10 z-10">
                         <Image
                           src={relProduct.images?.[0]?.secureUrl || relProduct.images?.[0]?.image || '/noImage.jpg'}
                           alt={relProduct.name}
@@ -1246,10 +1361,10 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
                           sizes="100px"
                         />
                       </div>
-                      <h4 className="text-[11px] font-bold text-stone-200 group-hover:text-amber-400 transition-colors line-clamp-1 mb-1 text-right">
+                      <h4 className="text-[11px] font-bold text-stone-200 group-hover:text-amber-400 transition-colors line-clamp-1 mb-1 text-right z-10">
                         {relProduct.name}
                       </h4>
-                      <div className="mt-auto pt-1 flex items-center justify-between text-[10px]">
+                      <div className="mt-auto pt-1 flex items-center justify-between text-[10px] z-10">
                         <span className="text-stone-400 text-[8px]">شیخ شاپ</span>
                         <span className="text-xs font-black text-amber-400">
                           {formatToToman(relPricing.price)}
@@ -1262,7 +1377,7 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
             </div>
           )}
 
-          <div className="mt-8">
+          <div className="mt-8 relative overflow-hidden rounded-3xl">
             <ReviewSubmissionCard
               productId={product.id}
               productName={product.name}
@@ -1271,18 +1386,23 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
           </div>
 
           {/* Compact Reviews Section */}
-          <div className="mt-8 bg-[#2A1A12] border border-amber-500/20 rounded-3xl p-5 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-[#5D4037]/35 pb-3">
+          <div className="mt-8 bg-[#2A1A12] border border-amber-500/15 rounded-3xl p-5 space-y-4 shadow-2xl relative overflow-hidden">
+            <AnimatedBorder color="blue" borderWidth={1} />
+            <AmbientGlow color="blue" opacity={0.06} blur={60} className="absolute inset-0" />
+
+            <div className="flex items-center justify-between border-b border-[#5D4037]/35 pb-3 relative z-10">
               <div className="flex items-center gap-2">
                 <MessageSquare className="w-4 h-4 text-amber-400" />
                 <h3 className="text-xs sm:text-sm font-black text-white">دیدگاه‌های کاربران</h3>
               </div>
             </div>
 
-            <DynamicReviewSection
-              productId={product.id}
-              refreshTrigger={reviewRefreshTrigger}
-            />
+            <div className="relative z-10">
+              <DynamicReviewSection
+                productId={product.id}
+                refreshTrigger={reviewRefreshTrigger}
+              />
+            </div>
           </div>
 
         </div>
@@ -1313,14 +1433,16 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
                   <span className="text-[11px] font-black text-amber-400">{formatToToman(pricing.price)}</span>
                 </div>
               </div>
-              <button
+              <LuxuryButton
                 onClick={handleAddToCart}
                 disabled={currentStock === 0 || addToCartMutation.isPending}
-                className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-black py-2.5 px-4 rounded-xl text-[10px] flex items-center gap-1.5 shadow-lg active:scale-95 transition-transform shrink-0"
+                isLoading={addToCartMutation.isPending}
+                variant="gold"
+                className="py-2.5 px-4 rounded-xl text-[10px] shrink-0"
               >
                 <ShoppingBag className="w-3.5 h-3.5 text-stone-950" />
-                <span>{addToCartMutation.isPending ? 'ثبت...' : 'خرید فوری'}</span>
-              </button>
+                <span>خرید فوری</span>
+              </LuxuryButton>
             </motion.div>
           )}
         </AnimatePresence>
