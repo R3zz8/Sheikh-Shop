@@ -1097,3 +1097,46 @@
   background-size: 200% 200%;
   animation: animateMovingGlow 12s ease infinite;
 }
+
+/* Premium Golden Neon Category Animations */
+@keyframes luxuryGlowPulse {
+  0%, 100% {
+    opacity: 0.75;
+    transform: scale(1);
+    filter: drop-shadow(0 0 10px rgba(245, 158, 11, 0.25)) blur(4px);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.02);
+    filter: drop-shadow(0 0 16px rgba(245, 158, 11, 0.45)) blur(5px);
+  }
+}
+
+@keyframes luxuryBloomPulse {
+  0%, 100% {
+    opacity: 0.65;
+    transform: scale(0.98);
+    filter: blur(20px);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.03);
+    filter: blur(24px);
+  }
+}
+
+.animate-luxury-glow {
+  animation: luxuryGlowPulse 4s ease-in-out infinite;
+}
+
+.animate-luxury-bloom {
+  animation: luxuryBloomPulse 6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-luxury-glow,
+  .animate-luxury-bloom {
+    animation: none !important;
+    transform: none !important;
+  }
+}
