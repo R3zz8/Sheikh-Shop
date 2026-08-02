@@ -165,7 +165,7 @@ export default function BundleRecommendations({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: index * 0.1 }}
-              className="relative overflow-hidden bg-neutral-900/40 backdrop-blur-md border border-amber-500/20 rounded-3xl p-6 hover:border-amber-500/40 hover:shadow-[0_0_20px_rgba(245,158,11,0.05)] transition-all duration-300 flex flex-col justify-between"
+              className="relative overflow-hidden bg-[#2A1A12] border border-amber-500/25 rounded-3xl p-6 hover:border-amber-500/40 hover:shadow-[0_0_20px_rgba(245,158,11,0.05)] transition-all duration-300 flex flex-col justify-between"
             >
               <div>
                 {/* Bundle Header */}
@@ -175,7 +175,7 @@ export default function BundleRecommendations({
                       <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
                       بسته پیشنهادی ویژه
                     </h4>
-                    <p className="text-xs text-stone-400 mt-1">
+                    <p className="text-xs text-stone-300 mt-1">
                       با خرید همزمان این کالاها از {discountPercentage}٪ تخفیف ویژه بهره‌مند شوید.
                     </p>
                   </div>
@@ -196,9 +196,9 @@ export default function BundleRecommendations({
                     return (
                       <div key={prod.id} className="relative">
                         <div
-                          className="flex items-center gap-4 p-3 bg-neutral-950/40 rounded-2xl border border-stone-800 hover:border-amber-500/10 transition-colors duration-200"
+                          className="flex items-center gap-4 p-3 bg-[#1C120C]/90 rounded-2xl border border-amber-500/10 hover:border-amber-500/25 transition-colors duration-200"
                         >
-                          <div className="w-14 h-14 rounded-xl overflow-hidden bg-stone-900/80 border border-stone-800 shrink-0 flex items-center justify-center">
+                          <div className="w-14 h-14 rounded-xl overflow-hidden bg-[#2A1A12] border border-[#5D4037]/25 shrink-0 flex items-center justify-center">
                             {prod.images && prod.images.length > 0 ? (
                               <img
                                 src={prod.images[0]?.image || ''}
@@ -216,7 +216,7 @@ export default function BundleRecommendations({
                             <div className="flex items-center gap-2 mt-1">
                               <span className="text-xs font-black text-amber-400/90">{formatToToman(priceInfo.price)}</span>
                               {hasUnits && prod.units && prod.units.length > 0 && (
-                                <span className="text-[10px] text-stone-400 bg-stone-900 px-1.5 py-0.5 rounded-md">
+                                <span className="text-[10px] text-stone-300 bg-[#2A1A12] border border-[#5D4037]/20 px-1.5 py-0.5 rounded-md">
                                   {prod.units?.[0]?.name}
                                 </span>
                               )}
@@ -225,7 +225,7 @@ export default function BundleRecommendations({
                         </div>
 
                         {productIndex < bundle.products.length - 1 && (
-                          <div className="absolute -bottom-2.5 right-8 z-10 w-5 h-5 rounded-full bg-stone-950 border border-stone-800 flex items-center justify-center">
+                          <div className="absolute -bottom-2.5 right-8 z-10 w-5 h-5 rounded-full bg-[#1C120C] border border-amber-500/15 flex items-center justify-center">
                             <Plus className="w-3 h-3 text-amber-500/80" />
                           </div>
                         )}
@@ -236,15 +236,15 @@ export default function BundleRecommendations({
               </div>
 
               {/* Bundle Footer & CTA */}
-              <div className="pt-4 border-t border-stone-800/60 mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="pt-4 border-t border-[#5D4037]/35 mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div className="text-right">
                   <div className="flex items-baseline gap-1.5 justify-start">
-                    <span className="text-xs text-stone-400">قیمت نهایی بسته:</span>
+                    <span className="text-xs text-stone-300">قیمت نهایی بسته:</span>
                     <span className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-400">
                       {formatToToman(finalTotalPrice)}
                     </span>
                   </div>
-                  <div className="text-xs text-emerald-400 font-medium mt-0.5">
+                  <div className="text-xs text-emerald-400 font-bold mt-0.5">
                     تخفیف خرید گروهی: {formatToToman(savings)}
                   </div>
                 </div>
