@@ -14,23 +14,30 @@ export default function PWAResponsiveSplash({ children }: PWAResponsiveSplashPro
   useEffect(() => {
     let timer: NodeJS.Timeout | undefined;
 
-    // Premium PWA behavior: Show the splash screen once per session to prevent
-    // interrupting frequent navigations, or when launched in standalone PWA mode.
+    // Premium PWA behavior: Only show the splash experience if launched in standalone PWA mode.
+    // For normal browser visits, the website opens immediately with NO splash screen or app behaviors.
     if (typeof window !== 'undefined') {
       const isStandalone = window.matchMedia('(display-mode: standalone)').matches
         || (window.navigator as any).standalone
         || document.referrer.includes('android-app://');
 
-      const splashShown = sessionStorage.getItem('ss_splash_shown');
+      if (isStandalone) {
+        const splashShown = sessionStorage.getItem('ss_splash_shown');
 
-      // If in standalone mode OR initial visit in session, trigger the luxury splash experience
-      if (isStandalone || !splashShown) {
-        setShowSplash(true);
-        sessionStorage.setItem('ss_splash_shown', 'true');
+        // Initial launch in standalone mode during this session: show splash screen
+        if (!splashShown) {
+          setShowSplash(true);
+          sessionStorage.setItem('ss_splash_shown', 'true');
 
-        timer = setTimeout(() => {
+          timer = setTimeout(() => {
+            setShowSplash(false);
+          }, 1600); // 1.6 seconds display duration
+        } else {
           setShowSplash(false);
-        }, 1600); // 1.6 seconds display duration
+        }
+      } else {
+        // Normal website visit: absolutely NO splash screen
+        setShowSplash(false);
       }
     }
 
