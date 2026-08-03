@@ -4,14 +4,13 @@ import { getRedis } from '@/lib/redis';
 type RateLimitState = { count: number; resetAt: number };
 type RateLimitResult = { allowed: true } | { allowed: false; retryAfter: number };
 
-// This rate limiter now uses the central in-memory cache adapter.
-// The original Redis logic has been removed.
+// This rate limiter now uses the central resilient cache adapter (distributed Redis/InMemory).
 export async function rateLimit(key: string, max: number, windowSec: number): Promise<RateLimitResult> {
-  const cache = getRedis(); // This now returns our in-memory cache client
+  const cache = getRedis(); // This now returns our resilient cache client adapter
   const nowSec = Math.floor(Date.now() / 1000);
   const windowKey = `ratelimit:${key}`;
 
-  const raw = cache.get(windowKey);
+  const raw = await cache.get(windowKey);
   let state: RateLimitState | null = null;
   if (raw) {
     try {
@@ -24,7 +23,7 @@ export async function rateLimit(key: string, max: number, windowSec: number): Pr
   if (!state || nowSec >= state.resetAt) {
     // Start new window
     const newState: RateLimitState = { count: 1, resetAt: nowSec + windowSec };
-    cache.set(windowKey, JSON.stringify(newState), { ex: windowSec });
+    await cache.set(windowKey, JSON.stringify(newState), { ex: windowSec });
     return { allowed: true };
   }
 
@@ -37,6 +36,6 @@ export async function rateLimit(key: string, max: number, windowSec: number): Pr
   const updated: RateLimitState = { count: state.count + 1, resetAt: state.resetAt };
   // Keep same expiry; approximate with remaining seconds
   const ttl = Math.max(1, state.resetAt - nowSec);
-  cache.set(windowKey, JSON.stringify(updated), { ex: ttl });
+  await cache.set(windowKey, JSON.stringify(updated), { ex: ttl });
   return { allowed: true };
 }

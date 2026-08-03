@@ -23,25 +23,91 @@ function serializeProductForAmazingDeals(product: any) {
 
 export async function GET(req: NextRequest) {
   try {
-    // Fetch amazing deals products with correct schema relations
+    // Fetch amazing deals products with optimized select statements
     const amazingDeals = await prisma.product.findMany({
       where: {
         isAmazing: true,
         status: 'ACTIVE',
       },
-      include: {
-        images: true,
-        baseUnit: true,
+      select: {
+        id: true,
+        name: true,
+        category: true,
+        description: true,
+        basePrice: true,
+        baseUnitId: true,
+        quantity: true,
+        status: true,
+        isNew: true,
+        isBestSeller: true,
+        isAmazing: true,
+        createdAt: true,
+        updatedAt: true,
+        categoryId: true,
+        categoryType: true,
+        slug: true,
+        excerpt: true,
+        brand: true,
+        sku: true,
+        tags: true,
+        features: true,
+        allowFreeShipping: true,
+        shippingCost: true,
+        images: {
+          select: {
+            id: true,
+            image: true,
+            secureUrl: true,
+            publicId: true,
+            width: true,
+            height: true,
+            format: true,
+            bytes: true,
+            productId: true,
+            createdAt: true,
+            sortOrder: true,
+            isFeatured: true,
+            isVisible: true,
+          }
+        },
+        baseUnit: {
+          select: {
+            id: true,
+            name: true,
+            symbol: true,
+            multiplier: true,
+            isActive: true,
+          }
+        },
         units: {
           where: {
             isActive: true,
           },
+          select: {
+            id: true,
+            productId: true,
+            name: true,
+            price: true,
+            stock: true,
+            isActive: true,
+            createdAt: true,
+            updatedAt: true,
+          }
         },
         discounts: {
           where: {
             isActive: true,
             startDate: { lte: new Date() },
             endDate: { gte: new Date() },
+          },
+          select: {
+            id: true,
+            productId: true,
+            discountType: true,
+            value: true,
+            startDate: true,
+            endDate: true,
+            isActive: true,
           },
           orderBy: { value: 'desc' },
           take: 1,
@@ -110,9 +176,25 @@ export async function PATCH(req: NextRequest) {
     const updatedProduct = await prisma.product.update({
       where: { id: productId },
       data: { isAmazing },
-      include: {
-        images: true,
-        baseUnit: true,
+      select: {
+        id: true,
+        name: true,
+        isAmazing: true,
+        images: {
+          select: {
+            id: true,
+            image: true,
+            secureUrl: true,
+            publicId: true,
+          }
+        },
+        baseUnit: {
+          select: {
+            id: true,
+            name: true,
+            symbol: true,
+          }
+        },
       },
     });
 

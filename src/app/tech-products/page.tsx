@@ -116,6 +116,16 @@ export default async function TechProducts() {
         where: {
           isActive: true,
         },
+        select: {
+          id: true,
+          name: true,
+          symbol: true,
+          multiplier: true,
+          isActive: true,
+          sortOrder: true,
+          createdAt: true,
+          updatedAt: true,
+        },
         orderBy: {
           sortOrder: 'asc',
         },

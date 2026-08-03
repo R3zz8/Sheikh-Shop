@@ -247,7 +247,7 @@ export async function cacheAISuggestions(cacheKey: string, response: ContentAssi
   try {
     const { getRedis } = await import('@/lib/redis');
     const cache = getRedis();
-    cache.set(cacheKey, JSON.stringify(response), { ex: ttlSeconds });
+    await cache.set(cacheKey, JSON.stringify(response), { ex: ttlSeconds });
   } catch (error) {
     console.warn('Failed to cache AI suggestions:', error);
   }
@@ -258,7 +258,7 @@ export async function getCachedAISuggestions(cacheKey: string): Promise<ContentA
   try {
     const { getRedis } = await import('@/lib/redis');
     const cache = getRedis();
-    const cached = cache.get(cacheKey);
+    const cached = await cache.get(cacheKey);
     return cached ? JSON.parse(cached) : null;
   } catch (error) {
     console.warn('Failed to get cached AI suggestions:', error);

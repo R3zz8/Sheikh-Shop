@@ -6,10 +6,10 @@ import { UserRole } from '@prisma/client';
 import { withRateLimit } from '@/lib/rateLimiter';
 import { apiRateLimiter } from '@/lib/rateLimiter';
 
-const getHandler = async (request: NextRequest, user: JWTPayload) => {
+const getHandler = async (request: NextRequest, user: JWTPayload): Promise<NextResponse> => {
   try {
     // Apply rate limiting
-    const rateLimitResponse = apiRateLimiter(request);
+    const rateLimitResponse = await apiRateLimiter(request);
     if (rateLimitResponse && rateLimitResponse.status === 429) {
       return rateLimitResponse;
     }
@@ -89,10 +89,10 @@ const getHandler = async (request: NextRequest, user: JWTPayload) => {
   }
 }
 
-const postHandler = async (request: NextRequest, user: JWTPayload) => {
+const postHandler = async (request: NextRequest, user: JWTPayload): Promise<NextResponse> => {
   try {
     // Apply rate limiting
-    const rateLimitResponse = apiRateLimiter(request);
+    const rateLimitResponse = await apiRateLimiter(request);
     if (rateLimitResponse && rateLimitResponse.status === 429) {
       return rateLimitResponse;
     }

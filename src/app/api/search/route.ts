@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Apply rate limiting
-    const rateLimitResponse = apiRateLimiter(request);
+    const rateLimitResponse = await apiRateLimiter(request);
     if (rateLimitResponse && rateLimitResponse.status === 429) {
       return rateLimitResponse;
     }
@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Apply rate limiting
-    const rateLimitResponse = apiRateLimiter(request);
+    const rateLimitResponse = await apiRateLimiter(request);
     if (rateLimitResponse && rateLimitResponse.status === 429) {
       return rateLimitResponse;
     }
