@@ -8,6 +8,7 @@ import ProductStructuredData from '@/components/seo/ProductStructuredData';
 import { ProductSchemaMarkup } from '@/components/seo/ProductSEO';
 import { getProductByIdOrSlug } from '@/modules/products/services';
 import { getProductSEO } from '@/lib/seo/product-seo';
+import { cacheService } from '@/lib/cache/redis';
 import type { ProductsWithImages, ProductUnit } from '@/types';
 import { formatPrice } from '@/lib/currency';
 import { buildLanguageAlternates, getBaseUrl } from '@/lib/seo/hreflang';
@@ -154,34 +155,7 @@ async function getProduct(identifier: string) {
 
     // Use the unified service function
     const product = await getProductByIdOrSlug(identifier);
-    
-    if (!product) {
-      console.error('Product not found in database for identifier:', identifier);
-      return null;
-    }
-
-    // Fetch full product data with all relations (same as /product/[id])
-    const fullProduct = await prisma.product.findUnique({
-      where: { id: product.id },
-      include: { 
-        images: true,
-        videos: true,
-        baseUnit: true,
-        units: true,
-        discounts: true,
-      },
-    });
-
-    if (!fullProduct) {
-      return null;
-    }
-
-    if (!fullProduct.baseUnit) {
-      console.error('Product missing baseUnit for identifier:', identifier);
-      return null;
-    }
-
-    return serializeProduct(fullProduct);
+    return product;
   } catch (error) {
     console.error('Exception in getProduct for identifier:', identifier, error);
     return null;
@@ -189,7 +163,13 @@ async function getProduct(identifier: string) {
 }
 
 async function getAllProducts() {
+  const cacheKey = 'products:all:active_50';
   try {
+    const cached = await cacheService.get<any[]>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     const products = await prisma.product.findMany({
       where: { status: 'ACTIVE' },
       include: { 
@@ -201,7 +181,9 @@ async function getAllProducts() {
       take: 50,
     });
 
-    return products.map(serializeProduct);
+    const serialized = products.map(serializeProduct);
+    await cacheService.set(cacheKey, serialized, 300); // 5 minutes cache
+    return serialized;
   } catch (error) {
     console.error('Error fetching products:', error);
     return [];

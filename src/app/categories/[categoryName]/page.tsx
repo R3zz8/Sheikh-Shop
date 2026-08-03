@@ -4,6 +4,7 @@ import CategoryProducts from './_components/CategoryProducts';
 import { generateCategoryMetadata } from '@/lib/seo';
 import React, { Suspense } from 'react';
 import { ProductListSkeleton } from '@/components/ui';
+import { cacheService } from '@/lib/cache/redis';
 
 // Force dynamic rendering to prevent build-time database queries
 export const dynamic = 'force-dynamic';
@@ -43,65 +44,79 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     const { categoryName } = data;
 
     try {
-        // First try to find category by slug (new approach)
-        let category = await prisma.category.findUnique({
-            where: {
-                slug: categoryName,
-                isActive: true
-            }
-        });
+        const cacheKey = `category:page:${categoryName}`;
+        const cached = await cacheService.get<{ category: any; products: any[]; categoryDisplayName: string } | null>(cacheKey);
 
+        let category;
         let products: any[] = [];
         let categoryDisplayName = categoryName.charAt(0).toUpperCase() + categoryName.slice(1);
 
-        if (category) {
-            // Use new category model approach
-            products = await prisma.product.findMany({
-                where: {
-                    categoryId: category.id,
-                    status: 'ACTIVE'
-                },
-                include: {
-                    images: true,
-                    units: true,
-                    discounts: {
-                        where: {
-                            isActive: true,
-                            startDate: { lte: new Date() },
-                            endDate: { gte: new Date() }
-                        }
-                    }
-                },
-                orderBy: {
-                    createdAt: 'desc'
-                }
-            });
-            categoryDisplayName = category.name;
-        } else if (categoryMap[categoryName]) {
-            // Fallback to legacy enum approach
-            const categoryEnum = categoryMap[categoryName];
-            products = await prisma.product.findMany({
-                where: {
-                    category: categoryEnum as any,
-                    status: 'ACTIVE'
-                },
-                include: {
-                    images: true,
-                    units: true,
-                    discounts: {
-                        where: {
-                            isActive: true,
-                            startDate: { lte: new Date() },
-                            endDate: { gte: new Date() }
-                        }
-                    }
-                },
-                orderBy: {
-                    createdAt: 'desc'
-                }
-            });
+        if (cached) {
+            category = cached.category;
+            products = cached.products;
+            categoryDisplayName = cached.categoryDisplayName;
         } else {
-            notFound();
+            // First try to find category by slug (new approach)
+            category = await prisma.category.findUnique({
+                where: {
+                    slug: categoryName,
+                    isActive: true
+                }
+            });
+
+            if (category) {
+                // Use new category model approach
+                products = await prisma.product.findMany({
+                    where: {
+                        categoryId: category.id,
+                        status: 'ACTIVE'
+                    },
+                    include: {
+                        images: true,
+                        units: true,
+                        discounts: {
+                            where: {
+                                isActive: true,
+                                startDate: { lte: new Date() },
+                                endDate: { gte: new Date() }
+                            }
+                        }
+                    },
+                    orderBy: {
+                        createdAt: 'desc'
+                    }
+                });
+                categoryDisplayName = category.name;
+            } else if (categoryMap[categoryName]) {
+                // Fallback to legacy enum approach
+                const categoryEnum = categoryMap[categoryName];
+                products = await prisma.product.findMany({
+                    where: {
+                        category: categoryEnum as any,
+                        status: 'ACTIVE'
+                    },
+                    include: {
+                        images: true,
+                        units: true,
+                        discounts: {
+                            where: {
+                                isActive: true,
+                                startDate: { lte: new Date() },
+                                endDate: { gte: new Date() }
+                            }
+                        }
+                    },
+                    orderBy: {
+                        createdAt: 'desc'
+                    }
+                });
+            } else {
+                notFound();
+            }
+
+            if (category || categoryMap[categoryName]) {
+                await cacheService.set(cacheKey, { category, products, categoryDisplayName }, 300); // 5 mins cache
+            }
         }
 
         return (
