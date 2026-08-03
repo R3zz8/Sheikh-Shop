@@ -14,13 +14,9 @@ import {
   Eye,
   Sparkles,
   Music,
-  Droplet,
-  Flame,
-  Cpu,
-  Shield,
-  Percent,
+  Award,
   CheckCircle,
-  Award
+  Percent
 } from 'lucide-react';
 import { formatToToman } from '@/lib/currency';
 
@@ -74,314 +70,429 @@ class ThreeErrorBoundary extends React.Component<ThreeErrorBoundaryProps, ThreeE
 }
 
 // ==========================================
-// 3D MODELS USING PROCEDURAL PRIMITIVES
+// ULTRA-LUXURY MASCOTS IN 3D
 // ==========================================
 
-// PUSHER SHEIKH (LEFT SIDE)
-interface PusherSheikhProps {
-  isPushing: boolean;
+// LEFT SHEIKH - THE CURATOR (Cream Thobe, Black & Gold Bisht, pointing presentation)
+interface SheikhProps {
+  isPointing: boolean;
+  activeProductId: string;
 }
 
-function PusherSheikh({ isPushing }: PusherSheikhProps) {
+function PusherSheikh({ isPointing }: { isPointing: boolean }) {
   const groupRef = useRef<THREE.Group>(null);
-  const leftArmRef = useRef<THREE.Group>(null);
   const headRef = useRef<THREE.Group>(null);
+  const leftArmRef = useRef<THREE.Group>(null);
+  const leftEyeRef = useRef<THREE.Mesh>(null);
+  const rightEyeRef = useRef<THREE.Mesh>(null);
+
+  // Blinking timer ref
+  const blinkTimerRef = useRef(0);
+  const blinkDurationRef = useRef(0);
 
   useFrame((state) => {
     const time = state.clock.getElapsedTime();
+
+    // 1. Gentle floating breathing idle
     if (groupRef.current) {
-      // Gentle floating idle breathing
-      groupRef.current.position.y = -0.7 + Math.sin(time * 1.5) * 0.025;
-      groupRef.current.rotation.y = -Math.PI / 4 + Math.sin(time * 0.4) * 0.03;
+      groupRef.current.position.y = -0.75 + Math.sin(time * 1.2) * 0.02;
+      groupRef.current.rotation.y = -0.4 + Math.sin(time * 0.35) * 0.02;
     }
 
+    // 2. Head tracking: slowly turn head towards central card & mouse pointer
     if (headRef.current) {
-      headRef.current.rotation.x = Math.sin(time * 1.5) * 0.015;
-      headRef.current.rotation.y = Math.cos(time * 0.8) * 0.04;
+      // Base rotation looking slightly right (towards center) plus subtle mouse parallax
+      const targetY = 0.35 + state.pointer.x * 0.12;
+      const targetX = state.pointer.y * -0.08;
+      headRef.current.rotation.y = THREE.MathUtils.lerp(headRef.current.rotation.y, targetY, 0.08);
+      headRef.current.rotation.x = THREE.MathUtils.lerp(headRef.current.rotation.x, targetX, 0.08);
+      headRef.current.rotation.z = Math.sin(time * 0.8) * 0.005; // Head breathing tilt
     }
 
-    // Arm push animation
-    if (leftArmRef.current) {
-      let targetRotX = 0.1;
-      let targetRotY = 0.2;
-      let targetRotZ = -0.4;
+    // 3. Subtle organic eye blinking
+    blinkTimerRef.current += 0.016;
+    if (blinkTimerRef.current > 4.2) {
+      blinkDurationRef.current = 0.12; // Start blink
+      blinkTimerRef.current = 0;
+    }
+    if (blinkDurationRef.current > 0) {
+      blinkDurationRef.current -= 0.016;
+      if (leftEyeRef.current && rightEyeRef.current) {
+        leftEyeRef.current.scale.y = 0.1;
+        rightEyeRef.current.scale.y = 0.1;
+      }
+    } else {
+      if (leftEyeRef.current && rightEyeRef.current) {
+        leftEyeRef.current.scale.y = 1.0;
+        rightEyeRef.current.scale.y = 1.0;
+      }
+    }
 
-      if (isPushing) {
-        // High energy arm sweep extension to push the products
-        targetRotX = -0.8;
-        targetRotY = -0.6;
-        targetRotZ = 0.5;
+    // 4. Arm presentation pointing gesture
+    if (leftArmRef.current) {
+      // Base idle position
+      let targetRotX = 0.2;
+      let targetRotY = 0.4;
+      let targetRotZ = -0.55;
+
+      if (isPointing) {
+        // Smoothly extend and point left hand towards center product card
+        targetRotX = -0.75;
+        targetRotY = -0.35;
+        targetRotZ = 0.65;
       }
 
-      leftArmRef.current.rotation.x = THREE.MathUtils.lerp(leftArmRef.current.rotation.x, targetRotX, 0.18);
-      leftArmRef.current.rotation.y = THREE.MathUtils.lerp(leftArmRef.current.rotation.y, targetRotY, 0.18);
-      leftArmRef.current.rotation.z = THREE.MathUtils.lerp(leftArmRef.current.rotation.z, targetRotZ, 0.18);
+      leftArmRef.current.rotation.x = THREE.MathUtils.lerp(leftArmRef.current.rotation.x, targetRotX, 0.08);
+      leftArmRef.current.rotation.y = THREE.MathUtils.lerp(leftArmRef.current.rotation.y, targetRotY, 0.08);
+      leftArmRef.current.rotation.z = THREE.MathUtils.lerp(leftArmRef.current.rotation.z, targetRotZ, 0.08);
     }
   });
 
   return (
-    <group ref={groupRef} scale={[0.85, 0.85, 0.85]}>
+    <group ref={groupRef} scale={[0.82, 0.82, 0.82]}>
+      {/* Exquisite Showroom Pedestal */}
+      <mesh position={[0, -0.78, 0]}>
+        <cylinderGeometry args={[0.42, 0.48, 0.12, 32]} />
+        <meshStandardMaterial color="#1c1917" roughness={0.15} metalness={0.9} />
+      </mesh>
+      <mesh position={[0, -0.72, 0]}>
+        <cylinderGeometry args={[0.40, 0.40, 0.015, 32]} />
+        <meshStandardMaterial color="#fbbf24" roughness={0.05} metalness={0.95} />
+      </mesh>
+
       {/* Head Group */}
-      <group ref={headRef} position={[0, 0.72, 0]}>
+      <group ref={headRef} position={[0, 0.74, 0]}>
         {/* Face */}
         <mesh>
-          <sphereGeometry args={[0.22, 32, 32]} />
-          <meshStandardMaterial color="#fffbee" roughness={0.2} metalness={0.05} />
+          <sphereGeometry args={[0.21, 32, 32]} />
+          <meshStandardMaterial color="#fdfbf7" roughness={0.15} metalness={0.02} />
         </mesh>
-        {/* Beard */}
-        <mesh position={[0, -0.1, 0.14]}>
-          <boxGeometry args={[0.16, 0.09, 0.16]} />
-          <meshStandardMaterial color="#1f1815" roughness={0.8} />
+
+        {/* Closed/Narrow Minimalist Luxury Eyes */}
+        <mesh ref={leftEyeRef} position={[0.07, 0.02, 0.165]} rotation={[0, 0.2, 0]}>
+          <torusGeometry args={[0.025, 0.006, 8, 16, Math.PI]} />
+          <meshStandardMaterial color="#1c1917" roughness={0.3} />
         </mesh>
-        {/* Keffiyeh White Cover */}
-        <mesh position={[0, 0.07, -0.02]}>
-          <sphereGeometry args={[0.235, 32, 16, 0, Math.PI * 2, 0, Math.PI * 0.6]} />
-          <meshStandardMaterial color="#ffffff" roughness={0.35} />
+        <mesh ref={rightEyeRef} position={[-0.07, 0.02, 0.165]} rotation={[0, -0.2, 0]}>
+          <torusGeometry args={[0.025, 0.006, 8, 16, Math.PI]} />
+          <meshStandardMaterial color="#1c1917" roughness={0.3} />
         </mesh>
-        {/* Keffiyeh Draping */}
-        <mesh position={[0, -0.28, -0.04]}>
-          <cylinderGeometry args={[0.235, 0.36, 0.65, 16, 1, true]} />
-          <meshStandardMaterial color="#ffffff" roughness={0.35} />
+
+        {/* Sculpted Charcoal/Beard */}
+        <mesh position={[0, -0.09, 0.13]} rotation={[0.08, 0, 0]}>
+          <boxGeometry args={[0.15, 0.11, 0.14]} />
+          <meshStandardMaterial color="#141414" roughness={0.8} />
         </mesh>
-        {/* Agal rings */}
-        <mesh position={[0, 0.18, 0]} rotation={[Math.PI / 2, 0, 0]}>
-          <torusGeometry args={[0.18, 0.015, 8, 64]} />
-          <meshStandardMaterial color="#090909" roughness={0.5} metalness={0.7} />
+
+        {/* Elegant White Ghutra (Silk Headcover) */}
+        <mesh position={[0, 0.08, -0.03]}>
+          <sphereGeometry args={[0.228, 32, 16, 0, Math.PI * 2, 0, Math.PI * 0.55]} />
+          <meshStandardMaterial color="#ffffff" roughness={0.25} metalness={0.02} />
         </mesh>
-        <mesh position={[0, 0.15, 0.01]} rotation={[Math.PI / 2 + 0.05, 0, 0]}>
-          <torusGeometry args={[0.184, 0.011, 8, 64]} />
-          <meshStandardMaterial color="#fbbf24" roughness={0.1} metalness={0.9} />
+
+        {/* Draped Ghutra Folds falling beautifully over shoulders */}
+        <mesh position={[0, -0.25, -0.05]} rotation={[0.05, 0, 0]}>
+          <cylinderGeometry args={[0.225, 0.35, 0.58, 16, 1, true]} />
+          <meshStandardMaterial color="#ffffff" roughness={0.25} />
+        </mesh>
+        {/* Left shoulder drape fold */}
+        <mesh position={[-0.14, -0.26, 0.06]} rotation={[0, 0, 0.25]}>
+          <cylinderGeometry args={[0.05, 0.1, 0.45, 8, 1, true]} />
+          <meshStandardMaterial color="#ffffff" roughness={0.25} />
+        </mesh>
+        {/* Right shoulder drape fold */}
+        <mesh position={[0.14, -0.26, 0.06]} rotation={[0, 0, -0.25]}>
+          <cylinderGeometry args={[0.05, 0.1, 0.45, 8, 1, true]} />
+          <meshStandardMaterial color="#ffffff" roughness={0.25} />
+        </mesh>
+
+        {/* Black Cord Agal (Double Ring) */}
+        <mesh position={[0, 0.19, 0]} rotation={[Math.PI / 2, 0, 0]}>
+          <torusGeometry args={[0.176, 0.016, 8, 64]} />
+          <meshStandardMaterial color="#0c0a09" roughness={0.4} metalness={0.6} />
+        </mesh>
+        {/* Gold thread woven agal accent */}
+        <mesh position={[0, 0.165, 0.008]} rotation={[Math.PI / 2 + 0.04, 0, 0]}>
+          <torusGeometry args={[0.18, 0.012, 8, 64]} />
+          <meshStandardMaterial color="#fbbf24" roughness={0.1} metalness={0.95} />
         </mesh>
       </group>
 
-      {/* Thobe Body (Kandura) */}
-      <mesh position={[0, -0.1, 0]}>
-        <cylinderGeometry args={[0.19, 0.38, 1.15, 32]} />
-        <meshStandardMaterial color="#fffdf8" roughness={0.3} metalness={0.05} />
+      {/* Luxury Thobe Body (Kandura) */}
+      <mesh position={[0, -0.06, 0]}>
+        <cylinderGeometry args={[0.18, 0.34, 1.08, 32]} />
+        <meshStandardMaterial color="#fbfaf7" roughness={0.25} metalness={0.05} />
       </mesh>
 
-      {/* Gold Embroidery Detail */}
-      <mesh position={[0, 0.28, 0.201]}>
-        <boxGeometry args={[0.02, 0.24, 0.01]} />
-        <meshStandardMaterial color="#fbbf24" metalness={0.95} roughness={0.05} />
+      {/* Golden Vertical Buttons Down Chest */}
+      <mesh position={[0, 0.26, 0.181]}>
+        <boxGeometry args={[0.016, 0.22, 0.012]} />
+        <meshStandardMaterial color="#fbbf24" metalness={0.9} roughness={0.1} />
       </mesh>
 
-      {/* Dark Bisht Cloak */}
-      <mesh position={[0, -0.15, -0.05]}>
-        <cylinderGeometry args={[0.23, 0.42, 1.1, 32, 1, true, -Math.PI / 2, Math.PI]} />
-        <meshStandardMaterial color="#1a130e" roughness={0.5} metalness={0.2} />
+      {/* Royal Black Bisht (Open Cloak) */}
+      <mesh position={[0, -0.12, -0.04]}>
+        <cylinderGeometry args={[0.22, 0.38, 1.04, 32, 1, true, -Math.PI / 2, Math.PI]} />
+        <meshStandardMaterial color="#0d0c0c" roughness={0.4} metalness={0.3} />
       </mesh>
 
-      {/* Left Arm Group (Pushing Arm) */}
-      <group ref={leftArmRef} position={[-0.24, 0.32, 0.05]}>
-        {/* Shoulder */}
+      {/* Left Presenting Arm */}
+      <group ref={leftArmRef} position={[-0.22, 0.34, 0.04]}>
         <mesh>
-          <sphereGeometry args={[0.06, 16, 16]} />
-          <meshStandardMaterial color="#1a130e" roughness={0.5} />
+          <sphereGeometry args={[0.055, 16, 16]} />
+          <meshStandardMaterial color="#0d0c0c" roughness={0.4} />
         </mesh>
-        {/* Forearm */}
-        <mesh position={[0, -0.15, 0.05]} rotation={[Math.PI / 6, 0, 0]}>
-          <cylinderGeometry args={[0.04, 0.032, 0.28, 16]} />
-          <meshStandardMaterial color="#fffdf8" roughness={0.3} />
+        <mesh position={[0, -0.14, 0.04]} rotation={[Math.PI / 8, 0, 0]}>
+          <cylinderGeometry args={[0.038, 0.03, 0.26, 16]} />
+          <meshStandardMaterial color="#fbfaf7" roughness={0.25} />
         </mesh>
-        {/* Luxury Shopping Gloves / Golden Hand */}
-        <mesh position={[0, -0.28, 0.11]}>
-          <boxGeometry args={[0.05, 0.07, 0.02]} />
-          <meshStandardMaterial color="#b45309" metalness={0.7} roughness={0.2} /> {/* Dark Amber Leather Glove */}
+        {/* Dark Amber Leather Glove presenting hands */}
+        <mesh position={[0, -0.27, 0.09]}>
+          <boxGeometry args={[0.048, 0.065, 0.018]} />
+          <meshStandardMaterial color="#b45309" metalness={0.5} roughness={0.3} />
         </mesh>
-        {/* Gold Details on glove cuff */}
-        <mesh position={[0, -0.24, 0.09]}>
-          <torusGeometry args={[0.032, 0.007, 8, 16]} />
-          <meshStandardMaterial color="#fbbf24" metalness={0.95} roughness={0.05} />
+        {/* Gold ornament trim on cuff */}
+        <mesh position={[0, -0.23, 0.07]}>
+          <torusGeometry args={[0.03, 0.006, 8, 16]} />
+          <meshStandardMaterial color="#fbbf24" metalness={0.9} roughness={0.1} />
         </mesh>
       </group>
 
-      {/* Right Arm Group (Steady/Resting) */}
-      <group position={[0.24, 0.32, 0.05]} rotation={[0.1, -0.1, -0.15]}>
-        {/* Shoulder */}
+      {/* Right Arm (Resting Draped) */}
+      <group position={[0.22, 0.34, 0.04]} rotation={[0.12, -0.12, -0.18]}>
         <mesh>
-          <sphereGeometry args={[0.06, 16, 16]} />
-          <meshStandardMaterial color="#1a130e" roughness={0.5} />
+          <sphereGeometry args={[0.055, 16, 16]} />
+          <meshStandardMaterial color="#0d0c0c" roughness={0.4} />
         </mesh>
-        {/* Rest of the arm draped */}
         <mesh position={[0, -0.15, 0]}>
-          <cylinderGeometry args={[0.04, 0.038, 0.3, 16]} />
-          <meshStandardMaterial color="#fffdf8" roughness={0.3} />
+          <cylinderGeometry args={[0.038, 0.034, 0.28, 16]} />
+          <meshStandardMaterial color="#fbfaf7" roughness={0.25} />
         </mesh>
       </group>
 
-      {/* Leather Sandals (Base) */}
-      <mesh position={[-0.09, -0.7, 0.1]}>
-        <boxGeometry args={[0.07, 0.03, 0.18]} />
-        <meshStandardMaterial color="#3e2723" roughness={0.7} />
+      {/* Premium Leather Sandals */}
+      <mesh position={[-0.08, -0.68, 0.08]}>
+        <boxGeometry args={[0.065, 0.025, 0.16]} />
+        <meshStandardMaterial color="#292524" roughness={0.65} />
       </mesh>
-      <mesh position={[0.09, -0.7, 0.1]}>
-        <boxGeometry args={[0.07, 0.03, 0.18]} />
-        <meshStandardMaterial color="#3e2723" roughness={0.7} />
+      <mesh position={[0.08, -0.68, 0.08]}>
+        <boxGeometry args={[0.065, 0.025, 0.16]} />
+        <meshStandardMaterial color="#292524" roughness={0.65} />
       </mesh>
     </group>
   );
 }
 
-// RECEIVER SHEIKH (RIGHT SIDE)
-interface ReceiverSheikhProps {
-  isReceiving: boolean;
-}
-
-function ReceiverSheikh({ isReceiving }: ReceiverSheikhProps) {
+// RIGHT SHEIKH - THE COLLECTOR / WELCOMING HOST (Ivory Thobe, Chocolate Bisht, welcoming posture)
+function ReceiverSheikh({ isPointing }: { isPointing: boolean }) {
   const groupRef = useRef<THREE.Group>(null);
   const headRef = useRef<THREE.Group>(null);
   const rightArmRef = useRef<THREE.Group>(null);
+  const leftEyeRef = useRef<THREE.Mesh>(null);
+  const rightEyeRef = useRef<THREE.Mesh>(null);
+
+  const blinkTimerRef = useRef(0);
+  const blinkDurationRef = useRef(0);
 
   useFrame((state) => {
     const time = state.clock.getElapsedTime();
+
+    // 1. Synchronized luxury breathing idle
     if (groupRef.current) {
-      // Gentle breathing
-      groupRef.current.position.y = -0.7 + Math.sin(time * 1.5) * 0.025;
-      groupRef.current.rotation.y = Math.PI / 4 - Math.sin(time * 0.4) * 0.03;
+      groupRef.current.position.y = -0.75 + Math.sin(time * 1.15) * 0.02;
+      groupRef.current.rotation.y = 0.4 - Math.sin(time * 0.35) * 0.02;
     }
 
-    // Receiver React animation (Smile nod)
-    let targetHeadRotX = Math.sin(time * 1.5) * 0.015;
-    if (isReceiving) {
-      targetHeadRotX = 0.28 + Math.sin(time * 8.0) * 0.03; // Warm nod
-    }
+    // 2. Head tracking: look-at product card plus mouse cursor
     if (headRef.current) {
-      headRef.current.rotation.x = THREE.MathUtils.lerp(headRef.current.rotation.x, targetHeadRotX, 0.12);
-      headRef.current.rotation.y = Math.sin(time * 0.6) * 0.03;
+      const targetY = -0.35 + state.pointer.x * 0.12;
+      const targetX = state.pointer.y * -0.08;
+      headRef.current.rotation.y = THREE.MathUtils.lerp(headRef.current.rotation.y, targetY, 0.08);
+      headRef.current.rotation.x = THREE.MathUtils.lerp(headRef.current.rotation.x, targetX, 0.08);
+      headRef.current.rotation.z = -Math.sin(time * 0.75) * 0.005;
     }
 
-    // Arm receiving welcoming gesture
-    if (rightArmRef.current) {
-      let targetRotX = -0.1;
-      let targetRotY = -0.2;
-      let targetRotZ = 0.3;
+    // 3. Blinking logic
+    blinkTimerRef.current += 0.016;
+    if (blinkTimerRef.current > 3.8) {
+      blinkDurationRef.current = 0.12;
+      blinkTimerRef.current = 0;
+    }
+    if (blinkDurationRef.current > 0) {
+      blinkDurationRef.current -= 0.016;
+      if (leftEyeRef.current && rightEyeRef.current) {
+        leftEyeRef.current.scale.y = 0.1;
+        rightEyeRef.current.scale.y = 0.1;
+      }
+    } else {
+      if (leftEyeRef.current && rightEyeRef.current) {
+        leftEyeRef.current.scale.y = 1.0;
+        rightEyeRef.current.scale.y = 1.0;
+      }
+    }
 
-      if (isReceiving) {
-        // Open welcoming arm extension
-        targetRotX = -0.5;
-        targetRotY = 0.4;
-        targetRotZ = -0.2;
+    // 4. Right arm welcoming presentation gesture
+    if (rightArmRef.current) {
+      let targetRotX = 0.2;
+      let targetRotY = -0.4;
+      let targetRotZ = 0.55;
+
+      if (isPointing) {
+        // Points towards the center product card
+        targetRotX = -0.75;
+        targetRotY = 0.35;
+        targetRotZ = -0.65;
       }
 
-      rightArmRef.current.rotation.x = THREE.MathUtils.lerp(rightArmRef.current.rotation.x, targetRotX, 0.15);
-      rightArmRef.current.rotation.y = THREE.MathUtils.lerp(rightArmRef.current.rotation.y, targetRotY, 0.15);
-      rightArmRef.current.rotation.z = THREE.MathUtils.lerp(rightArmRef.current.rotation.z, targetRotZ, 0.15);
+      rightArmRef.current.rotation.x = THREE.MathUtils.lerp(rightArmRef.current.rotation.x, targetRotX, 0.08);
+      rightArmRef.current.rotation.y = THREE.MathUtils.lerp(rightArmRef.current.rotation.y, targetRotY, 0.08);
+      rightArmRef.current.rotation.z = THREE.MathUtils.lerp(rightArmRef.current.rotation.z, targetRotZ, 0.08);
     }
   });
 
   return (
-    <group ref={groupRef} scale={[0.85, 0.85, 0.85]}>
+    <group ref={groupRef} scale={[0.82, 0.82, 0.82]}>
+      {/* Exquisite Showroom Pedestal */}
+      <mesh position={[0, -0.78, 0]}>
+        <cylinderGeometry args={[0.42, 0.48, 0.12, 32]} />
+        <meshStandardMaterial color="#1c1917" roughness={0.15} metalness={0.9} />
+      </mesh>
+      <mesh position={[0, -0.72, 0]}>
+        <cylinderGeometry args={[0.40, 0.40, 0.015, 32]} />
+        <meshStandardMaterial color="#fbbf24" roughness={0.05} metalness={0.95} />
+      </mesh>
+
       {/* Head Group */}
-      <group ref={headRef} position={[0, 0.72, 0]}>
+      <group ref={headRef} position={[0, 0.74, 0]}>
         {/* Face */}
         <mesh>
-          <sphereGeometry args={[0.22, 32, 32]} />
-          <meshStandardMaterial color="#fffbee" roughness={0.2} metalness={0.05} />
+          <sphereGeometry args={[0.21, 32, 32]} />
+          <meshStandardMaterial color="#fdfbf7" roughness={0.15} metalness={0.02} />
         </mesh>
-        {/* Beard */}
-        <mesh position={[0, -0.1, 0.14]}>
-          <boxGeometry args={[0.16, 0.09, 0.16]} />
-          <meshStandardMaterial color="#1f1815" roughness={0.8} />
+
+        {/* Minimalist Closed Eyes */}
+        <mesh ref={leftEyeRef} position={[0.07, 0.02, 0.165]} rotation={[0, 0.2, 0]}>
+          <torusGeometry args={[0.025, 0.006, 8, 16, Math.PI]} />
+          <meshStandardMaterial color="#1c1917" roughness={0.3} />
         </mesh>
-        {/* Keffiyeh */}
-        <mesh position={[0, 0.07, -0.02]}>
-          <sphereGeometry args={[0.235, 32, 16, 0, Math.PI * 2, 0, Math.PI * 0.6]} />
-          <meshStandardMaterial color="#ffffff" roughness={0.35} />
+        <mesh ref={rightEyeRef} position={[-0.07, 0.02, 0.165]} rotation={[0, -0.2, 0]}>
+          <torusGeometry args={[0.025, 0.006, 8, 16, Math.PI]} />
+          <meshStandardMaterial color="#1c1917" roughness={0.3} />
         </mesh>
-        <mesh position={[0, -0.28, -0.04]}>
-          <cylinderGeometry args={[0.235, 0.36, 0.65, 16, 1, true]} />
-          <meshStandardMaterial color="#ffffff" roughness={0.35} />
+
+        {/* Sculpted Beard */}
+        <mesh position={[0, -0.09, 0.13]} rotation={[0.08, 0, 0]}>
+          <boxGeometry args={[0.15, 0.11, 0.14]} />
+          <meshStandardMaterial color="#1c1c1c" roughness={0.85} />
         </mesh>
-        {/* Agal */}
-        <mesh position={[0, 0.18, 0]} rotation={[Math.PI / 2, 0, 0]}>
-          <torusGeometry args={[0.18, 0.015, 8, 64]} />
-          <meshStandardMaterial color="#090909" roughness={0.5} metalness={0.7} />
+
+        {/* White Ghutra (Silk Cover) */}
+        <mesh position={[0, 0.08, -0.03]}>
+          <sphereGeometry args={[0.228, 32, 16, 0, Math.PI * 2, 0, Math.PI * 0.55]} />
+          <meshStandardMaterial color="#ffffff" roughness={0.25} metalness={0.02} />
         </mesh>
-        <mesh position={[0, 0.15, 0.01]} rotation={[Math.PI / 2 + 0.05, 0, 0]}>
-          <torusGeometry args={[0.184, 0.011, 8, 64]} />
-          <meshStandardMaterial color="#fbbf24" roughness={0.1} metalness={0.9} />
+
+        {/* Welcoming draped ghutra style - slightly distinct from Left Sheikh */}
+        <mesh position={[0, -0.25, -0.05]} rotation={[0.02, 0, 0]}>
+          <cylinderGeometry args={[0.225, 0.36, 0.58, 16, 1, true]} />
+          <meshStandardMaterial color="#ffffff" roughness={0.25} />
+        </mesh>
+        <mesh position={[-0.14, -0.26, 0.04]} rotation={[0, 0, 0.22]}>
+          <cylinderGeometry args={[0.05, 0.09, 0.42, 8, 1, true]} />
+          <meshStandardMaterial color="#ffffff" roughness={0.25} />
+        </mesh>
+        <mesh position={[0.14, -0.26, 0.04]} rotation={[0, 0, -0.22]}>
+          <cylinderGeometry args={[0.05, 0.09, 0.42, 8, 1, true]} />
+          <meshStandardMaterial color="#ffffff" roughness={0.25} />
+        </mesh>
+
+        {/* Black & Gold Agal Cord */}
+        <mesh position={[0, 0.19, 0]} rotation={[Math.PI / 2, 0, 0]}>
+          <torusGeometry args={[0.176, 0.016, 8, 64]} />
+          <meshStandardMaterial color="#0c0a09" roughness={0.4} metalness={0.6} />
+        </mesh>
+        <mesh position={[0, 0.165, 0.008]} rotation={[Math.PI / 2 + 0.04, 0, 0]}>
+          <torusGeometry args={[0.18, 0.012, 8, 64]} />
+          <meshStandardMaterial color="#fbbf24" roughness={0.1} metalness={0.95} />
         </mesh>
       </group>
 
-      {/* Thobe */}
-      <mesh position={[0, -0.1, 0]}>
-        <cylinderGeometry args={[0.19, 0.38, 1.15, 32]} />
-        <meshStandardMaterial color="#fffdf8" roughness={0.3} metalness={0.05} />
+      {/* Royal Ivory Thobe */}
+      <mesh position={[0, -0.06, 0]}>
+        <cylinderGeometry args={[0.18, 0.34, 1.08, 32]} />
+        <meshStandardMaterial color="#fbfaf7" roughness={0.25} metalness={0.05} />
       </mesh>
 
-      {/* Embroideries */}
-      <mesh position={[0, 0.28, 0.201]}>
-        <boxGeometry args={[0.02, 0.24, 0.01]} />
-        <meshStandardMaterial color="#fbbf24" metalness={0.95} roughness={0.05} />
+      {/* Vertical Golden chest panel line */}
+      <mesh position={[0, 0.26, 0.181]}>
+        <boxGeometry args={[0.016, 0.22, 0.012]} />
+        <meshStandardMaterial color="#fbbf24" metalness={0.9} roughness={0.1} />
       </mesh>
 
-      {/* Cloak */}
-      <mesh position={[0, -0.15, -0.05]}>
-        <cylinderGeometry args={[0.23, 0.42, 1.1, 32, 1, true, -Math.PI / 2, Math.PI]} />
-        <meshStandardMaterial color="#1a130e" roughness={0.5} metalness={0.2} />
+      {/* Luxurious Warm Chocolate/Espresso Bisht Cloak */}
+      <mesh position={[0, -0.12, -0.04]}>
+        <cylinderGeometry args={[0.22, 0.38, 1.04, 32, 1, true, -Math.PI / 2, Math.PI]} />
+        <meshStandardMaterial color="#2d160f" roughness={0.4} metalness={0.2} /> {/* Chocolate-brown Bisht */}
       </mesh>
 
-      {/* Right Arm Group (Welcoming / Receiving) */}
-      <group ref={rightArmRef} position={[0.24, 0.32, 0.05]}>
-        {/* Shoulder */}
+      {/* Welcoming Left Draped Arm */}
+      <group position={[-0.22, 0.34, 0.04]} rotation={[0.12, 0.12, 0.18]}>
         <mesh>
-          <sphereGeometry args={[0.06, 16, 16]} />
-          <meshStandardMaterial color="#1a130e" roughness={0.5} />
-        </mesh>
-        {/* Forearm */}
-        <mesh position={[0, -0.15, 0.05]} rotation={[-Math.PI / 6, 0, 0]}>
-          <cylinderGeometry args={[0.04, 0.032, 0.28, 16]} />
-          <meshStandardMaterial color="#fffdf8" roughness={0.3} />
-        </mesh>
-        {/* Leather glove / Hand */}
-        <mesh position={[0, -0.28, 0.11]}>
-          <boxGeometry args={[0.05, 0.07, 0.02]} />
-          <meshStandardMaterial color="#b45309" metalness={0.7} roughness={0.2} />
-        </mesh>
-        <mesh position={[0, -0.24, 0.09]}>
-          <torusGeometry args={[0.032, 0.007, 8, 16]} />
-          <meshStandardMaterial color="#fbbf24" metalness={0.95} roughness={0.05} />
-        </mesh>
-      </group>
-
-      {/* Left Arm Group (Resting) */}
-      <group position={[-0.24, 0.32, 0.05]} rotation={[0.1, 0.1, 0.15]}>
-        {/* Shoulder */}
-        <mesh>
-          <sphereGeometry args={[0.06, 16, 16]} />
-          <meshStandardMaterial color="#1a130e" roughness={0.5} />
+          <sphereGeometry args={[0.055, 16, 16]} />
+          <meshStandardMaterial color="#2d160f" roughness={0.4} />
         </mesh>
         <mesh position={[0, -0.15, 0]}>
-          <cylinderGeometry args={[0.04, 0.038, 0.3, 16]} />
-          <meshStandardMaterial color="#fffdf8" roughness={0.3} />
+          <cylinderGeometry args={[0.038, 0.034, 0.28, 16]} />
+          <meshStandardMaterial color="#fbfaf7" roughness={0.25} />
         </mesh>
       </group>
 
-      {/* Sandals */}
-      <mesh position={[-0.09, -0.7, 0.1]}>
-        <boxGeometry args={[0.07, 0.03, 0.18]} />
-        <meshStandardMaterial color="#3e2723" roughness={0.7} />
+      {/* Welcoming Presenting Right Arm */}
+      <group ref={rightArmRef} position={[0.22, 0.34, 0.04]}>
+        <mesh>
+          <sphereGeometry args={[0.055, 16, 16]} />
+          <meshStandardMaterial color="#2d160f" roughness={0.4} />
+        </mesh>
+        <mesh position={[0, -0.14, 0.04]} rotation={[-Math.PI / 8, 0, 0]}>
+          <cylinderGeometry args={[0.038, 0.03, 0.26, 16]} />
+          <meshStandardMaterial color="#fbfaf7" roughness={0.25} />
+        </mesh>
+        {/* Dark leather glove */}
+        <mesh position={[0, -0.27, 0.09]}>
+          <boxGeometry args={[0.048, 0.065, 0.018]} />
+          <meshStandardMaterial color="#b45309" metalness={0.5} roughness={0.3} />
+        </mesh>
+        {/* Golden cuff cuff ornament */}
+        <mesh position={[0, -0.23, 0.07]}>
+          <torusGeometry args={[0.03, 0.006, 8, 16]} />
+          <meshStandardMaterial color="#fbbf24" metalness={0.9} roughness={0.1} />
+        </mesh>
+      </group>
+
+      {/* Leather Sandals */}
+      <mesh position={[-0.08, -0.68, 0.08]}>
+        <boxGeometry args={[0.065, 0.025, 0.16]} />
+        <meshStandardMaterial color="#292524" roughness={0.65} />
       </mesh>
-      <mesh position={[0.09, -0.7, 0.1]}>
-        <boxGeometry args={[0.07, 0.03, 0.18]} />
-        <meshStandardMaterial color="#3e2723" roughness={0.7} />
+      <mesh position={[0.08, -0.68, 0.08]}>
+        <boxGeometry args={[0.065, 0.025, 0.16]} />
+        <meshStandardMaterial color="#292524" roughness={0.65} />
       </mesh>
     </group>
   );
 }
 
-// 3D Particles
+// 3D Tiny floating luxury gold dust particles
 function AmbientGoldParticles() {
   const pointsRef = useRef<THREE.Points>(null);
-  const count = 30;
+  const count = 45; // slightly increased but extremely tiny/high performance
 
   const positions = useMemo(() => {
     const arr = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
-      arr[i * 3] = (Math.random() - 0.5) * 4;
-      arr[i * 3 + 1] = (Math.random() - 0.5) * 3;
-      arr[i * 3 + 2] = (Math.random() - 0.5) * 2;
+      arr[i * 3] = (Math.random() - 0.5) * 4.5;
+      arr[i * 3 + 1] = (Math.random() - 0.5) * 3.5;
+      arr[i * 3 + 2] = (Math.random() - 0.5) * 2.5;
     }
     return arr;
   }, []);
@@ -399,13 +510,13 @@ function AmbientGoldParticles() {
       const x = arr[idx];
       const y = arr[idx + 1];
       if (x !== undefined && y !== undefined) {
-        const nextY = y + 0.003;
+        const nextY = y + 0.0035;
         arr[idx + 1] = nextY;
-        arr[idx] = x + Math.sin(time * 0.5 + i) * 0.0015;
+        arr[idx] = x + Math.sin(time * 0.4 + i) * 0.0018;
 
         if (nextY > 1.8) {
           arr[idx + 1] = -1.8;
-          arr[idx] = (Math.random() - 0.5) * 4;
+          arr[idx] = (Math.random() - 0.5) * 4.5;
         }
       }
     }
@@ -418,10 +529,10 @@ function AmbientGoldParticles() {
         <bufferAttribute attach="attributes-position" args={[positions, 3]} />
       </bufferGeometry>
       <pointsMaterial
-        color="#f59e0b"
-        size={0.035}
+        color="#fbbf24" // premium bright gold
+        size={0.022}
         transparent
-        opacity={0.6}
+        opacity={0.7}
         sizeAttenuation
         blending={THREE.AdditiveBlending}
       />
@@ -430,28 +541,28 @@ function AmbientGoldParticles() {
 }
 
 // ==========================================
-// 2D STYLIZED FALLBACK MASCOTS
+// 2D FALLBACK SYSTEM (For older/failing systems)
 // ==========================================
 function StaticSheikhFallback({ align }: { align: 'left' | 'right' }) {
   return (
     <div className="w-full h-full flex flex-col items-center justify-end p-2 relative select-none">
       <div className="absolute inset-0 bg-gradient-radial from-amber-500/10 to-transparent blur-xl" />
-      <div className="w-[80px] h-[160px] md:w-[130px] md:h-[260px] bg-stone-900/90 rounded-3xl border border-amber-500/20 shadow-2xl flex flex-col items-center justify-end p-3 relative overflow-hidden">
+      <div className="w-[85px] h-[170px] md:w-[135px] md:h-[270px] bg-stone-900/95 rounded-3xl border border-amber-500/30 shadow-2xl flex flex-col items-center justify-end p-3 relative overflow-hidden">
         {/* Gold backlight */}
         <div className="absolute inset-0 bg-gradient-to-t from-amber-500/5 via-transparent to-transparent" />
 
         {/* Head */}
-        <div className="w-[32px] h-[32px] md:w-[48px] md:h-[48px] rounded-full bg-white relative mb-2 flex items-center justify-center shadow-lg">
+        <div className="w-[32px] h-[32px] md:w-[48px] md:h-[48px] rounded-full bg-stone-100 relative mb-2 flex items-center justify-center shadow-lg border border-amber-500/10">
           <div className="absolute bottom-0 w-[80%] h-[40%] bg-stone-950 rounded-b-full" />
           <div className="absolute -top-1 w-[90%] h-1.5 md:h-2.5 border-t-[3px] border-amber-500 rounded-t-full" />
           <div className="absolute bottom-[20%] w-[35%] h-[10%] bg-amber-200/50 rounded-full" />
         </div>
 
         {/* Thobe & Bisht */}
-        <div className="w-[90%] h-[60%] bg-stone-950/80 rounded-t-3xl border-t border-amber-400/20 relative">
+        <div className="w-[90%] h-[60%] bg-stone-950 rounded-t-3xl border-t border-amber-400/20 relative">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-0.5 md:w-1 h-full bg-gradient-to-b from-amber-400 via-yellow-300 to-transparent" />
-          {/* Subtle responsive arms */}
-          <div className={`absolute top-2 w-3 h-12 bg-stone-900 rounded-full border-t border-amber-500/10 ${align === 'left' ? 'left-[-4px] animate-bounce' : 'right-[-4px]'}`} />
+          {/* Gentle breathing animation */}
+          <div className={`absolute top-2 w-3 h-12 bg-stone-900 rounded-full border-t border-amber-500/10 ${align === 'left' ? 'left-[-4px] animate-pulse' : 'right-[-4px]'}`} />
         </div>
       </div>
     </div>
@@ -537,28 +648,7 @@ function CategoryVisualEffect({ effect }: { effect: string }) {
     );
   }
 
-  // 6. Perfume Golden Mist (PERFUME)
-  if (norm === 'PERFUME') {
-    return (
-      <div className="absolute inset-0 pointer-events-none overflow-hidden flex items-center justify-center">
-        <div className="absolute w-[130%] h-[130%] bg-gradient-radial from-amber-500/10 via-transparent to-transparent rounded-full animate-pulse scale-110" style={{ animationDuration: '5s' }} />
-        <div className="absolute w-[80%] h-[80%] bg-gradient-radial from-yellow-500/8 via-transparent to-transparent rounded-full animate-pulse scale-90" style={{ animationDuration: '3.5s' }} />
-      </div>
-    );
-  }
-
-  // 7. Neon Amber Circuits (DIGITAL)
-  if (norm === 'DIGITAL') {
-    return (
-      <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-10">
-        <div className="absolute inset-x-0 top-1/4 h-px bg-gradient-to-r from-transparent via-amber-400 to-transparent animate-pulse" />
-        <div className="absolute inset-y-0 left-1/3 w-px bg-gradient-to-b from-transparent via-yellow-400 to-transparent animate-pulse" style={{ animationDuration: '3s' }} />
-        <div className="absolute inset-x-0 bottom-1/3 h-px bg-gradient-to-r from-transparent via-orange-400 to-transparent animate-pulse" style={{ animationDuration: '4s' }} />
-      </div>
-    );
-  }
-
-  // Default Soft warm glow bokeh (LIGHTING or others)
+  // Default Soft warm glow bokeh
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden">
       <div className="absolute bottom-1/3 right-1/4 w-32 h-32 bg-amber-400/5 rounded-full blur-2xl animate-pulse" style={{ animationDuration: '3.5s' }} />
@@ -568,7 +658,7 @@ function CategoryVisualEffect({ effect }: { effect: string }) {
 }
 
 // ==========================================
-// MAIN CLASSIC ROYAL SHOWCASE SYSTEM
+// EXQUISITE MAIN SHOWCASE SYSTEM
 // ==========================================
 interface ProductWithMetadata {
   id: string;
@@ -585,126 +675,38 @@ interface ProductWithMetadata {
   slug?: string;
 }
 
-const DEFAULT_PRODUCTS: ProductWithMetadata[] = [
-  {
-    id: 'pd_speaker_1',
-    name: 'اسپیکر ایستاده شیخ مدل Luxury X9',
-    category: 'OTHERS',
-    categoryType: 'SheikhDigital',
-    basePrice: 18900000,
-    images: [{ secureUrl: 'https://images.unsplash.com/photo-1545454675-3531b543be5d?q=80&w=600&auto=format&fit=crop' }],
-    badgeType: 'BEST_SELLER',
-    categoryEffect: 'SPEAKER',
-    ctaText: 'مشاهده اسپیکر ایستاده',
-    ctaLink: '/products/luxury-x9-speaker'
-  },
-  {
-    id: 'pd_speaker_2',
-    name: 'اسپیکر هوشمند شیخ مدل Royal Sound Pro',
-    category: 'OTHERS',
-    categoryType: 'SheikhDigital',
-    basePrice: 24500000,
-    images: [{ secureUrl: 'https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?q=80&w=600&auto=format&fit=crop' }],
-    badgeType: 'FEATURED',
-    categoryEffect: 'SPEAKER',
-    ctaText: 'مشاهده اسپیکر هوشمند',
-    ctaLink: '/products/royal-sound-pro-speaker'
-  },
-  {
-    id: 'pd_headphones',
-    name: 'هدفون بی‌سیم لوکس شیخ مدل Golden Scent',
-    category: 'OTHERS',
-    categoryType: 'SheikhDigital',
-    basePrice: 14200000,
-    images: [{ secureUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=600&auto=format&fit=crop' }],
-    badgeType: 'NEW',
-    categoryEffect: 'HEADPHONES',
-    ctaText: 'خرید هدفون بی‌سیم',
-    ctaLink: '/products/golden-scent-headphones'
-  },
-  {
-    id: 'pd_smartwatch',
-    name: 'ساعت هوشمند سلطنتی شیخ مدل Royal Watch V2',
-    category: 'OTHERS',
-    categoryType: 'SheikhDigital',
-    basePrice: 32800000,
-    images: [{ secureUrl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=600&auto=format&fit=crop' }],
-    badgeType: 'FEATURED',
-    categoryEffect: 'LIGHTING',
-    ctaText: 'خرید ساعت هوشمند',
-    ctaLink: '/products/royal-watch-v2'
-  },
-  {
-    id: 'p1',
-    name: 'عسل طبیعی کوهستان ممتاز شیخ',
-    category: 'HONEY',
-    categoryType: 'SheikhFood',
-    basePrice: 1250000,
-    images: [{ secureUrl: '/honey.webp' }],
-    badgeType: 'BEST_SELLER',
-    categoryEffect: 'HONEY',
-    ctaText: 'خرید عسل طبیعی',
-    ctaLink: '/products/p1'
-  },
-  {
-    id: 'p2',
-    name: 'زعفران سوپر نگین خراسان ممتاز',
-    category: 'SAFFRON',
-    categoryType: 'SheikhFood',
-    basePrice: 4250000,
-    images: [{ secureUrl: '/saffron.webp' }],
-    badgeType: 'NEW',
-    categoryEffect: 'SAFFRON',
-    ctaText: 'خرید زعفران سوپر نگین',
-    ctaLink: '/products/p2'
-  },
-  {
-    id: 'p3',
-    name: 'خرمای مجول ممتاز صادراتی شیخ',
-    category: 'DATES',
-    categoryType: 'SheikhFood',
-    basePrice: 890000,
-    images: [{ secureUrl: '/dates.webp' }],
-    badgeType: 'BEST_SELLER',
-    categoryEffect: 'DATES',
-    ctaText: 'خرید خرما مجول',
-    ctaLink: '/products/p3'
-  }
-];
-
 export default function RoyalShowcase() {
   const [mounted, setMounted] = useState(false);
   const [webGLSupported, setWebGLSupported] = useState(true);
 
-  // States
+  // Configuration States
   const [config, setConfig] = useState({
     isEnabled: true,
     loopMode: true,
-    autoplayInterval: 5000,
+    autoplayInterval: 6000,
     animationSpeed: 1000,
     backgroundGlow: '#fbbf24',
-    maxProducts: 8,
+    maxProducts: 10,
   });
 
-  const [products, setProducts] = useState<ProductWithMetadata[]>(DEFAULT_PRODUCTS);
+  const [products, setProducts] = useState<ProductWithMetadata[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [direction, setDirection] = useState(0); // -1: prev, 1: next
 
-  // Mascot gesture triggers
-  const [isPushing, setIsPushing] = useState(false);
-  const [isReceiving, setIsReceiving] = useState(false);
+  // Mascot pointing triggers
+  const [isPointing, setIsPointing] = useState(false);
 
-  // Tilt coordinates
+  // Card Parallax Tilt Coordinates
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
 
-  // Autoplay timer ref
+  // Autoplay Loop Timer Ref
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     setMounted(true);
     setWebGLSupported(isWebGLAvailable());
 
-    // Fetch config & products
+    // Fetch config and prioritized real products
     const fetchShowcaseData = async () => {
       try {
         const res = await fetch('/api/admin/showcase-config');
@@ -713,54 +715,9 @@ export default function RoyalShowcase() {
           if (data.config) {
             setConfig(data.config);
           }
-          if (Array.isArray(data.featuredProducts) && data.featuredProducts.length > 0) {
-            // Map detailed product details from allProducts
-            const all = data.allProducts || [];
-            const mapped = data.featuredProducts.map((fp: any) => {
-              const baseProd = all.find((p: any) => p.id === fp.productId);
-              return {
-                id: fp.productId,
-                name: baseProd?.name || 'محصول ویژه شیخ',
-                category: baseProd?.category || 'HONEY',
-                categoryType: baseProd?.categoryType || 'SheikhFood',
-                basePrice: baseProd?.basePrice || 0,
-                images: baseProd?.images || [],
-                badgeType: fp.badgeType,
-                categoryEffect: fp.categoryEffect,
-                ctaText: fp.ctaText,
-                ctaLink: fp.ctaLink || `/products/${baseProd?.slug || fp.productId}`,
-                slug: baseProd?.slug,
-              };
-            });
-            setProducts(mapped);
-          } else {
-            // Fallback to mock catalog products if empty
-            const all = data.allProducts || [];
-            const mockFeatured = [
-              { id: 'pd_speaker_1', badgeType: 'BEST_SELLER', categoryEffect: 'SPEAKER', ctaText: 'مشاهده اسپیکر' },
-              { id: 'pd_speaker_2', badgeType: 'FEATURED', categoryEffect: 'SPEAKER', ctaText: 'مشاهده هوشمند' },
-              { id: 'pd_headphones', badgeType: 'NEW', categoryEffect: 'HEADPHONES', ctaText: 'خرید بی‌سیم' },
-              { id: 'pd_smartwatch', badgeType: 'FEATURED', categoryEffect: 'LIGHTING', ctaText: 'خرید ساعت' },
-              { id: 'p1', badgeType: 'BEST_SELLER', categoryEffect: 'HONEY', ctaText: 'خرید عسل' },
-              { id: 'p2', badgeType: 'NEW', categoryEffect: 'SAFFRON', ctaText: 'خرید زعفران' },
-              { id: 'p3', badgeType: 'BEST_SELLER', categoryEffect: 'DATES', ctaText: 'خرید خرما' },
-            ].map(f => {
-              const baseProd = all.find((p: any) => p.id === f.id);
-              return {
-                id: f.id,
-                name: baseProd?.name || 'محصول ویژه',
-                category: baseProd?.category || 'HONEY',
-                categoryType: baseProd?.categoryType || 'SheikhFood',
-                basePrice: baseProd?.basePrice || 1200000,
-                images: baseProd?.images || [],
-                badgeType: f.badgeType,
-                categoryEffect: f.categoryEffect,
-                ctaText: f.ctaText,
-                ctaLink: `/products/${baseProd?.slug || f.id}`,
-                slug: baseProd?.slug,
-              };
-            });
-            setProducts(mockFeatured);
+          // Direct prioritized database products
+          if (Array.isArray(data.allProducts) && data.allProducts.length > 0) {
+            setProducts(data.allProducts);
           }
         }
       } catch (error) {
@@ -771,11 +728,11 @@ export default function RoyalShowcase() {
     fetchShowcaseData();
   }, []);
 
-  // Setup autoplay loop
+  // Setup autoplay loops (strictly every 6 seconds as per prompt)
   useEffect(() => {
     if (!config.isEnabled || products.length <= 1) return;
 
-    const interval = config.autoplayInterval || 5000;
+    const interval = config.autoplayInterval || 6000;
 
     const runAutoplay = () => {
       timerRef.current = setInterval(() => {
@@ -794,15 +751,9 @@ export default function RoyalShowcase() {
     if (products.length <= 1) return;
     setDirection(1);
 
-    // Trigger Left Sheikh mascot "Push" gesture
-    setIsPushing(true);
-    setTimeout(() => setIsPushing(false), 800);
-
-    // Trigger Right Sheikh mascot "Receive" gesture on delay
-    setTimeout(() => {
-      setIsReceiving(true);
-      setTimeout(() => setIsReceiving(false), 900);
-    }, 450);
+    // Trigger subtle pointing gesture on active change (Left pointing first, Right follow)
+    setIsPointing(true);
+    setTimeout(() => setIsPointing(false), 1400);
 
     setActiveIndex((prev) => {
       if (prev === products.length - 1) {
@@ -816,9 +767,8 @@ export default function RoyalShowcase() {
     if (products.length <= 1) return;
     setDirection(-1);
 
-    // Subtle reversed gestures
-    setIsReceiving(true);
-    setTimeout(() => setIsReceiving(false), 700);
+    setIsPointing(true);
+    setTimeout(() => setIsPointing(false), 1400);
 
     setActiveIndex((prev) => {
       if (prev === 0) {
@@ -851,7 +801,7 @@ export default function RoyalShowcase() {
     const rect = e.currentTarget.getBoundingClientRect();
     const x = (e.clientX - rect.left) / rect.width - 0.5; // -0.5 to 0.5
     const y = (e.clientY - rect.top) / rect.height - 0.5; // -0.5 to 0.5
-    setTilt({ x: x * 15, y: y * -15 });
+    setTilt({ x: x * 12, y: y * -12 });
   };
 
   const handleMouseLeave = () => {
@@ -861,7 +811,7 @@ export default function RoyalShowcase() {
   if (!mounted) {
     return (
       <section className="container-fluid py-8 max-w-7xl mx-auto select-none">
-        <div className="w-full h-[400px] bg-stone-950/40 rounded-[2.5rem] border border-amber-500/10 animate-pulse" />
+        <div className="w-full h-[450px] bg-stone-950/40 rounded-[2.5rem] border border-amber-500/10 animate-pulse" />
       </section>
     );
   }
@@ -934,30 +884,24 @@ export default function RoyalShowcase() {
 
       {/* LUXURY ROYAL STAGE STAGING WRAPPER */}
       <div
-        className="relative w-full rounded-[2.5rem] bg-gradient-to-br from-amber-950/85 via-stone-900/95 to-amber-950/90 border border-amber-500/20 shadow-[0_25px_60px_rgba(0,0,0,0.9)] p-4 md:p-8 overflow-hidden"
+        className="relative w-full rounded-[2.5rem] bg-gradient-to-br from-[#120a06]/95 via-stone-900/98 to-[#1a110a]/95 border border-amber-500/20 shadow-[0_30px_70px_rgba(0,0,0,0.95)] p-4 md:p-8 overflow-hidden"
         style={{
-          boxShadow: `0 25px 60px rgba(0,0,0,0.9), 0 0 80px ${config.backgroundGlow}12`
+          boxShadow: `0 30px 70px rgba(0,0,0,0.95), 0 0 85px ${config.backgroundGlow}15`
         }}
       >
-        {/* Stage background glow */}
-        <div
-          className="absolute inset-0 bg-gradient-radial from-amber-500/3 via-transparent to-transparent pointer-events-none transition-all duration-1000 z-0"
-          style={{
-            backgroundImage: `radial-gradient(circle at center, ${config.backgroundGlow}08 0%, transparent 70%)`
-          }}
-        />
+        {/* Soft, blurred large golden showroom showroom lighting halo */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] md:w-[500px] md:h-[500px] rounded-full bg-amber-500/4 blur-[130px] pointer-events-none z-0 mix-blend-screen" />
 
         {/*
           RTL ROW WRAPPER: Left Sheikh, Center Slider Showcase, Right Sheikh
           This row will NEVER stack, scaling perfectly proportionally on screens down to 320px
         */}
         <div
-          className="flex flex-row items-center justify-between w-full h-[clamp(210px,46vw,560px)] relative z-10"
+          className="flex flex-row items-center justify-between w-full h-[clamp(240px,48vw,580px)] relative z-10"
           style={{ direction: 'rtl' }}
         >
           {/*
-            LEFT COLUMN: Pushing Sheikh
-            22% proportional width
+            LEFT COLUMN: Presenting Sheikh Mascot (22% proportional width)
           */}
           <div className="w-[22%] h-full relative overflow-hidden flex items-center justify-center">
             {webGLSupported ? (
@@ -965,16 +909,20 @@ export default function RoyalShowcase() {
                 <ThreeErrorBoundary fallback={<StaticSheikhFallback align="left" />}>
                   <Suspense fallback={<StaticSheikhFallback align="left" />}>
                     <Canvas
-                      camera={{ position: [0, 0, 2.5], fov: 42 }}
+                      camera={{ position: [0, 0, 2.4], fov: 42 }}
                       gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
                       style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
                     >
-                      <ambientLight intensity={1.1} color="#fffbee" />
-                      <directionalLight position={[-1, 3, 2]} intensity={1.5} color="#fff1d0" />
-                      <directionalLight position={[1, 1, -1]} intensity={0.3} color="#d97706" />
-                      <pointLight position={[0, -0.6, 1]} intensity={0.5} color="#ea580c" />
+                      {/* Premium Cinematic Lighting System */}
+                      <ambientLight intensity={1.25} color="#fffbee" />
+                      {/* Warm front key light */}
+                      <directionalLight position={[-1, 3.2, 2.5]} intensity={1.8} color="#ffeec9" />
+                      {/* Soft gold rim light to trace silhouette elegantly */}
+                      <directionalLight position={[1.5, 1.8, -2.5]} intensity={3.0} color="#fbbf24" />
+                      <directionalLight position={[-1.5, 1.0, -1.5]} intensity={0.8} color="#d97706" />
+                      <pointLight position={[0, -0.6, 1]} intensity={0.6} color="#ea580c" />
                       <AmbientGoldParticles />
-                      <PusherSheikh isPushing={isPushing} />
+                      <PusherSheikh isPointing={isPointing} />
                     </Canvas>
                   </Suspense>
                 </ThreeErrorBoundary>
@@ -988,14 +936,14 @@ export default function RoyalShowcase() {
             CENTER COLUMN: LUXURY GLASS SHOWCASE SLIDER
             54% proportional width
           */}
-          <div className="w-[54%] h-full flex items-center justify-center relative px-1 sm:px-2">
+          <div className="w-[54%] h-full flex items-center justify-center relative px-1 sm:px-3">
             {/* Dynamic visual category background effects */}
             {activeProduct && (
               <CategoryVisualEffect effect={activeProduct.categoryEffect || activeProduct.category} />
             )}
 
             {/* Showcase Stage Frame */}
-            <div className="absolute inset-0 border border-amber-500/5 rounded-[2rem] bg-stone-950/20 backdrop-blur-[3px] pointer-events-none" />
+            <div className="absolute inset-0 border border-amber-500/10 rounded-[2.2rem] bg-stone-950/40 backdrop-blur-[5px] pointer-events-none" />
 
             <AnimatePresence mode="wait" custom={direction}>
               {activeProduct && (
@@ -1004,9 +952,9 @@ export default function RoyalShowcase() {
                   custom={direction}
                   initial={{
                     opacity: 0,
-                    scale: 0.85,
-                    rotateY: direction > 0 ? 30 : -30,
-                    filter: 'blur(10px)',
+                    scale: 0.88,
+                    rotateY: direction > 0 ? 35 : -35,
+                    filter: 'blur(12px)',
                   }}
                   animate={{
                     opacity: 1,
@@ -1015,101 +963,102 @@ export default function RoyalShowcase() {
                     filter: 'blur(0px)',
                     transition: {
                       type: 'spring',
-                      stiffness: 140,
-                      damping: 18,
+                      stiffness: 150,
+                      damping: 19,
                       mass: 0.9,
                     },
                   }}
                   exit={{
                     opacity: 0,
-                    scale: 0.8,
+                    scale: 0.82,
                     rotateY: direction > 0 ? -35 : 35,
                     filter: 'blur(12px)',
                     transition: { duration: 0.45 },
                   }}
-                  className="w-full max-w-[420px] h-[92%] relative"
+                  className="w-full max-w-[420px] h-[94%] relative"
                 >
+                  {/* Floating Depth container with 3D tilts and warm shadows */}
                   <div
                     onMouseMove={handleMouseMove}
                     onMouseLeave={handleMouseLeave}
                     style={{
                       transform: `perspective(1000px) rotateX(${tilt.y}deg) rotateY(${tilt.x}deg)`,
-                      transition: 'transform 0.15s ease-out',
+                      transition: 'transform 0.18s ease-out',
                     }}
-                    className="w-full h-full bg-gradient-to-br from-stone-950/80 to-stone-900/60 border border-amber-400/25 hover:border-amber-400/40 rounded-[1.8rem] sm:rounded-[2.2rem] shadow-[0_20px_45px_rgba(0,0,0,0.85)] hover:shadow-[0_25px_55px_rgba(245,158,11,0.12)] p-2 sm:p-4 md:p-6 text-center relative overflow-hidden flex flex-col justify-between backdrop-blur-2xl"
+                    className="w-full h-full bg-gradient-to-br from-[#1c1410]/85 via-stone-950/60 to-[#120a06]/85 border border-amber-400/30 hover:border-amber-400/45 rounded-[2.2rem] shadow-[0_25px_55px_rgba(0,0,0,0.95)] hover:shadow-[0_25px_65px_rgba(245,158,11,0.18)] p-2.5 sm:p-5 md:p-6 text-center relative overflow-hidden flex flex-col justify-between backdrop-blur-3xl"
                   >
-                    {/* Subtle Light Sweep Animation across Card */}
+                    {/* Exquisite Diagonal Sweeping Glass Reflection */}
                     <motion.div
                       initial={{ left: '-150%' }}
                       animate={{ left: '200%' }}
-                      transition={{ duration: 1.4, ease: 'easeInOut', delay: 0.2 }}
-                      className="absolute top-0 bottom-0 w-32 bg-gradient-to-r from-transparent via-amber-400/10 to-transparent skew-x-12 pointer-events-none z-10"
+                      transition={{ duration: 1.6, ease: 'easeInOut', delay: 0.2 }}
+                      className="absolute top-0 bottom-0 w-36 bg-gradient-to-r from-transparent via-amber-400/12 to-transparent skew-x-12 pointer-events-none z-10"
                     />
 
                     {/* Header Elements: Badge & Dynamic Category Icon */}
                     <div className="flex items-center justify-between w-full mb-1 sm:mb-2">
                       {getBadgeElement(activeProduct.badgeType)}
-                      <span className="text-amber-400 text-[11px] sm:text-xs font-bold font-vazirmatn">
+                      <span className="text-amber-400 text-[11px] sm:text-xs font-black font-vazirmatn drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
                         {activeProduct.categoryType === 'SheikhDigital' ? 'دیجیتال لوکس' : activeProduct.categoryType === 'SheikhHome' ? 'لوازم خانگی لوکس' : 'اکوسیستم ممتاز'}
                       </span>
                     </div>
 
-                    {/* Product Interactive Display (Scaled Image) */}
-                    <div className="relative w-full h-[36%] min-h-[70px] sm:min-h-[120px] md:min-h-[160px] flex items-center justify-center my-1 sm:my-2">
-                      <div className="absolute inset-0 bg-gradient-radial from-amber-500/5 to-transparent blur-xl" />
+                    {/* Product Display Gallery Section with warm reflections */}
+                    <div className="relative w-full h-[40%] min-h-[80px] sm:min-h-[140px] md:min-h-[180px] flex items-center justify-center my-1 sm:my-2">
+                      <div className="absolute inset-0 bg-gradient-radial from-amber-500/10 to-transparent blur-2xl rounded-full pointer-events-none scale-110" />
                       <motion.img
-                        initial={{ scale: 0.9, y: 5 }}
+                        initial={{ scale: 0.88, y: 8 }}
                         animate={{ scale: 1, y: 0 }}
-                        transition={{ type: 'spring', stiffness: 100, damping: 12 }}
+                        transition={{ type: 'spring', stiffness: 120, damping: 14 }}
                         src={getProductImage(activeProduct)}
                         alt={activeProduct.name}
-                        className="max-h-full max-w-[85%] object-contain rounded-2xl drop-shadow-[0_15px_25px_rgba(0,0,0,0.65)] hover:scale-105 duration-300"
+                        className="max-h-full max-w-[85%] object-contain rounded-2xl drop-shadow-[0_20px_30px_rgba(0,0,0,0.8)] hover:scale-105 duration-500"
                       />
                     </div>
 
-                    {/* Text Description Block */}
+                    {/* Text Details & Luxury Persian Typography */}
                     <div className="text-right flex flex-col justify-center px-1">
-                      <h3 className="text-[12px] sm:text-[16px] md:text-[18px] lg:text-[20px] font-black text-amber-5 leading-tight tracking-tight mb-1 truncate font-vazirmatn">
+                      <h3 className="text-[12px] sm:text-[16px] md:text-[18px] lg:text-[21px] font-black text-amber-5 leading-tight tracking-tight mb-1 truncate font-vazirmatn">
                         {activeProduct.name}
                       </h3>
 
-                      {/* Responsive rating stars */}
+                      {/* Professional Stars */}
                       <div className="flex items-center gap-0.5 mb-1.5 justify-start">
                         {[1, 2, 3, 4, 5].map((s) => (
-                          <Star key={s} className="w-[8px] h-[8px] sm:w-[12px] sm:h-[12px] text-amber-400 fill-amber-400" />
+                          <Star key={s} className="w-[9px] h-[9px] sm:w-[13px] sm:h-[13px] text-amber-400 fill-amber-400" />
                         ))}
-                        <span className="text-[8px] sm:text-[11px] text-gray-400 mr-1.5 font-vazirmatn">۵.۰ (امتیاز ویژه)</span>
+                        <span className="text-[8px] sm:text-[11px] text-amber-200/50 mr-1.5 font-vazirmatn">۵.۰ (بررسی ویژه)</span>
                       </div>
 
-                      {/* Persian native Toman price */}
+                      {/* Toman Persian pricing */}
                       <div className="flex items-baseline gap-1 mt-1 justify-start">
-                        <span className="text-[12px] sm:text-[18px] md:text-[22px] font-black text-amber-400 font-vazirmatn">
+                        <span className="text-[12px] sm:text-[18px] md:text-[23px] font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-300 font-vazirmatn">
                           {formatToToman(activeProduct.basePrice).split(' ')[0]}
                         </span>
                         <span className="text-[8px] sm:text-xs text-amber-200/70 font-vazirmatn">تومان</span>
                       </div>
 
-                      {/* Shipping description */}
-                      <p className="text-[7.5px] sm:text-[11px] text-emerald-400 flex items-center gap-1 justify-start font-vazirmatn mt-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+                      {/* Shipping information */}
+                      <p className="text-[7.5px] sm:text-[11.5px] text-emerald-400 flex items-center gap-1.5 justify-start font-vazirmatn mt-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0 animate-pulse" />
                         ارسال هدیه VIP شیخ + ضمانت سلامت کالا
                       </p>
                     </div>
 
-                    {/* Footer Actions Panel */}
+                    {/* CTA Actions Bar */}
                     <div className="flex gap-1.5 sm:gap-2.5 mt-2 justify-between">
                       <Link href={activeProduct.slug ? `/products/${activeProduct.slug}` : `/products/${activeProduct.id}`} className="flex-1">
-                        <button className="w-full py-1 sm:py-2.5 px-2 bg-stone-950/70 border border-amber-500/25 hover:border-amber-500/50 hover:bg-stone-900 rounded-[8px] sm:rounded-xl text-amber-200 text-[8px] sm:text-[12px] font-bold font-vazirmatn transition-all duration-300 flex items-center justify-center gap-1">
-                          <Eye className="w-3 h-3 sm:w-4 sm:h-4 text-amber-400 shrink-0" />
-                          <span>{activeProduct.ctaText || 'مشاهده'}</span>
+                        <button className="w-full py-1 sm:py-2.5 px-2 bg-stone-950/80 border border-amber-500/30 hover:border-amber-500/60 hover:bg-stone-900 rounded-[10px] sm:rounded-xl text-amber-200 text-[8px] sm:text-[12px] font-bold font-vazirmatn transition-all duration-300 flex items-center justify-center gap-1.5 shadow-md">
+                          <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400 shrink-0" />
+                          <span>{activeProduct.ctaText || 'مشاهده جزئیات'}</span>
                         </button>
                       </Link>
 
                       <button
                         onClick={() => handleAddToCart(activeProduct.id)}
-                        className="flex-1 py-1 sm:py-2.5 px-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-stone-950 text-[8px] sm:text-[12px] font-black font-vazirmatn rounded-[8px] sm:rounded-xl transition-all duration-300 flex items-center justify-center gap-1"
+                        className="flex-1 py-1 sm:py-2.5 px-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-stone-950 text-[8px] sm:text-[12px] font-black font-vazirmatn rounded-[10px] sm:rounded-xl transition-all duration-300 flex items-center justify-center gap-1.5 shadow-lg shadow-amber-500/10"
                       >
-                        <ShoppingBag className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" />
+                        <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
                         <span>خرید ویژه</span>
                       </button>
                     </div>
@@ -1122,23 +1071,22 @@ export default function RoyalShowcase() {
             <button
               onClick={handlePrev}
               aria-label="محصول قبلی"
-              className="absolute right-[-10px] md:right-[-25px] top-1/2 -translate-y-1/2 w-6 h-6 sm:w-11 sm:h-11 rounded-full bg-stone-950/80 border border-amber-500/30 text-amber-400 hover:bg-stone-900 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center z-20 shadow-xl"
+              className="absolute right-[-12px] md:right-[-25px] top-1/2 -translate-y-1/2 w-7 h-7 sm:w-11 sm:h-11 rounded-full bg-stone-950/90 border border-amber-500/40 text-amber-400 hover:bg-stone-900 hover:text-amber-300 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center z-20 shadow-2xl"
             >
-              <ChevronRight className="w-3.5 h-3.5 sm:w-6 sm:h-6" />
+              <ChevronRight className="w-4 h-4 sm:w-6 sm:h-6" />
             </button>
 
             <button
               onClick={handleNext}
               aria-label="محصول بعدی"
-              className="absolute left-[-10px] md:left-[-25px] top-1/2 -translate-y-1/2 w-6 h-6 sm:w-11 sm:h-11 rounded-full bg-stone-950/80 border border-amber-500/30 text-amber-400 hover:bg-stone-900 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center z-20 shadow-xl"
+              className="absolute left-[-12px] md:left-[-25px] top-1/2 -translate-y-1/2 w-7 h-7 sm:w-11 sm:h-11 rounded-full bg-stone-950/90 border border-amber-500/40 text-amber-400 hover:bg-stone-900 hover:text-amber-300 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center z-20 shadow-2xl"
             >
-              <ChevronLeft className="w-3.5 h-3.5 sm:w-6 sm:h-6" />
+              <ChevronLeft className="w-4 h-4 sm:w-6 sm:h-6" />
             </button>
           </div>
 
           {/*
-            RIGHT COLUMN: Receiving Sheikh
-            22% proportional width
+            RIGHT COLUMN: Welcoming Sheikh Mascot (22% proportional width)
           */}
           <div className="w-[22%] h-full relative overflow-hidden flex items-center justify-center">
             {webGLSupported ? (
@@ -1146,16 +1094,18 @@ export default function RoyalShowcase() {
                 <ThreeErrorBoundary fallback={<StaticSheikhFallback align="right" />}>
                   <Suspense fallback={<StaticSheikhFallback align="right" />}>
                     <Canvas
-                      camera={{ position: [0, 0, 2.5], fov: 42 }}
+                      camera={{ position: [0, 0, 2.4], fov: 42 }}
                       gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
                       style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
                     >
-                      <ambientLight intensity={1.1} color="#fffbee" />
-                      <directionalLight position={[1, 3, 2]} intensity={1.5} color="#fff1d0" />
-                      <directionalLight position={[-1, 1, -1]} intensity={0.3} color="#d97706" />
-                      <pointLight position={[0, -0.6, 1]} intensity={0.5} color="#ea580c" />
+                      {/* Cinematic Lighting matching the premium stage */}
+                      <ambientLight intensity={1.25} color="#fffbee" />
+                      <directionalLight position={[1, 3.2, 2.5]} intensity={1.8} color="#ffeec9" />
+                      <directionalLight position={[-1.5, 1.8, -2.5]} intensity={3.0} color="#fbbf24" />
+                      <directionalLight position={[1.5, 1.0, -1.5]} intensity={0.8} color="#d97706" />
+                      <pointLight position={[0, -0.6, 1]} intensity={0.6} color="#ea580c" />
                       <AmbientGoldParticles />
-                      <ReceiverSheikh isReceiving={isReceiving} />
+                      <ReceiverSheikh isPointing={isPointing} />
                     </Canvas>
                   </Suspense>
                 </ThreeErrorBoundary>
