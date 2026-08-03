@@ -21,6 +21,8 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 import MarkdownDescription from './MarkdownDescription';
 import ReviewSubmissionCard from './ReviewSubmissionCard';
 import DynamicReviewSection from './DynamicReviewSection';
+import ImageGallery from './ImageGallery';
+import LuxuryFeatureChip from './LuxuryFeatureChip';
 
 // Imports from LuxuryEffects
 import {
@@ -46,7 +48,6 @@ interface ImageObj {
 
 export default function ProductDetailPage({ product, allProducts = [] }: ProductDetailPageProps) {
   const [selectedQuantity, setSelectedQuantity] = useState(1);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const { triggerUnboxing, config: unboxingConfig } = useLuxuryUnboxing();
   const { addToCartMutation } = useCart();
 
@@ -250,99 +251,7 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
 
               {/* 1. HERO GALLERY (RIGHT COLUMN - occupies 6 columns) */}
               <div className="lg:col-span-6 space-y-8 w-full relative z-10">
-                <div className="relative bg-[#1C120C]/90 border border-amber-500/15 rounded-[2.5rem] p-6 shadow-xl overflow-hidden group/gallery flex flex-col justify-between aspect-[1.1] min-h-[400px] md:min-h-[500px]">
-
-                  {/* Gentle golden ambient light behind product image */}
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(217,119,6,0.08)_0%,transparent_60%)] rounded-full blur-2xl pointer-events-none z-0 animate-pulse" style={{ animationDuration: '4s' }} />
-
-                  {/* Subtle light reflection on hover */}
-                  <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-amber-500/[0.04] to-transparent opacity-0 group-hover/gallery:opacity-100 transition-opacity duration-1000 pointer-events-none z-10" />
-
-                  {/* Special Tag Overlay */}
-                  <div className="absolute top-6 right-6 z-20">
-                    <span className="bg-[#1C120C]/95 border border-amber-500/40 text-amber-400 text-[10px] sm:text-xs font-bold tracking-wider px-4 py-2 rounded-full shadow-2xl backdrop-blur-md flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-ping" />
-                      ★ سفارش اختصاصی شیخ
-                    </span>
-                  </div>
-
-                  {/* Main Image View with elegant floating and breathing transition */}
-                  <div className="relative flex-1 w-full flex items-center justify-center p-4 z-10">
-                    <AnimatePresence mode="wait">
-                      <motion.div
-                        key={selectedImageIndex}
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{
-                          opacity: 1,
-                          scale: [1, 1.015, 1],
-                          y: [0, -8, 0]
-                        }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        transition={{
-                          duration: 8,
-                          repeat: Infinity,
-                          ease: 'easeInOut'
-                        }}
-                        className="w-full h-full relative"
-                      >
-                        <Image
-                          src={images[selectedImageIndex]?.secureUrl || images[selectedImageIndex]?.image || '/noImage.jpg'}
-                          alt={`${product.name} - تصویر ${selectedImageIndex + 1}`}
-                          fill
-                          className="object-contain transition-transform duration-700 group-hover/gallery:scale-[1.03]"
-                          sizes="(max-width: 1024px) 100vw, 50vw"
-                          priority
-                          quality={95}
-                        />
-                      </motion.div>
-                    </AnimatePresence>
-                  </div>
-
-                  {/* Arrow navigation inside gallery */}
-                  {images.length > 1 && (
-                    <div className="absolute inset-y-0 inset-x-6 flex items-center justify-between pointer-events-none z-20">
-                      <button
-                        onClick={() => setSelectedImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1))}
-                        className="pointer-events-auto w-12 h-12 rounded-full bg-[#1C120C]/90 hover:bg-amber-500 hover:text-[#1C120C] text-amber-400 border border-amber-500/30 hover:border-amber-500 flex items-center justify-center transition-all duration-300 shadow-xl"
-                        aria-label="تصویر قبلی"
-                      >
-                        <ChevronRight className="w-5 h-5" />
-                      </button>
-                      <button
-                        onClick={() => setSelectedImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1))}
-                        className="pointer-events-auto w-12 h-12 rounded-full bg-[#1C120C]/90 hover:bg-amber-500 hover:text-[#1C120C] text-amber-400 border border-amber-500/30 hover:border-amber-500 flex items-center justify-center transition-all duration-300 shadow-xl"
-                        aria-label="تصویر بعدی"
-                      >
-                        <ChevronLeft className="w-5 h-5" />
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Thumbnail selector beneath gallery with active state and premium borders */}
-                {images.length > 1 && (
-                  <div className="flex gap-4 justify-center overflow-x-auto py-2 px-1 scrollbar-thin">
-                    {images.map((image, index) => (
-                      <button
-                        key={image.id}
-                        onClick={() => setSelectedImageIndex(index)}
-                        className={`relative w-20 h-20 rounded-2xl overflow-hidden border transition-all duration-300 shrink-0 ${
-                          index === selectedImageIndex
-                            ? 'border-amber-400 bg-amber-500/10 shadow-lg shadow-amber-500/10 scale-105'
-                            : 'border-[#5D4037]/30 hover:border-amber-500/35 bg-[#1C120C]/65'
-                        }`}
-                      >
-                        <Image
-                          src={image.secureUrl || image.image || '/noImage.jpg'}
-                          alt={`${product.name} بند انگشتی ${index + 1}`}
-                          fill
-                          className="object-contain p-2"
-                          sizes="90px"
-                        />
-                      </button>
-                    ))}
-                  </div>
-                )}
+                <ImageGallery images={images} productName={product.name} layoutIdPrefix="desktop" />
 
                 {/* ✨ LUXURY UNBOXING TRIGGER - Elegant gold box */}
                 {unboxingConfig?.isEnabled !== false && (
@@ -384,47 +293,55 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
               {/* 2. PRODUCT DETAILS & BUYING SYSTEM (LEFT COLUMN - occupies 6 columns) */}
               <div className="lg:col-span-6 space-y-8 w-full relative z-10">
 
-                {/* A. PRODUCT TITLE & INFO BLOCK */}
-                <div className="space-y-4">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="bg-amber-500/10 border border-amber-500/25 text-amber-800 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider">
-                      {categoryName}
-                    </span>
-                    {product.brand && (
-                      <span className="bg-[#FAF6EE] border border-[#5D4037]/25 text-[#5D4037] text-[10px] font-bold px-3 py-1 rounded-full shadow-sm">
-                        برند: {product.brand}
+                {/* A. PRODUCT TITLE & INFO BLOCK - UPGRADED TO LUXURY FLOATING CONTAINER */}
+                <div className="relative overflow-hidden rounded-[2.5rem] bg-[#FAF6EE]/50 backdrop-blur-md border border-amber-500/20 p-6 md:p-8 shadow-[0_20px_45px_-10px_rgba(217,119,6,0.08)] transition-all duration-300 hover:border-amber-500/35 hover:shadow-[0_25px_50px_-8px_rgba(217,119,6,0.12)]">
+                  {/* Soft amber ambient glow inside */}
+                  <div className="absolute -inset-10 bg-[radial-gradient(circle_at_center,rgba(217,119,6,0.03)_0%,transparent_75%)] pointer-events-none rounded-full" />
+
+                  {/* Subtle glass reflection sweeping line */}
+                  <GlassReflection duration={14} />
+
+                  <div className="relative z-10 space-y-4">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="bg-amber-500/10 border border-amber-500/25 text-amber-850 text-[10px] font-black px-3.5 py-1 rounded-full uppercase tracking-wider shadow-sm">
+                        {categoryName}
                       </span>
-                    )}
-                  </div>
-
-                  <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#2C1A11] leading-tight tracking-tight">
-                    {product.name}
-                  </h1>
-
-                  {/* Sub-header ratings, stock, status info */}
-                  <div className="flex flex-wrap items-center gap-4 text-xs text-[#5D4037] pt-1">
-                    <div className="flex items-center gap-1.5">
-                      <div className="flex items-center gap-0.5">
-                        {Array.from({ length: 5 }, (_, i) => (
-                          <Star
-                            key={i}
-                            className={`w-4 h-4 ${
-                              i < Math.floor(Number(hashedRating.ratingValue)) ? 'fill-amber-500 text-amber-500' : 'text-stone-300'
-                            }`}
-                          />
-                        ))}
-                      </div>
-                      <span className="font-extrabold text-amber-700 text-sm mr-1">{hashedRating.ratingValue}</span>
-                      <span className="text-stone-300">|</span>
-                      <span className="hover:text-amber-800 font-medium transition-colors">({hashedRating.reviewCount} دیدگاه تایید شده)</span>
+                      {product.brand && (
+                        <span className="bg-[#FAF6EE]/80 border border-[#5D4037]/25 text-[#5D4037] text-[10px] font-bold px-3 py-1 rounded-full shadow-sm">
+                          برند: {product.brand}
+                        </span>
+                      )}
                     </div>
 
-                    {product.sku && (
-                      <>
+                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#2C1A11] leading-tight tracking-tight">
+                      {product.name}
+                    </h1>
+
+                    {/* Sub-header ratings, stock, status info */}
+                    <div className="flex flex-wrap items-center gap-4 text-xs text-[#5D4037] pt-1">
+                      <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-0.5">
+                          {Array.from({ length: 5 }, (_, i) => (
+                            <Star
+                              key={i}
+                              className={`w-4 h-4 ${
+                                i < Math.floor(Number(hashedRating.ratingValue)) ? 'fill-amber-500 text-amber-500' : 'text-stone-300'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <span className="font-extrabold text-amber-700 text-sm mr-1">{hashedRating.ratingValue}</span>
                         <span className="text-stone-300">|</span>
-                        <span className="font-mono text-[#5D4037] font-medium">شناسه: {product.sku}</span>
-                      </>
-                    )}
+                        <span className="hover:text-amber-800 font-medium transition-colors">({hashedRating.reviewCount} دیدگاه تایید شده)</span>
+                      </div>
+
+                      {product.sku && (
+                        <>
+                          <span className="text-stone-300">|</span>
+                          <span className="font-mono text-[#5D4037] font-medium">شناسه: {product.sku}</span>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -657,13 +574,7 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
           {hasFeatures && (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mt-16">
               {product.features.map((feature, idx) => (
-                <div key={idx} className="relative overflow-hidden bg-[#FAF6EE]/80 backdrop-blur-md border border-[#5D4037]/25 rounded-2xl p-4 flex items-center gap-3.5 transition-all duration-300 hover:border-amber-500/35 shadow-sm group">
-                  <GlassReflection duration={9} />
-                  <div className="w-7 h-7 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-700 font-bold text-xs shrink-0 z-10">
-                    ✓
-                  </div>
-                  <span className="text-xs sm:text-sm font-bold text-[#2C1A11] z-10">{feature}</span>
-                </div>
+                <LuxuryFeatureChip key={idx} feature={feature} />
               ))}
             </div>
           )}
@@ -924,142 +835,50 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
           <div className="mobile-hero space-y-5 flex flex-col items-center text-center">
 
             {/* 1. IMAGE GALLERY */}
-            <div className="relative w-full max-w-md mx-auto aspect-[1.1] max-h-[280px] bg-[#1C120C]/90 border border-amber-500/20 rounded-3xl p-4 shadow-[0_15px_30px_rgba(42,26,18,0.25)] overflow-hidden group/gallery flex flex-col justify-between">
+            <div className="w-full px-3">
+              <ImageGallery images={images} productName={product.name} layoutIdPrefix="mobile" />
+            </div>
 
-              {/* Simple slow breathing glow and subtle border animation on mobile */}
-              <AnimatedBorder color="gold" borderWidth={1} />
-              <AmbientGlow color="gold" opacity={0.08} blur={60} className="absolute inset-0" />
+            {/* 2 & 3. PRODUCT NAME & RATING - UPGRADED TO MOBILE LUXURY FLOATING CONTAINER */}
+            <div className="w-full px-3">
+              <div className="relative overflow-hidden rounded-3xl bg-[#FAF6EE]/50 backdrop-blur-md border border-amber-500/20 p-5 shadow-[0_15px_35px_-8px_rgba(217,119,6,0.06)] transition-all duration-300 hover:border-amber-500/30">
+                {/* Soft ambient glow and glass reflection */}
+                <div className="absolute -inset-6 bg-[radial-gradient(circle_at_center,rgba(217,119,6,0.02)_0%,transparent_80%)] pointer-events-none rounded-full" />
+                <GlassReflection duration={12} />
 
-              {/* Custom floating vip tag */}
-              <div className="absolute top-3 right-3 z-10">
-                <span className="bg-[#1C120C]/95 border border-amber-500/35 text-amber-400 text-[9px] font-black tracking-wider px-2.5 py-1 rounded-full shadow-lg backdrop-blur-md flex items-center gap-1">
-                  <span className="w-1 h-1 bg-amber-500 rounded-full animate-ping" />
-                  سفارش ویژه شیخ
-                </span>
-              </div>
-
-              {/* Main Image Slider with swipe / navigation */}
-              <div className="relative flex-1 w-full h-[180px] flex items-center justify-center p-2 z-10">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={selectedImageIndex}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{
-                      opacity: 1,
-                      scale: [1, 1.012, 1],
-                      y: [0, -4, 0]
-                    }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{
-                      duration: 8,
-                      repeat: Infinity,
-                      ease: 'easeInOut'
-                    }}
-                    className="w-full h-full relative"
-                  >
-                    <Image
-                      src={images[selectedImageIndex]?.secureUrl || images[selectedImageIndex]?.image || '/noImage.jpg'}
-                      alt={`${product.name} - تصویر ${selectedImageIndex + 1}`}
-                      fill
-                      className="object-contain"
-                      sizes="(max-width: 768px) 100vw, 50vw"
-                      priority
-                      quality={90}
-                    />
-                  </motion.div>
-                </AnimatePresence>
-
-                {/* Left/Right visual arrows (small and beautiful) */}
-                {images.length > 1 && (
-                  <div className="absolute inset-x-2 flex items-center justify-between pointer-events-none">
-                    <button
-                      onClick={() => setSelectedImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1))}
-                      className="pointer-events-auto w-8 h-8 rounded-full bg-[#1C120C]/95 text-amber-400 border border-amber-500/25 flex items-center justify-center shadow-lg active:scale-90 transition-transform"
-                      aria-label="تصویر قبلی"
-                    >
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => setSelectedImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1))}
-                      className="pointer-events-auto w-8 h-8 rounded-full bg-[#1C120C]/95 text-amber-400 border border-amber-500/25 flex items-center justify-center shadow-lg active:scale-90 transition-transform"
-                      aria-label="تصویر بعدی"
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                    </button>
+                <div className="relative z-10 space-y-3 text-center">
+                  <div className="flex items-center justify-center gap-1.5 flex-wrap">
+                    <span className="bg-amber-500/10 border border-amber-500/25 text-amber-850 text-[9px] font-black px-2.5 py-0.5 rounded-full tracking-wide">
+                      {categoryName}
+                    </span>
+                    {product.brand && (
+                      <span className="bg-[#FAF6EE]/80 border border-[#5D4037]/25 text-[#5D4037] text-[9px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+                        برند: {product.brand}
+                      </span>
+                    )}
                   </div>
-                )}
-              </div>
 
-              {/* Tiny Dot Indicators */}
-              {images.length > 1 && (
-                <div className="flex justify-center gap-1 mt-1 z-10">
-                  {images.map((_, idx) => (
-                    <span
-                      key={idx}
-                      className={`h-1 rounded-full transition-all duration-300 ${idx === selectedImageIndex ? 'w-4 bg-amber-400' : 'w-1 bg-[#5D4037]/40'}`}
-                    />
-                  ))}
+                  <h1 className="text-lg xs:text-xl font-black text-[#2C1A11] leading-tight tracking-tight line-clamp-2">
+                    {product.name}
+                  </h1>
+
+                  <div className="flex items-center justify-center gap-1.5 text-[11px] text-[#5D4037] pt-0.5">
+                    <div className="flex items-center gap-0.5">
+                      {Array.from({ length: 5 }, (_, i) => (
+                        <Star
+                          key={i}
+                          className={`w-3.5 h-3.5 ${
+                            i < Math.floor(Number(hashedRating.ratingValue)) ? 'fill-amber-500 text-amber-500' : 'text-stone-300'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <span className="font-extrabold text-amber-700">{hashedRating.ratingValue}</span>
+                    <span className="text-stone-350">|</span>
+                    <span className="font-bold">({hashedRating.reviewCount} نظر کاربران)</span>
+                  </div>
                 </div>
-              )}
-            </div>
-
-            {/* Thumbnail Row */}
-            {images.length > 1 && (
-              <div className="flex gap-2 max-w-full overflow-x-auto py-1 px-1 scrollbar-none justify-center">
-                {images.map((image, idx) => (
-                  <button
-                    key={image.id}
-                    onClick={() => setSelectedImageIndex(idx)}
-                    className={`relative w-12 h-12 rounded-xl overflow-hidden border transition-all duration-200 shrink-0 ${
-                      idx === selectedImageIndex
-                        ? 'border-amber-400 bg-amber-500/10 scale-105 shadow-sm'
-                        : 'border-[#5D4037]/35 bg-[#1C120C]/65'
-                    }`}
-                  >
-                    <Image
-                      src={image.secureUrl || image.image || '/noImage.jpg'}
-                      alt="بند انگشتی"
-                      fill
-                      className="object-contain p-1"
-                      sizes="48px"
-                    />
-                  </button>
-                ))}
               </div>
-            )}
-
-            {/* 2. PRODUCT NAME */}
-            <div className="space-y-2 px-3">
-              <div className="flex items-center justify-center gap-1.5 flex-wrap">
-                <span className="bg-amber-500/10 border border-amber-500/25 text-amber-800 text-[9px] font-black px-2.5 py-0.5 rounded-full tracking-wide">
-                  {categoryName}
-                </span>
-                {product.brand && (
-                  <span className="bg-[#FAF6EE] border border-[#5D4037]/25 text-[#5D4037] text-[9px] font-bold px-2 py-0.5 rounded-full shadow-sm">
-                    برند: {product.brand}
-                  </span>
-                )}
-              </div>
-              <h1 className="text-xl xs:text-2xl font-black text-[#2C1A11] leading-tight tracking-tight line-clamp-2">
-                {product.name}
-              </h1>
-            </div>
-
-            {/* 3. RATING */}
-            <div className="flex items-center justify-center gap-1.5 text-xs text-[#5D4037] pt-0.5">
-              <div className="flex items-center gap-0.5">
-                {Array.from({ length: 5 }, (_, i) => (
-                  <Star
-                    key={i}
-                    className={`w-3.5 h-3.5 ${
-                      i < Math.floor(Number(hashedRating.ratingValue)) ? 'fill-amber-500 text-amber-500' : 'text-stone-300'
-                    }`}
-                  />
-                ))}
-              </div>
-              <span className="font-extrabold text-amber-700">{hashedRating.ratingValue}</span>
-              <span className="text-stone-300">|</span>
-              <span className="text-[10px] text-[#5D4037] font-medium">({hashedRating.reviewCount} نظر کاربران)</span>
             </div>
 
             {/* 4. PRICE - THE LUXURY FOCUS */}
@@ -1182,13 +1001,7 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
               <div className="w-full px-3 py-1">
                 <div className="grid grid-cols-2 gap-2.5 text-right">
                   {product.features.slice(0, 4).map((feature, idx) => (
-                    <div key={idx} className="bg-[#FAF6EE]/80 backdrop-blur-md border border-[#5D4037]/25 rounded-xl p-2.5 flex items-center gap-2 shadow-sm relative overflow-hidden">
-                      <GlassReflection duration={10} />
-                      <div className="w-5 h-5 rounded-md bg-amber-500/10 flex items-center justify-center text-amber-700 font-bold text-[10px] shrink-0 z-10">
-                        ✓
-                      </div>
-                      <span className="text-[10px] font-bold text-[#2C1A11] truncate z-10">{feature}</span>
-                    </div>
+                    <LuxuryFeatureChip key={idx} feature={feature} />
                   ))}
                 </div>
               </div>
