@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import type { Product } from '@prisma/client';
 import { redirect } from 'next/navigation';
 import { generateProductSlug } from '@/lib/utils/slug';
+import { cache } from 'react';
 import {
   sanitizeProductName,
   sanitizeProductDescription,
@@ -47,7 +48,7 @@ export const getProductsAPI = async (params?: {
 /**
  * Get product by ID (for backward compatibility)
  */
-export const getProductById = async (id: string) => {
+export const getProductById = cache(async (id: string) => {
   try {
     // Validate ID format
     if (!id || typeof id !== 'string' || id.length === 0) {
@@ -59,6 +60,7 @@ export const getProductById = async (id: string) => {
       where: { id },
       include: { 
         images: true,
+        videos: true,
         baseUnit: true,
         discounts: {
           where: {
@@ -91,12 +93,12 @@ export const getProductById = async (id: string) => {
     console.error('Error fetching product by ID:', id, error);
     return null;
   }
-};
+});
 
 /**
  * Get product by slug (SEO-friendly lookup)
  */
-export const getProductBySlug = async (slug: string) => {
+export const getProductBySlug = cache(async (slug: string) => {
   try {
     // Validate slug format
     if (!slug || typeof slug !== 'string' || slug.length === 0) {
@@ -110,6 +112,7 @@ export const getProductBySlug = async (slug: string) => {
       },
       include: { 
         images: true,
+        videos: true,
         baseUnit: true,
         discounts: {
           where: {
@@ -142,12 +145,12 @@ export const getProductBySlug = async (slug: string) => {
     console.error('Error fetching product by slug:', slug, error);
     return null;
   }
-};
+});
 
 /**
  * Get product by ID or slug (supports both for backward compatibility)
  */
-export const getProductByIdOrSlug = async (identifier: string) => {
+export const getProductByIdOrSlug = cache(async (identifier: string) => {
   try {
     if (!identifier || typeof identifier !== 'string' || identifier.length === 0) {
       console.error('Invalid product identifier:', identifier);
@@ -179,7 +182,7 @@ export const getProductByIdOrSlug = async (identifier: string) => {
     console.error('Error fetching product by ID or slug:', identifier, error);
     return null;
   }
-};
+});
 
 export const upsertProduct = async (
   product: Product & { 
@@ -358,26 +361,41 @@ export const deleteProduct = async (id: string) => {
 // Helper: convert Prisma Decimal/Date fields to JSON-serializable primitives
 function serializeProduct(product: any) {
   if (!product) return product;
+
+  const toNumber = (value: any): number => {
+    if (value === null || value === undefined) return 0;
+    if (typeof value === 'number') return value;
+    if (typeof value === 'object' && 'toNumber' in value) {
+      return (value as any).toNumber();
+    }
+    return Number(value);
+  };
+
   return {
     ...product,
     createdAt: product.createdAt ? product.createdAt.toISOString() : null,
     updatedAt: product.updatedAt ? product.updatedAt.toISOString() : null,
-    basePrice: typeof product.basePrice === 'object' && product.basePrice !== null && 'toNumber' in product.basePrice
-      ? (product.basePrice as any).toNumber()
-      : product.basePrice,
+    basePrice: toNumber(product.basePrice),
+    oldPrice: product.oldPrice ? toNumber(product.oldPrice) : null,
     images: Array.isArray(product.images)
       ? product.images.map((img: any) => ({
           ...img,
           createdAt: img.createdAt ? img.createdAt.toISOString() : null,
         }))
       : [],
+    videos: Array.isArray(product.videos)
+      ? product.videos.map((vid: any) => ({
+          ...vid,
+          createdAt: vid.createdAt ? vid.createdAt.toISOString() : null,
+          updatedAt: vid.updatedAt ? vid.updatedAt.toISOString() : null,
+        }))
+      : [],
     baseUnit: product.baseUnit ? { ...product.baseUnit } : null,
     units: Array.isArray(product.units)
       ? product.units.map((u: any) => ({
           ...u,
-          price: typeof u.price === 'object' && u.price !== null && 'toNumber' in u.price
-            ? (u.price as any).toNumber()
-            : Number(u.price),
+          price: toNumber(u.price),
+          oldPrice: u.oldPrice ? toNumber(u.oldPrice) : null,
           createdAt: u.createdAt ? u.createdAt.toISOString() : null,
           updatedAt: u.updatedAt ? u.updatedAt.toISOString() : null,
         }))

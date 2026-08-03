@@ -1,8 +1,15 @@
 import { prisma } from '@/lib/prisma';
 import type { ProductCategoryType } from '@prisma/client';
+import { cacheService } from '@/lib/cache/redis';
 
 export async function getProductsByCategory(category: ProductCategoryType) {
+  const cacheKey = `products:categoryType:${category}`;
   try {
+    const cached = await cacheService.get<any[]>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     const products = await prisma.product.findMany({
       where: {
         status: 'ACTIVE',
@@ -44,6 +51,7 @@ export async function getProductsByCategory(category: ProductCategoryType) {
       throw new Error('Invalid data format received');
     }
 
+    await cacheService.set(cacheKey, products, 300); // Cache for 5 minutes
     return products;
   } catch (error) {
     console.error('Failed to fetch products by category:', {
