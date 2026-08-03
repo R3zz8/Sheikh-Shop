@@ -17,7 +17,44 @@ import {
 } from '@/lib/seo/sanitize';
 
 export const getProducts = async () => {
-  const result = await prisma.product.findMany({ include: { images: true } });
+  const result = await prisma.product.findMany({
+    select: {
+      id: true,
+      name: true,
+      category: true,
+      description: true,
+      basePrice: true,
+      baseUnitId: true,
+      quantity: true,
+      status: true,
+      isNew: true,
+      isBestSeller: true,
+      isAmazing: true,
+      createdAt: true,
+      updatedAt: true,
+      categoryId: true,
+      categoryType: true,
+      slug: true,
+      excerpt: true,
+      brand: true,
+      sku: true,
+      tags: true,
+      allowFreeShipping: true,
+      shippingCost: true,
+      images: {
+        select: {
+          id: true,
+          image: true,
+          secureUrl: true,
+          publicId: true,
+          sortOrder: true,
+          isFeatured: true,
+          isVisible: true,
+          createdAt: true,
+        }
+      }
+    }
+  });
   return result;
 };
 
@@ -58,21 +95,126 @@ export const getProductById = cache(async (id: string) => {
 
     const result = await prisma.product.findFirst({
       where: { id },
-      include: { 
-        images: true,
-        videos: true,
-        baseUnit: true,
+      select: {
+        id: true,
+        name: true,
+        category: true,
+        description: true,
+        basePrice: true,
+        baseUnitId: true,
+        quantity: true,
+        status: true,
+        isNew: true,
+        isBestSeller: true,
+        isAmazing: true,
+        createdAt: true,
+        updatedAt: true,
+        categoryId: true,
+        categoryType: true,
+        slug: true,
+        seoTitle: true,
+        seoDescription: true,
+        metaKeywords: true,
+        canonicalUrl: true,
+        ogImage: true,
+        h1Override: true,
+        excerpt: true,
+        ogTitle: true,
+        ogDescription: true,
+        schemaMarkup: true,
+        brand: true,
+        sku: true,
+        features: true,
+        technicalSpecs: true,
+        tags: true,
+        weight: true,
+        weightUnit: true,
+        dimensions: true,
+        materials: true,
+        warranty: true,
+        origin: true,
+        color: true,
+        scent: true,
+        flavor: true,
+        shippingCost: true,
+        shippingMode: true,
+        shippingDescription: true,
+        allowFreeShipping: true,
+        shippingPriority: true,
+        images: {
+          select: {
+            id: true,
+            image: true,
+            secureUrl: true,
+            publicId: true,
+            width: true,
+            height: true,
+            format: true,
+            bytes: true,
+            productId: true,
+            createdAt: true,
+            sortOrder: true,
+            isFeatured: true,
+            isVisible: true,
+          }
+        },
+        videos: {
+          select: {
+            id: true,
+            url: true,
+            thumbnailUrl: true,
+            productId: true,
+            sortOrder: true,
+            isFeatured: true,
+            isVisible: true,
+            createdAt: true,
+            updatedAt: true,
+          }
+        },
+        baseUnit: {
+          select: {
+            id: true,
+            name: true,
+            symbol: true,
+            multiplier: true,
+            isActive: true,
+            sortOrder: true,
+            createdAt: true,
+            updatedAt: true,
+          }
+        },
         discounts: {
           where: {
             isActive: true,
             startDate: { lte: new Date() },
             endDate: { gte: new Date() },
           },
+          select: {
+            id: true,
+            productId: true,
+            discountType: true,
+            value: true,
+            startDate: true,
+            endDate: true,
+            isActive: true,
+            createdAt: true,
+            updatedAt: true,
+          }
         },
         units: {
           where: {
             isActive: true,
           },
+          select: {
+            id: true,
+            productId: true,
+            name: true,
+            price: true,
+            stock: true,
+            isActive: true,
+            createdAt: true,
+            updatedAt: true,
+          }
         },
       },
     });
@@ -110,21 +252,126 @@ export const getProductBySlug = cache(async (slug: string) => {
       where: { 
         slug: slug,
       },
-      include: { 
-        images: true,
-        videos: true,
-        baseUnit: true,
+      select: {
+        id: true,
+        name: true,
+        category: true,
+        description: true,
+        basePrice: true,
+        baseUnitId: true,
+        quantity: true,
+        status: true,
+        isNew: true,
+        isBestSeller: true,
+        isAmazing: true,
+        createdAt: true,
+        updatedAt: true,
+        categoryId: true,
+        categoryType: true,
+        slug: true,
+        seoTitle: true,
+        seoDescription: true,
+        metaKeywords: true,
+        canonicalUrl: true,
+        ogImage: true,
+        h1Override: true,
+        excerpt: true,
+        ogTitle: true,
+        ogDescription: true,
+        schemaMarkup: true,
+        brand: true,
+        sku: true,
+        features: true,
+        technicalSpecs: true,
+        tags: true,
+        weight: true,
+        weightUnit: true,
+        dimensions: true,
+        materials: true,
+        warranty: true,
+        origin: true,
+        color: true,
+        scent: true,
+        flavor: true,
+        shippingCost: true,
+        shippingMode: true,
+        shippingDescription: true,
+        allowFreeShipping: true,
+        shippingPriority: true,
+        images: {
+          select: {
+            id: true,
+            image: true,
+            secureUrl: true,
+            publicId: true,
+            width: true,
+            height: true,
+            format: true,
+            bytes: true,
+            productId: true,
+            createdAt: true,
+            sortOrder: true,
+            isFeatured: true,
+            isVisible: true,
+          }
+        },
+        videos: {
+          select: {
+            id: true,
+            url: true,
+            thumbnailUrl: true,
+            productId: true,
+            sortOrder: true,
+            isFeatured: true,
+            isVisible: true,
+            createdAt: true,
+            updatedAt: true,
+          }
+        },
+        baseUnit: {
+          select: {
+            id: true,
+            name: true,
+            symbol: true,
+            multiplier: true,
+            isActive: true,
+            sortOrder: true,
+            createdAt: true,
+            updatedAt: true,
+          }
+        },
         discounts: {
           where: {
             isActive: true,
             startDate: { lte: new Date() },
             endDate: { gte: new Date() },
           },
+          select: {
+            id: true,
+            productId: true,
+            discountType: true,
+            value: true,
+            startDate: true,
+            endDate: true,
+            isActive: true,
+            createdAt: true,
+            updatedAt: true,
+          }
         },
         units: {
           where: {
             isActive: true,
           },
+          select: {
+            id: true,
+            productId: true,
+            name: true,
+            price: true,
+            stock: true,
+            isActive: true,
+            createdAt: true,
+            updatedAt: true,
+          }
         },
       },
     });

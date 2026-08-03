@@ -15,7 +15,30 @@ export async function getProductsByCategory(category: ProductCategoryType) {
         status: 'ACTIVE',
         categoryType: category,
       },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        category: true,
+        description: true,
+        basePrice: true,
+        baseUnitId: true,
+        quantity: true,
+        status: true,
+        isNew: true,
+        isBestSeller: true,
+        isAmazing: true,
+        createdAt: true,
+        updatedAt: true,
+        categoryId: true,
+        categoryType: true,
+        slug: true,
+        excerpt: true,
+        brand: true,
+        sku: true,
+        features: true,
+        tags: true,
+        allowFreeShipping: true,
+        shippingCost: true,
         images: {
           select: {
             id: true,
@@ -30,14 +53,50 @@ export async function getProductsByCategory(category: ProductCategoryType) {
             createdAt: true,
           },
         },
-        baseUnit: true,
-        units: true,
+        baseUnit: {
+          select: {
+            id: true,
+            name: true,
+            symbol: true,
+            multiplier: true,
+            isActive: true,
+            sortOrder: true,
+            createdAt: true,
+            updatedAt: true,
+          }
+        },
+        units: {
+          where: {
+            isActive: true,
+          },
+          select: {
+            id: true,
+            productId: true,
+            name: true,
+            price: true,
+            stock: true,
+            isActive: true,
+            createdAt: true,
+            updatedAt: true,
+          }
+        },
         discounts: {
           where: {
             isActive: true,
             startDate: { lte: new Date() },
             endDate: { gte: new Date() },
           },
+          select: {
+            id: true,
+            productId: true,
+            discountType: true,
+            value: true,
+            startDate: true,
+            endDate: true,
+            isActive: true,
+            createdAt: true,
+            updatedAt: true,
+          }
         },
       },
       take: 50,

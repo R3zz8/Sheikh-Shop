@@ -82,6 +82,14 @@ export default async function Products() {
         where: {
           isActive: true,
         },
+        select: {
+          id: true,
+          name: true,
+          symbol: true,
+          multiplier: true,
+          isActive: true,
+          sortOrder: true,
+        },
         orderBy: {
           sortOrder: 'asc',
         },

@@ -1,5 +1,5 @@
 // src/lib/cache/redis.ts
-// REFACTORED: This file has been updated to use the central in-memory cache adapter
+// REFACTORED: This file has been updated to use the resilient cache adapter
 // instead of a direct Redis client. The class-based structure is preserved
 // to maintain API compatibility with services that use it.
 
@@ -31,7 +31,7 @@ export class CacheService {
     async set(key: string, value: any, ttl: number = 300): Promise<void> {
         try {
             const serializedValue = JSON.stringify(value);
-            cache.set(key, serializedValue, { ex: ttl });
+            await cache.set(key, serializedValue, { ex: ttl });
         } catch (error) {
             console.error('Cache set error:', error);
         }
@@ -40,7 +40,7 @@ export class CacheService {
     // Get cache value
     async get<T>(key: string): Promise<T | null> {
         try {
-            const value = cache.get(key);
+            const value = await cache.get(key);
             return value ? JSON.parse(value) : null;
         } catch (error) {
             console.error('Cache get error:', error);
@@ -51,7 +51,7 @@ export class CacheService {
     // Delete cache key
     async del(key: string): Promise<void> {
         try {
-            cache.del(key);
+            await cache.del(key);
         } catch (error) {
             console.error('Cache delete error:', error);
         }
@@ -60,7 +60,7 @@ export class CacheService {
     // Clear all cache (Note: This will clear the entire in-memory cache)
     async clear(): Promise<void> {
         try {
-            cache.clear();
+            await cache.clear();
         } catch (error) {
             console.error('Cache clear error:', error);
         }

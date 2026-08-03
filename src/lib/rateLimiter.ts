@@ -1,10 +1,9 @@
 // src/lib/rateLimiter.ts
-// REFACTORED: This file now uses the central in-memory cache adapter for state,
+// REFACTORED: This file now uses the central resilient cache adapter for state,
 // removing the need for a local store object and the problematic setInterval.
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getCacheClient } from '@/lib/cache/adapter';
-import type { JWTPayload } from './auth/jwt';
 
 interface RateLimitConfig {
   windowMs: number;
@@ -20,11 +19,11 @@ interface RateLimitState {
 const cache = getCacheClient();
 
 export function createRateLimiter(config: RateLimitConfig) {
-  return (req: NextRequest): NextResponse | null => {
+  return async (req: NextRequest): Promise<NextResponse | null> => {
     const key = config.keyGenerator ? config.keyGenerator(req) : getDefaultKey(req);
     const now = Date.now();
 
-    const rawState = cache.get(key);
+    const rawState = await cache.get(key);
     let state: RateLimitState | null = rawState ? JSON.parse(rawState) : null;
 
     if (!state || state.resetTime < now) {
@@ -38,7 +37,7 @@ export function createRateLimiter(config: RateLimitConfig) {
 
     const ttlSeconds = Math.ceil((state.resetTime - now) / 1000);
     if (ttlSeconds > 0) {
-      cache.set(key, JSON.stringify(state), { ex: ttlSeconds });
+      await cache.set(key, JSON.stringify(state), { ex: ttlSeconds });
     }
 
     if (state.count > config.maxRequests) {
@@ -93,13 +92,13 @@ export const analyticsRateLimiter = createRateLimiter({
 });
 
 export function withRateLimit<T extends any[]>(
-  rateLimiter: (req: NextRequest) => NextResponse | null
+  rateLimiter: (req: NextRequest) => Promise<NextResponse | null>
 ) {
   return (
     handler: (req: NextRequest, ...args: T) => Promise<NextResponse>
   ) => {
     return async (req: NextRequest, ...args: T): Promise<NextResponse> => {
-      const rateLimitResponse = rateLimiter(req);
+      const rateLimitResponse = await rateLimiter(req);
       
       if (rateLimitResponse) {
         return rateLimitResponse;

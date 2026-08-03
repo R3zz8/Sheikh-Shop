@@ -1,7 +1,6 @@
 // src/lib/redis.ts
-// This file is being repurposed to use the in-memory cache adapter.
-// The filename is kept for now to minimize changes in other files,
-// but it can be renamed to something like `sessionCache.ts` in the future.
+// This file is being repurposed to use the resilient cache adapter (distributed Redis/InMemory).
+// The filename is kept to minimize changes in other files.
 
 import { getCacheClient } from './cache/adapter';
 
@@ -12,11 +11,11 @@ export type CachedUser = { id: string; email: string; role: string; sessionId: s
 const SESSION_PREFIX = 'session:';
 
 export async function cacheSession(user: CachedUser, ttlSeconds: number): Promise<void> {
-  cache.set(SESSION_PREFIX + user.sessionId, JSON.stringify(user), { ex: ttlSeconds });
+  await cache.set(SESSION_PREFIX + user.sessionId, JSON.stringify(user), { ex: ttlSeconds });
 }
 
 export async function getCachedSession(sessionId: string): Promise<CachedUser | null> {
-  const raw = cache.get(SESSION_PREFIX + sessionId);
+  const raw = await cache.get(SESSION_PREFIX + sessionId);
   if (!raw) return null;
   try {
     return JSON.parse(raw) as CachedUser;
@@ -26,7 +25,7 @@ export async function getCachedSession(sessionId: string): Promise<CachedUser | 
 }
 
 export async function deleteCachedSession(sessionId: string): Promise<void> {
-  cache.del(SESSION_PREFIX + sessionId);
+  await cache.del(SESSION_PREFIX + sessionId);
 }
 
 // Re-exporting the raw cache client for other potential uses, like rate limiting.

@@ -1,10 +1,6 @@
 // src/lib/cache/adapter.ts
 
-// TODO: This is a simple in-memory LRU cache. For a production environment
-// with multiple server instances, this will lead to inconsistent caching.
-// A distributed cache like Redis or Memcached would be a better solution
-// if consistency is critical. This implementation is sufficient for a single-node
-// setup or for development purposes.
+import { Redis } from '@upstash/redis';
 
 interface CacheEntry {
   value: string;
@@ -21,7 +17,7 @@ class InMemoryLRUCache {
     this.cache = new Map<string, CacheEntry>();
   }
 
-  get(key: string): string | null {
+  async get(key: string): Promise<string | null> {
     const entry = this.cache.get(key);
     if (!entry) {
       return null;
@@ -40,7 +36,7 @@ class InMemoryLRUCache {
     return entry.value;
   }
 
-  set(key: string, value: string, opts?: { ex?: number }): void {
+  async set(key: string, value: string, opts?: { ex?: number }): Promise<void> {
     if (this.cache.size >= this.maxSize) {
       // Evict the least recently used item
       const oldestKey = this.cache.keys().next().value;
@@ -59,17 +55,105 @@ class InMemoryLRUCache {
     this.cache.set(key, entry);
   }
 
-  del(key: string): void {
+  async del(key: string): Promise<void> {
     this.cache.delete(key);
   }
 
-  clear(): void {
+  async clear(): Promise<void> {
     this.cache.clear();
   }
 }
 
+class ResilientCacheAdapter {
+  private upstashClient: Redis | null = null;
+  private inMemoryFallback: InMemoryLRUCache;
+  private useUpstash: boolean = false;
+
+  constructor() {
+    this.inMemoryFallback = new InMemoryLRUCache();
+
+    const url = process.env.UPSTASH_REDIS_REST_URL;
+    const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+
+    if (url && token) {
+      try {
+        this.upstashClient = new Redis({
+          url,
+          token,
+        });
+        this.useUpstash = true;
+        console.log('🚀 Distributed Upstash Redis Cache initialized successfully.');
+      } catch (error) {
+        console.error('❌ Failed to initialize Upstash Redis. Falling back to InMemoryLRUCache:', error);
+        this.useUpstash = false;
+      }
+    } else {
+      console.log('ℹ️ Upstash Redis credentials not found. Utilizing InMemoryLRUCache fallback.');
+    }
+  }
+
+  async get(key: string): Promise<string | null> {
+    if (this.useUpstash && this.upstashClient) {
+      try {
+        return await this.upstashClient.get(key);
+      } catch (error) {
+        console.error(`⚠️ Redis GET error for key "${key}". Falling back to memory:`, error);
+        return await this.inMemoryFallback.get(key);
+      }
+    }
+    return await this.inMemoryFallback.get(key);
+  }
+
+  async set(key: string, value: string, opts?: { ex?: number }): Promise<void> {
+    if (this.useUpstash && this.upstashClient) {
+      try {
+        if (opts?.ex) {
+          await this.upstashClient.set(key, value, { ex: opts.ex });
+        } else {
+          await this.upstashClient.set(key, value);
+        }
+        return;
+      } catch (error) {
+        console.error(`⚠️ Redis SET error for key "${key}". Falling back to memory:`, error);
+        await this.inMemoryFallback.set(key, value, opts);
+        return;
+      }
+    }
+    await this.inMemoryFallback.set(key, value, opts);
+  }
+
+  async del(key: string): Promise<void> {
+    if (this.useUpstash && this.upstashClient) {
+      try {
+        await this.upstashClient.del(key);
+        return;
+      } catch (error) {
+        console.error(`⚠️ Redis DEL error for key "${key}". Falling back to memory:`, error);
+        await this.inMemoryFallback.del(key);
+        return;
+      }
+    }
+    await this.inMemoryFallback.del(key);
+  }
+
+  async clear(): Promise<void> {
+    if (this.useUpstash && this.upstashClient) {
+      try {
+        // Warning: flushdb clears the entire database. For Upstash, it's safe if it's a dedicated db.
+        await this.upstashClient.flushdb();
+        return;
+      } catch (error) {
+        console.error('⚠️ Redis FLUSHDB error. Falling back to memory:', error);
+        await this.inMemoryFallback.clear();
+        return;
+      }
+    }
+    await this.inMemoryFallback.clear();
+  }
+}
+
 // Singleton instance
-const cacheClient = new InMemoryLRUCache();
+const cacheClient = new ResilientCacheAdapter();
 
 export function getCacheClient() {
   return cacheClient;

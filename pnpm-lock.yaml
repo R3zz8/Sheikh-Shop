@@ -115,7 +115,10 @@ importers:
         version: 0.178.1
       '@upstash/ratelimit':
         specifier: ^2.0.6
-        version: 2.0.6(@upstash/redis@1.35.6)
+        version: 2.0.6(@upstash/redis@1.38.1)
+      '@upstash/redis':
+        specifier: ^1.38.1
+        version: 1.38.1
       '@webxr-input-profiles/motion-controllers':
         specifier: ^1.0.0
         version: 1.0.0
@@ -3357,8 +3360,8 @@ packages:
     peerDependencies:
       '@upstash/redis': ^1.34.3
 
-  '@upstash/redis@1.35.6':
-    resolution: {integrity: sha512-aSEIGJgJ7XUfTYvhQcQbq835re7e/BXjs8Janq6Pvr6LlmTZnyqwT97RziZLO/8AVUL037RLXqqiQC6kCt+5pA==}
+  '@upstash/redis@1.38.1':
+    resolution: {integrity: sha512-hVqkWmhqobH7hpdzSCSrOwK7gWNASOAdf85l6/yxdB+giCYNYfl8FkSKxnqW2sqCdLDP7HzRTvy/ILC1AjBMUA==}
 
   '@use-gesture/core@10.3.1':
     resolution: {integrity: sha512-WcINiDt8WjqBdUXye25anHiNxPc0VOrlT8F6LLkU6cycrOGUDyY/yyFmsg3k8i5OLvv25llc0QC45GhR/C8llw==}
@@ -11040,14 +11043,14 @@ snapshots:
 
   '@upstash/core-analytics@0.0.10':
     dependencies:
-      '@upstash/redis': 1.35.6
+      '@upstash/redis': 1.38.1
 
-  '@upstash/ratelimit@2.0.6(@upstash/redis@1.35.6)':
+  '@upstash/ratelimit@2.0.6(@upstash/redis@1.38.1)':
     dependencies:
       '@upstash/core-analytics': 0.0.10
-      '@upstash/redis': 1.35.6
+      '@upstash/redis': 1.38.1
 
-  '@upstash/redis@1.35.6':
+  '@upstash/redis@1.38.1':
     dependencies:
       uncrypto: 0.1.3
 
