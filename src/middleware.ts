@@ -193,6 +193,7 @@ export async function middleware(request: NextRequest) {
     '/product',
     '/categories',
     '/about-us',
+    '/about',
     '/contact',
     '/terms',
     '/privacy',

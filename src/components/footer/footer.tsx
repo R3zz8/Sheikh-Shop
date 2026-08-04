@@ -1,3 +1,5 @@
+'use client';
+
 import {
   Mail,
   MapPin,
@@ -18,8 +20,11 @@ import {
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 export default function Footer() {
+  const pathname = usePathname();
   return (
     <footer className="relative w-full">
       {/* Consultation CTA Section */}
@@ -87,24 +92,33 @@ export default function Footer() {
                 </div>
                 <ul className="space-y-2">
                   {[
-                    { name: 'خرما ممتاز', href: '#' },
-                    { name: 'عسل طبیعی', href: '#' },
-                    { name: 'زعفران لوکس', href: '#' },
-                    { name: 'لوازم خانگی شیخ', href: '/sheikh-home' },
-                  ].map((item) => (
-                    <li key={item.name}>
-                      <a
-                        href={item.href}
-                        className={cn(
-                          'text-gray-300 hover:text-amber-200 transition-all duration-300 text-[16px]',
-                          'flex items-center gap-2 group',
-                        )}
-                      >
-                        <ArrowRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-all duration-300 rotate-180" />
-                        {item.name}
-                      </a>
-                    </li>
-                  ))}
+                    { name: 'محصولات غذایی شیخ', href: '/sheikh-food', aria: 'صفحه محصولات غذایی شیخ' },
+                    { name: 'شیخ دیجیتال', href: '/sheikh-digital', aria: 'صفحه شیخ دیجیتال' },
+                    { name: 'لوازم خانگی شیخ', href: '/sheikh-home', aria: 'صفحه لوازم خانگی شیخ' },
+                    { name: 'شیخ نوا', href: '/tech-products', aria: 'صفحه شیخ نوا' },
+                    { name: 'طراحی سایت', href: '/about', aria: 'صفحه درباره ما و سفارش طراحی سایت' },
+                  ].map((item) => {
+                    const isActive = pathname === item.href;
+                    return (
+                      <li key={item.name}>
+                        <Link
+                          href={item.href}
+                          prefetch={true}
+                          aria-label={item.aria}
+                          className={cn(
+                            'transition-all duration-300 text-[16px]',
+                            'flex items-center gap-2 group',
+                            isActive
+                              ? 'text-amber-400 font-bold drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]'
+                              : 'text-gray-300 hover:text-amber-200'
+                          )}
+                        >
+                          <ArrowRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-all duration-300 rotate-180" />
+                          {item.name}
+                        </Link>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
 
@@ -242,25 +256,33 @@ export default function Footer() {
               </div>
               <ul className="space-y-3">
                 {[
-                  { name: 'خرماهای ممتاز', href: '#' },
-                  { name: 'عسل طبیعی کوهستان', href: '#' },
-                  { name: 'زعفران سرگل لوکس', href: '#' },
-                  { name: 'لوازم خانگی شیخ', href: '/sheikh-home' },
-                  { name: 'شیخ دیجیتال', href: '/sheikh-digital' },
-                ].map((item) => (
-                  <li key={item.name}>
-                    <a
-                      href={item.href}
-                      className={cn(
-                        'text-gray-300 hover:text-amber-200 transition-all duration-300 text-[16px] lg:text-[17px] xl:text-[18px]',
-                        'flex items-center gap-2 group justify-start',
-                      )}
-                    >
-                      <ArrowRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-all duration-300 rotate-180" />
-                      {item.name}
-                    </a>
-                  </li>
-                ))}
+                  { name: 'محصولات غذایی شیخ', href: '/sheikh-food', aria: 'صفحه محصولات غذایی شیخ' },
+                  { name: 'شیخ دیجیتال', href: '/sheikh-digital', aria: 'صفحه شیخ دیجیتال' },
+                  { name: 'لوازم خانگی شیخ', href: '/sheikh-home', aria: 'صفحه لوازم خانگی شیخ' },
+                  { name: 'شیخ نوا', href: '/tech-products', aria: 'صفحه شیخ نوا' },
+                  { name: 'طراحی سایت', href: '/about', aria: 'صفحه درباره ما و سفارش طراحی سایت' },
+                ].map((item) => {
+                  const isActive = pathname === item.href;
+                  return (
+                    <li key={item.name}>
+                      <Link
+                        href={item.href}
+                        prefetch={true}
+                        aria-label={item.aria}
+                        className={cn(
+                          'transition-all duration-300 text-[16px] lg:text-[17px] xl:text-[18px]',
+                          'flex items-center gap-2 group justify-start',
+                          isActive
+                            ? 'text-amber-400 font-bold drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]'
+                            : 'text-gray-300 hover:text-amber-200'
+                        )}
+                      >
+                        <ArrowRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-all duration-300 rotate-180" />
+                        {item.name}
+                      </Link>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
 
