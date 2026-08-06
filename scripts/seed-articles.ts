@@ -20,124 +20,124 @@ async function seedArticles() {
 
         const articles = [
             {
-                title: 'The Health Benefits of Honey',
+                title: 'فواید بی‌نظیر عسل طبیعی برای سلامتی',
                 slug: 'health-benefits-of-honey',
                 imageUrl: '/assets/mock/1.webp',
-                summary: 'Discover the incredible antibacterial properties and digestive benefits of natural honey, along with its role in traditional medicine and modern wellness.',
+                summary: 'با خواص شگفت‌انگیز ضدباکتریایی، بهبوددهنده گوارش و جایگاه عسل طبیعی در طب سنتی و سلامت مدرن آشنا شوید.',
                 content: `
-          <h2>The Ancient Sweetener with Modern Benefits</h2>
-          <p>Honey has been used for thousands of years not just as a sweetener, but as a powerful natural medicine. Its unique composition makes it one of nature's most remarkable substances.</p>
+          <h2>شیرین‌کننده باستانی با خواص بی‌شمار مدرن</h2>
+          <p>عسل طبیعی هزاران سال است که فراتر از یک شیرین‌کننده لذیذ، به عنوان یک معجون دارویی قدرتمند در درمان‌های سنتی جایگاه ویژه‌ای داشته است. ترکیب بیوشیمیایی منحصربه‌فرد این شهد طلایی، آن را به یکی از معجزه‌آساترین فرآورده‌های طبیعت تبدیل کرده است.</p>
           
-          <h3>Antibacterial Properties</h3>
-          <p>Raw honey contains natural antibacterial compounds that can help fight infections. The high sugar content creates an environment where bacteria cannot thrive, while enzymes produce hydrogen peroxide that acts as a natural antiseptic.</p>
+          <h3>خواص ضدباکتریایی شگفت‌انگیز</h3>
+          <p>عسل خام حاوی ترکیبات ضد میکروبی قوی است که به مبارزه با انواع عفونت‌ها کمک می‌کنند. غلظت بالای قند در عسل محیطی نامناسب برای رشد باکتری‌ها ایجاد می‌کند، در حالی که آنزیم‌های فعال موجود در آن با تولید هیدروژن پراکسید طبیعی به عنوان یک ضدعفونی‌کننده فوق‌العاده عمل می‌کنند.</p>
           
-          <h3>Digestive Health</h3>
-          <p>Honey can soothe digestive issues and promote gut health. It contains prebiotics that feed beneficial bacteria in your digestive system, helping to maintain a healthy microbiome.</p>
+          <h3>بهبود و سلامت دستگاه گوارش</h3>
+          <p>مصرف منظم عسل طبیعی می‌تواند مشکلات گوارشی را تسکین داده و به سلامت روده کمک کند. عسل حاوی پری‌بیوتیک‌های طبیعی است که باکتری‌های مفید روده را تغذیه کرده و به حفظ یک میکروبیوم گوارشی سالم و متعادل کمک می‌کنند.</p>
           
-          <h3>Natural Energy Source</h3>
-          <p>Unlike refined sugar, honey provides sustained energy release. Its natural glucose and fructose are easily absorbed by the body, making it an excellent pre-workout fuel or natural energy booster.</p>
+          <h3>منبع انرژی طبیعی و پایدار</h3>
+          <p>برخلاف شکر سفید و قندهای تصفیه‌شده، عسل طبیعی منبعی پایدار از انرژی را برای بدن تامین می‌کند. کربوهیدرات‌های طبیعی موجود در آن (گلوکز و فروکتوز) به آرامی و راحتی توسط بدن جذب می‌شوند، که این ویژگی عسل را به یک سوخت عالی پیش از ورزش و برطرف‌کننده خستگی روزانه تبدیل کرده است.</p>
           
-          <h3>Skin Healing</h3>
-          <p>Applied topically, honey can accelerate wound healing and treat various skin conditions. Its antibacterial and anti-inflammatory properties make it effective for treating burns, cuts, and skin infections.</p>
+          <h3>التیام و بهبود پوست</h3>
+          <p>استعمال موضعی عسل خام روی پوست می‌تواند سرعت بهبود زخم‌ها، سوختگی‌ها و آسیب‌های پوستی را به شدت افزایش دهد. ویژگی‌های ضد التهابی و ضد میکروبی عسل در تسکین سوزش، بریدگی‌ها و پیشگیری از بروز جوش و آکنه بسیار موثر است.</p>
           
-          <h3>Choosing Quality Honey</h3>
-          <p>When selecting honey, look for raw, unprocessed varieties. Our premium honey collection is carefully sourced from trusted beekeepers who maintain the highest standards of quality and purity.</p>
+          <h3>انتخاب عسل باکیفیت و اصیل</h3>
+          <p>برای بهره‌مندی از خواص واقعی عسل، همیشه به سراغ عسل‌های خام، ارگانیک و حرارت‌ندیده بروید. کلکسیون عسل‌های ممتاز ما در فروشگاه شیخ با دقت بسیار بالا از بهترین زنبورداران محلی تهیه می‌شود تا خلوص، اصالت و تمامی آنزیم‌های زنده و مفید آن تضمین گردد.</p>
         `,
                 authorId: adminUser.id,
             },
             {
-                title: 'How to Use Saffron in Cooking',
+                title: 'راهنمای کاربردی استفاده از زعفران در آشپزی',
                 slug: 'how-to-use-saffron-in-cooking',
                 imageUrl: '/assets/mock/2.jpeg',
-                summary: 'Learn the art of incorporating saffron into your culinary creations, from proper dosage and preparation techniques to perfect pairing suggestions.',
+                summary: 'با هنر و اصول استفاده از زعفران در طبخ انواع غذاها آشنا شوید؛ از دوز مناسب و روش‌های صحیح دم کردن تا بهترین ترکیب‌های غذایی با این ادویه جادویی.',
                 content: `
-          <h2>The Golden Spice of Kings</h2>
-          <p>Saffron, often called the "golden spice," is one of the world's most precious and aromatic spices. Its distinctive flavor and vibrant color can transform ordinary dishes into extraordinary culinary experiences.</p>
+          <h2>ادویه طلایی پادشاهان</h2>
+          <p>زعفران که اغلب با عنوان «طلای سرخ» یا «ادویه شاهان» یاد می‌شود، یکی از گران‌بها‌ترین و خوش‌رایحه‌ترین ادویه‌های سراسر جهان است. عطر متمایز، رنگ خیره‌کننده و طعم بی‌نظیر این ادویه جادویی می‌تواند ساده‌ترین غذاها را به یک شاهکار و تجربه لذت‌بخش آشپزی تبدیل کند.</p>
           
-          <h3>Understanding Saffron Quality</h3>
-          <p>High-quality saffron should have deep red threads with golden tips. The aroma should be intense and floral, not musty or stale. Our premium saffron is hand-picked and carefully processed to maintain maximum potency.</p>
+          <h3>شناخت زعفران باکیفیت و اصیل</h3>
+          <p>زعفران مرغوب و باکیفیت باید دارای رشته‌های سرخ تیره و یکدست با نوک شیپوری شکل باشد. عطر آن باید بسیار قوی، زنده و تداعی‌کننده رایحه گل‌ها و عسل باشد، نه بوی کهنگی یا نا. ما در فروشگاه شیخ مفتخریم که زعفران‌های ممتاز خود را به صورت دست‌چین شده و مستقیم از مزارع نمونه تهیه می‌کنیم تا عطر و طعم واقعی آن حفظ شود.</p>
           
-          <h3>Proper Preparation Techniques</h3>
-          <p>To unlock saffron's full potential, gently toast the threads in a dry pan for 30 seconds, then steep them in warm water, broth, or milk for 15-20 minutes. This process releases the spice's essential oils and color.</p>
+          <h3>روش‌های صحیح آماده‌سازی و دم کردن زعفران</h3>
+          <p>برای آزاد کردن عطر، طعم و قدرت رنگ‌دهی کامل زعفران، مراحل زیر را به ترتیب انجام دهید: رشته‌های زعفران را به همراه یک حبه قند کوچک یا چند دانه شکر در هاون به آرامی بسابید تا کاملاً پودر شود. سپس پودر به دست آمده را به همراه چند تکه یخ کوچک در یک فنجان قرار دهید تا در دمای محیط آب شود، یا روی آن آب داغ بریزید و روی فنجان را بپوشانید و اجازه دهید ۱۵ تا ۲۰ دقیقه دم بکشد. این شوک دمایی، رنگ‌دهی و عطر ادویه را به حداکثر می‌رساند.</p>
           
-          <h3>Dosage Guidelines</h3>
-          <p>A little saffron goes a long way. For most dishes, 2-3 threads per serving is sufficient. For rice dishes, use 1-2 threads per cup of rice. Remember, it's better to start with less and add more if needed.</p>
+          <h3>راهنمای میزان مصرف (دوز مناسب)</h3>
+          <p>در استفاده از زعفران، تعادل حرف اول را می‌زند؛ مقدار بسیار کمی از آن تاثیر شگرفی دارد. برای طبخ اکثر غذاها، استفاده از ۲ تا ۳ رشته برای هر نفر کاملاً کافی است. در تهیه برنج‌های معطر مجلسی نیز استفاده از ۱ تا ۲ رشته برای هر پیمانه برنج پیشنهاد می‌شود. به یاد داشته باشید که همیشه می‌توانید در مراحل پایانی پخت، مقدار بیشتری زعفران اضافه کنید.</p>
           
-          <h3>Perfect Pairings</h3>
-          <p>Saffron pairs beautifully with rice, seafood, chicken, and lamb. It's essential in classic dishes like paella, risotto, and Persian rice. The spice also enhances desserts, particularly those with milk or cream.</p>
+          <h3>بهترین ترکیب‌های غذایی با زعفران</h3>
+          <p>زعفران هماهنگی بی‌نظیری با برنج اصیل، غذاهای دریایی، گوشت مرغ و بره دارد. این ادویه بخش جدایی‌ناپذیر پلوهای اصیل ایرانی، پائلا اسپانیایی و ریسوتو ایتالیایی است. علاوه بر غذاهای اصلی، زعفران عطر و طعمی رویایی به انواع دسرها، به ویژه کیک‌ها، بستنی‌های سنتی و کرم‌های بر پایه شیر می‌بخشد.</p>
           
-          <h3>Storage Tips</h3>
-          <p>Store saffron in an airtight container in a cool, dark place. Avoid exposure to light and heat, which can degrade the spice's quality and potency over time.</p>
+          <h3>اصول نگهداری از زعفران</h3>
+          <p>زعفران دم‌نشده را همیشه در یک ظرف شیشه‌ای یا فلزی تیره، دربسته و در مکانی خشک، خنک و تاریک نگهداری کنید. قرار گرفتن در معرض مستقیم نور، رطوبت و گرما به سرعت کیفیت، عطر و قدرت رنگ‌دهی این ادویه ارزشمند را در طول زمان کاهش می‌دهد.</p>
         `,
                 authorId: adminUser.id,
             },
             {
-                title: 'Top 5 Health Benefits of Dates',
+                title: '۵ فایده طلایی خرما برای سلامتی',
                 slug: 'top-5-health-benefits-of-dates',
                 imageUrl: '/assets/mock/3.jpeg',
-                summary: 'Explore the nutritional powerhouse that is the date fruit, rich in fiber, antioxidants, and natural sugars that provide sustained energy and numerous health benefits.',
+                summary: 'با ارزش غذایی شگفت‌انگیز خرما آشنا شوید؛ میوه‌ای سرشار از فیبر، آنتی‌اکسیدان‌ها و قندهای طبیعی که انرژی و تندرستی را برای شما به ارمغان می‌آورد.',
                 content: `
-          <h2>Nature's Energy Bar</h2>
-          <p>Dates have been a staple food in Middle Eastern cultures for thousands of years, valued not just for their sweet taste but for their impressive nutritional profile and health benefits.</p>
+          <h2>بمب انرژی طبیعی طبیعت</h2>
+          <p>خرما هزاران سال است که جزء اصلی رژیم غذایی مردم خاورمیانه بوده است؛ میوه‌ای لذیذ که نه تنها به خاطر طعم شیرین کاراملی‌اش، بلکه به دلیل ارزش غذایی فوق‌العاده و خواص شگفت‌انگیزش برای سلامتی، همواره مورد ستایش قرار گرفته است.</p>
           
-          <h3>1. Rich in Fiber</h3>
-          <p>Dates are an excellent source of dietary fiber, which promotes digestive health and helps maintain regular bowel movements. The fiber content also helps you feel full longer, making dates a great snack for weight management.</p>
+          <h3>۱. سرشار از فیبرهای مفید گوارشی</h3>
+          <p>خرما یک منبع فوق‌العاده از فیبرهای رژیمی است که به بهبود عملکرد دستگاه گوارش کمک می‌کند. وجود فیبر کافی در رژیم غذایی مانع از ابتلا به یبوست شده و به حفظ سلامت کلی روده‌ها و دفع منظم سموم از بدن کمک شایانی می‌کند.</p>
           
-          <h3>2. Natural Energy Boost</h3>
-          <p>The natural sugars in dates - glucose, fructose, and sucrose - provide quick energy while the fiber ensures sustained release. This makes dates perfect for pre-workout fuel or as a natural energy booster during the day.</p>
+          <h3>۲. منبع فوق‌العاده تامین انرژی</h3>
+          <p>قندهای طبیعی موجود در خرما (شامل گلوکز، فروکتوز و ساکارز) انرژی لازم را به سرعت در اختیار سلول‌ها قرار می‌دهند، در حالی که فیبر موجود در آن با به تاخیر انداختن هضم، مانع از افت ناگهانی قند خون می‌شود. این ویژگی خرما را به یک سوخت عالی برای قبل از تمرینات ورزشی تبدیل کرده است.</p>
           
-          <h3>3. Antioxidant Powerhouse</h3>
-          <p>Dates contain various antioxidants including flavonoids, carotenoids, and phenolic acid. These compounds help protect your cells from damage caused by free radicals and may reduce the risk of chronic diseases.</p>
+          <h3>۳. منبع غنی از آنتی‌اکسیدان‌های قوی</h3>
+          <p>خرما سرشار از آنتی‌اکسیدان‌های فعالی چون فلاونوئیدها، کاروتنوئیدها و اسیدهای فنولیک است. این ترکیبات ارزشمند از سلول‌های بدن در برابر آسیب‌های رادیکال‌های آزاد محافظت کرده و خطر ابتلا به بیماری‌های قلبی و انواع سرطان‌ها را به میزان چشمگیری کاهش می‌دهند.</p>
           
-          <h3>4. Bone Health Support</h3>
-          <p>Dates are rich in minerals like calcium, magnesium, and phosphorus, which are essential for maintaining strong bones and preventing conditions like osteoporosis.</p>
+          <h3>۴. حمایت از سلامت و استحکام استخوان‌ها</h3>
+          <p>خرما حاوی مقادیر قابل توجهی از مواد معدنی حیاتی نظیر کلسیم، منیزیم و فسفر است. مصرف مداوم خرما در رژیم غذایی به حفظ استحکام استخوان‌ها، تقویت مفاصل و پیشگیری از بروز بیماری‌هایی مانند پوکی استخوان در سنین بالا کمک می‌کند.</p>
           
-          <h3>5. Heart Health Benefits</h3>
-          <p>The potassium content in dates helps regulate blood pressure, while the fiber helps lower cholesterol levels. Regular consumption may contribute to overall cardiovascular health.</p>
+          <h3>۵. کمک به سلامت و بهبود عملکرد قلب</h3>
+          <p>پتاسیم موجود در خرما یک عنصر کلیدی برای تنظیم فشار خون و ریتم ضربان قلب است. همچنین، فیبرهای محلول در خرما به کاهش سطح کلسترول مضر خون کمک کرده و سلامت کلی سیستم قلبی-عروقی را تضمین می‌کنند.</p>
           
-          <h3>Incorporating Dates into Your Diet</h3>
-          <p>Enjoy dates as a natural sweetener in smoothies, add them to oatmeal or yogurt, or simply enjoy them as a healthy snack. Our premium date collection offers various varieties, each with its own unique flavor profile.</p>
+          <h3>اضافه کردن خرما به رژیم غذایی روزانه</h3>
+          <p>خرما را می‌توانید به عنوان یک شیرین‌کننده طبیعی در تهیه اسموتی‌ها، به همراه ماست و اوتمیل مصرف کنید، یا آن را به عنوان یک میان‌وعده سالم به همراه چای میل نمایید. مجموعه خرماهای ممتاز و مضافتی ما در فروشگاه شیخ، بالاترین استانداردهای طعم و کیفیت را برای شما به ارمغان می‌آورد.</p>
         `,
                 authorId: adminUser.id,
             },
             {
-                title: '10 Tips for Effective Online Shopping',
+                title: '۱۰ توصیه طلایی برای خرید آنلاین موفق و مطمئن',
                 slug: '10-tips-for-effective-online-shopping',
                 imageUrl: '/assets/mock/1.webp',
-                summary: 'Master the art of online shopping with these essential tips for finding quality products, securing the best deals, and ensuring a safe and satisfying shopping experience.',
+                summary: 'با این توصیه‌های ضروری برای یافتن محصولات باکیفیت، استفاده از بهترین تخفیف‌ها و تضمین امنیت تراکنش‌ها، به یک خریدار آنلاین حرفه‌ای تبدیل شوید.',
                 content: `
-          <h2>Navigating the Digital Marketplace</h2>
-          <p>Online shopping has revolutionized how we purchase goods, but with so many options available, it's important to shop smartly and safely. Here are ten essential tips to enhance your online shopping experience.</p>
+          <h2>ناوبری هوشمندانه در بازار دیجیتال</h2>
+          <p>خرید آنلاین شیوه خرید کردن ما را به طور کامل متحول کرده است. اما با توجه به حجم انبوه گزینه‌ها و فروشگاه‌های موجود در فضای مجازی، بسیار مهم است که بدانیم چگونه هوشمندانه و با امنیت کامل خرید کنیم. در این مقاله به بررسی ۱۰ توصیه طلایی برای ارتقای تجربه خرید اینترنتی شما می‌پردازیم.</p>
           
-          <h3>1. Research Before You Buy</h3>
-          <p>Always read product descriptions carefully and compare similar items across different sellers. Look for detailed specifications, materials used, and warranty information.</p>
+          <h3>۱. تحقیق جامع پیش از خرید</h3>
+          <p>همیشه مشخصات و توضیحات فنی محصول را با دقت و به طور کامل مطالعه کنید. کالا را در بین فروشگاه‌های معتبر مقایسه کرده و به جزییاتی همچون ابعاد، متریال به کار رفته، استانداردهای ساخت و جزییات گارانتی توجه ویژه داشته باشید.</p>
           
-          <h3>2. Read Customer Reviews</h3>
-          <p>Customer reviews provide valuable insights into product quality and seller reliability. Pay attention to both positive and negative reviews to get a balanced perspective.</p>
+          <h3>۲. بررسی دقیق نظرات خریداران قبلی</h3>
+          <p>نظرات و امتیازات کاربران اطلاعات ارزشمندی درباره کیفیت واقعی کالا و تعهد فروشنده به شما ارائه می‌دهند. برای رسیدن به یک تصمیم‌گیری منصفانه و واقع‌بینانه، هم نظرات مثبت و هم بازخوردهای منفی را به دقت مطالعه کنید.</p>
           
-          <h3>3. Check Seller Credentials</h3>
-          <p>Verify that you're buying from reputable sellers. Look for established businesses with good ratings and clear contact information.</p>
+          <h3>۳. تایید اعتبار و اصالت فروشگاه</h3>
+          <p>همیشه از فروشگاه‌های دارای مجوزهای قانونی و نماد اعتماد الکترونیکی خرید کنید. به سابقه فعالیت فروشگاه، اطلاعات تماس شفاف و آدرس فیزیکی ثبت‌شده دقت نمایید تا از معتبر بودن کسب‌وکار مطمئن شوید.</p>
           
-          <h3>4. Understand Return Policies</h3>
-          <p>Before making a purchase, familiarize yourself with the return and refund policies. This is especially important for clothing, electronics, and other items you might need to return.</p>
+          <h3>۴. قوانین مرجوعی و ضمانت بازگشت کالا</h3>
+          <p>پیش از ثبت نهایی سفارش، حتماً قوانین مربوط به تعویض و مرجوعی کالا را مطالعه کنید. این موضوع به ویژه در خرید کالاهایی مانند پوشاک، لوازم دیجیتال و اقلام هدیه از اهمیت بالایی برخوردار است.</p>
           
-          <h3>5. Compare Prices</h3>
-          <p>Use price comparison tools and check multiple websites to ensure you're getting the best deal. Don't forget to factor in shipping costs and taxes.</p>
+          <h3>۵. مقایسه قیمت‌ها و هزینه‌های جانبی</h3>
+          <p>از ابزارهای مقایسه قیمت استفاده کنید تا مطمئن شوید کالا را با قیمت واقعی خریداری می‌کنید. همچنین به هزینه‌های ارسال، بسته‌بندی ویژه و مالیات توجه کنید تا در مراحل نهایی پرداخت با رقم‌های غیرمنتظره مواجه نشوید.</p>
           
-          <h3>6. Secure Payment Methods</h3>
-          <p>Use secure payment methods like credit cards or trusted payment platforms. Avoid sharing sensitive information through unsecured channels.</p>
+          <h3>۶. استفاده از روش‌های پرداخت امن</h3>
+          <p>تراکنش‌های مالی خود را تنها از طریق درگاه‌های بانکی رسمی و پروتکل‌های امن انجام دهید. از اشتراک‌گذاری اطلاعات حساس حساب یا کارت بانکی خود در شبکه‌های اجتماعی غیرامن به شدت خودداری کنید.</p>
           
-          <h3>7. Check Shipping Information</h3>
-          <p>Review shipping times, costs, and tracking options. Some sellers offer free shipping on orders above a certain amount.</p>
+          <h3>۷. بررسی شرایط و زمان ارسال کالا</h3>
+          <p>روش‌های ارسال، هزینه‌ها، زمان تقریبی تحویل و امکان پیگیری مرسوله را بررسی کنید. برخی فروشگاه‌ها برای خریدهای بالاتر از یک سقف مشخص، امکان ارسال رایگان را برای مشتریان فراهم می‌آورند.</p>
           
-          <h3>8. Save Money with Coupons</h3>
-          <p>Look for discount codes, coupons, and promotional offers. Many retailers offer first-time buyer discounts or seasonal sales.</p>
+          <h3>۸. استفاده از کدهای تخفیف و جشنواره‌ها</h3>
+          <p>پیش از خرید، به دنبال کدهای تخفیف فعال، جشنواره‌های مناسبتی و پیشنهادهای ویژه باشید. ثبت‌نام در خبرنامه فروشگاه‌ها معمولاً تخفیف‌های ویژه‌ای را برای اولین خرید شما به همراه دارد.</p>
           
-          <h3>9. Keep Records</h3>
-          <p>Save order confirmations, receipts, and tracking information. This documentation is essential if you need to track your order or request a refund.</p>
+          <h3>۹. نگهداری سوابق و رسیدهای خرید</h3>
+          <p>رسید دیجیتالی، کد پیگیری سفارش و فاکتور خرید خود را تا زمان دریافت کامل کالا و اطمینان از سلامت آن در ایمیل یا حساب کاربری خود آرشیو و نگهداری کنید. این مدارک در صورت نیاز به پشتیبانی ضروری هستند.</p>
           
-          <h3>10. Trust Your Instincts</h3>
-          <p>If a deal seems too good to be true, it probably is. Trust your instincts and avoid suspicious offers or sellers with poor reputations.</p>
+          <h3>۱۰. به غریزه خود اعتماد کنید</h3>
+          <p>اگر قیمت محصولی به طرز مشکوکی ارزان است یا پیشنهادی بیش از حد رویایی به نظر می‌رسد، احتمالاً با یک کالای تقلبی مواجه هستید. در این شرایط به غریزه خود اعتماد کنید و امنیت مالی خود را به خطر نیندازید.</p>
         `,
                 authorId: adminUser.id,
             },
@@ -148,7 +148,11 @@ async function seedArticles() {
         for (const article of articles) {
             await prisma.article.upsert({
                 where: { slug: article.slug },
-                update: {},
+                update: {
+                    title: article.title,
+                    summary: article.summary,
+                    content: article.content,
+                },
                 create: article,
             });
         }
@@ -161,4 +165,4 @@ async function seedArticles() {
     }
 }
 
-seedArticles(); 
+seedArticles();
