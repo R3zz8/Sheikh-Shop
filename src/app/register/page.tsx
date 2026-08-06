@@ -4,7 +4,7 @@ import React, { useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Mail, User, ShieldCheck, Truck, Lock, Star } from 'lucide-react';
 import Link from 'next/link';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import AuthCard from '@/components/auth/AuthCard';
 import InputField from '@/components/auth/InputField';
 import PasswordField from '@/components/auth/PasswordField';
@@ -35,6 +35,18 @@ interface RegisterFormValues {
   confirmPassword: string;
 }
 
+// Isolate PasswordStrength using useWatch to prevent full-form re-rendering on every keypress
+const PasswordStrengthWrapper = React.memo(({ control }: { control: any }) => {
+  const passwordValue = useWatch({
+    control,
+    name: 'password',
+    defaultValue: '',
+  });
+
+  return <PasswordStrength password={passwordValue} />;
+});
+PasswordStrengthWrapper.displayName = 'PasswordStrengthWrapper';
+
 const RegisterForm = React.memo(() => {
   const [message, setMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -43,7 +55,8 @@ const RegisterForm = React.memo(() => {
   const {
     register,
     handleSubmit,
-    watch,
+    control,
+    formState: { errors, isValid },
   } = useForm<RegisterFormValues>({
     defaultValues: {
       fullName: '',
@@ -51,23 +64,8 @@ const RegisterForm = React.memo(() => {
       password: '',
       confirmPassword: '',
     },
-    mode: 'onChange',
+    mode: 'onBlur',
   });
-
-  const fullNameValue = watch('fullName');
-  const emailValue = watch('email');
-  const passwordValue = watch('password');
-  const confirmPasswordValue = watch('confirmPassword');
-
-  const emailValid = useMemo(() => (emailValue ? validateEmail(emailValue) : true), [emailValue]);
-  const checks = useMemo(() => getChecks(passwordValue), [passwordValue]);
-  const passwordsMatch = useMemo(() => (confirmPasswordValue ? passwordValue === confirmPasswordValue : true), [passwordValue, confirmPasswordValue]);
-
-  const formValid =
-    fullNameValue.trim().length > 0 &&
-    validateEmail(emailValue) &&
-    checks.length && checks.upper && checks.lower && checks.number && checks.special &&
-    passwordValue === confirmPasswordValue;
 
   async function onSubmit(data: RegisterFormValues) {
     setMessage(null);
@@ -121,8 +119,12 @@ const RegisterForm = React.memo(() => {
           label="نام و نام خانوادگی"
           type="text"
           placeholder="نام و نام خانوادگی خود را وارد کنید"
-          {...register('fullName')}
+          {...register('fullName', {
+            required: 'وارد کردن نام و نام خانوادگی الزامی است',
+            validate: (val) => val.trim().length > 0 || 'وارد کردن نام و نام خانوادگی الزامی است',
+          })}
           icon={<User className="size-4.5 text-slate-400" aria-hidden />}
+          error={errors.fullName?.message}
           required
         />
 
@@ -130,9 +132,15 @@ const RegisterForm = React.memo(() => {
           label="نشانی ایمیل"
           type="email"
           placeholder="ایمیل خود را وارد کنید"
-          {...register('email')}
+          {...register('email', {
+            required: 'وارد کردن نشانی ایمیل الزامی است',
+            pattern: {
+              value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+              message: 'نشانی ایمیل نامعتبر است',
+            },
+          })}
           icon={<Mail className="size-4.5 text-slate-400" aria-hidden />}
-          error={emailValue && !emailValid ? 'نشانی ایمیل نامعتبر است' : undefined}
+          error={errors.email?.message}
           required
         />
 
@@ -140,27 +148,45 @@ const RegisterForm = React.memo(() => {
           <PasswordField
             label="رمز عبور"
             placeholder="حداقل ۱۲ نویسه"
-            {...register('password')}
+            {...register('password', {
+              required: 'وارد کردن رمز عبور الزامی است',
+              validate: (val) => {
+                const checks = getChecks(val);
+                return (
+                  (checks.length &&
+                    checks.upper &&
+                    checks.lower &&
+                    checks.number &&
+                    checks.special) ||
+                  'رمز عبور باید حداقل ۱۲ کاراکتر شامل حرف بزرگ، حرف کوچک، عدد و نماد باشد'
+                );
+              },
+            })}
+            error={errors.password?.message}
             required
           />
 
           <PasswordField
             label="تکرار رمز عبور"
             placeholder="تکرار رمز عبور"
-            {...register('confirmPassword')}
-            error={confirmPasswordValue && !passwordsMatch ? 'رمزهای عبور مطابقت ندارند' : undefined}
+            {...register('confirmPassword', {
+              required: 'تکرار رمز عبور الزامی است',
+              validate: (val, values) =>
+                val === values.password || 'رمزهای عبور مطابقت ندارند',
+            })}
+            error={errors.confirmPassword?.message}
             required
           />
         </div>
 
-        <PasswordStrength password={passwordValue} />
+        <PasswordStrengthWrapper control={control} />
 
         {/* Premium Submit Button with Gradient and Framer Motion hover/tap scales */}
         <motion.button
           type="submit"
-          disabled={!formValid || isPending}
-          whileHover={formValid ? { scale: 1.02, boxShadow: "0 10px 25px -5px rgba(245, 158, 11, 0.4)" } : {}}
-          whileTap={formValid ? { scale: 0.98 } : {}}
+          disabled={!isValid || isPending}
+          whileHover={isValid ? { scale: 1.02, boxShadow: "0 10px 25px -5px rgba(245, 158, 11, 0.4)" } : {}}
+          whileTap={isValid ? { scale: 0.98 } : {}}
           className="group relative inline-flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white font-bold text-base sm:text-lg px-4 py-3.5 shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 mt-3 cursor-pointer"
           aria-busy={isPending}
         >
