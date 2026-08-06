@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState, useTransition } from 'react';
+import React, { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Mail, ShieldCheck, Truck, Lock, Star } from 'lucide-react';
 import Link from 'next/link';
@@ -13,10 +13,6 @@ import AnimatedBackground from '@/components/auth/AnimatedBackground';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-
-function validateEmail(email: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
 
 interface LoginFormValues {
   email: string;
@@ -34,22 +30,15 @@ const LoginForm = React.memo(() => {
   const {
     register,
     handleSubmit,
-    watch,
+    formState: { errors, isValid },
   } = useForm<LoginFormValues>({
     defaultValues: {
       email: '',
       password: '',
       remember: false,
     },
-    mode: 'onChange',
+    mode: 'onBlur',
   });
-
-  const emailValue = watch('email');
-  const passwordValue = watch('password');
-
-  const isEmailValid = useMemo(() => (emailValue ? validateEmail(emailValue) : true), [emailValue]);
-  const isPasswordValid = useMemo(() => (passwordValue ? passwordValue.length >= 1 : true), [passwordValue]);
-  const isFormValid = isEmailValid && isPasswordValid && emailValue.length > 0 && passwordValue.length > 0;
 
   async function onSubmit(data: LoginFormValues) {
     setMessage(null);
@@ -116,17 +105,25 @@ const LoginForm = React.memo(() => {
           label="نشانی ایمیل"
           type="email"
           placeholder="ایمیل خود را وارد کنید"
-          {...register('email')}
+          {...register('email', {
+            required: 'وارد کردن نشانی ایمیل الزامی است',
+            pattern: {
+              value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+              message: 'نشانی ایمیل نامعتبر است',
+            },
+          })}
           icon={<Mail className="size-4.5 text-slate-400" aria-hidden />}
-          error={emailValue && !isEmailValid ? 'نشانی ایمیل نامعتبر است' : undefined}
+          error={errors.email?.message}
           required
         />
 
         <PasswordField
           label="رمز عبور"
           placeholder="رمز عبور خود را وارد کنید"
-          {...register('password')}
-          error={passwordValue === '' ? undefined : !isPasswordValid ? 'وارد کردن رمز عبور الزامی است' : undefined}
+          {...register('password', {
+            required: 'وارد کردن رمز عبور الزامی است',
+          })}
+          error={errors.password?.message}
           required
         />
 
@@ -144,9 +141,9 @@ const LoginForm = React.memo(() => {
         {/* Premium Submit Button with Gradient and Framer Motion hover/tap scales */}
         <motion.button
           type="submit"
-          disabled={!isFormValid || isPending}
-          whileHover={isFormValid ? { scale: 1.02, boxShadow: "0 10px 25px -5px rgba(245, 158, 11, 0.4)" } : {}}
-          whileTap={isFormValid ? { scale: 0.98 } : {}}
+          disabled={!isValid || isPending}
+          whileHover={isValid ? { scale: 1.02, boxShadow: "0 10px 25px -5px rgba(245, 158, 11, 0.4)" } : {}}
+          whileTap={isValid ? { scale: 0.98 } : {}}
           className="group relative inline-flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white font-bold text-base sm:text-lg px-4 py-3.5 shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 mt-3 cursor-pointer"
           aria-busy={isPending}
         >

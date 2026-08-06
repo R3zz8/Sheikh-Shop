@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
 interface AnimatedBackgroundProps {
@@ -8,6 +8,17 @@ interface AnimatedBackgroundProps {
 }
 
 const AnimatedBackground = React.memo(({ children }: AnimatedBackgroundProps) => {
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth < 640);
+        };
+        checkMobile();
+        window.addEventListener("resize", checkMobile);
+        return () => window.removeEventListener("resize", checkMobile);
+    }, []);
+
     // Elegant, slow-moving particle details
     const particles = [
         { size: 4, x: "10%", y: "20%", duration: 15, delay: 0 },
@@ -27,7 +38,7 @@ const AnimatedBackground = React.memo(({ children }: AnimatedBackgroundProps) =>
                     aria-hidden
                     className="pointer-events-none absolute -top-20 -left-20 h-[350px] w-[350px] rounded-full blur-3xl opacity-25"
                     style={{ background: "radial-gradient(circle, rgba(245,158,11,0.25), rgba(245,158,11,0) 70%)" }}
-                    animate={{ 
+                    animate={isMobile ? undefined : {
                         x: [0, 20, -10, 0],
                         y: [0, 10, -15, 0],
                         scale: [1, 1.15, 0.95, 1]
@@ -40,7 +51,7 @@ const AnimatedBackground = React.memo(({ children }: AnimatedBackgroundProps) =>
                     aria-hidden
                     className="pointer-events-none absolute -bottom-20 -right-20 h-[400px] w-[400px] rounded-full blur-3xl opacity-20"
                     style={{ background: "radial-gradient(circle, rgba(180,83,9,0.2), rgba(180,83,9,0) 70%)" }}
-                    animate={{ 
+                    animate={isMobile ? undefined : {
                         x: [0, -15, 10, 0],
                         y: [0, -10, 15, 0],
                         scale: [1, 0.95, 1.1, 1]
@@ -53,7 +64,7 @@ const AnimatedBackground = React.memo(({ children }: AnimatedBackgroundProps) =>
                     aria-hidden
                     className="pointer-events-none absolute top-1/2 left-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[140px] opacity-15"
                     style={{ background: "radial-gradient(circle, rgba(245,158,11,0.15), rgba(217,119,6,0.05) 50%, rgba(245,158,11,0) 100%)" }}
-                    animate={{ 
+                    animate={isMobile ? undefined : {
                         scale: [1, 1.1, 0.95, 1],
                         opacity: [0.15, 0.2, 0.12, 0.15]
                     }}
@@ -65,39 +76,41 @@ const AnimatedBackground = React.memo(({ children }: AnimatedBackgroundProps) =>
                     aria-hidden
                     className="pointer-events-none absolute top-1/4 right-1/4 h-80 w-80 rounded-full blur-3xl opacity-10"
                     style={{ background: "radial-gradient(circle, rgba(217,119,6,0.15), rgba(217,119,6,0) 70%)" }}
-                    animate={{ 
+                    animate={isMobile ? undefined : {
                         rotate: [0, 360],
                         scale: [1, 1.2, 1]
                     }}
                     transition={{ duration: 50, repeat: Infinity, ease: "linear" }}
                 />
 
-                {/* Soft Floating Particles for a luxury shimmer effect */}
-                <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-                    {particles.map((p, i) => (
-                        <motion.div
-                            key={i}
-                            className="absolute rounded-full bg-amber-400/30 blur-[1px]"
-                            style={{
-                                width: p.size,
-                                height: p.size,
-                                left: p.x,
-                                top: p.y,
-                            }}
-                            animate={{
-                                y: [0, -40, 0],
-                                opacity: [0.2, 0.7, 0.2],
-                                scale: [1, 1.3, 1]
-                            }}
-                            transition={{
-                                duration: p.duration,
-                                delay: p.delay,
-                                repeat: Infinity,
-                                ease: "easeInOut",
-                            }}
-                        />
-                    ))}
-                </div>
+                {/* Soft Floating Particles for a luxury shimmer effect - Disabled on mobile viewports for optimal rendering performance */}
+                {!isMobile && (
+                    <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+                        {particles.map((p, i) => (
+                            <motion.div
+                                key={i}
+                                className="absolute rounded-full bg-amber-400/30 blur-[1px]"
+                                style={{
+                                    width: p.size,
+                                    height: p.size,
+                                    left: p.x,
+                                    top: p.y,
+                                }}
+                                animate={{
+                                    y: [0, -40, 0],
+                                    opacity: [0.2, 0.7, 0.2],
+                                    scale: [1, 1.3, 1]
+                                }}
+                                transition={{
+                                    duration: p.duration,
+                                    delay: p.delay,
+                                    repeat: Infinity,
+                                    ease: "easeInOut",
+                                }}
+                            />
+                        ))}
+                    </div>
+                )}
             </div>
 
             {/* Content container - Enhanced for mobile with bottom padding */}
