@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -37,7 +38,7 @@ const categories: Category[] = [
     }
 ];
 
-export default function Categories() {
+const Categories = React.memo(function Categories() {
     return (
         <section className="container-fluid section-padding relative">
             <div className="max-w-6xl mx-auto">
@@ -131,4 +132,6 @@ export default function Categories() {
             </div>
         </section>
     );
-}
+});
+
+export default Categories;

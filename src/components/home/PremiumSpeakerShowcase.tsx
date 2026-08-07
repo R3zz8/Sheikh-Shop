@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useMemo, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Canvas, useFrame } from '@react-three/fiber';
+import { useInView } from 'react-intersection-observer';
 import * as THREE from 'three';
 import Link from 'next/link';
 import { Music, Sparkles, ChevronLeft, Volume2 } from 'lucide-react';
@@ -565,6 +566,11 @@ export default function PremiumSpeakerShowcase() {
   const [webGLSupported, setWebGLSupported] = useState(true);
   const [hovered, setHovered] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const { ref: sectionRef, inView } = useInView({
+    threshold: 0.05,
+    rootMargin: '200px 0px',
+    triggerOnce: false,
+  });
 
   useEffect(() => {
     setMounted(true);
@@ -590,7 +596,7 @@ export default function PremiumSpeakerShowcase() {
   }
 
   return (
-    <section className="container-fluid py-8 sm:py-12 md:py-16 px-2 sm:px-4 md:px-6 lg:px-8 max-w-7xl mx-auto select-none">
+    <section ref={sectionRef} className="container-fluid py-8 sm:py-12 md:py-16 px-2 sm:px-4 md:px-6 lg:px-8 max-w-7xl mx-auto select-none">
       {/* Container holding both content and showcase, with glassmorphism and subtle luxury golden borders */}
       <div
         onMouseEnter={() => setHovered(true)}
@@ -675,7 +681,7 @@ export default function PremiumSpeakerShowcase() {
             />
 
             <ThreeErrorBoundary fallback={<Premium2DFallback />}>
-              {webGLSupported && !prefersReducedMotion ? (
+              {webGLSupported && !prefersReducedMotion && inView ? (
                 <div className="w-full h-full relative z-10 pointer-events-auto overflow-hidden">
                   <Suspense fallback={<CanvasFallback />}>
                     <Canvas

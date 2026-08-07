@@ -4,6 +4,7 @@ import React, { useRef, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
+import { useInView } from "react-intersection-observer";
 import * as THREE from "three";
 import {
   Smartphone,
@@ -501,6 +502,11 @@ export default function SheikhScene() {
   const mouse = useMousePosition();
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [webGLSupported, setWebGLSupported] = useState(true);
+  const { ref: sectionRef, inView } = useInView({
+    threshold: 0.05,
+    rootMargin: '200px 0px',
+    triggerOnce: false,
+  });
 
   useEffect(() => {
     setMounted(true);
@@ -536,7 +542,7 @@ export default function SheikhScene() {
   );
 
   return (
-    <section className="relative w-full max-w-7xl mx-auto px-4 py-8 sm:py-12 md:py-16">
+    <section ref={sectionRef} className="relative w-full max-w-7xl mx-auto px-4 py-8 sm:py-12 md:py-16">
       {/* Background Soft Ray / Radial Aura */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-3xl z-0">
         <div className="absolute -top-1/4 -right-1/4 w-[600px] h-[600px] bg-radial-gradient from-amber-500/10 to-transparent blur-[120px] animate-pulse duration-5000" />
@@ -701,7 +707,7 @@ export default function SheikhScene() {
 
             {/* THREE.JS CANVAS FOR PREMIUM 3D SHEIKH CHARACTER OR Graceful Fallback */}
             <ThreeErrorBoundary fallback={renderFallback}>
-              {webGLSupported ? (
+              {webGLSupported && inView ? (
                 <div className="w-full h-[400px] sm:h-[480px] lg:h-[520px] relative z-10 pointer-events-auto overflow-hidden">
                   <Canvas
                     camera={{ position: [0, 0, 4.0], fov: 42 }}
