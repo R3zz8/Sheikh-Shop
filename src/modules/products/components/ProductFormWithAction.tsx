@@ -82,6 +82,10 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
   const isNewProduct = !product?.id;
   const { data: user } = useUser();
 
+  // Generate high-quality client ID for new products
+  const [generatedId] = useState(() => crypto.randomUUID());
+  const activeProductId = product?.id || generatedId;
+
   // Active Tab State
   const [activeTab, setActiveTab] = useState<string>('general');
 
@@ -100,6 +104,9 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
 
   // Submitting state
   const [isSaving, setIsSaving] = useState(false);
+
+  // Extract initial discount if it exists
+  const initialDiscount = (product as any)?.discounts?.[0];
 
   // React Hook Form for full product control
   const {
@@ -151,8 +158,17 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
       shippingDescription: product?.shippingDescription || '',
       allowFreeShipping: product?.allowFreeShipping ?? false,
       shippingPriority: product?.shippingPriority || 'Normal',
+      // Discount Fields
+      discountType: initialDiscount?.discountType || 'NONE',
+      discountValue: initialDiscount?.value || 0,
+      discountStartDate: initialDiscount?.startDate ? new Date(initialDiscount.startDate).toISOString().split('T')[0] : '',
+      discountEndDate: initialDiscount?.endDate ? new Date(initialDiscount.endDate).toISOString().split('T')[0] : '',
+      discountActive: initialDiscount?.isActive ?? true,
     }
   });
+
+  // Watch fields
+  const watchDiscountType = watch('discountType') || 'NONE';
 
   // Warn on unsaved changes before page leave
   useEffect(() => {
@@ -257,7 +273,7 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
   // Tab List metadata
   const tabsList = [
     { id: 'general', label: 'عمومی (General)', icon: Settings },
-    { id: 'pricing', label: 'قیمت‌گذاری (Pricing)', icon: DollarSign },
+    { id: 'pricing', label: 'قیمت‌گذاری و تخفیف', icon: DollarSign },
     { id: 'inventory', label: 'موجودی و تنوع (Inventory)', icon: Package },
     { id: 'media', label: 'تصاویر (Media Gallery)', icon: ImageIcon },
     { id: 'videos', label: 'ویدیوها (Video Gallery)', icon: Film },
@@ -274,7 +290,7 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
     setIsSaving(true);
     try {
       const formData = new FormData();
-      if (product?.id) formData.append('id', product.id);
+      formData.append('id', activeProductId);
 
       // Core parameters
       formData.append('name', data.name);
@@ -364,6 +380,13 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
       formData.append('allowFreeShipping', data.allowFreeShipping ? 'true' : 'false');
       if (data.shippingPriority) formData.append('shippingPriority', data.shippingPriority);
 
+      // Discount configurations
+      formData.append('discountType', data.discountType);
+      formData.append('discountValue', (data.discountValue || 0).toString());
+      formData.append('discountStartDate', data.discountStartDate || '');
+      formData.append('discountEndDate', data.discountEndDate || '');
+      formData.append('discountActive', data.discountActive ? 'true' : 'false');
+
       // Trigger server action
       const result = await serverUpsertProduct({ data: product, error: null }, formData);
 
@@ -379,11 +402,8 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
         await saveAllUnits(savedProduct.id);
         toast.success(isNewProduct ? 'کالا با موفقیت ایجاد شد!' : 'کالا با موفقیت بروزرسانی شد!');
 
-        if (isNewProduct) {
-          router.push(`/dashboard/products/${savedProduct.id}`);
-        } else {
-          router.refresh();
-        }
+        router.push(`/dashboard/products`);
+        router.refresh();
       }
     } catch (err: any) {
       toast.error(err?.message || 'خطایی در ارسال اطلاعات رخ داد.');
@@ -512,11 +532,26 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
       <div className="sticky top-0 z-40 bg-[#050201]/95 backdrop-blur-md border-b border-amber-500/15 py-4 px-6 md:px-12 flex items-center justify-between">
         <div>
           <h1 className="text-xl md:text-2xl font-black bg-gradient-to-r from-amber-300 via-amber-100 to-amber-500 bg-clip-text text-transparent flex items-center gap-2">
-            <span>✨ پنل فوق پیشرفته مدیریت محصول شیخ شاپ</span>
+            <span>✨ پنل مدیریت پیشرفته محصول شیخ شاپ</span>
           </h1>
-          <p className="text-xs text-stone-400 mt-1">مدیریت تمام‌عیار فیلدهای پایگاه داده، تصاویر، واحدها و سیستم نظرات مشتریان</p>
+          <p className="text-xs text-stone-400 mt-1">مدیریت کامل فیلدها، گالری تصاویر، ویدیوها، سئو، ابعاد، تخفیف‌ها و نظرات خریداران کالا</p>
         </div>
         <div className="flex items-center gap-3">
+          {/* Safe/Auto-save indicator */}
+          <div className="hidden sm:flex items-center gap-1.5 text-stone-400 bg-stone-900/60 px-3 py-1.5 rounded-xl border border-stone-850">
+            {isDirty ? (
+              <>
+                <RefreshCw className="w-3.5 h-3.5 text-amber-500 animate-spin" />
+                <span className="text-[10px] text-amber-400 font-bold">دارای تغییرات ذخیره‌نشده</span>
+              </>
+            ) : (
+              <>
+                <CheckCircle className="w-3.5 h-3.5 text-green-500" />
+                <span className="text-[10px] text-green-400 font-bold">تمامی تغییرات ذخیره شدند</span>
+              </>
+            )}
+          </div>
+
           <Button variant="outline" className="border-stone-800 text-stone-400 hover:text-stone-200 text-xs rounded-xl" asChild>
             <Link href="/dashboard/products">بازگشت به لیست</Link>
           </Button>
@@ -530,6 +565,23 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
           </Button>
         </div>
       </div>
+
+      {/* Validation Error Summary Card */}
+      {Object.keys(errors).length > 0 && (
+        <div className="mx-6 md:mx-12 mt-6 bg-red-500/10 border-2 border-red-500/30 p-4 rounded-2xl">
+          <div className="flex items-center gap-2 text-red-400 mb-2">
+            <AlertTriangle className="w-5 h-5 shrink-0" />
+            <h4 className="text-xs md:text-sm font-black">خطاهای اعتبارسنجی فرم کالا ({Object.keys(errors).length} مورد)</h4>
+          </div>
+          <ul className="list-disc list-inside text-[11px] text-stone-300 space-y-1 pr-2">
+            {Object.entries(errors).map(([key, err]: any) => (
+              <li key={key}>
+                <strong>{key}:</strong> {err?.message || 'مقدار معتبر نیست'}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* Unsaved Changes Floating Banner */}
       {isDirty && (
@@ -600,7 +652,7 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
                     </div>
                     <div>
                       <CardTitle className="text-base font-black text-stone-100">بخش اول: تنظیمات عمومی محصول</CardTitle>
-                      <CardDescription className="text-[11px] text-stone-400">شناسه پایه کالا، توضیحات معرفی و برچسب‌های مدیریتی لوکس</CardDescription>
+                      <CardDescription className="text-[11px] text-stone-400">شناسه پایه کالا, توضیحات معرفی و برچسب‌های مدیریتی لوکس</CardDescription>
                     </div>
                   </div>
                 </CardHeader>
@@ -686,6 +738,76 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
                     <p className="text-[10px] text-stone-500 leading-relaxed">
                       💡 قیمت ثبت شده در دیتابیس مستقیماً ارزش کالا را به تومان مشخص می‌کند و بدون هیچ تبدیل مانیلوکس نامعتبر یا ارز دیگر مستقیماً با زبان فارسی و رقم‌های جداسازی شده رندر خواهد شد.
                     </p>
+                  </div>
+
+                  {/* HIGH-FIDELITY PRODUCT DISCOUNT MANAGER */}
+                  <div className="border-t border-stone-900 pt-6 space-y-4">
+                    <h4 className="text-xs font-black text-amber-400 flex items-center gap-1.5">
+                      <Sparkles className="w-4 h-4" />
+                      <span>تنظیم تخفیف اختصاصی محصول</span>
+                    </h4>
+
+                    <div className="space-y-2">
+                      <Label className="text-xs font-bold text-stone-300">نوع تخفیف محصول</Label>
+                      <Select
+                        onValueChange={(val) => setValue('discountType', val)}
+                        value={watch('discountType') || 'NONE'}
+                      >
+                        <SelectTrigger className="bg-stone-950 border-stone-800 text-stone-200 h-11 text-xs rounded-xl">
+                          <SelectValue placeholder="نوع تخفیف را انتخاب کنید" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-stone-950 border-stone-800 text-stone-200 text-xs">
+                          <SelectItem value="NONE">بدون تخفیف (NONE)</SelectItem>
+                          <SelectItem value="PERCENTAGE">درصدی (PERCENTAGE)</SelectItem>
+                          <SelectItem value="FIXED">کاهش مبلغ ثابت - تومان (FIXED)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {watchDiscountType !== 'NONE' && (
+                      <div className="space-y-4 animate-luxury-bloom">
+                        <div className="space-y-2">
+                          <Label className="text-xs font-bold text-stone-300">مقدار تخفیف (درصد یا مبلغ تومان)</Label>
+                          <Input
+                            {...register('discountValue', { valueAsNumber: true })}
+                            type="number"
+                            className="bg-stone-950/80 border-stone-800 text-stone-200 focus:border-amber-500/40 focus:ring-amber-500/40 h-11 rounded-xl text-left font-bold"
+                            placeholder="مثال: ۱۰ برای درصد یا ۵۰۰۰۰ برای مبلغ"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-xs font-bold text-stone-300">تاریخ شروع تخفیف</Label>
+                            <Input
+                              {...register('discountStartDate')}
+                              type="date"
+                              className="bg-stone-950/80 border-stone-800 text-stone-200 focus:border-amber-500/40 focus:ring-amber-500/40 h-11 rounded-xl font-sans"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-xs font-bold text-stone-300">تاریخ پایان تخفیف</Label>
+                            <Input
+                              {...register('discountEndDate')}
+                              type="date"
+                              className="bg-stone-950/80 border-stone-800 text-stone-200 focus:border-amber-500/40 focus:ring-amber-500/40 h-11 rounded-xl font-sans"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between p-4 bg-stone-950 border border-stone-900 rounded-2xl">
+                          <div className="space-y-0.5">
+                            <Label className="text-xs font-bold text-stone-300">وضعیت فعال بودن تخفیف</Label>
+                            <p className="text-[10px] text-stone-500">تخفیف بلافاصله اعمال شود</p>
+                          </div>
+                          <input
+                            type="checkbox"
+                            {...register('discountActive')}
+                            className="rounded bg-stone-950 border-stone-800 text-amber-500 focus:ring-0 w-4.5 h-4.5"
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -823,14 +945,7 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
             {activeTab === 'media' && (
               <Card className="bg-[#0D0907]/90 border border-amber-500/15 rounded-[2rem] p-6 sm:p-8 relative overflow-hidden shadow-2xl">
                 <CardContent className="p-0 space-y-6">
-                  {isNewProduct ? (
-                    <div className="text-center py-8">
-                      <p className="text-xs text-stone-400 font-bold">آپلود چندرسانه‌ای فقط پس از ساخت اولیه کالا فعال خواهد شد.</p>
-                      <p className="text-[10px] text-stone-600 mt-1">ابتدا فرم محصول را ذخیره نمایید.</p>
-                    </div>
-                  ) : (
-                    <UploadImage productId={product.id} />
-                  )}
+                  <UploadImage productId={activeProductId} />
                 </CardContent>
               </Card>
             )}
@@ -839,11 +954,7 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
             {activeTab === 'videos' && (
               <Card className="bg-[#0D0907]/90 border border-amber-500/15 rounded-[2rem] p-6 sm:p-8 relative overflow-hidden shadow-2xl">
                 <CardContent className="p-0">
-                  {isNewProduct ? (
-                    <div className="text-center py-8 text-stone-500 text-xs">مدیریت ویدیوهای معرفی پس از ثبت اولیه کالا امکان‌پذیر است.</div>
-                  ) : (
-                    <UploadImage productId={product.id} />
-                  )}
+                  <UploadImage productId={activeProductId} />
                 </CardContent>
               </Card>
             )}
@@ -864,7 +975,7 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
                 </CardHeader>
                 <CardContent className="p-0 space-y-6">
 
-                  {/* GOOGLE PREVIEW COMPONENT (Step 9) */}
+                  {/* GOOGLE PREVIEW COMPONENT */}
                   <div className="bg-stone-950 p-5 rounded-2xl border border-stone-900 font-sans space-y-2.5 text-right" dir="ltr">
                     <div className="flex items-center gap-2 text-xs text-[#a7a7a7]">
                       <span>🔍 Google Search Live Preview</span>
@@ -1008,7 +1119,7 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
                     </div>
                     <div>
                       <CardTitle className="text-base font-black text-stone-100">ویژگی‌ها و جزئیات دقیق کالا</CardTitle>
-                      <CardDescription className="text-[11px] text-stone-400">ابعاد، رنگ، مواد اولیه، گارانتی و ساختارهای JSON مشخصات فنی</CardDescription>
+                      <CardDescription className="text-[11px] text-stone-400">ابعاد، رنگ, مواد اولیه، گارانتی و ساختارهای JSON مشخصات فنی</CardDescription>
                     </div>
                   </div>
                 </CardHeader>
@@ -1029,7 +1140,7 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
                       <Label className="text-xs font-bold text-stone-300">واحد وزن</Label>
                       <Select
                         onValueChange={(val) => setValue('weightUnit', val)}
-                        defaultValue={watch('weightUnit') || 'kg'}
+                        value={watch('weightUnit') || 'kg'}
                       >
                         <SelectTrigger className="bg-stone-950 border-stone-850 h-11 text-xs">
                           <SelectValue />
@@ -1173,7 +1284,7 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
                       <Select
                         disabled={user?.role !== 'SUPERADMIN'}
                         onValueChange={(val) => setValue('shippingPriority', val)}
-                        defaultValue={watch('shippingPriority') || 'Normal'}
+                        value={watch('shippingPriority') || 'Normal'}
                       >
                         <SelectTrigger className="bg-stone-950 border-stone-850 h-11 text-xs">
                           <SelectValue />
@@ -1206,7 +1317,7 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
                     <Select
                       disabled={user?.role !== 'SUPERADMIN'}
                       onValueChange={(val) => setValue('shippingDescription', val)}
-                      defaultValue={watch('shippingDescription') || ''}
+                      value={watch('shippingDescription') || ''}
                     >
                       <SelectTrigger className="bg-stone-950 border-stone-850 h-11 text-xs">
                         <SelectValue placeholder="قالب توصیف تحویل را انتخاب کنید..." />
@@ -1427,7 +1538,7 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
                 <Label className="text-[11px] text-stone-400 font-bold">وضعیت انتشار کالا *</Label>
                 <Select
                   onValueChange={(val) => setValue('status', val as ProductStatus)}
-                  defaultValue={watch('status') || ProductStatus.ACTIVE}
+                  value={watch('status') || ProductStatus.ACTIVE}
                 >
                   <SelectTrigger className="bg-stone-950 border-stone-850 text-stone-200 text-xs h-10">
                     <SelectValue />
@@ -1445,7 +1556,7 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
                 <Label className="text-[11px] text-stone-400 font-bold">دسته‌بندی اصلی محصول *</Label>
                 <Select
                   onValueChange={(val) => setValue('category', val as ProductCategory)}
-                  defaultValue={watch('category') || ProductCategory.OTHERS}
+                  value={watch('category') || ProductCategory.OTHERS}
                 >
                   <SelectTrigger className="bg-stone-950 border-stone-850 text-stone-200 text-xs h-10">
                     <SelectValue />
@@ -1469,7 +1580,7 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
                 <Label className="text-[11px] text-stone-400 font-bold">بخش و سبک فروشگاه *</Label>
                 <Select
                   onValueChange={(val) => setValue('categoryType', val as ProductCategoryType)}
-                  defaultValue={watch('categoryType') || ProductCategoryType.SheikhFood}
+                  value={watch('categoryType') || ProductCategoryType.SheikhFood}
                 >
                   <SelectTrigger className="bg-stone-950 border-stone-850 text-stone-200 text-xs h-10">
                     <SelectValue />

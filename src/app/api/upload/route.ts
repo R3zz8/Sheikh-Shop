@@ -130,14 +130,83 @@ export async function GET(req: NextRequest) {
         }
         const images = await prisma.image.findMany({
             where: { productId },
-            orderBy: { createdAt: 'desc' },
+            orderBy: { sortOrder: 'asc' }, // Order by sortOrder ascending so custom sorting works
         });
         const videos = await prisma.video.findMany({
             where: { productId },
-            orderBy: { createdAt: 'desc' },
+            orderBy: { sortOrder: 'asc' },
         });
         return NextResponse.json({ images, videos }, { status: 200 });
     } catch (err) {
         return NextResponse.json({ error: 'Failed to fetch media assets' }, { status: 500 });
+    }
+}
+
+export async function PATCH(req: NextRequest) {
+    // RBAC: Only SUPERADMIN, ADMIN, EDITOR can edit
+    const allowed = await checkAccess(req, ['SUPERADMIN', 'ADMIN', 'EDITOR']);
+    if (!allowed) {
+        return NextResponse.json({ error: 'You are not authorized to perform this action.' }, { status: 403 });
+    }
+
+    try {
+        const body = await req.json();
+        const { action } = body;
+
+        if (action === 'setFeatured') {
+            const { imageId, productId } = body;
+            if (!imageId || !productId) {
+                return NextResponse.json({ error: 'Image ID and Product ID are required' }, { status: 400 });
+            }
+
+            // Set all other images for this product as isFeatured: false
+            await prisma.image.updateMany({
+                where: { productId },
+                data: { isFeatured: false }
+            });
+
+            // Set this image as isFeatured: true
+            await prisma.image.update({
+                where: { id: imageId },
+                data: { isFeatured: true }
+            });
+
+            return NextResponse.json({ success: true }, { status: 200 });
+        }
+
+        if (action === 'reorder') {
+            const { images } = body; // Array of { id, sortOrder }
+            if (!Array.isArray(images)) {
+                return NextResponse.json({ error: 'Images array is required for reordering' }, { status: 400 });
+            }
+
+            for (const item of images) {
+                await prisma.image.update({
+                    where: { id: item.id },
+                    data: { sortOrder: item.sortOrder }
+                });
+            }
+
+            return NextResponse.json({ success: true }, { status: 200 });
+        }
+
+        if (action === 'toggleVisibility') {
+            const { imageId, isVisible } = body;
+            if (!imageId) {
+                return NextResponse.json({ error: 'Image ID is required' }, { status: 400 });
+            }
+
+            await prisma.image.update({
+                where: { id: imageId },
+                data: { isVisible }
+            });
+
+            return NextResponse.json({ success: true }, { status: 200 });
+        }
+
+        return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+    } catch (err) {
+        console.error('[UPLOAD PATCH] error:', err);
+        return NextResponse.json({ error: 'Operation failed' }, { status: 500 });
     }
 }

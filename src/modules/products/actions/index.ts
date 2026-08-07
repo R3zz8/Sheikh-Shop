@@ -482,39 +482,39 @@ export const upsertProduct = async (
       };
     }
 
-    // Additional business logic validation
+    // Check if we are updating an existing product
+    let isUpdate = false;
     if (id) {
-      // Update existing product
       const existingProduct = await prisma.product.findUnique({
         where: { id },
         select: { id: true, name: true }
       });
-
-      if (!existingProduct) {
-        return {
-          data: prevData.data,
-          error: { general: 'Product not found' }
-        };
+      if (existingProduct) {
+        isUpdate = true;
       }
+    }
 
-      const result = await prisma.product.update({
+    let result;
+    if (isUpdate) {
+      // Update existing product
+      result = await prisma.product.update({
         where: { id },
         data: sanitizedData as any,
       });
 
       // Audit logging
       await logAuditEvent(userId, 'PRODUCT_UPDATED', {
-        productId: id,
+        productId: id!,
         productName: result.name,
         changes: sanitizedData,
       });
-
-      revalidatePath('/dashboard/products');
-      return { error: null, data: result };
     } else {
-      // Create new product
-      const result = await prisma.product.create({
-        data: sanitizedData as any,
+      // Create new product (use specified client ID if provided)
+      result = await prisma.product.create({
+        data: {
+          ...sanitizedData,
+          ...(id ? { id } : {}),
+        } as any,
       });
 
       // Audit logging
@@ -523,10 +523,60 @@ export const upsertProduct = async (
         productName: result.name,
         data: sanitizedData,
       });
-
-      revalidatePath('/dashboard/products');
-      return { error: null, data: result };
     }
+
+    // Now handle Discount upsert/deletion if provided
+    const discountType = formData.get('discountType') as string | null;
+    const deleteDiscount = formData.get('deleteDiscount') === 'true' || formData.get('deleteDiscount') === 'on';
+
+    if (deleteDiscount) {
+      await prisma.discount.deleteMany({
+        where: { productId: result.id }
+      });
+    } else if (discountType && discountType !== 'NONE' && discountType !== '') {
+      const discountValueStr = formData.get('discountValue') as string | null;
+      const discountValue = discountValueStr ? parseFloat(discountValueStr) : 0;
+      const discountStartDateStr = formData.get('discountStartDate') as string | null;
+      const discountEndDateStr = formData.get('discountEndDate') as string | null;
+      const discountActive = formData.get('discountActive') === 'true' || formData.get('discountActive') === 'on';
+
+      const startDate = discountStartDateStr ? new Date(discountStartDateStr) : new Date();
+      const endDate = discountEndDateStr ? new Date(discountEndDateStr) : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+
+      // Clean other discount types to avoid breaking the unique constraint if type changes
+      await prisma.discount.deleteMany({
+        where: {
+          productId: result.id,
+          discountType: { not: discountType as any }
+        }
+      });
+
+      await prisma.discount.upsert({
+        where: {
+          productId_discountType: {
+            productId: result.id,
+            discountType: discountType as any
+          }
+        },
+        update: {
+          value: discountValue,
+          startDate,
+          endDate,
+          isActive: discountActive
+        },
+        create: {
+          productId: result.id,
+          discountType: discountType as any,
+          value: discountValue,
+          startDate,
+          endDate,
+          isActive: discountActive
+        }
+      });
+    }
+
+    revalidatePath('/dashboard/products');
+    return { error: null, data: result };
 
   } catch (error) {
     console.error('Product upsert error:', error);
