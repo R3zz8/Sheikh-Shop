@@ -27,12 +27,12 @@ const originalLocation = window.location;
 
 beforeAll(() => {
   // @ts-ignore
-  delete window.location;
-  window.location = { ...originalLocation, href: '' };
+  delete (window as any).location;
+  (window as any).location = { ...originalLocation, href: '' } as any;
 });
 
 afterAll(() => {
-  window.location = originalLocation;
+  (window as any).location = originalLocation as any;
 });
 
 describe('GoogleAuthButton Component', () => {
