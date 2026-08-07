@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useMemo, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Canvas, useFrame } from '@react-three/fiber';
+import { useInView } from 'react-intersection-observer';
 import * as THREE from 'three';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -675,6 +676,11 @@ const DEFAULT_PRODUCTS: ProductWithMetadata[] = [
 export default function RoyalShowcase() {
   const [mounted, setMounted] = useState(false);
   const [webGLSupported, setWebGLSupported] = useState(true);
+  const { ref: sectionRef, inView } = useInView({
+    threshold: 0.05,
+    rootMargin: '200px 0px',
+    triggerOnce: false,
+  });
 
   // States
   const [config, setConfig] = useState({
@@ -920,7 +926,7 @@ export default function RoyalShowcase() {
   };
 
   return (
-    <section className="container-fluid py-10 sm:py-14 md:py-18 px-2 sm:px-4 md:px-6 lg:px-8 max-w-7xl mx-auto select-none overflow-hidden relative z-20">
+    <section ref={sectionRef} className="container-fluid py-10 sm:py-14 md:py-18 px-2 sm:px-4 md:px-6 lg:px-8 max-w-7xl mx-auto select-none overflow-hidden relative z-20">
       {/* Upper header */}
       <div className="text-center mb-8 sm:mb-12 relative z-10 flex flex-col items-center">
         <h2 className="text-[20px] sm:text-[28px] md:text-[34px] font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-yellow-200 to-amber-100 font-vazirmatn mb-3">
@@ -960,7 +966,7 @@ export default function RoyalShowcase() {
             22% proportional width
           */}
           <div className="w-[22%] h-full relative overflow-hidden flex items-center justify-center">
-            {webGLSupported ? (
+            {webGLSupported && inView ? (
               <div className="w-full h-full pointer-events-auto relative overflow-hidden">
                 <ThreeErrorBoundary fallback={<StaticSheikhFallback align="left" />}>
                   <Suspense fallback={<StaticSheikhFallback align="left" />}>
@@ -1141,7 +1147,7 @@ export default function RoyalShowcase() {
             22% proportional width
           */}
           <div className="w-[22%] h-full relative overflow-hidden flex items-center justify-center">
-            {webGLSupported ? (
+            {webGLSupported && inView ? (
               <div className="w-full h-full pointer-events-auto relative overflow-hidden">
                 <ThreeErrorBoundary fallback={<StaticSheikhFallback align="right" />}>
                   <Suspense fallback={<StaticSheikhFallback align="right" />}>

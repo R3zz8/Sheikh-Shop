@@ -243,20 +243,19 @@ export default function PremiumMobileMenu({
               opacity: 1,
               scale: 1,
               y: 0,
-              boxShadow: [
-                "0 24px 50px -12px rgba(0,0,0,0.9), 0 0 0 0px rgba(245,158,11,0)",
-                "0 24px 50px -12px rgba(0,0,0,0.9), 0 0 25px 2px rgba(245,158,11,0.08)",
-                "0 24px 50px -12px rgba(0,0,0,0.9), 0 0 0 0px rgba(245,158,11,0)"
-              ]
             }}
             exit={{ opacity: 0, scale: 0.93, y: 15 }}
             transition={{
-              boxShadow: { repeat: Infinity, duration: 4, ease: "easeInOut" },
-              default: { type: "spring", stiffness: 280, damping: 26 }
+              type: "spring",
+              stiffness: 280,
+              damping: 26
             }}
           >
+            {/* GPU-Accelerated Golden Breathing Glow - Zero Visual Regression */}
+            <div className="absolute inset-0 rounded-[32px] border border-amber-500/25 pointer-events-none z-0 animate-pulse-glow" style={{ animationDuration: '4s' }} />
+
             {/* Visual Drag Handle Indicator for Native App Vibe */}
-            <div className="w-12 h-1 bg-amber-500/30 rounded-full mx-auto mt-3 flex-shrink-0" />
+            <div className="w-12 h-1 bg-amber-500/30 rounded-full mx-auto mt-3 flex-shrink-0 relative z-10" />
 
             {/* Close Button */}
             <motion.button
@@ -378,62 +377,56 @@ export default function PremiumMobileMenu({
                         </Link>
                       )}
 
-                      {/* SUBMENU WITH HEIGHT ANIMATION AND NESTED TREE CONNECTOR */}
-                      <AnimatePresence>
-                        {isExpanded && hasSubItems && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.3, ease: "easeInOut" }}
-                            className="relative mt-1.5 ms-6 border-r border-amber-500/20 pr-4 space-y-1.5"
-                          >
-                            {/* Decorative Tree branch lines */}
-                            <div className="absolute right-0 top-0 bottom-4 w-[1px] bg-gradient-to-b from-amber-500/25 to-transparent pointer-events-none" />
-
-                            {item.subItems?.map((subItem, subIndex) => {
-                              const SubIcon = subItem.icon;
-                              const isSubActive = isActive(subItem.href);
-                              return (
-                                <motion.div
-                                  key={subItem.name}
-                                  initial={{ opacity: 0, x: 10 }}
-                                  animate={{ opacity: 1, x: 0 }}
-                                  transition={{ delay: subIndex * 0.04 }}
-                                  className="relative"
-                                >
-                                  {/* Horizontal connector node */}
-                                  <div className="absolute right-[-16px] top-[24px] w-4 h-[1px] bg-amber-500/20" />
-
-                                  <Link
-                                    href={subItem.href}
-                                    onClick={() => setMobileMenuOpen(false)}
-                                    className={cn(
-                                      'group relative flex items-center justify-between px-4 py-2.5 rounded-xl transition-all duration-300 border',
-                                      isSubActive
-                                        ? 'bg-gradient-to-l from-amber-500/15 via-amber-600/5 to-transparent border-amber-500/30 text-white shadow-md shadow-amber-500/5'
-                                        : 'bg-stone-900/10 hover:bg-amber-950/10 border-transparent hover:border-amber-950/20 text-amber-300/70 hover:text-white'
-                                    )}
-                                  >
-                                    <div className="flex items-center gap-3">
-                                      <div className={cn(
-                                        'w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300',
-                                        isSubActive ? 'bg-amber-500/20 text-amber-300' : 'bg-stone-800/30 text-amber-400/50 group-hover:bg-amber-900/20 group-hover:text-amber-300'
-                                      )}>
-                                        <SubIcon className="w-4 h-4" />
-                                      </div>
-                                      <span className={cn('text-sm font-medium tracking-wide', isSubActive ? 'text-amber-200 font-semibold' : 'text-amber-300/80 group-hover:text-white')}>
-                                        {subItem.name}
-                                      </span>
-                                    </div>
-                                    {isSubActive && <Crown className="w-3 h-3 text-amber-400" />}
-                                  </Link>
-                                </motion.div>
-                              );
-                            })}
-                          </motion.div>
+                      {/* SUBMENU WITH HIGH-PERFORMANCE CSS GRID TRANSITION */}
+                      <div
+                        className={cn(
+                          "grid transition-all duration-300 ease-in-out relative mt-1.5 ms-6 border-r border-amber-500/20 pr-4",
+                          isExpanded ? "grid-rows-[1fr] opacity-100 mb-1.5" : "grid-rows-[0fr] opacity-0"
                         )}
-                      </AnimatePresence>
+                      >
+                        <div className="overflow-hidden space-y-1.5 relative">
+                          {/* Decorative Tree branch lines */}
+                          <div className="absolute right-0 top-0 bottom-4 w-[1px] bg-gradient-to-b from-amber-500/25 to-transparent pointer-events-none" />
+
+                          {item.subItems?.map((subItem, subIndex) => {
+                            const SubIcon = subItem.icon;
+                            const isSubActive = isActive(subItem.href);
+                            return (
+                              <div
+                                key={subItem.name}
+                                className="relative"
+                              >
+                                {/* Horizontal connector node */}
+                                <div className="absolute right-[-16px] top-[24px] w-4 h-[1px] bg-amber-500/20" />
+
+                                <Link
+                                  href={subItem.href}
+                                  onClick={() => setMobileMenuOpen(false)}
+                                  className={cn(
+                                    'group relative flex items-center justify-between px-4 py-2.5 rounded-xl transition-all duration-300 border',
+                                    isSubActive
+                                      ? 'bg-gradient-to-l from-amber-500/15 via-amber-600/5 to-transparent border-amber-500/30 text-white shadow-md shadow-amber-500/5'
+                                      : 'bg-stone-900/10 hover:bg-amber-950/10 border-transparent hover:border-amber-950/20 text-amber-300/70 hover:text-white'
+                                  )}
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <div className={cn(
+                                      'w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300',
+                                      isSubActive ? 'bg-amber-500/20 text-amber-300' : 'bg-stone-800/30 text-amber-400/50 group-hover:bg-amber-900/20 group-hover:text-amber-300'
+                                    )}>
+                                      <SubIcon className="w-4 h-4" />
+                                    </div>
+                                    <span className={cn('text-sm font-medium tracking-wide', isSubActive ? 'text-amber-200 font-semibold' : 'text-amber-300/80 group-hover:text-white')}>
+                                      {subItem.name}
+                                    </span>
+                                  </div>
+                                  {isSubActive && <Crown className="w-3 h-3 text-amber-400" />}
+                                </Link>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
                     </motion.div>
                   );
                 })}
