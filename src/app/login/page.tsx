@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useTransition, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Mail, ShieldCheck, Truck, Lock, Star } from 'lucide-react';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
@@ -13,6 +13,31 @@ import AnimatedBackground from '@/components/auth/AnimatedBackground';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
+
+const ERROR_MESSAGES: Record<string, string> = {
+  cancelled: "فرآیند ورود توسط کاربر لغو شد.",
+  invalid_state: "نشست امنیتی گوگل نامعتبر یا منقضی شده است. لطفاً دوباره تلاش کنید.",
+  invalid_callback: "اطلاعات بازگشتی از گوگل معتبر نیست.",
+  config_missing: "تنظیمات گوگل در سرور ناقص است. با پشتیبانی تماس بگیرید.",
+  failed_exchange: "امکان برقراری ارتباط با گوگل وجود نداشت.",
+  failed_profile: "خطا در دریافت پروفایل کاربری از گوگل.",
+  disabled: "این حساب کاربری مسدود شده است.",
+  no_email: "حساب گوگل شما فاقد نشانی ایمیل تایید شده است.",
+  server_error: "خطای ناشناخته در سرور هنگام ورود با گوگل.",
+};
+
+function AuthErrorNotification() {
+  const searchParams = useSearchParams();
+  const error = searchParams.get('error');
+
+  useEffect(() => {
+    if (error && ERROR_MESSAGES[error]) {
+      toast.error(ERROR_MESSAGES[error]);
+    }
+  }, [error]);
+
+  return null;
+}
 
 interface LoginFormValues {
   email: string;
@@ -91,14 +116,14 @@ const LoginForm = React.memo(() => {
     });
   }
 
-  function handleGoogleLogin() {
-    toast.info('اتصال به درگاه امن گوگل... ورود از طریق گوگل در نسخه‌های بعدی فعال خواهد شد.');
-  }
-
   return (
     <div className="space-y-4">
+      <Suspense fallback={null}>
+        <AuthErrorNotification />
+      </Suspense>
+
       {/* Google Login Section - Above Email Form */}
-      <GoogleAuthButton onClick={handleGoogleLogin} />
+      <GoogleAuthButton />
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" aria-label="Login form">
         <InputField
