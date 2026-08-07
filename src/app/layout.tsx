@@ -1,9 +1,6 @@
 // app/layout.tsx
 import type { Metadata } from 'next';
 import './globals.css';
-import ClientHeader from '@/components/ClientHeader';
-import Footer from '@/components/footer/footer';
-import MobileFooter from '@/components/MobileFooter';
 import { Toaster } from '@/components/ui';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import ReactQueryProvider from '@/providers/ReactQuery';
@@ -12,18 +9,11 @@ import { UIProvider } from '@/providers/UIProvider';
 import { LuxuryUnboxingProvider } from '@/components/3d/LuxuryUnboxingProvider';
 import { OrganizationJsonLd, WebsiteJsonLd } from '@/components/seo/JsonLd';
 import { generatePageSEO } from '@/lib/seo/core';
-import AccessibilityEnhancements from '@/components/accessibility/AccessibilityEnhancements';
-import { ShoppingChatbot, EnhancedAISearch } from '@/components/DynamicClientComponents';
-import AMPHead from '@/components/seo/AMPHead';
-import LayoutDebugger from '@/components/LayoutDebugger';
-import Script from 'next/script';
-import Link from 'next/link';
+import AppLayoutContent from '@/components/AppLayoutContent';
 import { Inter, Tajawal, Poppins, JetBrains_Mono, Vazirmatn } from 'next/font/google';
 import PWAResponsiveSplash from '@/components/PWAResponsiveSplash';
+import Script from 'next/script';
 
-// FIXED: Optimized font loading to eliminate render-blocking CSS.
-// Using next/font automatically self-hosts fonts and inlines the critical font-face CSS,
-// which is the modern, recommended approach for performance in Next.js.
 const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
@@ -59,24 +49,18 @@ const vazirmatn = Vazirmatn({
   weight: ['300', '400', '500', '600', '700', '800', '900'],
 });
 
-// === generateMetadata ===
 export async function generateMetadata(): Promise<Metadata> {
-  // The root layout now provides a default, brand-focused metadata object.
-  // Page-specific metadata will override this, ensuring titles and descriptions
-  // are not duplicated or incorrectly applied globally.
   return generatePageSEO({
     title: 'Sheikh Shop | Premium Honey, Dates, and Saffron',
     description: 'Discover the finest selection of 100% natural mountain honey, premium Majdool dates, and Super Negin saffron. Sheikh Shop offers authentic, high-quality products with free worldwide shipping.',
   });
 }
 
-// === RootLayout ===
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // Root layout doesn't receive params in Next.js 15
   const lang = 'fa';
   const isArabic = true;
 
@@ -131,31 +115,15 @@ export default function RootLayout({
         className={`${inter.variable} ${tajawal.variable} ${poppins.variable} ${jetbrainsMono.variable} ${vazirmatn.variable} antialiased font-sans font-vazirmatn`}
       >
         <PWAResponsiveSplash>
-          <LayoutDebugger />
-          <AMPHead />
-          <AccessibilityEnhancements />
           <ErrorBoundary>
             <ReactQueryProvider>
               <CurrencyProvider>
                 <UIProvider>
                   <LuxuryUnboxingProvider>
-                    <div className="flex flex-col min-h-screen">
-                      <ClientHeader />
-                      <div className="sticky top-20 z-40 w-full bg-amber-950/90 backdrop-blur supports-[backdrop-filter]:bg-amber-950/70 border-b border-amber-200/10">
-                        <div className="max-w-7xl mx-auto px-6 md:px-8 py-3 flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
-                          <div className="w-full md:max-w-xl">
-                            <EnhancedAISearch showAdvancedOptions={false} showVRStoreButton={true} />
-                          </div>
-                        </div>
-                      </div>
-                      <main id="main-content" className="flex-1 pt-20 pb-20 md:pb-0">
-                        {children}
-                      </main>
-                      <Footer />
-                      <MobileFooter />
-                    </div>
+                    <AppLayoutContent>
+                      {children}
+                    </AppLayoutContent>
                     <Toaster />
-                    <ShoppingChatbot />
                   </LuxuryUnboxingProvider>
                 </UIProvider>
               </CurrencyProvider>

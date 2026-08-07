@@ -26,16 +26,11 @@ function detectLocaleFromPathname(pathname: string): Locale {
 }
 
 function chooseCurrency(locale: Locale, country: string | null, userPreference?: string): CurrencyCode {
-  // 1. Check user's manual preference first
   const parsedPreference = parseCurrency(userPreference);
   if (parsedPreference) {
     return parsedPreference;
   }
-  
-  // 2. Use locale-based mapping
   const localeCurrency = getUserPreferredCurrency(locale);
-  
-  // 3. Fallback to EUR (default)
   return localeCurrency;
 }
 
@@ -47,7 +42,6 @@ function setCurrencyCookieIfNeeded(request: NextRequest, response: NextResponse)
     const existingPreference = request.cookies.get('preferred-currency')?.value;
     const desired = chooseCurrency(locale, country, existingPreference);
 
-    // Only set cookie if it's different from existing or doesn't exist
     if (existingPreference !== desired) {
       response.cookies.set('preferred-currency', desired, {
         httpOnly: false,
@@ -72,11 +66,10 @@ const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 function isRateLimited(ip: string, userRole?: string): boolean {
   const now = Date.now();
   const windowMs = 15 * 60 * 1000; // 15 minutes
-  const maxRequests = 200; // Increased from 100 for admin operations
+  const maxRequests = 200;
 
   console.log('[RATE_LIMIT] Checking rate limit', { ip, now, userRole });
 
-  // Skip rate limiting for admin users
   if (userRole && ['SUPERADMIN', 'ADMIN', 'EDITOR'].includes(userRole)) {
     console.log('[RATE_LIMIT] Admin user, skipping rate limit', { ip, userRole });
     return false;
@@ -101,13 +94,11 @@ function isRateLimited(ip: string, userRole?: string): boolean {
 
 // Security: Add security headers to response
 function addSecurityHeaders(response: NextResponse): NextResponse {
-  // Security: Strict security headers
   response.headers.set('X-Frame-Options', 'DENY');
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
   
-  // Security: Content Security Policy
   response.headers.set(
     'Content-Security-Policy',
     [
@@ -123,13 +114,69 @@ function addSecurityHeaders(response: NextResponse): NextResponse {
     ].join('; ')
   );
   
-  // Security: Additional security headers
   response.headers.set('X-XSS-Protection', '1; mode=block');
   response.headers.set('X-DNS-Prefetch-Control', 'off');
   response.headers.set('X-Download-Options', 'noopen');
   response.headers.set('X-Permitted-Cross-Domain-Policies', 'none');
   
   return response;
+}
+
+// Helper to retrieve authenticated user cleanly
+async function getAuthenticatedUser(request: NextRequest): Promise<{ id: string; email: string; role: string; sessionId: string } | null> {
+  const accessToken = request.cookies.get('access-token')?.value;
+  const refreshToken = request.cookies.get('refresh-token')?.value;
+  const secret = getJwtSecret();
+  if (!secret) return null;
+
+  if (accessToken) {
+    try {
+      const { payload } = await jwtVerify(
+        accessToken,
+        new TextEncoder().encode(secret),
+        {
+          algorithms: ['HS256'],
+          issuer: 'sheikh-shop',
+          audience: 'sheikh-shop-users',
+        },
+      );
+      try {
+        const cached = payload.sessionId ? await getCachedSession(String(payload.sessionId)) : null;
+        if (cached) return cached;
+      } catch (cacheError) {
+        console.error('[MIDDLEWARE] Cache fetch error:', cacheError);
+      }
+      return payload as { id: string; email: string; role: string; sessionId: string };
+    } catch {
+      // Ignore and fallback to refresh token
+    }
+  }
+
+  if (refreshToken) {
+    try {
+      const { payload } = await jwtVerify(
+        refreshToken,
+        new TextEncoder().encode(secret),
+        {
+          algorithms: ['HS256'],
+          issuer: 'sheikh-shop',
+          audience: 'sheikh-shop-refresh',
+        },
+      );
+      try {
+        const cached = payload.sessionId ? await getCachedSession(String(payload.sessionId)) : null;
+        if (cached && cached.sessionId && cached.id) {
+          return cached;
+        }
+      } catch (cacheError) {
+        console.error('[MIDDLEWARE] Cache fetch error with refresh token:', cacheError);
+      }
+    } catch {
+      // Ignore
+    }
+  }
+
+  return null;
 }
 
 export async function middleware(request: NextRequest) {
@@ -146,6 +193,93 @@ export async function middleware(request: NextRequest) {
   }
 
   const isApiRoute = pathname.startsWith('/api');
+
+  // ====================================================
+  // ENTERPRISE MAINTENANCE MODE IMPLEMENTATION
+  // ====================================================
+  const isMaintenanceMode = process.env.MAINTENANCE_MODE === 'true';
+
+  if (isMaintenanceMode) {
+    // 1. Check for system exemptions:
+    const isHealthCheck = pathname.startsWith('/api/health');
+    const isWebhook = pathname.startsWith('/api/webhooks') || pathname.includes('webhook');
+    const isGoogleOAuth = pathname.startsWith('/api/auth/google');
+    const isInternalApi = pathname.startsWith('/api/system') || pathname.startsWith('/api/monitoring') || pathname.startsWith('/api/initial-data');
+
+    const isExempt = isHealthCheck || isWebhook || isGoogleOAuth || isInternalApi;
+
+    if (isExempt) {
+      console.log('[MAINTENANCE] Request is exempt, proceeding', { pathname });
+      const response = NextResponse.next();
+      setCurrencyCookieIfNeeded(request, response);
+      return addSecurityHeaders(response);
+    }
+
+    // 2. Check if the authenticated user is a SUPERADMIN (bypass authorized)
+    let user = null;
+    try {
+      user = await getAuthenticatedUser(request);
+    } catch (e) {
+      console.error('[MAINTENANCE] Error extracting user:', e);
+    }
+
+    if (user?.role === 'SUPERADMIN') {
+      console.log('[MAINTENANCE] Super Admin detected, bypassing maintenance mode', { email: user.email, pathname });
+      // Proceed to the normal middleware flow if Super Admin
+    } else {
+      // Not a Super Admin and not exempt: Enforce Maintenance Mode
+      console.log('[MAINTENANCE] Maintenance mode active, blocking request', { pathname });
+
+      // If they call a non-exempt API, return JSON 503
+      if (isApiRoute) {
+        const response = NextResponse.json(
+          { error: 'Service Unavailable', message: 'در حال آماده‌سازی تجربه‌ای بهتر...' },
+          {
+            status: 503,
+            headers: {
+              'Retry-After': '3600',
+            },
+          }
+        );
+        return addSecurityHeaders(response);
+      }
+
+      // If they request the /maintenance page itself, return it with 503 status for SEO
+      if (pathname === '/maintenance') {
+        // Break rewrite loops by checking rewritten parameter
+        if (request.nextUrl.searchParams.get('rewritten') === 'true') {
+          return NextResponse.next();
+        }
+
+        const rewriteUrl = new URL('/maintenance', request.url);
+        rewriteUrl.searchParams.set('rewritten', 'true');
+
+        const response = NextResponse.rewrite(rewriteUrl, {
+          status: 503,
+          headers: {
+            'Retry-After': '3600',
+          },
+        });
+        return addSecurityHeaders(response);
+      }
+
+      // For any other public web route, redirect to /maintenance
+      const response = NextResponse.redirect(new URL('/maintenance', request.url));
+      return addSecurityHeaders(response);
+    }
+  } else {
+    // Fail-safe: if maintenance mode is OFF, redirect users away from /maintenance to homepage
+    if (pathname === '/maintenance') {
+      console.log('[MAINTENANCE] Mode is OFF, redirecting from /maintenance to homepage');
+      const response = NextResponse.redirect(new URL('/', request.url));
+      return addSecurityHeaders(response);
+    }
+  }
+
+  // ====================================================
+  // STANDARD ROUTING AND SECURITY RULES (AFTER BYPASS)
+  // ====================================================
+
   const hasJwtSecret = !!getJwtSecret();
 
   console.log('[MIDDLEWARE] Processing request', { 
@@ -170,7 +304,7 @@ export async function middleware(request: NextRequest) {
   // Skip auth for specific API routes (handled by their own logic)
   if (
     isApiRoute && (
-      pathname.startsWith('/api/health') || // PPS-FIX: Exclude health check from all middleware processing
+      pathname.startsWith('/api/health') ||
       pathname.startsWith('/api/auth') ||
       pathname.startsWith('/api/login') ||
       pathname.startsWith('/api/register') ||
@@ -178,7 +312,7 @@ export async function middleware(request: NextRequest) {
       pathname.startsWith('/api/amazing-deals') ||
       pathname.startsWith('/api/units') ||
       pathname.startsWith('/api/og') ||
-      pathname.startsWith('/api/mobile-carousel') // FIXED: Exempt public carousel API from auth
+      pathname.startsWith('/api/mobile-carousel')
     )
   ) {
     const response = NextResponse.next();
@@ -302,7 +436,6 @@ export async function middleware(request: NextRequest) {
   }
 
   // Security: Rate limiting (after user resolution so we can exempt admins)
-  // Skip rate limiting for dashboard/article operations to prevent false positives
   const isArticleOperation = pathname.includes('/dashboard/articles') && 
                              (request.method === 'POST' || request.method === 'PATCH' || request.method === 'PUT');
   
@@ -351,7 +484,6 @@ async function handleReferralTracking(request: NextRequest, response: NextRespon
 
   if (refCode) {
     try {
-      // Set cookie to track referral for the session
       response.cookies.set('referral_code', refCode, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
@@ -360,11 +492,9 @@ async function handleReferralTracking(request: NextRequest, response: NextRespon
         maxAge: 60 * 60 * 24, // 1 day
       });
 
-      // Asynchronously log the referral visit to the database
       const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
       const userAgent = request.headers.get('user-agent') || 'unknown';
 
-      // Use a separate async function to avoid blocking the middleware
       (async () => {
         try {
           const { prisma } = await import('@/lib/prisma');
@@ -379,13 +509,11 @@ async function handleReferralTracking(request: NextRequest, response: NextRespon
               },
             });
 
-            // Increment total clicks
             await prisma.affiliate.update({
               where: { id: affiliate.id },
               data: { totalClicks: { increment: 1 } },
             });
 
-            // New: Update daily stats
             const today = new Date();
             today.setUTCHours(0, 0, 0, 0);
 
@@ -403,8 +531,8 @@ async function handleReferralTracking(request: NextRequest, response: NextRespon
                 affiliateId: affiliate.id,
                 date: today,
                 clicks: 1,
-                sales: 0, // Sales are tracked separately
-                commissionEarned: 0, // Commission is tracked separately
+                sales: 0,
+                commissionEarned: 0,
               },
             });
           }
@@ -442,5 +570,6 @@ export const config = {
     '/article/:path*',
     '/checkout',
     '/ar/:path*',
+    '/maintenance',
   ],
 };
