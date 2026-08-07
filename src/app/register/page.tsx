@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useMemo, useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useMemo, useState, useTransition, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Mail, User, ShieldCheck, Truck, Lock, Star } from 'lucide-react';
 import Link from 'next/link';
 import { useForm, useWatch } from 'react-hook-form';
@@ -26,6 +26,31 @@ function getChecks(password: string) {
     number: /[0-9]/.test(password),
     special: /[^A-Za-z0-9]/.test(password),
   };
+}
+
+const ERROR_MESSAGES: Record<string, string> = {
+  cancelled: "فرآیند ثبت‌نام توسط کاربر لغو شد.",
+  invalid_state: "نشست امنیتی گوگل نامعتبر یا منقضی شده است. لطفاً دوباره تلاش کنید.",
+  invalid_callback: "اطلاعات بازگشتی از گوگل معتبر نیست.",
+  config_missing: "تنظیمات گوگل در سرور ناقص است. با پشتیبانی تماس بگیرید.",
+  failed_exchange: "امکان برقراری ارتباط با گوگل وجود نداشت.",
+  failed_profile: "خطا در دریافت پروفایل کاربری از گوگل.",
+  disabled: "این حساب کاربری مسدود شده است.",
+  no_email: "حساب گوگل شما فاقد نشانی ایمیل تایید شده است.",
+  server_error: "خطای ناشناخته در سرور هنگام ثبت‌نام با گوگل.",
+};
+
+function AuthErrorNotification() {
+  const searchParams = useSearchParams();
+  const error = searchParams.get('error');
+
+  useEffect(() => {
+    if (error && ERROR_MESSAGES[error]) {
+      toast.error(ERROR_MESSAGES[error]);
+    }
+  }, [error]);
+
+  return null;
 }
 
 interface RegisterFormValues {
@@ -105,14 +130,14 @@ const RegisterForm = React.memo(() => {
     });
   }
 
-  function handleGoogleRegister() {
-    toast.info('اتصال به درگاه امن گوگل... ثبت‌نام از طریق گوگل در نسخه‌های بعدی فعال خواهد شد.');
-  }
-
   return (
     <div className="space-y-4">
+      <Suspense fallback={null}>
+        <AuthErrorNotification />
+      </Suspense>
+
       {/* Google Register Section - Above Email Form */}
-      <GoogleAuthButton onClick={handleGoogleRegister} />
+      <GoogleAuthButton />
 
       <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 gap-4" aria-label="Register form">
         <InputField

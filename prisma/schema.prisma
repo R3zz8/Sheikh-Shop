@@ -183,6 +183,7 @@ model User {
   profilePicture                String?             @db.VarChar(500)
   password                      String              @db.VarChar(255)
   emailVerified                 Boolean             @default(false)
+  provider                      String              @default("EMAIL") @db.VarChar(50)
   emailVerificationToken        String?             @unique @db.VarChar(255)
   emailVerificationTokenExpires DateTime?
   twoFactorEnabled              Boolean             @default(false)
