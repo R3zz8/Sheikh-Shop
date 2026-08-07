@@ -1,8 +1,6 @@
 #!/usr/bin/env tsx
 
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '../src/lib/prisma';
 
 // Helper function to generate slug from title
 function generateSlug(title: string): string {
@@ -191,8 +189,8 @@ async function createSEOArticles() {
 
 *منابع علمی مرجع: [سازمان بهداشت جهانی (WHO)](https://www.who.int/)، [مجله علمی اتنوفارماکولوژی](https://www.journals.elsevier.com/journal-of-ethnopharmacology)، [اتحادیه بین‌المللی تجارت زعفران](https://www.saffrontrade.org/)، [سازمان تحقیقات کشاورزی ایالات متحده (USDA)](https://www.ars.usda.gov/)*`,
       status: 'PUBLISHED' as const,
-      category: 'Natural Products',
-      tags: ['saffron', 'spice', 'organic', 'luxury', 'health', 'natural products', 'culinary', 'medicinal', 'premium', 'global market'],
+      category: 'محصولات طبیعی',
+      tags: ['زعفران', 'ادویه', 'ارگانیک', 'لوکس', 'سلامت', 'محصولات طبیعی', 'آشپزی', 'دارویی', 'ممتاز', 'بازار جهانی'],
       authorId: superadmin.id
     };
 
@@ -336,8 +334,8 @@ async function createSEOArticles() {
 
 *منابع علمی مرجع: [سازمان بهداشت جهانی (WHO)](https://www.who.int/)، [نشریه تخصصی شیمی کشاورزی و مواد غذایی (ACS)](https://pubs.acs.org/journal/jafcau)، [کمیسیون بین‌المللی عسل (IHC)]()، [انجمن ملی عسل ایالات متحده (NHB)]()*`,
       status: 'PUBLISHED' as const,
-      category: 'Natural Products',
-      tags: ['honey', 'natural sweetener', 'organic', 'health', 'bees', 'medicinal', 'raw honey', 'nutrition', 'antioxidants', 'wellness'],
+      category: 'محصولات طبیعی',
+      tags: ['عسل', 'شیرین‌کننده طبیعی', 'ارگانیک', 'سلامت', 'زنبورها', 'دارویی', 'عسل خام', 'تغذیه', 'آنتی‌اکسیدان‌ها', 'تندرستی'],
       authorId: superadmin.id
     };
 
@@ -489,8 +487,8 @@ async function createSEOArticles() {
 
 *منابع علمی مرجع: [سازمان خواربار و کشاورزی ملل متحد (FAO)](https://www.fao.org/)، [نشریه تخصصی شیمی و بیوشیمی کشاورزی](https://pubs.acs.org/journal/jafcau)، [انجمن بین‌المللی نخل خرما (IDPS)]()، [سازمان تحقیقات کشاورزی آمریکا (USDA)]()*`,
       status: 'PUBLISHED' as const,
-      category: 'Natural Products',
-      tags: ['dates', 'fruit', 'nutrition', 'Middle East', 'energy', 'superfood', 'natural', 'health', 'traditional', 'global trade'],
+      category: 'محصولات طبیعی',
+      tags: ['خرما', 'میوه', 'تغذیه', 'خاورمیانه', 'انرژی', 'سوپرفود', 'طبیعی', 'سلامت', 'سنتی', 'تجارت جهانی'],
       authorId: superadmin.id
     };
 
@@ -528,14 +526,14 @@ async function createSEOArticles() {
       orderBy: { createdAt: 'desc' }
     });
 
-    console.log(`\n📊 Summary:`);
-    console.log(`   Total published articles: ${publishedArticles.length}`);
-    console.log(`   Author: ${publishedArticles[0]?.author.email} (${publishedArticles[0]?.author.role})`);
-    console.log(`   Category: Natural Products`);
-    console.log(`   Status: All articles published and visible to guests`);
+    console.log(`\n📊 خلاصه:`);
+    console.log(`   تعداد کل مقالات منتشر شده: ${publishedArticles.length}`);
+    console.log(`   نویسنده: ${publishedArticles[0]?.author.email} (${publishedArticles[0]?.author.role})`);
+    console.log(`   دسته بندی: محصولات طبیعی`);
+    console.log(`   وضعیت: همه مقالات منتشر شده و برای کاربران قابل مشاهده هستند`);
 
-    console.log('\n🎉 All SEO-optimized articles created successfully!');
-    console.log('   Articles are now live and accessible to all users.');
+    console.log('\n🎉 تمامی مقالات بهینه‌سازی شده برای سئو با موفقیت ایجاد شدند!');
+    console.log('   مقالات هم‌اکنون فعال بوده و برای تمامی کاربران قابل دسترسی هستند.');
 
   } catch (error) {
     console.error('❌ Error creating articles:', error);

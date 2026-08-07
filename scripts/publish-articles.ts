@@ -1,8 +1,6 @@
 #!/usr/bin/env tsx
 
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '../src/lib/prisma';
 
 // Helper function to generate slug from title
 function generateSlug(title: string): string {
@@ -191,6 +189,8 @@ async function publishSEOArticles() {
 
 *منابع علمی مرجع: [سازمان بهداشت جهانی (WHO)](https://www.who.int/)، [مجله علمی اتنوفارماکولوژی](https://www.journals.elsevier.com/journal-of-ethnopharmacology)، [اتحادیه بین‌المللی تجارت زعفران](https://www.saffrontrade.org/)، [سازمان تحقیقات کشاورزی ایالات متحده (USDA)](https://www.ars.usda.gov/)*`,
       status: 'PUBLISHED' as const,
+      category: 'محصولات طبیعی',
+      tags: ['زعفران', 'ادویه', 'ارگانیک', 'لوکس', 'سلامت', 'محصولات طبیعی', 'آشپزی', 'دارویی', 'ممتاز', 'بازار جهانی'],
       authorId: superadmin.id
     };
 
@@ -334,6 +334,8 @@ async function publishSEOArticles() {
 
 *منابع علمی مرجع: [سازمان بهداشت جهانی (WHO)](https://www.who.int/)، [نشریه تخصصی شیمی کشاورزی و مواد غذایی (ACS)](https://pubs.acs.org/journal/jafcau)، [کمیسیون بین‌المللی عسل (IHC)]()، [انجمن ملی عسل ایالات متحده (NHB)]()*`,
       status: 'PUBLISHED' as const,
+      category: 'محصولات طبیعی',
+      tags: ['عسل', 'شیرین‌کننده طبیعی', 'ارگانیک', 'سلامت', 'زنبورها', 'دارویی', 'عسل خام', 'تغذیه', 'آنتی‌اکسیدان‌ها', 'تندرستی'],
       authorId: superadmin.id
     };
 
@@ -485,6 +487,8 @@ async function publishSEOArticles() {
 
 *منابع علمی مرجع: [سازمان خواربار و کشاورزی ملل متحد (FAO)](https://www.fao.org/)، [نشریه تخصصی شیمی و بیوشیمی کشاورزی](https://pubs.acs.org/journal/jafcau)، [انجمن بین‌المللی نخل خرما (IDPS)]()، [سازمان تحقیقات کشاورزی آمریکا (USDA)]()*`,
       status: 'PUBLISHED' as const,
+      category: 'محصولات طبیعی',
+      tags: ['خرما', 'میوه', 'تغذیه', 'خاورمیانه', 'انرژی', 'سوپرفود', 'طبیعی', 'سلامت', 'سنتی', 'تجارت جهانی'],
       authorId: superadmin.id
     };
 
@@ -508,7 +512,7 @@ async function publishSEOArticles() {
     console.log(`✅ Published: "${dates.title}" (${countWords(dates.content)} words)`);
 
     // Verify articles are published and visible
-    console.log('\n🔍 Verifying published articles...');
+    console.log('\n🔍 در حال تایید مقالات منتشر شده...');
     const publishedArticles = await prisma.article.findMany({
       where: { status: 'PUBLISHED' },
       include: {
@@ -522,25 +526,25 @@ async function publishSEOArticles() {
       orderBy: { createdAt: 'desc' }
     });
 
-    console.log(`\n📊 Final Summary:`);
-    console.log(`   ✅ Total published articles: ${publishedArticles.length}`);
-    console.log(`   ✅ Author: ${publishedArticles[0]?.author.email} (${publishedArticles[0]?.author.role})`);
-    console.log(`   ✅ Status: All articles published and visible to guests`);
-    console.log(`   ✅ SEO Optimized: Meta titles, descriptions, and content structure applied`);
-    console.log(`   ✅ Internal Links: Sheikh Shop product links included`);
-    console.log(`   ✅ External Links: Authority sources referenced`);
+    console.log(`\n📊 خلاصه نهایی:`);
+    console.log(`   ✅ تعداد کل مقالات منتشر شده: ${publishedArticles.length}`);
+    console.log(`   ✅ نویسنده: ${publishedArticles[0]?.author.email} (${publishedArticles[0]?.author.role})`);
+    console.log(`   ✅ وضعیت: همه مقالات منتشر شده و برای عموم قابل مشاهده هستند`);
+    console.log(`   ✅ بهینه‌سازی سئو: عناوین متا، توضیحات متا و ساختار محتوا اعمال شد`);
+    console.log(`   ✅ لینک‌های داخلی: لینک‌های محصولات فروشگاه شیخ درج شد`);
+    console.log(`   ✅ لینک‌های خارجی: منابع مرجع علمی معتبر پیوست شد`);
 
-    console.log('\n🎉 All SEO-optimized articles successfully published!');
-    console.log('   Articles are now live and accessible in the admin panel and public listing.');
+    console.log('\n🎉 تمامی مقالات بهینه‌سازی شده برای سئو با موفقیت منتشر شدند!');
+    console.log('   مقالات هم‌اکنون فعال بوده و در پنل مدیریت و بخش مقالات سایت قابل دسترسی هستند.');
 
     // Display article details
-    console.log('\n📰 Published Articles:');
-    publishedArticles.forEach((article, index) => {
+    console.log('\n📰 مقالات منتشر شده:');
+    publishedArticles.forEach((article: any, index: number) => {
       console.log(`\n   ${index + 1}. ${article.title}`);
-      console.log(`      Slug: ${article.slug}`);
-      console.log(`      Word Count: ${countWords(article.content)}`);
-      console.log(`      Status: ${article.status}`);
-      console.log(`      Published: ${article.createdAt.toLocaleString()}`);
+      console.log(`      نامک (Slug): ${article.slug}`);
+      console.log(`      تعداد کلمات: ${countWords(article.content)}`);
+      console.log(`      وضعیت: ${article.status}`);
+      console.log(`      تاریخ انتشار: ${article.createdAt.toLocaleString()}`);
     });
 
   } catch (error) {
