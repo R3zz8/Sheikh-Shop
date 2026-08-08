@@ -108,11 +108,16 @@ export async function POST(request: NextRequest) {
     const userId = await getUserIdFromToken(request);
 
     if (userId && (payload.status === 'SUCCESSFUL' || payload.status === 'SUCCESS' || payload.status === 'COMPLETED')) {
-      // 1. Fetch user's cart from database
+      // 1. Fetch user's cart from database with options and variants loaded
       const cartItems = await prisma.cartItem.findMany({
         where: { userId },
         include: {
-          product: true,
+          product: {
+            include: {
+              units: true,
+              baseUnit: true,
+            }
+          },
         },
       });
 
@@ -130,28 +135,66 @@ export async function POST(request: NextRequest) {
         const shippingTotal = calculateCartShipping(cartItems);
         const grandTotal = subtotal + shippingTotal;
 
-        // 3. Create the Order
-        const order = await prisma.order.create({
-          data: {
-            userId,
-            total: subtotal,
-            shippingCost: shippingTotal,
-            totalPrice: grandTotal,
-            status: 'COMPLETED',
-            items: {
-              create: cartItems.map((item: any) => ({
-                productId: item.productId,
-                quantity: item.quantity,
-                price: item.unitPrice || item.product.basePrice,
-                shippingCost: resolveShipping(item.product),
-              })),
-            },
-          },
-        });
+        // 3. Create Order, Decrement Inventory, and Clear Cart in a single transaction
+        const order = await prisma.$transaction(async (tx: any) => {
+          // A. Create the Order
+          const ord = await tx.order.create({
+            data: {
+              userId,
+              total: subtotal,
+              shippingCost: shippingTotal,
+              totalPrice: grandTotal,
+              status: 'COMPLETED',
+              items: {
+                create: cartItems.map((item: any) => {
+                  const productUnit = item.product.units?.find((u: any) => u.id === item.unitId);
+                  const unitName = productUnit ? productUnit.name : (item.product.baseUnit?.name || 'عدد');
 
-        // 4. Empty the user's cart
-        await prisma.cartItem.deleteMany({
-          where: { userId },
+                  return {
+                    productId: item.productId,
+                    productUnitId: productUnit ? productUnit.id : null,
+                    quantity: item.quantity,
+                    price: item.unitPrice || item.product.basePrice,
+                    shippingCost: resolveShipping(item.product),
+                    unitName: unitName,
+                  };
+                }),
+              },
+            },
+          });
+
+          // B. Decrement stock at variant or base product level
+          for (const item of cartItems) {
+            const productUnit = item.product.units?.find((u: any) => u.id === item.unitId);
+            if (productUnit) {
+              // Decrement variant stock
+              await tx.productUnit.update({
+                where: { id: productUnit.id },
+                data: {
+                  stock: {
+                    decrement: item.quantity,
+                  },
+                },
+              });
+            } else {
+              // Decrement product base stock
+              await tx.product.update({
+                where: { id: item.productId },
+                data: {
+                  quantity: {
+                    decrement: item.quantity,
+                  },
+                },
+              });
+            }
+          }
+
+          // C. Empty the user's cart
+          await tx.cartItem.deleteMany({
+            where: { userId },
+          });
+
+          return ord;
         });
 
         console.log('[Order Creation] Saved order and order items:', {
