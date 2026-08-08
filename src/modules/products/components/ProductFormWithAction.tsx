@@ -50,6 +50,7 @@ import {
   ChevronLeft,
   ChevronRight,
   RefreshCw,
+  Sliders,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -102,6 +103,16 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
   const [units, setUnits] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
 
+  // Options & Variants States
+  const [globalAttributesList, setGlobalAttributesList] = useState<any[]>([]);
+  const [assignedAttributes, setAssignedAttributes] = useState<any[]>([]);
+  const [variantMatrix, setVariantMatrix] = useState<any[]>([]);
+  const [loadingAttributes, setLoadingAttributes] = useState(false);
+  const [selectedAttributeToAdd, setSelectedAttributeToAdd] = useState<string>('');
+
+  // Custom Attribute Value forms
+  const [newValueInput, setNewValueInput] = useState<Record<string, { value: string; unit: string; hex: string }>>({});
+
   // Submitting state
   const [isSaving, setIsSaving] = useState(false);
 
@@ -113,6 +124,7 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
     register,
     handleSubmit,
     setValue,
+    getValues,
     watch,
     formState: { isDirty, errors },
   } = useForm({
@@ -210,6 +222,70 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
     }
   }, [product, setValue]);
 
+  // Hydrate global attributes library, product's assigned attributes and variants on mount
+  useEffect(() => {
+    const loadAttributesAndHydrate = async () => {
+      // 1. Fetch all global attribute definitions from the library
+      try {
+        const res = await fetch('/api/admin/attributes');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success) {
+            setGlobalAttributesList(data.data);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load global attributes library:', err);
+      }
+
+      // 2. Hydrate from existing product if applicable
+      if (product && !isNewProduct) {
+        // Hydrate assigned attributes
+        const prodAttrs = (product as any).productAttributes || [];
+        if (prodAttrs.length > 0) {
+          const hydratedAssigned = prodAttrs.map((pa: any) => ({
+            id: pa.attribute.id,
+            name: pa.attribute.name,
+            displayName: pa.attribute.displayName,
+            type: pa.attribute.type,
+            values: pa.attribute.values || []
+          }));
+          setAssignedAttributes(hydratedAssigned);
+        }
+
+        // Hydrate variants matrix
+        const prodUnits = (product as any).units || [];
+        // Only hydrate units that actually represent variant combinations (have values associated)
+        const hasVariants = prodUnits.some((u: any) => u.values && u.values.length > 0);
+        if (hasVariants) {
+          const hydratedMatrix = prodUnits.map((u: any) => {
+            const combination: Record<string, string> = {};
+            if (u.values && Array.isArray(u.values)) {
+              u.values.forEach((v: any) => {
+                if (v.attributeValue?.attributeId) {
+                  combination[v.attributeValue.attributeId] = v.attributeValueId;
+                }
+              });
+            }
+            return {
+              id: u.id,
+              name: u.name,
+              price: String(u.price),
+              oldPrice: u.oldPrice ? String(u.oldPrice) : '',
+              sku: u.sku || '',
+              stock: String(u.stock),
+              isActive: u.isActive,
+              combination
+            };
+          });
+          setVariantMatrix(hydratedMatrix);
+        }
+      }
+    };
+
+    loadAttributesAndHydrate();
+  }, [product, isNewProduct]);
+
   // Load product units (variants)
   const loadProductUnits = async () => {
     if (isNewProduct) return;
@@ -275,6 +351,7 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
     { id: 'general', label: 'عمومی (General)', icon: Settings },
     { id: 'pricing', label: 'قیمت‌گذاری و تخفیف', icon: DollarSign },
     { id: 'inventory', label: 'موجودی و تنوع (Inventory)', icon: Package },
+    { id: 'variants', label: 'ویژگی‌ها و تنوع (Options & Variants)', icon: Sliders },
     { id: 'media', label: 'تصاویر (Media Gallery)', icon: ImageIcon },
     { id: 'videos', label: 'ویدیوها (Video Gallery)', icon: Film },
     { id: 'seo', label: 'سئو و گوگل (SEO Panel)', icon: Search },
@@ -398,7 +475,34 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
 
       const savedProduct = result.data;
       if (savedProduct) {
-        // Save Units/Variants
+        // 1. Save assigned attributes
+        const attrPayload = { attributeIds: assignedAttributes.map(a => a.id) };
+        await fetch(`/api/dashboard/products/${savedProduct.id}/attributes`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(attrPayload)
+        });
+
+        // 2. Save generated variants matrix
+        const variantPayload = {
+          variants: variantMatrix.map(v => ({
+            id: v.id,
+            name: v.name,
+            price: Number(v.price),
+            oldPrice: v.oldPrice ? Number(v.oldPrice) : null,
+            sku: v.sku || null,
+            stock: Number(v.stock),
+            isActive: v.isActive !== false,
+            attributeValueIds: v.attributeValueIds,
+          }))
+        };
+        await fetch(`/api/dashboard/products/${savedProduct.id}/variants`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(variantPayload)
+        });
+
+        // 3. Save Units/Variants (Legacy fallback)
         await saveAllUnits(savedProduct.id);
         toast.success(isNewProduct ? 'کالا با موفقیت ایجاد شد!' : 'کالا با موفقیت بروزرسانی شد!');
 
@@ -410,6 +514,178 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  // Options & Variants Helper Methods
+  const handleAddAttribute = async (attrIdOrName: string) => {
+    if (!attrIdOrName) return;
+
+    // Check if already assigned
+    const alreadyAssigned = assignedAttributes.some(a => a.id === attrIdOrName || a.name === attrIdOrName);
+    if (alreadyAssigned) {
+      toast.error('این ویژگی قبلاً به کالا افزوده شده است.');
+      return;
+    }
+
+    // Try finding in global library
+    const found = globalAttributesList.find(a => a.id === attrIdOrName || a.name === attrIdOrName);
+    if (found) {
+      setAssignedAttributes([...assignedAttributes, { ...found, values: [] }]);
+      toast.success(`ویژگی ${found.displayName} با موفقیت به کالا تخصیص یافت.`);
+    } else {
+      // Create a new attribute dynamically
+      const displayName = attrIdOrName;
+      const name = attrIdOrName.toLowerCase().replace(/\s+/g, '-');
+      try {
+        const res = await fetch('/api/admin/attributes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, displayName, type: 'SELECT', values: [] }),
+        });
+        if (res.ok) {
+          const result = await res.json();
+          if (result.success) {
+            setGlobalAttributesList([...globalAttributesList, result.data]);
+            setAssignedAttributes([...assignedAttributes, { ...result.data, values: [] }]);
+            toast.success(`ویژگی سفارشی جدید "${displayName}" ایجاد و به کالا افزوده شد.`);
+          }
+        }
+      } catch {
+        toast.error('خطا در ایجاد ویژگی سفارشی.');
+      }
+    }
+    setSelectedAttributeToAdd('');
+  };
+
+  const handleRemoveAttribute = (attrId: string) => {
+    setAssignedAttributes(assignedAttributes.filter(a => a.id !== attrId));
+    toast.success('ویژگی با موفقیت از کالا برداشته شد.');
+  };
+
+  const handleAddValueToAttribute = (attrId: string) => {
+    const input = newValueInput[attrId];
+    if (!input || !input.value.trim()) {
+      toast.error('لطفاً مقداری برای ویژگی وارد کنید.');
+      return;
+    }
+
+    const attrIndex = assignedAttributes.findIndex(a => a.id === attrId);
+    if (attrIndex === -1) return;
+
+    const currentValues = assignedAttributes[attrIndex].values || [];
+
+    // Check if value already exists
+    const duplicate = currentValues.some((v: any) => v.value === input.value.trim() && v.unit === (input.unit || null));
+    if (duplicate) {
+      toast.error('این مقدار قبلاً وارد شده است.');
+      return;
+    }
+
+    const newValue = {
+      id: `temp_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+      attributeId: attrId,
+      value: input.value.trim(),
+      unit: input.unit || null,
+      hex: input.hex || null,
+      displayName: input.value.trim() + (input.unit ? ` ${input.unit}` : ''),
+    };
+
+    const updated = [...assignedAttributes];
+    updated[attrIndex] = {
+      ...updated[attrIndex],
+      values: [...currentValues, newValue],
+    };
+
+    setAssignedAttributes(updated);
+
+    // Clear inputs
+    setNewValueInput({
+      ...newValueInput,
+      [attrId]: { value: '', unit: '', hex: '#000000' },
+    });
+    toast.success('مقدار جدید افزوده شد.');
+  };
+
+  const handleRemoveValueFromAttribute = (attrId: string, valId: string) => {
+    const attrIndex = assignedAttributes.findIndex(a => a.id === attrId);
+    if (attrIndex === -1) return;
+
+    const updated = [...assignedAttributes];
+    updated[attrIndex] = {
+      ...updated[attrIndex],
+      values: updated[attrIndex].values.filter((v: any) => v.id !== valId),
+    };
+
+    setAssignedAttributes(updated);
+    toast.success('مقدار با موفقیت حذف گردید.');
+  };
+
+  const generateCombinationVariants = () => {
+    const attributesWithValues = assignedAttributes.map(attr => ({
+      attributeId: attr.id,
+      displayName: attr.displayName,
+      values: attr.values || [],
+    })).filter(attr => attr.values.length > 0);
+
+    if (attributesWithValues.length === 0) {
+      toast.error('لطفاً ابتدا حداقل یک ویژگی با چند مقدار معتبر اضافه کنید.');
+      return;
+    }
+
+    const cartesian = (arrays: any[][]): any[][] => {
+      return arrays.reduce((acc, curr) => {
+        return acc.flatMap(d => curr.map(e => [...d, e]));
+      }, [[]]);
+    };
+
+    const valueArrays = attributesWithValues.map(attr => attr.values);
+    const combinations = cartesian(valueArrays);
+
+    const basePrice = Number(getValues('basePrice')) || 0;
+    const parentSku = getValues('sku') || '';
+
+    const newVariants = combinations.map((combo, idx) => {
+      const attributeValueIds = combo.map((v: any) => v.id);
+
+      const existing = variantMatrix.find(v => {
+        if (!v.attributeValueIds) return false;
+        return v.attributeValueIds.length === attributeValueIds.length &&
+          v.attributeValueIds.every((id: string) => attributeValueIds.includes(id));
+      });
+
+      if (existing) {
+        return existing;
+      }
+
+      const name = combo.map((v: any) => v.displayName || v.value).join(' / ');
+      const skuSuffix = combo.map((v: any) => String(v.value).substring(0, 3).toUpperCase()).join('-');
+      const sku = parentSku ? `${parentSku}-${skuSuffix}` : `VAR-${idx + 1}`;
+
+      return {
+        name,
+        price: basePrice,
+        oldPrice: null,
+        sku,
+        stock: 10,
+        isActive: true,
+        attributeValueIds,
+        attributeValues: combo,
+      };
+    });
+
+    setVariantMatrix(newVariants);
+    toast.success(`${newVariants.length} ردیف تنوع با موفقیت تولید شد. برای نهایی‌سازی باید فرم را ذخیره کنید.`);
+  };
+
+  const updateVariantMatrixField = (index: number, field: string, value: any) => {
+    const updated = [...variantMatrix];
+    updated[index] = { ...updated[index], [field]: value };
+    setVariantMatrix(updated);
+  };
+
+  const handleRemoveVariant = (index: number) => {
+    setVariantMatrix(variantMatrix.filter((_, i) => i !== index));
+    toast.success('ردیف تنوع برداشته شد.');
   };
 
   // Unit / Variant Management Methods
@@ -937,6 +1213,275 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
                       ))}
                     </div>
                   )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* 3.1 OPTIONS & VARIANTS TAB */}
+            {activeTab === 'variants' && (
+              <Card className="bg-[#0D0907]/90 border border-amber-500/15 rounded-[2rem] p-6 sm:p-8 relative overflow-hidden shadow-2xl text-right">
+                <CardHeader className="p-0 pb-6 mb-6 border-b border-amber-500/15">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                        <Sliders className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-base font-black text-stone-100">ویژگی‌ها و ترکیب‌های کالا (Options & Variants)</CardTitle>
+                        <CardDescription className="text-[11px] text-stone-400">افزودن گزینه‌های ویژگی (رنگ، ظرفیت، وزن) و تولید خودکار ترکیب‌های ماتریسی با قیمت مستقل</CardDescription>
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      onClick={generateCombinationVariants}
+                      className="bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white text-xs font-black py-2 px-4 rounded-xl flex items-center gap-1.5 shadow-lg shadow-amber-500/10 border border-amber-500/20"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>تولید خودکار ترکیب‌ها</span>
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-0 space-y-8">
+                  {/* Outer Option Layout */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    {/* Left Column: Attributes Manager */}
+                    <div className="lg:col-span-5 space-y-6">
+                      <div className="bg-stone-950/40 p-5 rounded-2xl border border-stone-900/80 space-y-4">
+                        <Label className="text-xs font-black text-stone-200 block">افزودن ویژگی جدید به این کالا</Label>
+                        <div className="flex gap-2.5">
+                          <select
+                            value={selectedAttributeToAdd}
+                            onChange={(e) => setSelectedAttributeToAdd(e.target.value)}
+                            className="flex-1 bg-stone-950 border-stone-800 text-stone-300 text-xs rounded-xl h-10 px-3 focus:ring-amber-500/30 focus:border-amber-500"
+                          >
+                            <option value="">-- انتخاب ویژگی --</option>
+                            <option value="Color">رنگ (Color)</option>
+                            <option value="Storage">حافظه (Storage)</option>
+                            <option value="Weight">وزن (Weight)</option>
+                            <option value="Volume">حجم (Volume)</option>
+                            <option value="Size">سایز (Size)</option>
+                            <option value="Flavor">طعم (Flavor)</option>
+                            <option value="Material">جنس (Material)</option>
+                          </select>
+                          <Button
+                            type="button"
+                            onClick={() => handleAddAttribute(selectedAttributeToAdd)}
+                            className="bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 text-xs font-bold border border-amber-500/25 px-4 rounded-xl h-10"
+                          >
+                            افزودن
+                          </Button>
+                        </div>
+                        <p className="text-[10px] text-stone-500 font-bold">می‌توانید عنوان دلخواه خود را نیز در کادر بالا تایپ کنید تا ویژگی سفارشی ساخته شود.</p>
+                      </div>
+
+                      {/* Configured Attributes and Values list */}
+                      <div className="space-y-4">
+                        <Label className="text-xs font-black text-amber-500 tracking-wider uppercase block">ویژگی‌های کالا و مقادیر مجاز</Label>
+
+                        {assignedAttributes.length === 0 ? (
+                          <div className="text-center py-8 bg-stone-950/20 border border-dashed border-stone-850 rounded-2xl text-xs text-stone-500 font-bold">
+                            هیچ ویژگی گزینشی (مثل رنگ یا حافظه) برای این کالا افزوده نشده است.
+                          </div>
+                        ) : (
+                          assignedAttributes.map((attr) => (
+                            <div key={attr.id} className="bg-stone-950/35 border border-stone-900 rounded-2xl p-4.5 space-y-4">
+                              <div className="flex items-center justify-between border-b border-stone-900/60 pb-2">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs font-black text-stone-100">{attr.displayName}</span>
+                                  <span className="text-[9px] bg-stone-900 text-stone-400 font-mono px-2 py-0.5 rounded-md uppercase">{attr.type}</span>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveAttribute(attr.id)}
+                                  className="text-stone-500 hover:text-red-400 transition-colors text-[10px] font-bold"
+                                >
+                                  حذف ویژگی
+                                </button>
+                              </div>
+
+                              {/* Value lists */}
+                              <div className="flex flex-wrap gap-2">
+                                {(attr.values || []).map((val: any) => (
+                                  <div
+                                    key={val.id}
+                                    className="flex items-center gap-1.5 bg-[#FAF6EE]/5 border border-stone-800 text-stone-300 text-xs px-2.5 py-1.5 rounded-xl hover:border-amber-500/20 transition-all"
+                                  >
+                                    {attr.type === 'COLOR' && val.hex && (
+                                      <span
+                                        className="w-3.5 h-3.5 rounded-full border border-stone-900 shadow-md inline-block"
+                                        style={{ backgroundColor: val.hex }}
+                                      />
+                                    )}
+                                    <span>{val.value} {val.unit || ''}</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleRemoveValueFromAttribute(attr.id, val.id)}
+                                      className="text-stone-500 hover:text-red-400 transition-colors mr-1"
+                                    >
+                                      <X className="w-3 h-3" />
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+
+                              {/* Add Value Input bar */}
+                              <div className="flex items-center gap-2 mt-2 pt-2 border-t border-stone-900/40">
+                                <div className="flex-1 flex gap-1.5">
+                                  <Input
+                                    value={newValueInput[attr.id]?.value || ''}
+                                    onChange={(e) => setNewValueInput({
+                                      ...newValueInput,
+                                      [attr.id]: {
+                                        value: e.target.value,
+                                        unit: newValueInput[attr.id]?.unit || '',
+                                        hex: newValueInput[attr.id]?.hex || '#000000',
+                                      }
+                                    })}
+                                    placeholder={attr.type === 'COLOR' ? 'عنوان رنگ (مثلاً: قرمز)' : 'مقدار ویژگی'}
+                                    className="bg-stone-950 border-stone-850 h-9 text-xs rounded-xl flex-1 text-right"
+                                  />
+
+                                  {attr.type === 'COLOR' && (
+                                    <div className="flex items-center gap-1 bg-stone-950 px-2 rounded-xl border border-stone-850">
+                                      <input
+                                        type="color"
+                                        value={newValueInput[attr.id]?.hex || '#000000'}
+                                        onChange={(e) => setNewValueInput({
+                                          ...newValueInput,
+                                          [attr.id]: {
+                                            value: newValueInput[attr.id]?.value || '',
+                                            unit: newValueInput[attr.id]?.unit || '',
+                                            hex: e.target.value,
+                                          }
+                                        })}
+                                        className="w-6 h-6 border-0 bg-transparent cursor-pointer rounded"
+                                      />
+                                      <span className="text-[10px] font-mono text-stone-400 uppercase">{newValueInput[attr.id]?.hex || '#000000'}</span>
+                                    </div>
+                                  )}
+
+                                  {(attr.type === 'WEIGHT' || attr.type === 'VOLUME') && (
+                                    <select
+                                      value={newValueInput[attr.id]?.unit || ''}
+                                      onChange={(e) => setNewValueInput({
+                                        ...newValueInput,
+                                        [attr.id]: {
+                                          value: newValueInput[attr.id]?.value || '',
+                                          unit: e.target.value,
+                                          hex: newValueInput[attr.id]?.hex || '#000000',
+                                        }
+                                      })}
+                                      className="bg-stone-950 border-stone-850 text-stone-400 text-xs rounded-xl h-9 px-2 focus:ring-0"
+                                    >
+                                      <option value="">واحد</option>
+                                      <option value="g">گرم</option>
+                                      <option value="kg">کیلوگرم</option>
+                                      <option value="ml">میلی‌لیتر</option>
+                                      <option value="L">لیتر</option>
+                                    </select>
+                                  )}
+                                </div>
+                                <Button
+                                  type="button"
+                                  onClick={() => handleAddValueToAttribute(attr.id)}
+                                  className="bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 text-[11px] font-black border border-amber-500/20 h-9 px-3.5 rounded-xl"
+                                >
+                                  افزودن مقدار
+                                </Button>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Right Column: Combination matrix */}
+                    <div className="lg:col-span-7 space-y-4">
+                      <Label className="text-xs font-black text-amber-500 tracking-wider uppercase block">ماتریس تنوع‌ها و قیمت‌گذاری (Variant Matrix)</Label>
+
+                      {variantMatrix.length === 0 ? (
+                        <div className="text-center py-16 bg-stone-950/10 border border-dashed border-stone-850 rounded-[2rem] flex flex-col items-center justify-center gap-3">
+                          <Sliders className="w-10 h-10 text-stone-600 animate-pulse" />
+                          <p className="text-xs text-stone-500 font-bold max-w-sm leading-relaxed">
+                            ماتریس تنوع در حال حاضر خالی است. ابتدا مقادیر بالا را وارد کرده و سپس بر روی دکمه طلایی رنگ "تولید خودکار ترکیب‌ها" در بالای صفحه کلیک کنید تا ترکیب‌ها ساخته شوند.
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="space-y-4 max-h-[500px] overflow-y-auto pr-1">
+                          {variantMatrix.map((variant, index) => (
+                            <div key={index} className="bg-stone-950/45 border border-stone-900 rounded-2xl p-4.5 space-y-4 relative shadow-md">
+                              <div className="flex items-center justify-between border-b border-stone-900/60 pb-2">
+                                <span className="text-xs font-black text-amber-400">{variant.name}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveVariant(index)}
+                                  className="text-stone-500 hover:text-red-400 transition-colors p-1"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                  <Label className="text-[10px] text-stone-400 font-bold">قیمت فروش (تومان)</Label>
+                                  <Input
+                                    type="number"
+                                    value={variant.price}
+                                    onChange={(e) => updateVariantMatrixField(index, 'price', parseFloat(e.target.value) || 0)}
+                                    className="bg-stone-950 border-stone-850 h-10 text-xs text-left"
+                                    required
+                                  />
+                                </div>
+                                <div className="space-y-1.5">
+                                  <Label className="text-[10px] text-stone-400 font-bold">قیمت قبل از تخفیف (Toman، اختیاری)</Label>
+                                  <Input
+                                    type="number"
+                                    value={variant.oldPrice || ''}
+                                    onChange={(e) => updateVariantMatrixField(index, 'oldPrice', parseFloat(e.target.value) || null)}
+                                    className="bg-stone-950 border-stone-850 h-10 text-xs text-left"
+                                    placeholder="بدون تخفیف"
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                  <Label className="text-[10px] text-stone-400 font-bold">موجودی انبار (Stock)</Label>
+                                  <Input
+                                    type="number"
+                                    value={variant.stock}
+                                    onChange={(e) => updateVariantMatrixField(index, 'stock', parseInt(e.target.value) || 0)}
+                                    className="bg-stone-950 border-stone-850 h-10 text-xs text-left"
+                                    required
+                                  />
+                                </div>
+                                <div className="space-y-1.5">
+                                  <Label className="text-[10px] text-stone-400 font-bold">کد تنوع (SKU اختصاصی)</Label>
+                                  <Input
+                                    value={variant.sku || ''}
+                                    onChange={(e) => updateVariantMatrixField(index, 'sku', e.target.value)}
+                                    placeholder="SKU-COLOR-SIZE"
+                                    className="bg-stone-950 border-stone-850 h-10 text-xs text-left"
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2 pt-2">
+                                <input
+                                  type="checkbox"
+                                  checked={variant.isActive !== false}
+                                  onChange={(e) => updateVariantMatrixField(index, 'isActive', e.target.checked)}
+                                  className="rounded bg-stone-950 border-stone-800 text-amber-500 focus:ring-0 w-4 h-4"
+                                  id={`variant-active-${index}`}
+                                />
+                                <Label htmlFor={`variant-active-${index}`} className="text-xs text-stone-300 font-bold cursor-pointer">فعال و آماده فروش برای مشتریان</Label>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             )}

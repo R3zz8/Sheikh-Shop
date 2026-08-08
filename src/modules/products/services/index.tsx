@@ -210,10 +210,54 @@ export const getProductById = cache(async (id: string) => {
             productId: true,
             name: true,
             price: true,
+            oldPrice: true,
+            sku: true,
             stock: true,
             isActive: true,
             createdAt: true,
             updatedAt: true,
+            values: {
+              select: {
+                attributeValueId: true,
+                attributeValue: {
+                  select: {
+                    id: true,
+                    value: true,
+                    unit: true,
+                    hex: true,
+                    attribute: {
+                      select: {
+                        id: true,
+                        name: true,
+                        displayName: true,
+                        type: true,
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        productAttributes: {
+          select: {
+            id: true,
+            attribute: {
+              select: {
+                id: true,
+                name: true,
+                displayName: true,
+                type: true,
+                values: {
+                  select: {
+                    id: true,
+                    value: true,
+                    unit: true,
+                    hex: true,
+                  }
+                }
+              }
+            }
           }
         },
       },
@@ -367,10 +411,54 @@ export const getProductBySlug = cache(async (slug: string) => {
             productId: true,
             name: true,
             price: true,
+            oldPrice: true,
+            sku: true,
             stock: true,
             isActive: true,
             createdAt: true,
             updatedAt: true,
+            values: {
+              select: {
+                attributeValueId: true,
+                attributeValue: {
+                  select: {
+                    id: true,
+                    value: true,
+                    unit: true,
+                    hex: true,
+                    attribute: {
+                      select: {
+                        id: true,
+                        name: true,
+                        displayName: true,
+                        type: true,
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        productAttributes: {
+          select: {
+            id: true,
+            attribute: {
+              select: {
+                id: true,
+                name: true,
+                displayName: true,
+                type: true,
+                values: {
+                  select: {
+                    id: true,
+                    value: true,
+                    unit: true,
+                    hex: true,
+                  }
+                }
+              }
+            }
           }
         },
       },
@@ -645,7 +733,19 @@ function serializeProduct(product: any) {
           oldPrice: u.oldPrice ? toNumber(u.oldPrice) : null,
           createdAt: u.createdAt ? u.createdAt.toISOString() : null,
           updatedAt: u.updatedAt ? u.updatedAt.toISOString() : null,
+          values: Array.isArray(u.values)
+            ? u.values.map((v: any) => ({
+                ...v,
+                attributeValue: v.attributeValue ? {
+                  ...v.attributeValue,
+                  attribute: v.attributeValue.attribute ? { ...v.attributeValue.attribute } : null
+                } : null
+              }))
+            : [],
         }))
+      : [],
+    productAttributes: Array.isArray(product.productAttributes)
+      ? product.productAttributes.map((pa: any) => pa.attribute).filter(Boolean)
       : [],
     discounts: Array.isArray(product.discounts)
       ? product.discounts.map((d: any) => ({

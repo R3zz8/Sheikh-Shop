@@ -261,7 +261,7 @@ const mockProducts = [
     basePrice: 32800000,
     baseUnitId: 'u3',
     quantity: 30,
-    status: 'DRAFT',
+    status: 'ACTIVE', // Set to ACTIVE so it loads in catalogs and views!
     isNew: true,
     isBestSeller: true,
     isAmazing: false,
@@ -281,7 +281,9 @@ const mockProducts = [
     images: [{ id: 'img_pd_smartwatch', image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=600&auto=format&fit=crop', secureUrl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=600&auto=format&fit=crop', createdAt: new Date() }],
     discounts: [],
     units: [
-      { id: 'pud_smartwatch', productId: 'pd_smartwatch', name: 'Piece', price: 32800000, unitId: 'u3', unit: mockUnits[2], isActive: true, stock: 30, createdAt: new Date(), updatedAt: new Date() }
+      { id: 'pud_smartwatch_black_64', productId: 'pd_smartwatch', name: 'مشکی / 64 گیگابایت', price: 32800000, oldPrice: 35000000, sku: 'SH-W-BLK-64', isActive: true, stock: 12, createdAt: new Date(), updatedAt: new Date() },
+      { id: 'pud_smartwatch_black_128', productId: 'pd_smartwatch', name: 'مشکی / 128 گیگابایت', price: 34800000, oldPrice: 38000000, sku: 'SH-W-BLK-128', isActive: true, stock: 5, createdAt: new Date(), updatedAt: new Date() },
+      { id: 'pud_smartwatch_gold_128', productId: 'pd_smartwatch', name: 'طلایی / 128 گیگابایت', price: 39800000, oldPrice: null, sku: 'SH-W-GLD-128', isActive: true, stock: 3, createdAt: new Date(), updatedAt: new Date() },
     ],
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -569,14 +571,110 @@ const mockFeaturedProducts = [
 const normalizeMockProduct = (item: any) => {
   if (!item || typeof item !== 'object') return item;
   if ('basePrice' in item || 'category' in item) {
-    return {
+    let enriched = {
       shippingCost: null,
       shippingMode: null,
       shippingDescription: null,
       allowFreeShipping: false,
       shippingPriority: null,
+      productAttributes: [] as any[],
       ...item
     };
+
+    if (enriched.id === 'pd_smartwatch') {
+      enriched.productAttributes = [
+        {
+          id: 'pa1',
+          productId: 'pd_smartwatch',
+          attributeId: 'attr_color',
+          attribute: {
+            id: 'attr_color',
+            name: 'Color',
+            displayName: 'رنگ',
+            type: 'COLOR',
+            values: [
+              { id: 'val_black', attributeId: 'attr_color', value: 'Black', hex: '#000000' },
+              { id: 'val_gold', attributeId: 'attr_color', value: 'Gold', hex: '#D4AF37' },
+              { id: 'val_white', attributeId: 'attr_color', value: 'White', hex: '#FFFFFF' },
+            ]
+          }
+        },
+        {
+          id: 'pa2',
+          productId: 'pd_smartwatch',
+          attributeId: 'attr_storage',
+          attribute: {
+            id: 'attr_storage',
+            name: 'Storage',
+            displayName: 'حافظه',
+            type: 'SELECT',
+            values: [
+              { id: 'val_64gb', attributeId: 'attr_storage', value: '64GB' },
+              { id: 'val_128gb', attributeId: 'attr_storage', value: '128GB' },
+            ]
+          }
+        }
+      ];
+
+      if (Array.isArray(enriched.units)) {
+        enriched.units = enriched.units.map((unit: any) => {
+          if (unit.id === 'pud_smartwatch_black_64') {
+            return {
+              ...unit,
+              values: [
+                {
+                  productUnitId: 'pud_smartwatch_black_64',
+                  attributeValueId: 'val_black',
+                  attributeValue: { id: 'val_black', attributeId: 'attr_color', value: 'Black', hex: '#000000', attribute: { id: 'attr_color', name: 'Color', displayName: 'رنگ', type: 'COLOR' } }
+                },
+                {
+                  productUnitId: 'pud_smartwatch_black_64',
+                  attributeValueId: 'val_64gb',
+                  attributeValue: { id: 'val_64gb', attributeId: 'attr_storage', value: '64GB', hex: null, attribute: { id: 'attr_storage', name: 'Storage', displayName: 'حافظه', type: 'SELECT' } }
+                }
+              ]
+            };
+          }
+          if (unit.id === 'pud_smartwatch_black_128') {
+            return {
+              ...unit,
+              values: [
+                {
+                  productUnitId: 'pud_smartwatch_black_128',
+                  attributeValueId: 'val_black',
+                  attributeValue: { id: 'val_black', attributeId: 'attr_color', value: 'Black', hex: '#000000', attribute: { id: 'attr_color', name: 'Color', displayName: 'رنگ', type: 'COLOR' } }
+                },
+                {
+                  productUnitId: 'pud_smartwatch_black_128',
+                  attributeValueId: 'val_128gb',
+                  attributeValue: { id: 'val_128gb', attributeId: 'attr_storage', value: '128GB', hex: null, attribute: { id: 'attr_storage', name: 'Storage', displayName: 'حافظه', type: 'SELECT' } }
+                }
+              ]
+            };
+          }
+          if (unit.id === 'pud_smartwatch_gold_128') {
+            return {
+              ...unit,
+              values: [
+                {
+                  productUnitId: 'pud_smartwatch_gold_128',
+                  attributeValueId: 'val_gold',
+                  attributeValue: { id: 'val_gold', attributeId: 'attr_color', value: 'Gold', hex: '#D4AF37', attribute: { id: 'attr_color', name: 'Color', displayName: 'رنگ', type: 'COLOR' } }
+                },
+                {
+                  productUnitId: 'pud_smartwatch_gold_128',
+                  attributeValueId: 'val_128gb',
+                  attributeValue: { id: 'val_128gb', attributeId: 'attr_storage', value: '128GB', hex: null, attribute: { id: 'attr_storage', name: 'Storage', displayName: 'حافظه', type: 'SELECT' } }
+                }
+              ]
+            };
+          }
+          return unit;
+        });
+      }
+    }
+
+    return enriched;
   }
   return item;
 };

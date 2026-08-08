@@ -87,11 +87,58 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
     availableProductUnits.length > 0 ? (availableProductUnits[0] || null) : null
   );
 
+  // Multi-option state
+  const hasOptionsAndVariants = Array.isArray((product as any).productAttributes) && (product as any).productAttributes.length > 0;
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
+
+  // Auto-initialize selectedOptions on mount
   useEffect(() => {
-    if (availableProductUnits.length > 0 && !selectedProductUnit) {
+    if (hasOptionsAndVariants) {
+      const initial: Record<string, string> = {};
+      (product as any).productAttributes.forEach((attr: any) => {
+        if (attr.values && attr.values.length > 0) {
+          initial[attr.id] = attr.values[0].id;
+        }
+      });
+      setSelectedOptions(initial);
+    }
+  }, [product, hasOptionsAndVariants]);
+
+  // Resolve matching ProductUnit based on selected combinations
+  useEffect(() => {
+    if (hasOptionsAndVariants && Object.keys(selectedOptions).length > 0) {
+      const matchingUnit = (product.units || []).find((unit: any) => {
+        if (!unit.values || unit.values.length === 0) return false;
+
+        // Every selected option must match the unit's attribute values
+        return Object.entries(selectedOptions).every(([attrId, valId]) => {
+          return unit.values.some((v: any) => v.attributeValueId === valId);
+        });
+      });
+
+      if (matchingUnit) {
+        setSelectedProductUnit(matchingUnit);
+      } else {
+        setSelectedProductUnit(null);
+      }
+    } else if (availableProductUnits.length > 0 && !selectedProductUnit) {
       setSelectedProductUnit(availableProductUnits[0] || null);
     }
-  }, [availableProductUnits, selectedProductUnit]);
+  }, [selectedOptions, product.units, hasOptionsAndVariants, availableProductUnits, selectedProductUnit]);
+
+  // Check if option value is available in combination
+  const isOptionValueAvailable = (attrId: string, valId: string) => {
+    if ((product as any).productAttributes.length <= 1) return true;
+
+    const hypotheticalSelection = { ...selectedOptions, [attrId]: valId };
+
+    return (product.units || []).some((unit: any) => {
+      if (!unit.isActive) return false;
+      return Object.entries(hypotheticalSelection).every(([aId, vId]) => {
+        return unit.values?.some((v: any) => v.attributeValueId === vId);
+      });
+    });
+  };
 
   // Pricing calculation
   const pricing = resolveProductPrice(product, selectedProductUnit, selectedQuantity);
@@ -387,38 +434,109 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
                   </div>
                 </div>
 
-                {/* C. APPLE-STYLE VARIANTS SELECTOR */}
-                {availableProductUnits.length > 0 && (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs font-bold text-[#5D4037] uppercase tracking-wider">انتخاب ظرفیت / مشخصات کالا</label>
-                      <span className="text-[10px] text-amber-700 font-bold">مشاهده تغییرات قیمت</span>
-                    </div>
+                {/* C. LUXURIOUS ATTRIBUTES & VARIANTS SELECTORS */}
+                {hasOptionsAndVariants ? (
+                  <div className="space-y-6">
+                    {(product as any).productAttributes.map((attr: any) => (
+                      <div key={attr.id} className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <label className="text-xs font-black text-[#5D4037] uppercase tracking-wider">{attr.displayName}</label>
+                          <span className="text-[10px] text-amber-700/80 font-bold">انتخاب گزینه</span>
+                        </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                      {availableProductUnits.map((unit) => {
-                        const isSelected = selectedProductUnit?.id === unit.id;
-                        return (
-                          <button
-                            key={unit.id}
-                            onClick={() => setSelectedProductUnit(unit)}
-                            className={`relative p-4 rounded-2xl border text-right transition-all duration-300 flex flex-col justify-between h-20 overflow-hidden ${
-                              isSelected
-                                ? 'border-amber-500 bg-amber-500/[0.08] shadow-xl scale-102'
-                                : 'border-[#5D4037]/25 hover:border-amber-500/35 bg-[#FAF6EE]/90 hover:bg-[#FAF6EE]'
-                            }`}
-                          >
-                            {isSelected && <AnimatedBorder color="amber" borderWidth={1} />}
-                            <span className="text-xs font-black text-[#2C1A11] block truncate relative z-10">{unit.name}</span>
-                            <div className="flex items-center justify-between w-full mt-1 relative z-10">
-                              <span className="text-amber-700 font-black text-sm">{formatToToman(Number(unit.price))}</span>
-                              {isSelected && <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0" />}
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
+                        {attr.type === 'COLOR' ? (
+                          // Render Visual Swatches for Color Attributes
+                          <div className="flex items-center gap-3">
+                            {(attr.values || []).map((val: any) => {
+                              const isSelected = selectedOptions[attr.id] === val.id;
+                              const isAvailable = isOptionValueAvailable(attr.id, val.id);
+                              return (
+                                <button
+                                  key={val.id}
+                                  onClick={() => isAvailable && setSelectedOptions({ ...selectedOptions, [attr.id]: val.id })}
+                                  disabled={!isAvailable}
+                                  className={`relative w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+                                    isSelected
+                                      ? 'scale-110 shadow-lg ring-2 ring-amber-500 ring-offset-2 ring-offset-[#FAF7F2]'
+                                      : 'hover:scale-105 border border-[#5D4037]/20 bg-[#FAF6EE]'
+                                  } ${!isAvailable ? 'opacity-25 cursor-not-allowed line-through' : 'cursor-pointer'}`}
+                                  title={val.value}
+                                >
+                                  <span
+                                    className="w-8 h-8 rounded-full border border-[#2C1A11]/15 inline-block shadow-inner"
+                                    style={{ backgroundColor: val.hex || '#000000' }}
+                                  />
+                                  {isSelected && (
+                                    <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-amber-600 border border-[#FAF7F2] flex items-center justify-center">
+                                      <CheckCircle2 className="w-2.5 h-2.5 text-white" />
+                                    </span>
+                                  )}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          // Render visionOS-inspired Glassmorphic Chips for non-color attributes
+                          <div className="flex flex-wrap gap-2.5">
+                            {(attr.values || []).map((val: any) => {
+                              const isSelected = selectedOptions[attr.id] === val.id;
+                              const isAvailable = isOptionValueAvailable(attr.id, val.id);
+                              return (
+                                <button
+                                  key={val.id}
+                                  onClick={() => isAvailable && setSelectedOptions({ ...selectedOptions, [attr.id]: val.id })}
+                                  disabled={!isAvailable}
+                                  className={`relative px-4 py-2.5 rounded-xl border text-xs font-black text-right transition-all duration-300 flex items-center gap-1.5 h-10 overflow-hidden ${
+                                    isSelected
+                                      ? 'border-amber-500 bg-amber-500/[0.08] shadow-md scale-102 text-[#2C1A11]'
+                                      : 'border-[#5D4037]/15 hover:border-amber-500/25 bg-[#FAF6EE]/80 hover:bg-[#FAF6EE] text-[#5D4037]'
+                                  } ${!isAvailable ? 'opacity-20 cursor-not-allowed line-through' : 'cursor-pointer'}`}
+                                >
+                                  {isSelected && <AnimatedBorder color="amber" borderWidth={1} />}
+                                  <span>{val.value} {val.unit || ''}</span>
+                                  {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-amber-600 shrink-0 relative z-10" />}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    ))}
                   </div>
+                ) : (
+                  // Fallback: Legacy flat-units list selector
+                  availableProductUnits.length > 0 && (
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-bold text-[#5D4037] uppercase tracking-wider">انتخاب ظرفیت / مشخصات کالا</label>
+                        <span className="text-[10px] text-amber-700 font-bold">مشاهده تغییرات قیمت</span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                        {availableProductUnits.map((unit) => {
+                          const isSelected = selectedProductUnit?.id === unit.id;
+                          return (
+                            <button
+                              key={unit.id}
+                              onClick={() => setSelectedProductUnit(unit)}
+                              className={`relative p-4 rounded-2xl border text-right transition-all duration-300 flex flex-col justify-between h-20 overflow-hidden ${
+                                isSelected
+                                  ? 'border-amber-500 bg-amber-500/[0.08] shadow-xl scale-102'
+                                  : 'border-[#5D4037]/25 hover:border-amber-500/35 bg-[#FAF6EE]/90 hover:bg-[#FAF6EE]'
+                              }`}
+                            >
+                              {isSelected && <AnimatedBorder color="amber" borderWidth={1} />}
+                              <span className="text-xs font-black text-[#2C1A11] block truncate relative z-10">{unit.name}</span>
+                              <div className="flex items-center justify-between w-full mt-1 relative z-10">
+                                <span className="text-amber-700 font-black text-sm">{formatToToman(Number(unit.price))}</span>
+                                {isSelected && <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0" />}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )
                 )}
 
                 {/* D. LUXURY CTA / ORDER ACTION BLOCK */}
