@@ -105,23 +105,34 @@ function serializeProduct(product: any) {
     return Number(value);
   };
 
+  const toISOString = (value: any): string | null => {
+    if (!value) return null;
+    if (value instanceof Date) return value.toISOString();
+    if (typeof value === 'string') return value;
+    try {
+      const d = new Date(value);
+      if (!isNaN(d.getTime())) return d.toISOString();
+    } catch {}
+    return String(value);
+  };
+
   return {
     ...product,
-    createdAt: product.createdAt?.toISOString() || null,
-    updatedAt: product.updatedAt?.toISOString() || null,
+    createdAt: toISOString(product.createdAt),
+    updatedAt: toISOString(product.updatedAt),
     basePrice: toNumber(product.basePrice),
     oldPrice: product.oldPrice ? toNumber(product.oldPrice) : null,
     images: Array.isArray(product.images)
       ? product.images.map((img: any) => ({
           ...img,
-          createdAt: img.createdAt?.toISOString() || null,
+          createdAt: toISOString(img.createdAt),
         }))
       : [],
     videos: Array.isArray(product.videos)
       ? product.videos.map((vid: any) => ({
           ...vid,
-          createdAt: vid.createdAt?.toISOString() || null,
-          updatedAt: vid.updatedAt?.toISOString() || null,
+          createdAt: toISOString(vid.createdAt),
+          updatedAt: toISOString(vid.updatedAt),
         }))
       : [],
     baseUnit: product.baseUnit ? { ...product.baseUnit } : null,
@@ -130,64 +141,68 @@ function serializeProduct(product: any) {
           ...u,
           price: toNumber(u.price),
           oldPrice: u.oldPrice ? toNumber(u.oldPrice) : null,
-          createdAt: u.createdAt?.toISOString() || null,
-          updatedAt: u.updatedAt?.toISOString() || null,
+          createdAt: toISOString(u.createdAt),
+          updatedAt: toISOString(u.updatedAt),
         }))
       : [],
     discounts: Array.isArray(product.discounts)
       ? product.discounts.map((d: any) => ({
           ...d,
-          startDate: d.startDate?.toISOString() || null,
-          endDate: d.endDate?.toISOString() || null,
-          createdAt: d.createdAt?.toISOString() || null,
-          updatedAt: d.updatedAt?.toISOString() || null,
+          startDate: toISOString(d.startDate),
+          endDate: toISOString(d.endDate),
+          createdAt: toISOString(d.createdAt),
+          updatedAt: toISOString(d.updatedAt),
         }))
       : [],
   };
 }
 
 async function getProduct(identifier: string) {
-  try {
-    if (!identifier || typeof identifier !== 'string' || identifier.length === 0) {
-      console.error('Invalid product identifier:', identifier);
-      return null;
-    }
-
-    // Use the unified service function
-    const product = await getProductByIdOrSlug(identifier);
-    return product;
-  } catch (error) {
-    console.error('Exception in getProduct for identifier:', identifier, error);
+  if (!identifier || typeof identifier !== 'string' || identifier.length === 0) {
+    console.error('Invalid product identifier:', identifier);
     return null;
   }
+
+  // Use the unified service function (errors propagate to triggers server error instead of false 404)
+  const product = await getProductByIdOrSlug(identifier);
+  return product;
 }
 
 async function getAllProducts() {
   const cacheKey = 'products:all:active_50';
+  let cached: any[] | null = null;
+
   try {
-    const cached = await cacheService.get<any[]>(cacheKey);
-    if (cached) {
-      return cached;
-    }
-
-    const products = await prisma.product.findMany({
-      where: { status: 'ACTIVE' },
-      include: { 
-        images: true,
-        baseUnit: true,
-        units: true,
-        discounts: true,
-      },
-      take: 50,
-    });
-
-    const serialized = products.map(serializeProduct);
-    await cacheService.set(cacheKey, serialized, 300); // 5 minutes cache
-    return serialized;
-  } catch (error) {
-    console.error('Error fetching products:', error);
-    return [];
+    cached = await cacheService.get<any[]>(cacheKey);
+  } catch (cacheError) {
+    console.error('Cache failure in getAllProducts (falling back to database):', cacheError);
   }
+
+  if (cached) {
+    return cached;
+  }
+
+  // Database query (exceptions bubble up to standard error boundary)
+  const products = await prisma.product.findMany({
+    where: { status: 'ACTIVE' },
+    include: {
+      images: true,
+      baseUnit: true,
+      units: true,
+      discounts: true,
+    },
+    take: 50,
+  });
+
+  const serialized = products.map(serializeProduct);
+
+  try {
+    await cacheService.set(cacheKey, serialized, 300); // 5 minutes cache
+  } catch (cacheError) {
+    console.error('Cache set failure in getAllProducts:', cacheError);
+  }
+
+  return serialized;
 }
 
 /**
