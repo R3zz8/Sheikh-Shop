@@ -277,7 +277,7 @@ export const getProductById = cache(async (id: string) => {
     return serializeProduct(result);
   } catch (error) {
     console.error('Error fetching product by ID:', id, error);
-    return null;
+    throw error;
   }
 });
 
@@ -478,7 +478,7 @@ export const getProductBySlug = cache(async (slug: string) => {
     return serializeProduct(result);
   } catch (error) {
     console.error('Error fetching product by slug:', slug, error);
-    return null;
+    throw error;
   }
 });
 
@@ -515,7 +515,7 @@ export const getProductByIdOrSlug = cache(async (identifier: string) => {
     return null;
   } catch (error) {
     console.error('Error fetching product by ID or slug:', identifier, error);
-    return null;
+    throw error;
   }
 });
 
@@ -706,23 +706,34 @@ function serializeProduct(product: any) {
     return Number(value);
   };
 
+  const toISOString = (value: any): string | null => {
+    if (!value) return null;
+    if (value instanceof Date) return value.toISOString();
+    if (typeof value === 'string') return value;
+    try {
+      const d = new Date(value);
+      if (!isNaN(d.getTime())) return d.toISOString();
+    } catch {}
+    return String(value);
+  };
+
   return {
     ...product,
-    createdAt: product.createdAt ? product.createdAt.toISOString() : null,
-    updatedAt: product.updatedAt ? product.updatedAt.toISOString() : null,
+    createdAt: toISOString(product.createdAt),
+    updatedAt: toISOString(product.updatedAt),
     basePrice: toNumber(product.basePrice),
     oldPrice: product.oldPrice ? toNumber(product.oldPrice) : null,
     images: Array.isArray(product.images)
       ? product.images.map((img: any) => ({
           ...img,
-          createdAt: img.createdAt ? img.createdAt.toISOString() : null,
+          createdAt: toISOString(img.createdAt),
         }))
       : [],
     videos: Array.isArray(product.videos)
       ? product.videos.map((vid: any) => ({
           ...vid,
-          createdAt: vid.createdAt ? vid.createdAt.toISOString() : null,
-          updatedAt: vid.updatedAt ? vid.updatedAt.toISOString() : null,
+          createdAt: toISOString(vid.createdAt),
+          updatedAt: toISOString(vid.updatedAt),
         }))
       : [],
     baseUnit: product.baseUnit ? { ...product.baseUnit } : null,
@@ -731,8 +742,8 @@ function serializeProduct(product: any) {
           ...u,
           price: toNumber(u.price),
           oldPrice: u.oldPrice ? toNumber(u.oldPrice) : null,
-          createdAt: u.createdAt ? u.createdAt.toISOString() : null,
-          updatedAt: u.updatedAt ? u.updatedAt.toISOString() : null,
+          createdAt: toISOString(u.createdAt),
+          updatedAt: toISOString(u.updatedAt),
           values: Array.isArray(u.values)
             ? u.values.map((v: any) => ({
                 ...v,
@@ -750,10 +761,10 @@ function serializeProduct(product: any) {
     discounts: Array.isArray(product.discounts)
       ? product.discounts.map((d: any) => ({
           ...d,
-          startDate: d.startDate ? d.startDate.toISOString() : null,
-          endDate: d.endDate ? d.endDate.toISOString() : null,
-          createdAt: d.createdAt ? d.createdAt.toISOString() : null,
-          updatedAt: d.updatedAt ? d.updatedAt.toISOString() : null,
+          startDate: toISOString(d.startDate),
+          endDate: toISOString(d.endDate),
+          createdAt: toISOString(d.createdAt),
+          updatedAt: toISOString(d.updatedAt),
         }))
       : [],
   };
