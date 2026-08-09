@@ -19,8 +19,8 @@ interface ProductStructuredDataProps {
 export default function ProductStructuredData({
     product,
     selectedUnit,
-    ratingValue = 4.8,
-    reviewCount = 124,
+    ratingValue,
+    reviewCount = 0,
     reviewsList = []
 }: ProductStructuredDataProps) {
     // Get the lowest price from all units
@@ -86,7 +86,7 @@ export default function ProductStructuredData({
         }
     }));
 
-    const structuredData = {
+    const structuredData: any = {
         "@context": "https://schema.org",
         "@type": "Product",
         "name": product.name,
@@ -99,14 +99,6 @@ export default function ProductStructuredData({
         "category": product.category,
         "sku": product.id,
         "offers": generateOffers(),
-        "aggregateRating": {
-            "@type": "AggregateRating",
-            "ratingValue": String(ratingValue),
-            "reviewCount": String(reviewCount),
-            "bestRating": "5",
-            "worstRating": "1"
-        },
-        ...(schemaReviews.length > 0 ? { "review": schemaReviews } : {}),
         "additionalProperty": [
             {
                 "@type": "PropertyValue",
@@ -120,6 +112,21 @@ export default function ProductStructuredData({
             }
         ]
     };
+
+    // Conditionally include aggregate rating if there are actual reviews
+    if (reviewCount && reviewCount > 0 && ratingValue !== undefined) {
+        structuredData.aggregateRating = {
+            "@type": "AggregateRating",
+            "ratingValue": String(ratingValue),
+            "reviewCount": String(reviewCount),
+            "bestRating": "5",
+            "worstRating": "1"
+        };
+    }
+
+    if (schemaReviews.length > 0) {
+        structuredData.review = schemaReviews;
+    }
 
     return (
         <script

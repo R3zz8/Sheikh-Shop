@@ -250,7 +250,7 @@ export default async function ProductPage({
     const totalReviews = dbReviews.length;
     const avgRating = totalReviews > 0
       ? Number((dbReviews.reduce((sum: number, r: { rating: number }) => sum + r.rating, 0) / totalReviews).toFixed(1))
-      : 4.8;
+      : undefined;
 
     const schemaReviews = dbReviews.map((r: { userName: string; rating: number; comment: string; createdAt: Date }) => ({
       userName: r.userName,
@@ -271,10 +271,10 @@ export default async function ProductPage({
       product.categoryType === 'SheikhFood' ? '/sheikh-food' :
       product.categoryType === 'SheikhTech' ? '/tech-products' : '/products';
 
-    const rating = {
+    const rating = totalReviews > 0 && avgRating !== undefined ? {
       ratingValue: avgRating,
-      reviewCount: totalReviews > 0 ? totalReviews : 124,
-    };
+      reviewCount: totalReviews,
+    } : undefined;
 
     // SEO data generation remains the same.
     const seoData = getProductSEO(product, {
@@ -296,8 +296,8 @@ export default async function ProductPage({
         <ProductOfferJsonLd product={product} currency={CURRENCY} rating={rating} />
         <ProductStructuredData
           product={product}
-          ratingValue={rating.ratingValue}
-          reviewCount={rating.reviewCount}
+          ratingValue={avgRating}
+          reviewCount={totalReviews}
           reviewsList={schemaReviews}
         />
         <ProductSchemaMarkup product={product} seoData={seoData} />
@@ -311,7 +311,9 @@ export default async function ProductPage({
 
         <ProductDetailPage 
           product={product}
-          allProducts={allProducts} 
+          allProducts={allProducts}
+          ratingValue={avgRating}
+          reviewCount={totalReviews}
         />
       </>
     );
