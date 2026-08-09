@@ -81,7 +81,9 @@ export default function ProductDetailPage({
       }
     };
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEscapeListener ? null : window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, []);
 
   // Parse variations / product units
