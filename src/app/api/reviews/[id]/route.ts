@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUserId } from '@/lib/actions/auth/session';
 import { z } from 'zod';
+import { stripHtmlTags } from '@/lib/seo/sanitize';
 
 const updateReviewSchema = z.object({
     rating: z.number().int().min(1).max(5).optional(),
@@ -43,11 +44,26 @@ export async function PATCH(
         const body = await req.json();
         const validated = updateReviewSchema.parse(body);
 
+        // Sanitize inputs to prevent XSS and malformed HTML injections
+        const updatedData: any = { ...validated };
+        if (validated.title !== undefined) {
+            updatedData.title = stripHtmlTags(validated.title);
+        }
+        if (validated.comment !== undefined) {
+            updatedData.comment = stripHtmlTags(validated.comment);
+        }
+        if (validated.pros !== undefined) {
+            updatedData.pros = validated.pros.map(pro => stripHtmlTags(pro)).filter(Boolean);
+        }
+        if (validated.cons !== undefined) {
+            updatedData.cons = validated.cons.map(con => stripHtmlTags(con)).filter(Boolean);
+        }
+
         // Update review status back to PENDING for moderation upon edits
         const updatedReview = await prisma.review.update({
             where: { id },
             data: {
-                ...validated,
+                ...updatedData,
                 status: 'PENDING', // Re-evaluate upon edit
             },
         });

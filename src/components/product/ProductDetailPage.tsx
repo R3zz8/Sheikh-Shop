@@ -38,6 +38,8 @@ import {
 interface ProductDetailPageProps {
   product: ProductsWithImages;
   allProducts?: ProductsWithImages[];
+  ratingValue?: number;
+  reviewCount?: number;
 }
 
 interface ImageObj {
@@ -46,7 +48,12 @@ interface ImageObj {
   secureUrl?: string | null;
 }
 
-export default function ProductDetailPage({ product, allProducts = [] }: ProductDetailPageProps) {
+export default function ProductDetailPage({
+  product,
+  allProducts = [],
+  ratingValue,
+  reviewCount = 0,
+}: ProductDetailPageProps) {
   const [selectedQuantity, setSelectedQuantity] = useState(1);
   const { triggerUnboxing, config: unboxingConfig } = useLuxuryUnboxing();
   const { addToCartMutation } = useCart();
@@ -74,7 +81,7 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
       }
     };
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => window.removeEscapeListener ? null : window.removeEventListener('scroll', handleScroll);
   }, []);
 
   // Parse variations / product units
@@ -143,14 +150,6 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
   // Pricing calculation
   const pricing = resolveProductPrice(product, selectedProductUnit, selectedQuantity);
   const currentStock = selectedProductUnit ? selectedProductUnit.stock : product.quantity;
-
-  // Rating & Review hashing to prevent hydration mismatches
-  const hashedRating = useMemo(() => {
-    const codeSum = product.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    const ratingValue = 4 + (codeSum % 2) * 0.5 + (codeSum % 5) * 0.1;
-    const reviewCount = 20 + (codeSum % 180);
-    return { ratingValue: Math.min(5, Math.max(4, ratingValue)).toFixed(1), reviewCount };
-  }, [product.id]);
 
   // Dynamic values existence flags
   const hasFeatures = product.features && product.features.length > 0;
@@ -367,19 +366,37 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
                     {/* Sub-header ratings, stock, status info */}
                     <div className="flex flex-wrap items-center gap-4 text-xs text-[#5D4037] pt-1">
                       <div className="flex items-center gap-1.5">
-                        <div className="flex items-center gap-0.5">
-                          {Array.from({ length: 5 }, (_, i) => (
-                            <Star
-                              key={i}
-                              className={`w-4 h-4 ${
-                                i < Math.floor(Number(hashedRating.ratingValue)) ? 'fill-amber-500 text-amber-500' : 'text-stone-300'
-                              }`}
-                            />
-                          ))}
-                        </div>
-                        <span className="font-extrabold text-amber-700 text-sm mr-1">{hashedRating.ratingValue}</span>
-                        <span className="text-stone-300">|</span>
-                        <span className="hover:text-amber-800 font-medium transition-colors">({hashedRating.reviewCount} دیدگاه تایید شده)</span>
+                        {reviewCount > 0 && ratingValue !== undefined ? (
+                          <>
+                            <div className="flex items-center gap-0.5">
+                              {Array.from({ length: 5 }, (_, i) => (
+                                <Star
+                                  key={i}
+                                  className={`w-4 h-4 ${
+                                    i < Math.round(ratingValue) ? 'fill-amber-500 text-amber-500' : 'text-stone-300'
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                            <span className="font-extrabold text-amber-700 text-sm mr-1">{ratingValue.toFixed(1)}</span>
+                            <span className="text-stone-300">|</span>
+                            <span className="hover:text-amber-800 font-medium transition-colors">({reviewCount} دیدگاه تایید شده)</span>
+                          </>
+                        ) : (
+                          <>
+                            <div className="flex items-center gap-0.5">
+                              {Array.from({ length: 5 }, (_, i) => (
+                                <Star
+                                  key={i}
+                                  className="w-4 h-4 text-stone-300"
+                                />
+                              ))}
+                            </div>
+                            <span className="font-extrabold text-[#5D4037] text-sm mr-1">بدون امتیاز</span>
+                            <span className="text-stone-300">|</span>
+                            <span className="text-stone-500 font-medium transition-colors">(۰ دیدگاه تایید شده)</span>
+                          </>
+                        )}
                       </div>
 
                       {product.sku && (
@@ -981,19 +998,37 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
                   </h1>
 
                   <div className="flex items-center justify-center gap-1.5 text-[11px] text-[#5D4037] pt-0.5">
-                    <div className="flex items-center gap-0.5">
-                      {Array.from({ length: 5 }, (_, i) => (
-                        <Star
-                          key={i}
-                          className={`w-3.5 h-3.5 ${
-                            i < Math.floor(Number(hashedRating.ratingValue)) ? 'fill-amber-500 text-amber-500' : 'text-stone-300'
-                          }`}
-                        />
-                      ))}
-                    </div>
-                    <span className="font-extrabold text-amber-700">{hashedRating.ratingValue}</span>
-                    <span className="text-stone-350">|</span>
-                    <span className="font-bold">({hashedRating.reviewCount} نظر کاربران)</span>
+                    {reviewCount > 0 && ratingValue !== undefined ? (
+                      <>
+                        <div className="flex items-center gap-0.5">
+                          {Array.from({ length: 5 }, (_, i) => (
+                            <Star
+                              key={i}
+                              className={`w-3.5 h-3.5 ${
+                                i < Math.round(ratingValue) ? 'fill-amber-400 text-amber-400' : 'text-stone-300'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <span className="font-extrabold text-amber-700">{ratingValue.toFixed(1)}</span>
+                        <span className="text-stone-355">|</span>
+                        <span className="font-bold">({reviewCount} نظر کاربران)</span>
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-0.5">
+                          {Array.from({ length: 5 }, (_, i) => (
+                            <Star
+                              key={i}
+                              className="w-3.5 h-3.5 text-stone-300"
+                            />
+                          ))}
+                        </div>
+                        <span className="font-extrabold text-[#5D4037]">بدون امتیاز</span>
+                        <span className="text-stone-355">|</span>
+                        <span className="font-bold">(۰ نظر کاربران)</span>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1215,25 +1250,25 @@ export default function ProductDetailPage({ product, allProducts = [] }: Product
                         )}
                         {hasOrigin && (
                           <div className="flex justify-between py-1.5 border-b border-amber-500/10 relative z-10">
-                            <span className="text-stone-350">کشور سازنده</span>
+                            <span className="text-stone-355">کشور سازنده</span>
                             <span className="text-stone-100 font-bold">{product.origin}</span>
                           </div>
                         )}
                         {hasWarranty && (
                           <div className="flex justify-between py-1.5 border-b border-amber-500/10 relative z-10">
-                            <span className="text-stone-350">گارانتی</span>
+                            <span className="text-stone-355">گارانتی</span>
                             <span className="text-stone-100 font-bold">{product.warranty}</span>
                           </div>
                         )}
                         {hasColor && (
                           <div className="flex justify-between py-1.5 border-b border-amber-500/10 relative z-10">
-                            <span className="text-stone-350">رنگ</span>
+                            <span className="text-stone-355">رنگ</span>
                             <span className="text-stone-100 font-bold">{product.color}</span>
                           </div>
                         )}
                         {hasSpecs && Object.entries(product.technicalSpecs as Record<string, any>).map(([key, val]) => (
                           <div key={key} className="flex justify-between py-1.5 border-b border-amber-500/10 relative z-10">
-                            <span className="text-stone-350">{key}</span>
+                            <span className="text-stone-355">{key}</span>
                             <span className="text-stone-100 font-bold">{String(val)}</span>
                           </div>
                         ))}

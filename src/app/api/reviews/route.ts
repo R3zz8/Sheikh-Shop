@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUserId } from '@/lib/actions/auth/session';
 import { z } from 'zod';
+import { stripHtmlTags } from '@/lib/seo/sanitize';
 
 const createReviewSchema = z.object({
     productId: z.string().min(1, 'شناسه محصول الزامی است.'),
@@ -145,6 +146,15 @@ export async function POST(req: NextRequest) {
         const body = await req.json();
         const validated = createReviewSchema.parse(body);
 
+        // Security Check: Verify that the productId actually exists in the database
+        const productExists = await prisma.product.findUnique({
+            where: { id: validated.productId },
+            select: { id: true },
+        });
+        if (!productExists) {
+            return NextResponse.json({ error: 'محصول مورد نظر یافت نشد.' }, { status: 404 });
+        }
+
         // Check if user has already submitted a review for this product (to prevent duplicate submissions)
         const existingReview = await prisma.review.findFirst({
             where: {
@@ -174,6 +184,12 @@ export async function POST(req: NextRequest) {
             ? `${user.firstName} ${user.lastName}`
             : user.email.split('@')[0];
 
+        // Sanitize inputs to prevent XSS and malformed HTML injections
+        const sanitizedTitle = stripHtmlTags(validated.title);
+        const sanitizedComment = stripHtmlTags(validated.comment);
+        const sanitizedPros = validated.pros.map(pro => stripHtmlTags(pro)).filter(Boolean);
+        const sanitizedCons = validated.cons.map(con => stripHtmlTags(con)).filter(Boolean);
+
         // Create the review
         const review = await prisma.review.create({
             data: {
@@ -181,10 +197,10 @@ export async function POST(req: NextRequest) {
                 userId,
                 userName,
                 rating: validated.rating,
-                title: validated.title,
-                comment: validated.comment,
-                pros: validated.pros,
-                cons: validated.cons,
+                title: sanitizedTitle,
+                comment: sanitizedComment,
+                pros: sanitizedPros,
+                cons: sanitizedCons,
                 images: validated.images,
                 videos: validated.videos,
                 isVerified: !!completedOrder,
