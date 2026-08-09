@@ -135,7 +135,11 @@ function serializeProduct(product: any) {
           updatedAt: toISOString(vid.updatedAt),
         }))
       : [],
-    baseUnit: product.baseUnit ? { ...product.baseUnit } : null,
+    baseUnit: product.baseUnit ? {
+      ...product.baseUnit,
+      createdAt: toISOString(product.baseUnit.createdAt),
+      updatedAt: toISOString(product.baseUnit.updatedAt),
+    } : null,
     units: Array.isArray(product.units)
       ? product.units.map((u: any) => ({
           ...u,
