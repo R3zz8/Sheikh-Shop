@@ -676,6 +676,7 @@ const DEFAULT_PRODUCTS: ProductWithMetadata[] = [
 export default function RoyalShowcase() {
   const [mounted, setMounted] = useState(false);
   const [webGLSupported, setWebGLSupported] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
   const { ref: sectionRef, inView } = useInView({
     threshold: 0.05,
     rootMargin: '200px 0px',
@@ -710,6 +711,17 @@ export default function RoyalShowcase() {
     setMounted(true);
     setWebGLSupported(isWebGLAvailable());
 
+    if (typeof window === 'undefined') return;
+
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
     // Fetch config & products
     const fetchShowcaseData = async () => {
       try {
@@ -966,7 +978,7 @@ export default function RoyalShowcase() {
             22% proportional width
           */}
           <div className="w-[22%] h-full relative overflow-hidden flex items-center justify-center">
-            {webGLSupported && inView ? (
+            {webGLSupported && inView && !isMobile ? (
               <div className="w-full h-full pointer-events-auto relative overflow-hidden">
                 <ThreeErrorBoundary fallback={<StaticSheikhFallback align="left" />}>
                   <Suspense fallback={<StaticSheikhFallback align="left" />}>
@@ -1147,7 +1159,7 @@ export default function RoyalShowcase() {
             22% proportional width
           */}
           <div className="w-[22%] h-full relative overflow-hidden flex items-center justify-center">
-            {webGLSupported && inView ? (
+            {webGLSupported && inView && !isMobile ? (
               <div className="w-full h-full pointer-events-auto relative overflow-hidden">
                 <ThreeErrorBoundary fallback={<StaticSheikhFallback align="right" />}>
                   <Suspense fallback={<StaticSheikhFallback align="right" />}>
