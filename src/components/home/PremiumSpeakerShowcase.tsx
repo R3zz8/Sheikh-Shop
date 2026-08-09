@@ -566,6 +566,7 @@ export default function PremiumSpeakerShowcase() {
   const [webGLSupported, setWebGLSupported] = useState(true);
   const [hovered, setHovered] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const { ref: sectionRef, inView } = useInView({
     threshold: 0.05,
     rootMargin: '200px 0px',
@@ -576,6 +577,17 @@ export default function PremiumSpeakerShowcase() {
     setMounted(true);
     setWebGLSupported(isWebGLAvailable());
 
+    if (typeof window === 'undefined') return;
+
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
     // Check for reduced motion settings
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     setPrefersReducedMotion(mediaQuery.matches);
@@ -681,7 +693,7 @@ export default function PremiumSpeakerShowcase() {
             />
 
             <ThreeErrorBoundary fallback={<Premium2DFallback />}>
-              {webGLSupported && !prefersReducedMotion && inView ? (
+              {webGLSupported && !prefersReducedMotion && inView && !isMobile ? (
                 <div className="w-full h-full relative z-10 pointer-events-auto overflow-hidden">
                   <Suspense fallback={<CanvasFallback />}>
                     <Canvas

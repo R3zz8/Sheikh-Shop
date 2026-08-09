@@ -502,6 +502,7 @@ export default function SheikhScene() {
   const mouse = useMousePosition();
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [webGLSupported, setWebGLSupported] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
   const { ref: sectionRef, inView } = useInView({
     threshold: 0.05,
     rootMargin: '200px 0px',
@@ -513,6 +514,17 @@ export default function SheikhScene() {
     // Detect WebGL support
     setWebGLSupported(isWebGLAvailable());
 
+    if (typeof window === 'undefined') return;
+
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     setPrefersReducedMotion(mediaQuery.matches);
     const handleChange = (e: MediaQueryListEvent) => {
@@ -707,7 +719,7 @@ export default function SheikhScene() {
 
             {/* THREE.JS CANVAS FOR PREMIUM 3D SHEIKH CHARACTER OR Graceful Fallback */}
             <ThreeErrorBoundary fallback={renderFallback}>
-              {webGLSupported && inView ? (
+              {webGLSupported && inView && !isMobile ? (
                 <div className="w-full h-[400px] sm:h-[480px] lg:h-[520px] relative z-10 pointer-events-auto overflow-hidden">
                   <Canvas
                     camera={{ position: [0, 0, 4.0], fov: 42 }}
