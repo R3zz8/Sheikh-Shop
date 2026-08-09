@@ -61,6 +61,7 @@ model Product {
   units          ProductUnit[]
   reviews        Review[]
   videos         Video[]
+  productAttributes ProductAttribute[]
 
   @@index([category])
   @@index([basePrice])
@@ -98,20 +99,75 @@ model Unit {
 }
 
 model ProductUnit {
-  id        String   @id @default(cuid())
+  id        String             @id @default(cuid())
   productId String
-  name      String   @db.VarChar(100)
-  price     Decimal  @db.Decimal(10, 2)
-  stock     Int      @default(0)
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name      String             @db.VarChar(100)
+  price     Decimal            @db.Decimal(10, 2)
+  oldPrice  Decimal?           @db.Decimal(10, 2)
+  sku       String?            @db.VarChar(100)
+  stock     Int                @default(0)
+  isActive  Boolean            @default(true)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+  product   Product            @relation(fields: [productId], references: [id], onDelete: Cascade)
+  values    ProductUnitValue[]
 
   @@index([productId])
   @@index([isActive])
   @@index([stock])
   @@index([createdAt])
+}
+
+model Attribute {
+  id                String             @id @default(uuid())
+  name              String             @db.VarChar(100)
+  displayName       String             @db.VarChar(100)
+  type              String             @db.VarChar(50)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  values            AttributeValue[]
+  productAttributes ProductAttribute[]
+}
+
+model AttributeValue {
+  id                String             @id @default(uuid())
+  attributeId       String
+  value             String             @db.VarChar(100)
+  unit              String?            @db.VarChar(50)
+  hex               String?            @db.VarChar(50)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  attribute         Attribute          @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  productUnitValues ProductUnitValue[]
+
+  @@index([attributeId])
+}
+
+model ProductAttribute {
+  id          String    @id @default(uuid())
+  productId   String
+  attributeId String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  attribute   Attribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, attributeId])
+  @@index([productId])
+  @@index([attributeId])
+}
+
+model ProductUnitValue {
+  productUnitId    String
+  attributeValueId String
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  productUnit      ProductUnit    @relation(fields: [productUnitId], references: [id], onDelete: Cascade)
+  attributeValue   AttributeValue @relation(fields: [attributeValueId], references: [id], onDelete: Cascade)
+
+  @@id([productUnitId, attributeValueId])
+  @@index([productUnitId])
+  @@index([attributeValueId])
 }
 
 model Discount {
