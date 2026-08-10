@@ -9,4 +9,5 @@ module.exports = {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
   testPathIgnorePatterns: ['<rootDir>/tests/e2e/', '<rootDir>/tests/smoke.spec.ts', '.*\\.spec\\.ts$'],
+  modulePathIgnorePatterns: ['<rootDir>/.next/'],
 };

@@ -5,6 +5,8 @@ import type { Product } from '@prisma/client';
 import { ProductCategory, ProductStatus } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
+import { cacheService } from '@/lib/cache/redis';
+import { invalidateProductCache } from '@/lib/cache';
 import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 import { checkAccess } from '@/lib/checkAccess';
@@ -575,7 +577,18 @@ export const upsertProduct = async (
       });
     }
 
+    // Invalidate Upstash Redis and in-memory caches, and revalidate static paths
+    await cacheService.invalidateProductCache(result.id);
+    invalidateProductCache(result.id);
+
     revalidatePath('/dashboard/products');
+    if (result.slug) {
+      revalidatePath(`/products/${result.slug}`);
+    }
+    revalidatePath(`/products/${result.id}`);
+    revalidatePath(`/product/${result.id}`);
+    revalidatePath('/');
+
     return { error: null, data: result };
 
   } catch (error) {
@@ -644,7 +657,18 @@ export const deleteProduct = async (productId: string) => {
       productName: existingProduct.name,
     });
 
+    // Invalidate caches and revalidate paths
+    await cacheService.invalidateProductCache(productId);
+    invalidateProductCache(productId);
+
     revalidatePath('/dashboard/products');
+    if (existingProduct.slug) {
+      revalidatePath(`/products/${existingProduct.slug}`);
+    }
+    revalidatePath(`/products/${productId}`);
+    revalidatePath(`/product/${productId}`);
+    revalidatePath('/');
+
     return { success: true };
 
   } catch (error) {
