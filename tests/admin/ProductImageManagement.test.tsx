@@ -2,6 +2,9 @@
  * @jest-environment node
  */
 
+process.env.MOCK_DB = 'true';
+(global as any).prisma = undefined;
+
 // Mock cache before any imports to avoid ESM/uncrypto transpilation issues
 jest.mock('@/lib/cache/redis', () => ({
   cacheService: {
@@ -28,13 +31,18 @@ jest.mock('@/lib/cache', () => ({
   invalidateAnalyticsCache: jest.fn(),
 }));
 
-import { prisma } from '@/lib/prisma';
 import { cacheService } from '@/lib/cache/redis';
 
-// Set environment variable to enable mock db for testing
-process.env.MOCK_DB = 'true';
+let prisma: any;
 
 describe('Product Image Management Tests', () => {
+  beforeAll(async () => {
+    process.env.MOCK_DB = 'true';
+    (global as any).prisma = undefined;
+    const prismaModule = await import('@/lib/prisma');
+    prisma = prismaModule.prisma;
+  });
+
   beforeEach(async () => {
     // Reset databases / collections before each test to a clean initial state
     await prisma.product.deleteMany({});
