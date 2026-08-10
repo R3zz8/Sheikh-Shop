@@ -568,8 +568,73 @@ const mockFeaturedProducts = [
   }
 ];
 
+// Initialize mock dynamic lists for images and videos from mockProducts initial state
+let mockImages: any[] = mockProducts.flatMap(p => {
+  const images = (p as any).images || [];
+  return images.map((img: any, idx: number) => ({
+    id: img.id || `img_${p.id}_${idx}`,
+    image: img.image || null,
+    secureUrl: img.secureUrl || img.image || null,
+    productId: p.id,
+    createdAt: img.createdAt || new Date(),
+    isVisible: img.isVisible !== false,
+    isFeatured: img.isFeatured || idx === 0,
+    sortOrder: img.sortOrder || idx,
+    publicId: img.publicId || null,
+    bytes: img.bytes || null,
+    format: img.format || null,
+    width: img.width || null,
+    height: img.height || null,
+  }));
+});
+
+let mockVideos: any[] = [];
+
+const matchFilter = (item: any, where: any): boolean => {
+  if (!where) return true;
+  for (const key in where) {
+    const condition = where[key];
+    if (condition === undefined) continue;
+
+    const itemValue = item[key];
+
+    if (condition && typeof condition === 'object' && !Array.isArray(condition)) {
+      if ('equals' in condition) {
+        if (itemValue !== condition.equals) return false;
+      } else if ('in' in condition) {
+        if (!Array.isArray(condition.in) || !condition.in.includes(itemValue)) return false;
+      } else if ('not' in condition) {
+        if (itemValue === condition.not) return false;
+      } else if ('contains' in condition) {
+        const query = condition.contains;
+        if (typeof itemValue === 'string' && typeof query === 'string') {
+          const mode = condition.mode;
+          if (mode === 'insensitive') {
+            if (!itemValue.toLowerCase().includes(query.toLowerCase())) return false;
+          } else {
+            if (!itemValue.includes(query)) return false;
+          }
+        } else {
+          return false;
+        }
+      }
+    } else {
+      if (itemValue !== condition) return false;
+    }
+  }
+  return true;
+};
+
 const normalizeMockProduct = (item: any) => {
   if (!item || typeof item !== 'object') return item;
+
+  // Dynamically query from the single mutable mock collections
+  const productImages = mockImages.filter(img => img.productId === item.id)
+    .sort((a, b) => a.sortOrder - b.sortOrder);
+
+  const productVideos = mockVideos.filter(vid => vid.productId === item.id)
+    .sort((a, b) => a.sortOrder - b.sortOrder);
+
   if ('basePrice' in item || 'category' in item) {
     let enriched = {
       shippingCost: null,
@@ -578,7 +643,9 @@ const normalizeMockProduct = (item: any) => {
       allowFreeShipping: false,
       shippingPriority: null,
       productAttributes: [] as any[],
-      ...item
+      ...item,
+      images: productImages,
+      videos: productVideos,
     };
 
     if (enriched.id === 'pd_smartwatch') {
@@ -735,15 +802,7 @@ const makeMockModelWithWrites = (name: string, data: any[]) => {
         return async (args?: any) => {
           let result = [...localData];
           if (args?.where) {
-            const where = args.where;
-            result = result.filter(item => {
-              for (const key in where) {
-                if (where[key] !== undefined && item[key] !== where[key]) {
-                  return false;
-                }
-              }
-              return true;
-            });
+            result = result.filter(item => matchFilter(item, args.where));
           }
           if (args?.orderBy) {
             const orderBy = args.orderBy;
@@ -761,27 +820,17 @@ const makeMockModelWithWrites = (name: string, data: any[]) => {
       }
       if (prop === 'findFirst' || prop === 'findUnique') {
         return async (args?: any) => {
+          let result = [...localData];
           if (args?.where) {
-            const where = args.where;
-            const item = localData.find(item => {
-              for (const key in where) {
-                if (where[key] !== undefined && item[key] !== where[key]) {
-                  return false;
-                }
-              }
-              return true;
-            });
-            return normalizeMockProduct(item || null);
+            result = result.filter(item => matchFilter(item, args.where));
           }
-          if (prop === 'findFirst') {
-            return normalizeMockProduct(localData[0] || null);
-          }
-          return null;
+          return result[0] ? normalizeMockProduct(result[0]) : null;
         };
       }
       if (prop === 'create') {
         return async (args: any) => {
-          let newItem = { id: Date.now() + Math.floor(Math.random() * 1000), ...args.data, createdAt: new Date(), updatedAt: new Date() };
+          const generatedId = name === 'product' ? `p_${Date.now()}` : `id_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+          let newItem = { id: args?.data?.id || generatedId, ...args.data, createdAt: new Date(), updatedAt: new Date() };
           if (name === 'cartItem') {
             const product = mockProducts.find(p => p.id === newItem.productId);
             let unit = mockUnits.find(u => u.id === newItem.unitId);
@@ -795,58 +844,63 @@ const makeMockModelWithWrites = (name: string, data: any[]) => {
             };
           }
           localData.push(newItem);
+          if (name === 'image') mockImages = localData;
+          if (name === 'video') mockVideos = localData;
+          if (name === 'product') {
+            const temp = [...localData];
+            mockProducts.length = 0;
+            mockProducts.push(...temp);
+          }
           return normalizeMockProduct(newItem);
         };
       }
       if (prop === 'update' || prop === 'updateMany') {
         return async (args: any) => {
-          const id = args?.where?.id;
-          if (id) {
-            const index = localData.findIndex(item => item.id === id);
-            if (index !== -1) {
-              let updatedItem = { ...localData[index], ...args.data, updatedAt: new Date() };
-              if (name === 'cartItem') {
-                const product = mockProducts.find(p => p.id === updatedItem.productId);
-                let unit = mockUnits.find(u => u.id === updatedItem.unitId);
-                if (product && !unit) {
-                  unit = (product.units?.find((u: any) => u.id === updatedItem.unitId) || product.baseUnit) as any;
-                }
-                updatedItem = {
-                  ...updatedItem,
-                  product,
-                  unit: unit as any,
-                };
-              }
-              localData[index] = updatedItem;
-              return normalizeMockProduct(localData[index]);
+          const where = args?.where || {};
+          const updateData = args?.data || {};
+          let updatedCount = 0;
+          let firstUpdatedItem: any = null;
+
+          localData = localData.map(item => {
+            if (matchFilter(item, where)) {
+              const updated = { ...item, ...updateData, updatedAt: new Date() };
+              updatedCount++;
+              if (!firstUpdatedItem) firstUpdatedItem = updated;
+              return updated;
             }
+            return item;
+          });
+
+          if (name === 'image') mockImages = localData;
+          if (name === 'video') mockVideos = localData;
+          if (name === 'product') {
+            const temp = [...localData];
+            mockProducts.length = 0;
+            mockProducts.push(...temp);
           }
-          if (localData[0]) {
-            localData[0] = { ...localData[0], ...args.data, updatedAt: new Date() };
-            return normalizeMockProduct(localData[0]);
+
+          if (prop === 'update') {
+            return firstUpdatedItem ? normalizeMockProduct(firstUpdatedItem) : null;
           }
-          return null;
+          return { count: updatedCount };
         };
       }
       if (prop === 'delete' || prop === 'deleteMany') {
         return async (args?: any) => {
-          const id = args?.where?.id;
-          const userId = args?.where?.userId;
-          if (id) {
-            const index = localData.findIndex(item => item.id === id);
-            if (index !== -1) {
-              localData.splice(index, 1);
-            }
-          } else if (userId) {
-            for (let i = localData.length - 1; i >= 0; i--) {
-              if (localData[i].userId === userId) {
-                localData.splice(i, 1);
-              }
-            }
-          } else {
-            localData.length = 0;
+          const where = args?.where || {};
+          const beforeLength = localData.length;
+
+          localData = localData.filter(item => !matchFilter(item, where));
+
+          if (name === 'image') mockImages = localData;
+          if (name === 'video') mockVideos = localData;
+          if (name === 'product') {
+            const temp = [...localData];
+            mockProducts.length = 0;
+            mockProducts.push(...temp);
           }
-          return { count: 1 };
+
+          return { count: beforeLength - localData.length };
         };
       }
       if (prop === 'count') {
@@ -1312,7 +1366,9 @@ const createMockPrisma = () => {
   return new Proxy({}, {
     get(target, prop) {
       if (prop === 'article') return makeMockModelWithWrites('article', mockArticles);
-      if (prop === 'product') return makeMockModel('product', mockProducts);
+      if (prop === 'product') return makeMockModelWithWrites('product', mockProducts);
+      if (prop === 'image') return makeMockModelWithWrites('image', mockImages);
+      if (prop === 'video') return makeMockModelWithWrites('video', mockVideos);
       if (prop === 'category') return makeMockModel('category', mockCategories);
       if (prop === 'unit') return makeMockModel('unit', mockUnits);
       if (prop === 'mobileCarousel') return makeMockModel('mobileCarousel', mockCarousel);

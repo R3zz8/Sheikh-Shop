@@ -3,9 +3,34 @@ import { getCloudinary, pingCloudinary } from '@/lib/cloudinary-safe';
 import { checkAccess } from '@/lib/checkAccess';
 import { prisma } from '@/lib/prisma';
 import { rateLimit } from '@/lib/rateLimit';
+import { cacheService } from '@/lib/cache/redis';
+import { invalidateProductCache } from '@/lib/cache';
+import { revalidatePath } from 'next/cache';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/webm', 'video/quicktime'];
 const MAX_SIZE_BYTES = 15 * 1024 * 1024; // 15MB for video, images are validated within the handler
+
+async function invalidateProductAllCaches(productId: string) {
+  try {
+    await cacheService.invalidateProductCache(productId);
+    invalidateProductCache(productId);
+
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+      select: { slug: true }
+    });
+
+    revalidatePath('/dashboard/products');
+    if (product?.slug) {
+      revalidatePath(`/products/${product.slug}`);
+    }
+    revalidatePath(`/products/${productId}`);
+    revalidatePath(`/product/${productId}`);
+    revalidatePath('/');
+  } catch (err) {
+    console.error('Error during automatic media cache invalidation:', err);
+  }
+}
 
 export async function POST(req: NextRequest) {
     // RBAC: Only SUPER_ADMIN, ADMIN, EDITOR
@@ -95,6 +120,9 @@ export async function POST(req: NextRequest) {
                     productId: prodId,
                 },
             });
+            if (prodId) {
+                await invalidateProductAllCaches(prodId);
+            }
             return NextResponse.json({ success: true, type: 'image', data: createdImage }, { status: 200 });
         } else {
             if (!prodId) {
@@ -107,6 +135,7 @@ export async function POST(req: NextRequest) {
                     productId: prodId,
                 },
             });
+            await invalidateProductAllCaches(prodId);
             return NextResponse.json({ success: true, type: 'video', data: createdVideo }, { status: 200 });
         }
     } catch (err) {
@@ -171,6 +200,8 @@ export async function PATCH(req: NextRequest) {
                 data: { isFeatured: true }
             });
 
+            await invalidateProductAllCaches(productId);
+
             return NextResponse.json({ success: true }, { status: 200 });
         }
 
@@ -187,6 +218,16 @@ export async function PATCH(req: NextRequest) {
                 });
             }
 
+            if (images.length > 0) {
+                const firstImg = await prisma.image.findUnique({
+                    where: { id: images[0].id },
+                    select: { productId: true }
+                });
+                if (firstImg?.productId) {
+                    await invalidateProductAllCaches(firstImg.productId);
+                }
+            }
+
             return NextResponse.json({ success: true }, { status: 200 });
         }
 
@@ -196,10 +237,14 @@ export async function PATCH(req: NextRequest) {
                 return NextResponse.json({ error: 'Image ID is required' }, { status: 400 });
             }
 
-            await prisma.image.update({
+            const updatedImage = await prisma.image.update({
                 where: { id: imageId },
                 data: { isVisible }
             });
+
+            if (updatedImage.productId) {
+                await invalidateProductAllCaches(updatedImage.productId);
+            }
 
             return NextResponse.json({ success: true }, { status: 200 });
         }

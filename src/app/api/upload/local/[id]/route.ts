@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { checkAccess } from '@/lib/checkAccess';
+import { cacheService } from '@/lib/cache/redis';
+import { invalidateProductCache } from '@/lib/cache';
+import { revalidatePath } from 'next/cache';
 
 export async function DELETE(
   req: NextRequest,
@@ -22,7 +25,7 @@ export async function DELETE(
     // Find the image first
     const image = await prisma.image.findUnique({
       where: { id },
-      select: { id: true, image: true, publicId: true }
+      select: { id: true, image: true, publicId: true, productId: true }
     });
 
     if (!image) {
@@ -46,6 +49,25 @@ export async function DELETE(
     await prisma.image.delete({
       where: { id }
     });
+
+    // Handle complete cache invalidation and static page revalidation
+    if (image.productId) {
+      await cacheService.invalidateProductCache(image.productId);
+      invalidateProductCache(image.productId);
+
+      const product = await prisma.product.findUnique({
+        where: { id: image.productId },
+        select: { slug: true }
+      });
+
+      revalidatePath('/dashboard/products');
+      if (product?.slug) {
+        revalidatePath(`/products/${product.slug}`);
+      }
+      revalidatePath(`/products/${image.productId}`);
+      revalidatePath(`/product/${image.productId}`);
+      revalidatePath('/');
+    }
 
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (err) {
