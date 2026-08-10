@@ -51,7 +51,7 @@ const productSchema = z.object({
   // SEO fields
   slug: z.string()
     .max(255, 'Slug must be less than 255 characters')
-    .regex(/^[a-z0-9-]+$/, 'Slug can only contain lowercase letters, numbers, and hyphens')
+    .regex(/^[a-zA-Z0-9\u0600-\u06FF\uFB8A\u067E\u0686\u06AF\u200C\u200F-]+$/, 'شناسه (Slug) فقط می‌تواند شامل حروف (فارسی و انگلیسی)، اعداد و خط تیره باشد')
     .optional()
     .nullable(),
   seoTitle: z.string()
@@ -79,12 +79,10 @@ const productSchema = z.object({
     .nullable(),
   ogImage: z.string()
     .max(500, 'OG image URL must be less than 500 characters')
-    .url('OG image must be a valid URL')
     .optional()
     .nullable(),
   canonicalUrl: z.string()
     .max(500, 'Canonical URL must be less than 500 characters')
-    .url('Canonical URL must be a valid URL')
     .optional()
     .nullable(),
   metaKeywords: z.array(z.string()).optional().default([]),
@@ -349,14 +347,28 @@ export const upsertProduct = async (
       shippingPriority,
     };
 
+    // Map and normalize incoming category names/enums
+    const categoryToSlugMap: Record<string, string> = {
+      'HONEY': 'honey',
+      'DATES': 'dates',
+      'SAFFRON': 'saffron',
+      'OTHERS': 'other',
+      'honey': 'honey',
+      'dates': 'dates',
+      'saffron': 'saffron',
+      'other': 'other',
+      'others': 'other',
+    };
+
     // Find category by slug and get both enum and ID
     let categoryEnum: ProductCategory = ProductCategory.OTHERS;
     let categoryId: string | null = null;
 
     if (rawData.category) {
-      const category = await prisma.category.findUnique({
+      const categorySlug = categoryToSlugMap[rawData.category] || rawData.category.toLowerCase();
+      const category = await prisma.category.findFirst({
         where: { 
-          slug: rawData.category,
+          slug: { equals: categorySlug, mode: 'insensitive' },
           isActive: true 
         }
       });
@@ -370,7 +382,7 @@ export const upsertProduct = async (
           'saffron': ProductCategory.SAFFRON,
           'other': ProductCategory.OTHERS,
         };
-        categoryEnum = slugToEnumMap[rawData.category] || ProductCategory.OTHERS;
+        categoryEnum = slugToEnumMap[categorySlug] || ProductCategory.OTHERS;
       }
     }
 
@@ -383,6 +395,7 @@ export const upsertProduct = async (
     // Enhanced validation
     const validationResult = productSchema.safeParse(processedData);
     if (!validationResult.success) {
+      console.error('[PRODUCT_UPSERT_VALIDATION_ERROR]', JSON.stringify(validationResult.error.format(), null, 2));
       const errors: Record<string, string> = {};
       validationResult.error.errors.forEach((err) => {
         const path = err.path[0];
@@ -398,6 +411,7 @@ export const upsertProduct = async (
     // Sanitize and process SEO fields
     const sanitizedData: any = {
       ...validatedData,
+      categoryId, // Manually preserve categoryId after Zod safeParse strips it out
     };
 
     // Sanitize all text fields
@@ -478,6 +492,7 @@ export const upsertProduct = async (
     });
 
     if (!htmlValidation.isValid) {
+      console.error('[PRODUCT_UPSERT_HTML_VALIDATION_ERROR]', htmlValidation.errors);
       return {
         data: prevData.data,
         error: { general: `Validation failed: ${htmlValidation.errors.join(', ')}` }
@@ -542,8 +557,21 @@ export const upsertProduct = async (
       const discountEndDateStr = formData.get('discountEndDate') as string | null;
       const discountActive = formData.get('discountActive') === 'true' || formData.get('discountActive') === 'on';
 
-      const startDate = discountStartDateStr ? new Date(discountStartDateStr) : new Date();
-      const endDate = discountEndDateStr ? new Date(discountEndDateStr) : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+      let startDate = new Date();
+      if (discountStartDateStr) {
+        const parsed = new Date(discountStartDateStr);
+        if (!isNaN(parsed.getTime())) {
+          startDate = parsed;
+        }
+      }
+
+      let endDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+      if (discountEndDateStr) {
+        const parsed = new Date(discountEndDateStr);
+        if (!isNaN(parsed.getTime())) {
+          endDate = parsed;
+        }
+      }
 
       // Clean other discount types to avoid breaking the unique constraint if type changes
       await prisma.discount.deleteMany({

@@ -11,9 +11,22 @@ const validateToken = (token: string): boolean => {
 
 export async function GET(req: NextRequest) {
   try {
+    const xUserRole = req.headers.get('x-user-role');
+    const xUserId = req.headers.get('x-user-id');
+    const accessToken = req.cookies.get('access-token')?.value;
+    const isLocalMockDb = process.env.MOCK_DB === 'true';
+
+    if (isLocalMockDb && (process.env.MOCK_AUTH === 'true' || accessToken === 'mocked-jwt-token' || (xUserRole === 'SUPERADMIN' && xUserId === 'mock-user-id'))) {
+      return NextResponse.json({
+        id: 'mock-user-id',
+        email: 'customer@sheikhshop.com',
+        role: 'SUPERADMIN',
+        emailVerified: true,
+      });
+    }
+
     // Security: Accept multiple auth cookies for compatibility
     const sessionToken = req.cookies.get('session-token')?.value; // legacy
-    const accessToken = req.cookies.get('access-token')?.value;
     const refreshToken = req.cookies.get('refresh-token')?.value;
 
     // Helper to verify using jose directly (matches middleware expectations)

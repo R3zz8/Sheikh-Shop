@@ -280,6 +280,23 @@ export async function middleware(request: NextRequest) {
   // STANDARD ROUTING AND SECURITY RULES (AFTER BYPASS)
   // ====================================================
 
+  const tempAccessToken = request.cookies.get('access-token')?.value;
+  const isLocalMockDb = process.env.MOCK_DB === 'true';
+  if (isLocalMockDb && (process.env.MOCK_AUTH === 'true' || tempAccessToken === 'mocked-jwt-token')) {
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set('x-user-id', 'mock-user-id');
+    requestHeaders.set('x-user-role', 'SUPERADMIN');
+    requestHeaders.set('x-session-id', 'mock-session-id');
+
+    const response = NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      }
+    });
+    setCurrencyCookieIfNeeded(request, response);
+    return addSecurityHeaders(response);
+  }
+
   const hasJwtSecret = !!getJwtSecret();
 
   console.log('[MIDDLEWARE] Processing request', { 

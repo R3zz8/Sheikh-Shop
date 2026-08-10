@@ -3,11 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 
-declare global {
-  // allow global `var` declarations
-  // eslint-disable-next-line no-var
-  var prisma: PrismaClient | any;
-}
+// Typing handled dynamically via global as any
 
 // Mock data for development when PostgreSQL is not running
 const mockCategories = [
@@ -1408,8 +1404,8 @@ const createPrismaClient = () => {
   });
 };
 
-export const prisma = global.prisma ?? createPrismaClient();
+export const prisma = (global as any).prisma ?? createPrismaClient();
 
 if (process.env.NODE_ENV !== 'production') {
-  global.prisma = prisma;
+  (global as any).prisma = prisma;
 }
