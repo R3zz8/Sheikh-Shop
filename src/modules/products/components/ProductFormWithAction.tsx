@@ -87,6 +87,9 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
   const [generatedId] = useState(() => crypto.randomUUID());
   const activeProductId = product?.id || generatedId;
 
+  // Track currently uploaded/managed images for authoritative save syncing
+  const [currentImages, setCurrentImages] = useState<any[]>([]);
+
   // Active Tab State
   const [activeTab, setActiveTab] = useState<string>('general');
 
@@ -464,6 +467,9 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
       formData.append('discountEndDate', data.discountEndDate || '');
       formData.append('discountActive', data.discountActive ? 'true' : 'false');
 
+      // Authoritative Product Image Sync Strategy - serialize currently uploaded/managed images
+      formData.append('imagesJson', JSON.stringify(currentImages));
+
       // Trigger server action
       const result = await serverUpsertProduct({ data: product, error: null }, formData);
 
@@ -506,8 +512,11 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
         await saveAllUnits(savedProduct.id);
         toast.success(isNewProduct ? 'کالا با موفقیت ایجاد شد!' : 'کالا با موفقیت بروزرسانی شد!');
 
-        router.push(`/dashboard/products`);
-        router.refresh();
+        if (isNewProduct) {
+          router.push(`/dashboard/products/${savedProduct.id}`);
+        } else {
+          router.refresh();
+        }
       }
     } catch (err: any) {
       toast.error(err?.message || 'خطایی در ارسال اطلاعات رخ داد.');
@@ -1490,7 +1499,7 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
             {activeTab === 'media' && (
               <Card className="bg-[#0D0907]/90 border border-amber-500/15 rounded-[2rem] p-6 sm:p-8 relative overflow-hidden shadow-2xl">
                 <CardContent className="p-0 space-y-6">
-                  <UploadImage productId={activeProductId} />
+                  <UploadImage productId={activeProductId} onImagesChange={setCurrentImages} />
                 </CardContent>
               </Card>
             )}
@@ -1499,7 +1508,7 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
             {activeTab === 'videos' && (
               <Card className="bg-[#0D0907]/90 border border-amber-500/15 rounded-[2rem] p-6 sm:p-8 relative overflow-hidden shadow-2xl">
                 <CardContent className="p-0">
-                  <UploadImage productId={activeProductId} />
+                  <UploadImage productId={activeProductId} onImagesChange={setCurrentImages} />
                 </CardContent>
               </Card>
             )}
