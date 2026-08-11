@@ -31,7 +31,7 @@ const productSchema = z.object({
     .max(255, 'Product name must be less than 255 characters')
     .trim(),
   description: z.string()
-    .max(1000, 'Description must be less than 1000 characters')
+    .max(100000, 'Description must be less than 100000 characters')
     .optional(),
   basePrice: z.number()
     .min(0.01, 'Price must be at least $0.01')

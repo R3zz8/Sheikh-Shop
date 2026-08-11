@@ -1,184 +1,293 @@
 import { test, expect } from '@playwright/test';
 import * as fs from 'fs';
 import * as path from 'path';
+import { prisma } from '../src/lib/prisma';
+import { signJwtToken } from '../src/lib/auth/jwt';
 
 async function takeSafeScreenshot(page: any, filePath: string) {
   try {
     console.log(`Taking screenshot: ${filePath}...`);
-    await Promise.race([
-      page.screenshot({ path: filePath }),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Screenshot timeout')), 3000))
-    ]);
+    await page.screenshot({ path: filePath, fullPage: true });
     console.log(`Screenshot saved: ${filePath}`);
   } catch (err: any) {
     console.log(`Skipping screenshot ${filePath} due to: ${err.message}`);
   }
 }
 
-test.describe('SuperAdmin Product Save Flow end-to-end verification', () => {
-  test('SuperAdmin should update product name and delete images successfully', async ({ page }) => {
-    // Set higher timeout for extensive end-to-end operations
-    test.setTimeout(120000);
+test.describe('SuperAdmin Product Save Flow End-to-End Visual Verification', () => {
+  const productId = 'dcf36af5-71dd-4418-94e1-b109c3ccbb38';
 
-    // Block external fonts and analytics to prevent screenshot hangs on font loading
-    await page.route('**/*.{woff,woff2,ttf,otf}', (route) => {
-      if (route.request().url().includes('localhost')) {
-        route.continue();
-      } else {
-        route.abort();
-      }
-    });
+  test.beforeAll(async () => {
+    // Ensure verification folder exists
+    fs.mkdirSync('verification/product-save', { recursive: true });
+  });
+
+  test('SuperAdmin Save Pipeline Full Verification Matrix', async ({ page }) => {
+    // Set high timeout for comprehensive test suite operations
+    test.setTimeout(180000);
+
+    // Block heavy external assets to prevent page hangs
+    await page.route('**/*.{woff,woff2,ttf,otf}', (route) => route.abort());
     await page.route('**/*fonts.googleapis.com/**', (route) => route.abort());
     await page.route('**/*fonts.gstatic.com/**', (route) => route.abort());
     await page.route('**/*googletagmanager.com/**', (route) => route.abort());
 
-    // Set viewport for consistent screenshots
-    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.setViewportSize({ width: 1280, height: 1000 });
 
-    // Inject SuperAdmin authentication tokens via cookie
+    // 1. Generate and Inject valid SUPERADMIN auth token cookie
+    const token = signJwtToken({
+      id: 'mock-admin-id',
+      role: 'SUPERADMIN',
+      email: 'rezadhu615@gmail.com',
+    }, '7d');
+
     const context = page.context();
     await context.addCookies([
       {
         name: 'access-token',
-        value: 'mocked-jwt-token',
+        value: token,
         domain: 'localhost',
         path: '/',
       },
     ]);
 
-    // Go to the Admin Dashboard Product Edit view for the target test product
-    const productId = 'dcf36af5-71dd-4418-94e1-b109c3ccbb38';
-    await page.goto(`http://localhost:3000/dashboard/products/${productId}`, { waitUntil: 'domcontentloaded' });
-
-    // Wait for the luxury loading experience to vanish and the form to settle
-    await page.waitForTimeout(4000);
-
-    // Screenshot 1: Admin product editor BEFORE deletion
-    await takeSafeScreenshot(page, 'verification/product-save/01-before.png');
-
-    // Handle standard confirm dialog automatically
+    // Handle standard dialog box prompts automatically
     page.on('dialog', async (dialog) => {
-      console.log(`E2E Dialog: [${dialog.type()}] - "${dialog.message()}"`);
+      console.log(`[DIALOG] Accepted dialog: ${dialog.type()} - ${dialog.message()}`);
       await dialog.accept();
     });
 
-    // Switch to Media Gallery Tab
+    // ============================================================
+    // FIRST TEST — MANDATORY REAL-WORLD ACCEPTANCE TEST
+    // ============================================================
+    console.log('--- FIRST TEST: Deleting 2 Images ---');
+
+    // Query images from DB before deletion
+    let dbProduct = await prisma.product.findUnique({
+      where: { id: productId },
+      include: { images: true }
+    });
+    console.log('[DB BEFORE DELETION] Total Images:', dbProduct?.images?.length);
+    const initialImages = dbProduct?.images || [];
+    console.log('[DB BEFORE DELETION] IDs:', initialImages.map((img: any) => img.id));
+
+    // Open Admin Product Editor
+    await page.goto(`http://localhost:3000/dashboard/products/${productId}?mock_auth=true`, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(4000);
+
+    // Switch to Media Tab
     const mediaTabButton = page.locator('button:has-text("تصاویر (Media Gallery)")');
-    if (await mediaTabButton.count() > 0) {
-      await mediaTabButton.click();
-      await page.waitForTimeout(1500);
-    }
+    await mediaTabButton.click();
+    await page.waitForTimeout(2000);
 
-    // Capture deleting TWO images using the svg selectors (Lucide CircleX icons)
+    // Screenshot 1: product-before-delete.png
+    await takeSafeScreenshot(page, 'verification/product-save/product-before-delete.png');
+
+    // Find and delete 2 images
     const deleteButtons = page.locator('svg.absolute.top-2.left-2.text-red-500');
-    const deleteButtonsCount = await deleteButtons.count();
-    console.log(`Found ${deleteButtonsCount} delete image SVG elements.`);
+    const initialDeleteButtonsCount = await deleteButtons.count();
+    console.log(`UI Delete buttons found: ${initialDeleteButtonsCount}`);
 
-    if (deleteButtonsCount >= 2) {
-      // Delete first image
-      console.log('Deleting first image...');
-      await deleteButtons.nth(0).click();
-      await page.waitForTimeout(1500); // Wait for the deletion request to finish and local state to filter out the image
-      await takeSafeScreenshot(page, 'verification/product-save/02-image-one-deleted.png');
+    expect(initialDeleteButtonsCount).toBeGreaterThanOrEqual(2);
 
-      // After deleting the first image, wait a little bit and locate the new list of delete buttons
-      const remainingDeleteButtons = page.locator('svg.absolute.top-2.left-2.text-red-500');
-      const remainingCount = await remainingDeleteButtons.count();
-      console.log(`Found ${remainingCount} remaining delete image SVG elements.`);
+    // Click first delete button
+    console.log('Deleting first image...');
+    await deleteButtons.nth(0).click();
+    await page.waitForTimeout(1500);
 
-      if (remainingCount > 0) {
-        console.log('Deleting second image...');
-        await remainingDeleteButtons.nth(0).click();
-        await page.waitForTimeout(1500);
-        await takeSafeScreenshot(page, 'verification/product-save/03-image-two-deleted.png');
-      }
-    }
+    // Click next delete button (which is now index 0 among remaining)
+    console.log('Deleting second image...');
+    const remainingDeleteButtons = page.locator('svg.absolute.top-2.left-2.text-red-500');
+    await remainingDeleteButtons.nth(0).click();
+    await page.waitForTimeout(2000);
 
-    // Scroll back to the top-bar and find "Save All Product Changes" button
+    // Verify they disappeared from UI
+    const finalDeleteButtonsCount = await page.locator('svg.absolute.top-2.left-2.text-red-500').count();
+    console.log(`UI Delete buttons remaining: ${finalDeleteButtonsCount}`);
+    expect(finalDeleteButtonsCount).toBe(initialDeleteButtonsCount - 2);
+
+    // Screenshot 2: product-after-delete-before-save.png
+    await takeSafeScreenshot(page, 'verification/product-save/product-after-delete-before-save.png');
+
+    // Click "ذخیره کل تغییرات کالا"
     const saveButton = page.locator('button:has-text("ذخیره کل تغییرات کالا")');
     await saveButton.click();
+    await page.waitForTimeout(5000);
 
-    // Wait for the database mutations to commit, caches to invalidate, paths to revalidate, and navigation to redirect back
+    // Screenshot 3: product-save-success.png
+    await takeSafeScreenshot(page, 'verification/product-save/product-save-success.png');
+
+    // Query DB directly to verify deletion is persisted in DB
+    dbProduct = await prisma.product.findUnique({
+      where: { id: productId },
+      include: { images: true }
+    });
+    console.log('[DB AFTER DELETION] Total Images:', dbProduct?.images?.length);
+    expect(dbProduct?.images?.length).toBe(initialImages.length - 2);
+
+    const remainingIds = dbProduct?.images.map((img: any) => img.id) || [];
+    console.log('[DB AFTER DELETION] Remaining IDs:', remainingIds);
+
+    // Reload the SuperAdmin Product Editor from a fresh browser state
+    await page.goto(`http://localhost:3000/dashboard/products/${productId}?mock_auth=true`, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(3000);
 
-    // Screenshot 4: Save success state
-    await takeSafeScreenshot(page, 'verification/product-save/04-save-success.png');
+    // Switch to Media Tab to verify they don't return
+    await page.locator('button:has-text("تصاویر (Media Gallery)")').click();
+    await page.waitForTimeout(2000);
 
-    // Reload/Open the Product page again to verify persistence
-    await page.goto(`http://localhost:3000/dashboard/products/${productId}`, { waitUntil: 'domcontentloaded' });
+    // Screenshot 4: product-after-reload.png
+    await takeSafeScreenshot(page, 'verification/product-save/product-after-reload.png');
+
+    // Open public Product Detail Page (PDP)
+    await page.goto('http://localhost:3000/products/automatic-cat-water-fountains', { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(3000);
 
-    // Screenshot 5: Reload verification
-    await takeSafeScreenshot(page, 'verification/product-save/05-after-refresh.png');
+    // Screenshot 5: product-pdp-after-reload.png
+    await takeSafeScreenshot(page, 'verification/product-save/product-pdp-after-reload.png');
 
-    // Open public customer-facing PDP to verify the deleted images are gone
-    await page.goto('http://localhost:3000/products/automatic-cat-water-fountains', { waitUntil: 'commit' });
+    // ============================================================
+    // SECOND TEST — NORMAL PRODUCT EDIT
+    // ============================================================
+    console.log('--- SECOND TEST: Normal Product Edit (Description Only) ---');
+
+    await page.goto(`http://localhost:3000/dashboard/products/${productId}?mock_auth=true`, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(3000);
 
-    // Screenshot 6: Customer PDP view
-    await takeSafeScreenshot(page, 'verification/product-save/06-customer-pdp.png');
-
-    // Test creating a controlled new product
-    await page.goto('http://localhost:3000/dashboard/products/new', { waitUntil: 'domcontentloaded' });
-    await page.waitForTimeout(3000);
-
-    // Fill in required fields - general tab fields
-    console.log('Filling name and description on General tab...');
-    await page.fill('input[name="name"]', 'محصول تستی جدید شیخ شاپ');
-    await page.fill('textarea[name="description"]', 'توضیحات product.');
-
-    // Switch to Pricing Tab to fill basePrice
-    console.log('Switching to Pricing tab...');
-    const pricingTabButton = page.locator('button:has-text("قیمت‌گذاری")');
-    await pricingTabButton.click();
-    await page.waitForTimeout(1000);
-    await page.fill('input[name="basePrice"]', '450000');
-
-    // Switch to Inventory Tab to fill quantity
-    console.log('Switching to Inventory tab...');
-    const inventoryTabButton = page.locator('button:has-text("موجودی")');
-    await inventoryTabButton.click();
-    await page.waitForTimeout(1000);
-    await page.fill('input[name="quantity"]', '100');
-
-    // Click save
-    const createButton = page.locator('button:has-text("ثبت و ساخت محصول")');
-    if (await createButton.count() > 0) {
-      console.log('Clicking create product button...');
-      await createButton.click();
-      await page.waitForTimeout(4000);
-    }
-
-    // Screenshot 7: New product created success
-    await takeSafeScreenshot(page, 'verification/product-save/07-new-product-created.png');
-
-    // Test updating a single field on an existing product
-    console.log('Updating a single field on an existing product...');
-    await page.goto(`http://localhost:3000/dashboard/products/${productId}`, { waitUntil: 'domcontentloaded' });
-    await page.waitForTimeout(3000);
-
-    // Let's modify the description by appending a test string
-    await page.fill('textarea[name="description"]', 'بروزرسانی تستی توضیحات محصول جهت راستی‌آزمایی فیلد منفرد.');
+    // Update only the description
+    const testDescription = `Updated Test Description ${Date.now()}. This verifies that saving other fields preserves images correctly without accidental deletions.`;
+    await page.fill('textarea[name="description"]', testDescription);
 
     // Save
     await page.locator('button:has-text("ذخیره کل تغییرات کالا")').click();
+    await page.waitForTimeout(5000);
+
+    // Query DB to verify description changed and images remain unchanged (count should still be original - 2)
+    dbProduct = await prisma.product.findUnique({
+      where: { id: productId },
+      include: { images: true }
+    });
+    console.log('[DB AFTER DESC UPDATE] Total Images:', dbProduct?.images?.length);
+    console.log('[DB AFTER DESC UPDATE] Description:', dbProduct?.description);
+    expect(dbProduct?.description).toBe(testDescription);
+    expect(dbProduct?.images?.length).toBe(initialImages.length - 2);
+
+    // Open PDP to confirm new description is reflected
+    await page.goto('http://localhost:3000/products/automatic-cat-water-fountains', { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(3000);
+    const pdpBodyText = await page.textContent('body');
+    expect(pdpBodyText).toContain(testDescription);
+
+    // ============================================================
+    // THIRD TEST — IMAGE UPLOAD + DELETE
+    // ============================================================
+    console.log('--- THIRD TEST: Image Upload + Delete ---');
+
+    await page.goto(`http://localhost:3000/dashboard/products/${productId}?mock_auth=true`, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(3000);
 
-    // Screenshot 8: Existing product field update
-    await takeSafeScreenshot(page, 'verification/product-save/08-existing-product-field-update.png');
+    // Switch to Media Tab
+    await page.locator('button:has-text("تصاویر (Media Gallery)")').click();
+    await page.waitForTimeout(2000);
 
-    // Mobile Viewport Verification on Homepage (super-fast and clean)
-    console.log('Verifying mobile layout...');
-    const mobileContext = await page.context().browser()?.newContext({
-      viewport: { width: 375, height: 812 },
-      userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1',
+    // Create a dummy image file for upload
+    const dummyImgPath = path.join(__dirname, 'dummy-upload.png');
+    fs.writeFileSync(dummyImgPath, 'dummy image content');
+
+    // Upload dummy image
+    const fileChooserPromise = page.waitForEvent('filechooser');
+    await page.locator('input[type="file"]').click();
+    const fileChooser = await fileChooserPromise;
+    await fileChooser.setFiles(dummyImgPath);
+    await page.waitForTimeout(1000);
+
+    // Click upload
+    await page.locator('button:has-text("شروع بارگذاری")').click();
+    await page.waitForTimeout(6000); // Wait for upload to complete and page to reload media
+
+    // Clean up local dummy file
+    fs.unlinkSync(dummyImgPath);
+
+    // Record images after upload
+    dbProduct = await prisma.product.findUnique({
+      where: { id: productId },
+      include: { images: true }
     });
-    const mobilePage = await mobileContext?.newPage();
-    if (mobilePage) {
-      await mobilePage.goto('http://localhost:3000/', { waitUntil: 'commit' });
-      await mobilePage.waitForTimeout(2000);
-      await takeSafeScreenshot(mobilePage, 'verification/product-save/09-mobile-verification.png');
-      await mobilePage.close();
+    const afterUploadCount = dbProduct?.images?.length || 0;
+    console.log('[DB AFTER UPLOAD] Total Images:', afterUploadCount);
+
+    // Now delete 1 image from the UI
+    const currentDeleteButtons = page.locator('svg.absolute.top-2.left-2.text-red-500');
+    console.log(`UI Delete buttons after upload: ${await currentDeleteButtons.count()}`);
+    await currentDeleteButtons.nth(0).click();
+    await page.waitForTimeout(2000);
+
+    // Click save
+    await page.locator('button:has-text("ذخیره کل تغییرات کالا")').click();
+    await page.waitForTimeout(5000);
+
+    // Screenshot 6: product-upload-delete-combination.png
+    await takeSafeScreenshot(page, 'verification/product-save/product-upload-delete-combination.png');
+
+    // Query DB to verify image counts
+    dbProduct = await prisma.product.findUnique({
+      where: { id: productId },
+      include: { images: true }
+    });
+    console.log('[DB AFTER COMBINED SYNC] Total Images:', dbProduct?.images?.length);
+    expect(dbProduct?.images?.length).toBe(afterUploadCount - 1);
+
+    // Reload editor and verify exact final image set
+    await page.goto(`http://localhost:3000/dashboard/products/${productId}?mock_auth=true`, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(3000);
+    await page.locator('button:has-text("تصاویر (Media Gallery)")').click();
+    await page.waitForTimeout(2000);
+
+    // Screenshot 7: product-final-persisted-state.png
+    await takeSafeScreenshot(page, 'verification/product-save/product-final-persisted-state.png');
+
+    // ============================================================
+    // FOURTH TEST — NEW PRODUCT CREATION
+    // ============================================================
+    console.log('--- FOURTH TEST: New Product Creation ---');
+
+    await page.goto('http://localhost:3000/dashboard/products/new?mock_auth=true', { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(3000);
+
+    const testNewProductName = `Test New Product ${Date.now()}`;
+    await page.fill('input[name="name"]', testNewProductName);
+    await page.fill('textarea[name="description"]', 'Description for completely new product.');
+
+    // Switch to Pricing Tab
+    await page.locator('button:has-text("قیمت‌گذاری")').click();
+    await page.waitForTimeout(1000);
+    await page.fill('input[name="basePrice"]', '750000');
+
+    // Switch to Inventory Tab
+    await page.locator('button:has-text("موجودی و تنوع")').click();
+    await page.waitForTimeout(1000);
+    await page.fill('input[name="quantity"]', '150');
+
+    // Save/Create
+    await page.locator('button:has-text("ثبت و ساخت محصول")').click();
+    await page.waitForTimeout(6000);
+
+    // Screenshot 8: new-product-created.png
+    await takeSafeScreenshot(page, 'verification/product-save/new-product-created.png');
+
+    // Query DB to verify product exists and is created
+    const createdProduct = await prisma.product.findUnique({
+      where: { name: testNewProductName }
+    });
+    console.log('[DB CREATED PRODUCT] Exists:', !!createdProduct);
+    expect(createdProduct).toBeDefined();
+    expect(createdProduct?.basePrice).toBe(750000);
+    expect(createdProduct?.quantity).toBe(150);
+
+    // Cleanup created test product to keep database clean
+    if (createdProduct) {
+      await prisma.product.delete({ where: { id: createdProduct.id } });
+      console.log('[CLEANUP] Deleted created test product.');
     }
   });
 });

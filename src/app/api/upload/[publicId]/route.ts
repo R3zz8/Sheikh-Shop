@@ -8,7 +8,7 @@ import { revalidatePath } from 'next/cache';
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { publicId: string } }
+  { params }: { params: Promise<{ publicId: string }> }
 ) {
   try {
     // RBAC: Only SUPERADMIN, ADMIN, EDITOR can delete
@@ -18,7 +18,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'You are not authorized to perform this action.' }, { status: 403 });
     }
 
-    const { publicId } = params;
+    const { publicId } = await params;
     if (!publicId) {
       return NextResponse.json({ error: 'publicId is required' }, { status: 400 });
     }
