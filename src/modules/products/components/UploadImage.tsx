@@ -10,13 +10,19 @@ import { deleteImage, fetchImages, uploadImage } from '../services/image';
 import Spinner from '@/components/Spinner';
 import { toast } from 'sonner';
 
-const UploadImage: FC<{ productId: string }> = ({ productId }) => {
+const UploadImage: FC<{ productId: string; onImagesChange?: (images: any[]) => void }> = ({ productId, onImagesChange }) => {
   const [file, setFile] = useState<File | null>(null);
   const [images, setImages] = useState<any[] | null>(null);
   const [videos, setVideos] = useState<any[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (images && onImagesChange) {
+      onImagesChange(images);
+    }
+  }, [images, onImagesChange]);
 
   const handleChangeFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -76,7 +82,13 @@ const UploadImage: FC<{ productId: string }> = ({ productId }) => {
           credentials: 'include',
         });
       }
-      setImages((prev) => prev?.filter((img) => img.id !== imageId && img.publicId !== publicId) || null);
+      setImages((prev) =>
+        prev?.filter((img) => {
+          if (img.id === imageId) return false;
+          if (publicId && img.publicId === publicId) return false;
+          return true;
+        }) || null
+      );
       toast.success('تصویر با موفقیت حذف شد.');
     } catch {
       toast.error('خطا در حذف تصویر کالا.');

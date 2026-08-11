@@ -406,3 +406,5 @@ describe('Product Image Save Pipeline Comprehensive Regression Tests (Phase 10)'
     expect(result.error.name).toBeDefined();
   });
 });
+
+export {};

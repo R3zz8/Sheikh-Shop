@@ -35,7 +35,7 @@ async function checkAdminPermissions(request: NextRequest) {
 // GET - Fetch all units for a product
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await checkAdminPermissions(request);
@@ -46,7 +46,7 @@ export async function GET(
       );
     }
 
-    const productId = params.id;
+    const { id: productId } = await params;
 
     // Verify product exists
     const product = await prisma.product.findUnique({
@@ -84,7 +84,7 @@ export async function GET(
 // POST - Create a new unit for a product
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await checkAdminPermissions(request);
@@ -95,7 +95,7 @@ export async function POST(
       );
     }
 
-    const productId = params.id;
+    const { id: productId } = await params;
 
     // Verify product exists
     const product = await prisma.product.findUnique({

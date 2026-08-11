@@ -102,11 +102,7 @@ describe('Product Upsert Action Tests Matrix', () => {
 
     const result = await upsertProduct({ data: null, error: null }, formData);
     console.log('Result for Persian slug:', result);
-    // Let's see if this fails due to Zod regex
-    expect(result.error).toBeDefined();
-    if (result.error) {
-      console.log('Persian slug error fields:', Object.keys(result.error), result.error);
-    }
+    expect(result.error).toBeNull();
   });
 
   test('Matrix 3: Save product with slug containing capital letters', async () => {
@@ -124,9 +120,8 @@ describe('Product Upsert Action Tests Matrix', () => {
 
     const result = await upsertProduct({ data: null, error: null }, formData);
     console.log('Result for Capital Letters slug:', result);
-    expect(result.error).toBeDefined();
-    if (result.error) {
-      console.log('Capital slug error fields:', Object.keys(result.error), result.error);
-    }
+    expect(result.error).toBeNull();
   });
 });
+
+export {};

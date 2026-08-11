@@ -605,6 +605,56 @@ export const upsertProduct = async (
       });
     }
 
+    // Authoritative Product Image Sync Strategy
+    const imagesJson = formData.get('imagesJson') as string | null;
+    if (imagesJson) {
+      try {
+        const clientImages = JSON.parse(imagesJson) as any[];
+        const clientImageIds = clientImages.map((img: any) => img.id).filter(Boolean);
+
+        // Find all existing images for this product from the database
+        const existingImages = await prisma.image.findMany({
+          where: { productId: result.id }
+        });
+
+        // Calculate images to delete (present in database but omitted from client payload)
+        const imagesToDelete = existingImages.filter(
+          (img: any) => !clientImageIds.includes(img.id)
+        );
+
+        for (const image of imagesToDelete) {
+          // local image physical delete
+          if (image.image && !image.image.startsWith('http') && !image.publicId) {
+            try {
+              const fs = await import('fs/promises');
+              const path = await import('path');
+              const imagePath = path.join(process.cwd(), 'public', image.image);
+              await fs.unlink(imagePath);
+            } catch (fileError) {
+              console.warn('Could not delete local image file:', image.image);
+            }
+          }
+          // Cloudinary delete
+          if (image.publicId) {
+            try {
+              const { getCloudinary } = await import('@/lib/cloudinary-safe');
+              const cloudinary = getCloudinary();
+              await cloudinary.uploader.destroy(image.publicId);
+            } catch (cloudinaryError) {
+              console.warn('Could not delete Cloudinary image:', image.publicId);
+            }
+          }
+
+          // DB deletion
+          await prisma.image.delete({
+            where: { id: image.id }
+          });
+        }
+      } catch (jsonErr) {
+        console.error('Failed to process imagesJson:', jsonErr);
+      }
+    }
+
     // Invalidate Upstash Redis and in-memory caches, and revalidate static paths
     await cacheService.invalidateProductCache(result.id);
     invalidateProductCache(result.id);
