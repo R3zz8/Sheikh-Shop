@@ -15,8 +15,9 @@ export async function GET(req: NextRequest) {
     const xUserId = req.headers.get('x-user-id');
     const accessToken = req.cookies.get('access-token')?.value;
     const isLocalMockDb = process.env.MOCK_DB === 'true';
+    const isLocalMockAuth = process.env.MOCK_AUTH === 'true' && (accessToken === 'mocked-jwt-token' || (xUserRole === 'SUPERADMIN' && xUserId === 'mock-user-id'));
 
-    if (isLocalMockDb && (process.env.MOCK_AUTH === 'true' || accessToken === 'mocked-jwt-token' || (xUserRole === 'SUPERADMIN' && xUserId === 'mock-user-id'))) {
+    if (isLocalMockDb || isLocalMockAuth) {
       return NextResponse.json({
         id: 'mock-user-id',
         email: 'customer@sheikhshop.com',

@@ -282,7 +282,9 @@ export async function middleware(request: NextRequest) {
 
   const tempAccessToken = request.cookies.get('access-token')?.value;
   const isLocalMockDb = process.env.MOCK_DB === 'true';
-  if (isLocalMockDb && (process.env.MOCK_AUTH === 'true' || tempAccessToken === 'mocked-jwt-token')) {
+  const isLocalMockAuth = process.env.MOCK_AUTH === 'true' && tempAccessToken === 'mocked-jwt-token';
+
+  if (isLocalMockDb || isLocalMockAuth) {
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set('x-user-id', 'mock-user-id');
     requestHeaders.set('x-user-role', 'SUPERADMIN');
