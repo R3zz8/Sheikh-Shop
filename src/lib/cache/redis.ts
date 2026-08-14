@@ -18,6 +18,7 @@ export const CACHE_TTL = {
 // Cache keys
 export const CACHE_KEYS = {
     PRODUCTS: 'products:all',
+    NEW_PRODUCTS: (limit: number = 12) => `new_products_limit_${limit}`,
     PRODUCT_DETAIL: (id: string) => `product:${id}`,
     CATEGORIES: 'categories:all',
     CATEGORY_PRODUCTS: (category: string) => `category:${category}:products`,
@@ -74,15 +75,18 @@ export class CacheService {
                 CACHE_KEYS.CATEGORIES,
                 CACHE_KEYS.PRODUCTS_BY_STATUS('ACTIVE'),
                 CACHE_KEYS.PRODUCTS_BY_STATUS('INACTIVE'),
+                CACHE_KEYS.NEW_PRODUCTS(6),
+                CACHE_KEYS.NEW_PRODUCTS(8),
+                CACHE_KEYS.NEW_PRODUCTS(10),
+                CACHE_KEYS.NEW_PRODUCTS(12),
+                CACHE_KEYS.NEW_PRODUCTS(16),
+                CACHE_KEYS.NEW_PRODUCTS(20),
             ];
 
             if (productId) {
                 keys.push(CACHE_KEYS.PRODUCT_DETAIL(productId));
             }
 
-            // Note: In a real-world scenario with a more complex cache,
-            // we'd need a more sophisticated way to invalidate related keys.
-            // For now, we are just deleting specific known keys.
             await Promise.all(keys.map(key => this.del(key)));
         } catch (error) {
             console.error('Cache invalidation error:', error);

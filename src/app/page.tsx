@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import Categories from '@/components/Categories';
+import NewProductsSection from '@/components/home/NewProductsSection';
 import { ChevronLeft, Code2 } from 'lucide-react';
 import FAQSchema from '@/components/seo/FAQSchema';
 import type { Metadata } from 'next';
@@ -69,10 +70,13 @@ export default function Home() {
       {/* Categories Section */}
       <Categories />
 
+      {/* New Products Section - Directly below Categories */}
+      <NewProductsSection />
+
       {/* Flagship Brand Hero Experience (RTL Left Content & interactive 3D Sheikh right side) */}
       <SheikhScene />
       
-      {/* Mobile Carousel - Below Categories */}
+      {/* Mobile Carousel - Below Categories & New Products */}
       <div className="relative z-20 px-4 py-6">
         <CarouselMobile />
       </div>

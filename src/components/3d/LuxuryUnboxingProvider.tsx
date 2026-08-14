@@ -17,7 +17,14 @@ const LuxuryUnboxingContext = createContext<LuxuryUnboxingContextType | undefine
 export function useLuxuryUnboxing() {
   const context = useContext(LuxuryUnboxingContext);
   if (!context) {
-    throw new Error('useLuxuryUnboxing must be used within a LuxuryUnboxingProvider');
+    return {
+      triggerUnboxing: (product: any) => {
+        if (typeof window !== 'undefined' && product) {
+          window.location.href = `/products/${product.slug || product.id}`;
+        }
+      },
+      config: { isEnabled: true },
+    };
   }
   return context;
 }
