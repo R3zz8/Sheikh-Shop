@@ -17,6 +17,7 @@ import {
   ChevronLeft,
 } from "lucide-react";
 import Link from "next/link";
+import MobileSheikhRadialNetwork from "./MobileSheikhRadialNetwork";
 
 // Division items for the floating glass cards
 interface DivisionItem {
@@ -536,13 +537,18 @@ export default function SheikhScene() {
 
   if (!mounted) {
     return (
-      <div className="w-full min-h-[600px] bg-amber-950/20 flex items-center justify-center animate-pulse rounded-3xl">
-        <div className="w-16 h-16 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
+      <div className="w-full min-h-[300px] md:min-h-[600px] bg-amber-950/20 flex items-center justify-center animate-pulse rounded-3xl">
+        <div className="w-12 h-12 md:w-16 md:h-16 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
-  // Fallback 2D Render Container (to be passed to ErrorBoundary or directly loaded if WebGL is missing)
+  // Mobile-only performance isolation: Render lightweight radial network on mobile (<768px)
+  if (isMobile) {
+    return <MobileSheikhRadialNetwork />;
+  }
+
+  // Fallback 2D Render Container (to be passed to ErrorBoundary or directly loaded if WebGL is missing on desktop)
   const renderFallback = (
     <div className="w-full h-[400px] sm:h-[480px] lg:h-[520px] relative z-10 flex items-center justify-center pointer-events-auto">
       <Premium2DFallback
