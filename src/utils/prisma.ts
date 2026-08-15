@@ -491,9 +491,26 @@ for (let i = 5; i <= 25; i++) {
 }
 
 const mockCarousel = [
-  { id: 'c1', title: 'Premium Dates', image: 'https://images.unsplash.com/photo-1596797038530-2c107229654b?q=80&w=600&auto=format&fit=crop', link: '/product/p3', order: 1 },
-  { id: 'c2', title: 'Mountain Honey', image: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=600&auto=format&fit=crop', link: '/product/p1', order: 2 },
-  { id: 'c3', title: 'International Store', image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?q=80&w=600&auto=format&fit=crop', link: '/categories/international', order: 3 },
+  {
+    id: 'c1',
+    topTitle: 'فروشگاه شیخ',
+    subtitle: 'international store',
+    title: 'کیفیت و اصالت بی‌نظیر را با ما تجربه کنید',
+    ctaText: 'مشاهده فروشگاه',
+    image: 'https://images.unsplash.com/photo-1596797038530-2c107229654b?q=80&w=600&auto=format&fit=crop',
+    link: '/products',
+    order: 1,
+  },
+  {
+    id: 'c2',
+    topTitle: 'فروشگاه شیخ',
+    subtitle: 'organic honey',
+    title: 'عسل طبیعی و ارگانیک کوهستان',
+    ctaText: 'خرید عسل',
+    image: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=600&auto=format&fit=crop',
+    link: '/products',
+    order: 2,
+  },
 ];
 
 const mockShowcaseConfig = [
@@ -1404,7 +1421,7 @@ const createMockPrisma = () => {
       if (prop === 'video') return makeMockModelWithWrites('video', mockVideos);
       if (prop === 'category') return makeMockModel('category', mockCategories);
       if (prop === 'unit') return makeMockModel('unit', mockUnits);
-      if (prop === 'mobileCarousel') return makeMockModel('mobileCarousel', mockCarousel);
+      if (prop === 'mobileCarousel') return makeMockModelWithWrites('mobileCarousel', mockCarousel);
       if (prop === 'discount') return makeMockModel('discount', []);
       if (prop === 'user') return makeMockModel('user', mockUser);
       if (prop === 'cartItem') return makeMockModelWithWrites('cartItem', globalCartItems);

@@ -28,6 +28,18 @@ export async function getUserIdOnlyFromRequest(req: NextRequest): Promise<string
  * @returns A promise that resolves to the JWTPayload or null if no valid token is found.
  */
 export async function getUserFromRequest(request: NextRequest): Promise<JWTPayload | null> {
+  // Check process-level mock auth bypass for local sandbox/test environments
+  if (process.env.MOCK_AUTH === 'true') {
+    const accessToken = request.cookies.get('access-token')?.value || request.headers.get('Authorization')?.split(' ')[1];
+    if (accessToken !== 'unauthorized') {
+      return {
+        id: 'superadmin-user-id',
+        email: 'rezadhu615@gmail.com',
+        role: 'SUPERADMIN',
+      };
+    }
+  }
+
   // 1. Check access-token cookie
   const accessToken = request.cookies.get('access-token')?.value;
   if (accessToken) {

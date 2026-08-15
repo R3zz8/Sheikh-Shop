@@ -4,19 +4,28 @@ import { UserRole } from '@prisma/client';
 import { z } from 'zod';
 import { getUserFromRequest } from '@/lib/auth/utils';
 import { prisma } from '@/utils/prisma';
+import { cacheService } from '@/lib/cache/redis';
+import { revalidatePath } from 'next/cache';
 
 export const dynamic = "force-dynamic";
 
-const carouselSchema = z.object({
-  title: z.string().min(1, 'Title is required').optional(),
-  image: z.string().url().optional().or(z.literal('')),
-  link: z.string().url('Link must be a valid URL').optional(),
+const updateCarouselSchema = z.object({
+  topTitle: z.string().optional(),
+  subtitle: z.string().optional(),
+  title: z.string().min(1, 'متن اصلی تبلیغاتی الزامی است').optional(),
+  ctaText: z.string().optional(),
+  image: z.string().optional(),
+  link: z.string().min(1, 'لینک الزامی است').optional(),
   order: z.number().int().optional(),
 });
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
   if (process.env.NODE_ENV === 'development') {
-    console.log(`Health-check log: PUT /api/admin/mobile-carousel/${params.id}`);
+    console.log(`Health-check log: PUT /api/admin/mobile-carousel/${id}`);
   }
 
   try {
@@ -26,25 +35,32 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = params;
     const body = await req.json();
-    const validation = carouselSchema.safeParse(body);
+    const validation = updateCarouselSchema.safeParse(body);
 
     if (!validation.success) {
-      return NextResponse.json({ errors: validation.error.errors }, { status: 400 });
+      return NextResponse.json({ errors: validation.error.errors, message: validation.error.errors[0]?.message || 'اطلاعات ورودی نامعتبر است' }, { status: 400 });
     }
 
-    const { title, image, link, order } = validation.data;
+    const { topTitle, subtitle, title, ctaText, image, link, order } = validation.data;
 
     const updatedSlide = await prisma.mobileCarousel.update({
       where: { id },
       data: {
-        title,
-        image,
-        link,
-        order,
+        ...(topTitle !== undefined && { topTitle }),
+        ...(subtitle !== undefined && { subtitle }),
+        ...(title !== undefined && { title }),
+        ...(ctaText !== undefined && { ctaText }),
+        ...(image !== undefined && { image }),
+        ...(link !== undefined && { link }),
+        ...(order !== undefined && { order }),
       },
     });
+
+    // Invalidate Redis/In-Memory Cache & Next.js Path Cache
+    await cacheService.del('mobile-carousel');
+    revalidatePath('/');
+    revalidatePath('/dashboard/mobile-carousel');
 
     return NextResponse.json(updatedSlide);
   } catch (error) {
@@ -53,9 +69,13 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
   if (process.env.NODE_ENV === 'development') {
-    console.log(`Health-check log: DELETE /api/admin/mobile-carousel/${params.id}`);
+    console.log(`Health-check log: DELETE /api/admin/mobile-carousel/${id}`);
   }
 
   try {
@@ -65,11 +85,14 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = params;
-
     await prisma.mobileCarousel.delete({
       where: { id },
     });
+
+    // Invalidate Redis/In-Memory Cache & Next.js Path Cache
+    await cacheService.del('mobile-carousel');
+    revalidatePath('/');
+    revalidatePath('/dashboard/mobile-carousel');
 
     return new NextResponse(null, { status: 204 });
   } catch (error) {

@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useCallback, useEffect, useState, useMemo } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay, EffectFade } from 'swiper/modules';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 
 // Import Swiper styles
 import 'swiper/css';
@@ -16,17 +17,14 @@ import 'swiper/css/effect-fade';
 // Type definition for carousel images
 type CarouselImage = { 
   id?: string | number; 
-  publicId?: string; 
-  public_id?: string; 
-  src?: string;
-  url: string; 
-  alt: string; 
+  topTitle?: string;
+  subtitle?: string;
   title: string; 
   ctaText?: string;
   ctaLink?: string;
+  url: string;
+  alt?: string;
 };
-
-import { useQuery } from '@tanstack/react-query';
 
 // Fallback placeholder image for failed loads
 const FALLBACK_IMAGE = '/noImage.jpg';
@@ -37,33 +35,6 @@ interface MobileCarouselProps {
   showNavigation?: boolean;
 }
 
-// Client-side luxury Persian mapper for perfect localization
-const LOCALIZED_DATA: Record<string, { title: string; subtitle: string; ctaText: string }> = {
-  'Premium Dates': {
-    title: 'خرماهای ممتاز شیخ',
-    subtitle: 'بهترین و باکیفیت‌ترین خرماهای صادراتی و ارگانیک',
-    ctaText: 'مشاهده محصولات'
-  },
-  'Mountain Honey': {
-    title: 'عسل طبیعی کوهستان',
-    subtitle: '۱۰۰٪ خالص و طبیعی از ارتفاعات بکر زاگرس',
-    ctaText: 'مشاهده محصولات'
-  },
-  'International Store': {
-    title: '🌍 فروشگاه بین‌المللی شیخ',
-    subtitle: 'ارسال محصولات به سراسر جهان با کیفیت تضمین‌شده',
-    ctaText: 'ورود به فروشگاه بین‌المللی'
-  }
-};
-
-const getLocalizedData = (title: string) => {
-  return LOCALIZED_DATA[title] || {
-    title: title,
-    subtitle: 'کیفیت و اصالت بی‌نظیر را با ما تجربه کنید',
-    ctaText: 'مشاهده فروشگاه'
-  };
-};
-
 const fetchCarouselData = async (): Promise<CarouselImage[]> => {
   const res = await fetch('/api/mobile-carousel');
   if (!res.ok) {
@@ -72,11 +43,13 @@ const fetchCarouselData = async (): Promise<CarouselImage[]> => {
   const data = await res.json();
   return data.map((slide: any) => ({
     id: slide.id,
-    url: slide.image,
-    alt: slide.title,
-    title: slide.title,
-    ctaText: 'Shop Now',
-    ctaLink: slide.link
+    topTitle: slide.topTitle || 'فروشگاه شیخ',
+    subtitle: slide.subtitle || 'international store',
+    title: slide.title || 'کیفیت و اصالت بی‌نظیر را با ما تجربه کنید',
+    ctaText: slide.ctaText || 'مشاهده فروشگاه',
+    ctaLink: slide.link || '/products',
+    url: slide.image || FALLBACK_IMAGE,
+    alt: slide.title || 'Promotional Slide',
   }));
 };
 
@@ -100,7 +73,7 @@ export default function MobileCarousel({
 
   // Function to get image source with fallback
   const getImageSource = useCallback((imageUrl: string) => {
-    return failedImages.has(imageUrl) ? FALLBACK_IMAGE : imageUrl;
+    return (!imageUrl || failedImages.has(imageUrl)) ? FALLBACK_IMAGE : imageUrl;
   }, [failedImages]);
 
   // Handle CTA button click
@@ -163,7 +136,11 @@ export default function MobileCarousel({
           className="h-[220px] sm:h-[280px]"
         >
           {images.map((img, index) => {
-            const localized = getLocalizedData(img.title);
+            const topTitle = img.topTitle || 'فروشگاه شیخ';
+            const subtitle = img.subtitle || 'international store';
+            const title = img.title || 'کیفیت و اصالت بی‌نظیر را با ما تجربه کنید';
+            const ctaText = img.ctaText || 'مشاهده فروشگاه';
+            const ctaLink = img.ctaLink || '/products';
 
             return (
               <SwiperSlide key={img.id || index}>
@@ -173,9 +150,9 @@ export default function MobileCarousel({
                     {/* Content row: right text, left image (RTL Layout) */}
                     <div className="absolute inset-0 flex flex-row-reverse items-center" dir="rtl">
                       <div className="flex-1 px-5 py-4 flex flex-col h-full text-right items-start">
-                        {/* Shop name */}
+                        {/* Shop name / Top Title */}
                         <div className="flex items-center gap-1.5 mb-2.5">
-                          <span className="text-amber-300 text-[11px] sm:text-xs font-semibold tracking-wide font-vazirmatn">فروشگاه شیخ</span>
+                          <span className="text-amber-300 text-[11px] sm:text-xs font-semibold tracking-wide font-vazirmatn">{topTitle}</span>
                           <div className="w-5 h-5 rounded-md bg-amber-500/90 flex items-center justify-center shadow shadow-amber-500/20">
                             <span className="text-[10px] leading-none">👑</span>
                           </div>
@@ -188,7 +165,7 @@ export default function MobileCarousel({
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.6, delay: 0.1 }}
                         >
-                          {localized.title}
+                          {title}
                         </motion.h2>
 
                         {/* Subtitle */}
@@ -198,19 +175,19 @@ export default function MobileCarousel({
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.6, delay: 0.15 }}
                         >
-                          {localized.subtitle}
+                          {subtitle}
                         </motion.p>
 
                         {/* CTA at bottom */}
                         <div className="mt-auto">
                           <motion.button
-                            onClick={() => handleCTAClick(img.ctaLink)}
+                            onClick={() => handleCTAClick(ctaLink)}
                             className="px-4 py-2 xs:px-5 xs:py-2 rounded-full bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 text-stone-950 font-extrabold text-xs shadow-lg shadow-amber-500/10 active:scale-95 transition-all font-vazirmatn"
                             whileHover={{ scale: 1.03 }}
                             whileTap={{ scale: 0.97 }}
-                            aria-label={`${localized.ctaText} for ${localized.title}`}
+                            aria-label={`${ctaText} for ${title}`}
                           >
-                            {localized.ctaText}
+                            {ctaText}
                           </motion.button>
                         </div>
                       </div>
@@ -219,7 +196,7 @@ export default function MobileCarousel({
                       <div className="w-1/2 h-full relative">
                         <Image
                           src={getImageSource(img.url)}
-                          alt={img.alt}
+                          alt={img.alt || title}
                           fill
                           className="object-contain p-4"
                           sizes="(max-width: 768px) 50vw, 50vw"
