@@ -194,7 +194,7 @@ const mockProducts = [
     color: 'طلایی / مشکی',
     baseUnit: mockUnits[2],
     categoryRelation: mockCategories[3],
-    images: [{ id: 'img_pd1', image: 'https://images.unsplash.com/photo-1545454675-3531b543be5d?q=80&w=600&auto=format&fit=crop', secureUrl: 'https://images.unsplash.com/photo-1545454675-3531b543be5d?q=80&w=600&auto=format&fit=crop', createdAt: new Date() }],
+    images: [{ id: 'img_pd1', image: '/sheikhdigital.webp', secureUrl: '/sheikhdigital.webp', createdAt: new Date() }],
     discounts: [],
     units: [
       { id: 'pud_speaker_1', productId: 'pd_speaker_1', name: 'Piece', price: 18900000, unitId: 'u3', unit: mockUnits[2], isActive: true, stock: 15, createdAt: new Date(), updatedAt: new Date() }
@@ -232,7 +232,7 @@ const mockProducts = [
     color: 'طلایی / قهوه‌ای',
     baseUnit: mockUnits[2],
     categoryRelation: mockCategories[3],
-    images: [{ id: 'img_pd2', image: 'https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?q=80&w=600&auto=format&fit=crop', secureUrl: 'https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?q=80&w=600&auto=format&fit=crop', createdAt: new Date() }],
+    images: [{ id: 'img_pd2', image: '/sheikhgajet.webp', secureUrl: '/sheikhgajet.webp', createdAt: new Date() }],
     discounts: [],
     units: [
       { id: 'pud_speaker_2', productId: 'pd_speaker_2', name: 'Piece', price: 24500000, unitId: 'u3', unit: mockUnits[2], isActive: true, stock: 25, createdAt: new Date(), updatedAt: new Date() }
@@ -266,7 +266,7 @@ const mockProducts = [
     color: 'طلایی',
     baseUnit: mockUnits[2],
     categoryRelation: mockCategories[3],
-    images: [{ id: 'img_pd_headphones', image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=600&auto=format&fit=crop', secureUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=600&auto=format&fit=crop', createdAt: new Date() }],
+    images: [{ id: 'img_pd_headphones', image: '/sheikhdigital.webp', secureUrl: '/sheikhdigital.webp', createdAt: new Date() }],
     discounts: [],
     units: [
       { id: 'pud_headphones', productId: 'pd_headphones', name: 'Piece', price: 14200000, unitId: 'u3', unit: mockUnits[2], isActive: true, stock: 40, createdAt: new Date(), updatedAt: new Date() }
@@ -300,7 +300,7 @@ const mockProducts = [
     color: 'طلایی / قهوه‌ای قهوه',
     baseUnit: mockUnits[2],
     categoryRelation: mockCategories[3],
-    images: [{ id: 'img_pd_smartwatch', image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=600&auto=format&fit=crop', secureUrl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=600&auto=format&fit=crop', createdAt: new Date() }],
+    images: [{ id: 'img_pd_smartwatch', image: '/sheikhgajet.webp', secureUrl: '/sheikhgajet.webp', createdAt: new Date() }],
     discounts: [],
     units: [
       { id: 'pud_smartwatch_black_64', productId: 'pd_smartwatch', name: 'مشکی / 64 گیگابایت', price: 32800000, oldPrice: 35000000, sku: 'SH-W-BLK-64', isActive: true, stock: 12, createdAt: new Date(), updatedAt: new Date() },
@@ -340,7 +340,7 @@ const mockProducts = [
     color: 'مشکی مات / طلایی',
     baseUnit: mockUnits[2],
     categoryRelation: mockCategories[3],
-    images: [{ id: 'img_ph_ref1', image: 'https://images.unsplash.com/photo-1571175432247-5c868b1a45b6?q=80&w=600&auto=format&fit=crop', secureUrl: 'https://images.unsplash.com/photo-1571175432247-5c868b1a45b6?q=80&w=600&auto=format&fit=crop', createdAt: new Date() }],
+    images: [{ id: 'img_ph_ref1', image: '/sheikhhome.webp', secureUrl: '/sheikhhome.webp', createdAt: new Date() }],
     discounts: [],
     units: [
       { id: 'pud_refrigerator_1', productId: 'ph_refrigerator_1', name: 'Piece', price: 89500000, unitId: 'u3', unit: mockUnits[2], isActive: true, stock: 12, createdAt: new Date(), updatedAt: new Date() }
@@ -378,7 +378,7 @@ const mockProducts = [
     color: 'مشکی مات / طلایی',
     baseUnit: mockUnits[2],
     categoryRelation: mockCategories[3],
-    images: [{ id: 'img_ph_wm1', image: 'https://images.unsplash.com/photo-1582730149719-61113dc52c7b?q=80&w=600&auto=format&fit=crop', secureUrl: 'https://images.unsplash.com/photo-1582730149719-61113dc52c7b?q=80&w=600&auto=format&fit=crop', createdAt: new Date() }],
+    images: [{ id: 'img_ph_wm1', image: '/sheikhhome.webp', secureUrl: '/sheikhhome.webp', createdAt: new Date() }],
     discounts: [],
     units: [
       { id: 'pud_washing_machine_1', productId: 'ph_washing_machine_1', name: 'Piece', price: 42500000, unitId: 'u3', unit: mockUnits[2], isActive: true, stock: 18, createdAt: new Date(), updatedAt: new Date() }
