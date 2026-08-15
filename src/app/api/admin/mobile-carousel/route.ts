@@ -4,14 +4,19 @@ import { UserRole } from '@prisma/client';
 import { z } from 'zod';
 import { getUserFromRequest } from '@/lib/auth/utils';
 import { prisma } from '@/utils/prisma';
+import { cacheService } from '@/lib/cache/redis';
+import { revalidatePath } from 'next/cache';
 
 export const dynamic = "force-dynamic";
 
 const carouselSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
-  image: z.union([z.string().url(), z.literal('')]).optional().default(''),
-  link: z.string().url('Link must be a valid URL'),
-  order: z.number().int().optional(),
+  topTitle: z.string().optional().default('فروشگاه شیخ'),
+  subtitle: z.string().optional().default('international store'),
+  title: z.string().min(1, 'متن اصلی تبلیغاتی الزامی است'),
+  ctaText: z.string().optional().default('مشاهده فروشگاه'),
+  image: z.string().optional().default(''),
+  link: z.string().min(1, 'لینک الزامی است'),
+  order: z.number().int().optional().default(0),
 });
 
 export async function GET(req: NextRequest) {
@@ -40,7 +45,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-   if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === 'development') {
     console.log('Health-check log: POST /api/admin/mobile-carousel');
   }
 
@@ -55,19 +60,27 @@ export async function POST(req: NextRequest) {
     const validation = carouselSchema.safeParse(body);
 
     if (!validation.success) {
-      return NextResponse.json({ errors: validation.error.errors }, { status: 400 });
+      return NextResponse.json({ errors: validation.error.errors, message: validation.error.errors[0]?.message || 'اطلاعات ورودی نامعتبر است' }, { status: 400 });
     }
 
-    const { title, image, link, order } = validation.data;
+    const { topTitle, subtitle, title, ctaText, image, link, order } = validation.data;
 
     const newSlide = await prisma.mobileCarousel.create({
       data: {
+        topTitle: topTitle || 'فروشگاه شیخ',
+        subtitle: subtitle || 'international store',
         title,
-        image,
+        ctaText: ctaText || 'مشاهده فروشگاه',
+        image: image || '',
         link,
         order,
       },
     });
+
+    // Invalidate Redis/In-Memory Cache & Next.js Path Cache
+    await cacheService.del('mobile-carousel');
+    revalidatePath('/');
+    revalidatePath('/dashboard/mobile-carousel');
 
     return NextResponse.json(newSlide, { status: 201 });
   } catch (error) {

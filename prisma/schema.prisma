@@ -577,7 +577,10 @@ model Category {
 
 model MobileCarousel {
   id        String   @id @default(cuid())
+  topTitle  String?  @default("فروشگاه شیخ")
+  subtitle  String?  @default("international store")
   title     String
+  ctaText   String?  @default("مشاهده فروشگاه")
   image     String
   link      String
   order     Int      @default(0)
