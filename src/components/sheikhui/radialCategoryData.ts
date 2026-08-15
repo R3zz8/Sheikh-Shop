@@ -6,7 +6,7 @@ import {
   Home,
   Shield,
   Code2,
-  Music,
+  Cpu,
   type LucideIcon
 } from 'lucide-react';
 
@@ -73,7 +73,7 @@ export const SHEIKH_RADIAL_CATEGORIES: RadialCategory[] = [
     href: '/categories/sheikh-security',
     icon: Shield,
     angleDeg: 225, // 7:30
-    color: '#38bdf8',
+    color: '#f59e0b',
   },
   {
     id: 'web',
@@ -82,15 +82,15 @@ export const SHEIKH_RADIAL_CATEGORIES: RadialCategory[] = [
     href: '/contact',
     icon: Code2,
     angleDeg: 270, // 9:00 (Left)
-    color: '#a855f7',
+    color: '#fbbf24',
   },
   {
     id: 'nava',
     name: 'شیخ نوا',
     shortName: 'نوا',
     href: '/tech-products',
-    icon: Music,
+    icon: Cpu,
     angleDeg: 315, // 10:30
-    color: '#f43f5e',
+    color: '#f59e0b',
   },
 ];
