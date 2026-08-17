@@ -2,7 +2,7 @@
 
 import React, { useState, useTransition, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ArrowLeft, Mail, ShieldCheck, Truck, Lock, Star } from 'lucide-react';
+import { ArrowLeft, Mail, ShieldCheck, Truck, Lock, Star, RefreshCw, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import AuthCard from '@/components/auth/AuthCard';
@@ -15,15 +15,19 @@ import { useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 
 const ERROR_MESSAGES: Record<string, string> = {
-  cancelled: "فرآیند ورود توسط کاربر لغو شد.",
-  invalid_state: "نشست امنیتی گوگل نامعتبر یا منقضی شده است. لطفاً دوباره تلاش کنید.",
+  cancelled: "ورود لغو شد.",
+  oauth_rejected: "دسترسی حساب گوگل توسط کاربر لغو شد.",
+  timeout: "اتصال شما کند یا ناپایدار است. لطفاً دوباره تلاش کنید.",
+  network_error: "ارتباط با سرور یا گوگل برقرار نشد. وضعیت اینترنت خود را بررسی کنید.",
+  invalid_state: "نشست امنیتی ورود نامعتبر یا منقضی شده است. لطفاً دوباره تلاش کنید.",
   invalid_callback: "اطلاعات بازگشتی از گوگل معتبر نیست.",
-  config_missing: "تنظیمات گوگل در سرور ناقص است. با پشتیبانی تماس بگیرید.",
-  failed_exchange: "امکان برقراری ارتباط با گوگل وجود نداشت.",
+  config_missing: "تنظیمات ورود به سرور ناقص است. لطفاً با پشتیبانی تماس بگیرید.",
+  failed_exchange: "ارتباط با گوگل با مشکل مواجه شد. لطفاً دوباره تلاش کنید.",
   failed_profile: "خطا در دریافت پروفایل کاربری از گوگل.",
-  disabled: "این حساب کاربری مسدود شده است.",
+  disabled: "این حساب کاربری غیرفعال یا مسدود شده است.",
   no_email: "حساب گوگل شما فاقد نشانی ایمیل تایید شده است.",
-  server_error: "خطای ناشناخته در سرور هنگام ورود با گوگل.",
+  db_error: "ارتباط با پایگاه داده موقتاً برقرار نشد. لطفاً چند لحظه دیگر دوباره تلاش کنید.",
+  server_error: "ورود انجام نشد. لطفاً دوباره تلاش کنید.",
 };
 
 function AuthErrorNotification() {
@@ -36,7 +40,31 @@ function AuthErrorNotification() {
     }
   }, [error]);
 
-  return null;
+  if (!error || !ERROR_MESSAGES[error]) return null;
+
+  return (
+    <div className="mb-4 p-4 rounded-2xl bg-amber-950/40 border border-amber-500/30 text-amber-200 space-y-3 font-vazirmatn text-xs sm:text-sm">
+      <div className="flex items-center gap-2 font-bold text-amber-400">
+        <AlertCircle className="size-4.5 shrink-0" />
+        <span>خطا در ورود با گوگل</span>
+      </div>
+      <p className="leading-relaxed text-slate-200">
+        {ERROR_MESSAGES[error]}
+      </p>
+      <div className="pt-1">
+        <button
+          type="button"
+          onClick={() => {
+            window.location.href = '/api/auth/google';
+          }}
+          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 font-bold text-xs hover:brightness-110 transition-all cursor-pointer shadow-md"
+        >
+          <RefreshCw className="size-3.5" />
+          <span>تلاش مجدد با گوگل</span>
+        </button>
+      </div>
+    </div>
+  );
 }
 
 interface LoginFormValues {

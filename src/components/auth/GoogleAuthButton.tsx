@@ -17,11 +17,12 @@ export default function GoogleAuthButton({ onClick, isLoading: externalIsLoading
     const handleGoogleAuth = () => {
         if (disabled || isLoading) return;
 
+        setInternalIsLoading(true);
+
         if (onClick) {
             onClick();
         } else {
-            setInternalIsLoading(true);
-            // Redirect to our native secure Google OAuth initiation route
+            // Redirect to native secure Google OAuth initiation route
             window.location.href = "/api/auth/google";
         }
     };
