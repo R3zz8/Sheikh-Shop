@@ -1,23 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
 import { prisma } from '@/lib/prisma';
 import { hashPassword, generateSecurePassword } from '@/lib/auth/password';
 import { createSession } from '@/lib/actions/auth/session';
 import { logAudit, logFailedAttempt } from '@/lib/actions/auth/audit';
+import { getAppUrl } from '../route';
+
+const FETCH_TIMEOUT_MS = 12000; // 12 seconds timeout for Google API calls
+
+async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs = FETCH_TIMEOUT_MS): Promise<Response> {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    return response;
+  } finally {
+    clearTimeout(id);
+  }
+}
 
 export async function GET(req: NextRequest) {
-  console.log('[GOOGLE_CALLBACK] START - Processing callback request...');
+  const requestId = crypto.randomUUID().substring(0, 8);
+  const appUrl = getAppUrl(req);
+  console.log(`[GOOGLE_CALLBACK][${requestId}] START - Processing callback request...`);
+
   try {
     const { searchParams } = new URL(req.url);
     const code = searchParams.get('code');
     const state = searchParams.get('state');
     const errorParam = searchParams.get('error');
 
-    // Get absolute redirect page url
-    const host = req.headers.get('host') || 'localhost:3000';
-    const proto = req.headers.get('x-forwarded-proto') || 'http';
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || `${proto}://${host}`;
-
-    console.log('[GOOGLE_CALLBACK] PARAMS - Query string values parsed:', {
+    console.log(`[GOOGLE_CALLBACK][${requestId}] PARAMS - Query string values parsed:`, {
       hasCode: !!code,
       hasState: !!state,
       stateLength: state?.length || 0,
@@ -27,102 +43,110 @@ export async function GET(req: NextRequest) {
 
     // Gracefully handle cancellation or errors from Google
     if (errorParam) {
-      console.warn('[GOOGLE_CALLBACK] CANCELLED - Error received from Google:', errorParam);
-      return NextResponse.redirect(new URL(`/login?error=cancelled`, appUrl));
+      console.warn(`[GOOGLE_CALLBACK][${requestId}] CANCELLED - Error received from Google:`, errorParam);
+      return NextResponse.redirect(new URL('/login?error=oauth_rejected', appUrl));
     }
 
     if (!code || !state) {
-      console.warn('[GOOGLE_CALLBACK] FAILURE - Code or State missing in callback parameters.');
-      return NextResponse.redirect(new URL(`/login?error=invalid_callback`, appUrl));
+      console.warn(`[GOOGLE_CALLBACK][${requestId}] FAILURE - Code or State missing in callback parameters.`);
+      return NextResponse.redirect(new URL('/login?error=invalid_callback', appUrl));
     }
 
     // Retrieve state and PKCE verifier from cookies
     const storedState = req.cookies.get('google-oauth-state')?.value;
     const storedVerifier = req.cookies.get('google-oauth-verifier')?.value;
 
-    console.log('[GOOGLE_CALLBACK] COOKIES - Stored verification cookies found:', {
+    console.log(`[GOOGLE_CALLBACK][${requestId}] COOKIES - Stored verification cookies found:`, {
       hasStoredState: !!storedState,
       hasStoredVerifier: !!storedVerifier,
       stateMatches: state === storedState,
     });
 
     if (!storedState || !storedVerifier || state !== storedState) {
-      console.warn('[GOOGLE_CALLBACK] FAILURE - CSRF State mismatch or session expired.', {
-        state,
-        storedState,
-        hasStoredVerifier: !!storedVerifier,
-      });
-      return NextResponse.redirect(new URL(`/login?error=invalid_state`, appUrl));
+      console.warn(`[GOOGLE_CALLBACK][${requestId}] FAILURE - CSRF State mismatch or session expired.`);
+      return NextResponse.redirect(new URL('/login?error=invalid_state', appUrl));
     }
 
     const clientId = process.env.GOOGLE_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
     if (!clientId || !clientSecret) {
-      console.error('[GOOGLE_CALLBACK] FAILURE - Missing Google OAuth client configuration variables.');
-      return NextResponse.redirect(new URL(`/login?error=config_missing`, appUrl));
+      console.error(`[GOOGLE_CALLBACK][${requestId}] FAILURE - Missing Google OAuth client configuration variables.`);
+      return NextResponse.redirect(new URL('/login?error=config_missing', appUrl));
     }
 
     // Exchange authorization code and PKCE verifier for Google tokens
     const tokenRedirectUri = `${appUrl}/api/auth/google/callback`;
-    console.log('[GOOGLE_CALLBACK] EXCHANGE - Exchanging code for token with Redirect URI:', tokenRedirectUri);
+    console.log(`[GOOGLE_CALLBACK][${requestId}] EXCHANGE - Exchanging code for token with Redirect URI:`, tokenRedirectUri);
 
-    const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        client_id: clientId,
-        client_secret: clientSecret,
-        code,
-        code_verifier: storedVerifier,
-        grant_type: 'authorization_code',
-        redirect_uri: tokenRedirectUri,
-      }),
-    });
+    let tokenResponse: Response;
+    try {
+      tokenResponse = await fetchWithTimeout('https://oauth2.googleapis.com/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          client_id: clientId,
+          client_secret: clientSecret,
+          code,
+          code_verifier: storedVerifier,
+          grant_type: 'authorization_code',
+          redirect_uri: tokenRedirectUri,
+        }),
+      });
+    } catch (tokenFetchError: any) {
+      console.error(`[GOOGLE_CALLBACK][${requestId}] FAILURE - Timeout/Network error exchanging token with Google:`, tokenFetchError);
+      const errType = tokenFetchError.name === 'AbortError' ? 'timeout' : 'network_error';
+      return NextResponse.redirect(new URL(`/login?error=${errType}`, appUrl));
+    }
 
     if (!tokenResponse.ok) {
-      const tokenError = await tokenResponse.text();
-      console.error('[GOOGLE_CALLBACK] FAILURE - Token exchange failed with status:', tokenResponse.status, 'Error:', tokenError);
-      return NextResponse.redirect(new URL(`/login?error=failed_exchange`, appUrl));
+      const tokenErrorText = await tokenResponse.text();
+      console.error(`[GOOGLE_CALLBACK][${requestId}] FAILURE - Token exchange failed with status:`, tokenResponse.status, 'Error:', tokenErrorText);
+      return NextResponse.redirect(new URL('/login?error=failed_exchange', appUrl));
     }
 
     const tokenData = await tokenResponse.json();
     const accessTokenGoogle = tokenData.access_token;
 
     if (!accessTokenGoogle) {
-      console.error('[GOOGLE_CALLBACK] FAILURE - Access token missing from Google token response.');
-      return NextResponse.redirect(new URL(`/login?error=failed_exchange`, appUrl));
+      console.error(`[GOOGLE_CALLBACK][${requestId}] FAILURE - Access token missing from Google token response.`);
+      return NextResponse.redirect(new URL('/login?error=failed_exchange', appUrl));
     }
 
-    console.log('[GOOGLE_CALLBACK] EXCHANGE - Token exchange successful!');
+    console.log(`[GOOGLE_CALLBACK][${requestId}] EXCHANGE - Token exchange successful!`);
 
     // Fetch User Profile from Google using backchannel API over HTTPS
-    console.log('[GOOGLE_CALLBACK] PROFILE - Querying Google userinfo endpoint...');
-    const profileResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-      headers: { Authorization: `Bearer ${accessTokenGoogle}` },
-    });
+    console.log(`[GOOGLE_CALLBACK][${requestId}] PROFILE - Querying Google userinfo endpoint...`);
+    let profileResponse: Response;
+    try {
+      profileResponse = await fetchWithTimeout('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: { Authorization: `Bearer ${accessTokenGoogle}` },
+      });
+    } catch (profileFetchError: any) {
+      console.error(`[GOOGLE_CALLBACK][${requestId}] FAILURE - Timeout/Network error fetching profile from Google:`, profileFetchError);
+      const errType = profileFetchError.name === 'AbortError' ? 'timeout' : 'network_error';
+      return NextResponse.redirect(new URL(`/login?error=${errType}`, appUrl));
+    }
 
     if (!profileResponse.ok) {
-      console.error('[GOOGLE_CALLBACK] FAILURE - Failed to fetch Google user profile. Status:', profileResponse.status);
-      return NextResponse.redirect(new URL(`/login?error=failed_profile`, appUrl));
+      console.error(`[GOOGLE_CALLBACK][${requestId}] FAILURE - Failed to fetch Google user profile. Status:`, profileResponse.status);
+      return NextResponse.redirect(new URL('/login?error=failed_profile', appUrl));
     }
 
     const googleProfile = await profileResponse.json();
     const email = googleProfile.email?.toLowerCase();
 
     if (!email) {
-      console.error('[GOOGLE_CALLBACK] FAILURE - Google profile did not include an email address.');
-      return NextResponse.redirect(new URL(`/login?error=no_email`, appUrl));
+      console.error(`[GOOGLE_CALLBACK][${requestId}] FAILURE - Google profile did not include an email address.`);
+      return NextResponse.redirect(new URL('/login?error=no_email', appUrl));
     }
 
     const fullName = googleProfile.name || 'کاربر گوگل';
     const profilePicture = googleProfile.picture || null;
-    const emailVerified = googleProfile.email_verified === true;
 
-    console.log('[GOOGLE_CALLBACK] PROFILE - Google Profile retrieved successfully:', {
+    console.log(`[GOOGLE_CALLBACK][${requestId}] PROFILE - Google Profile retrieved successfully:`, {
       email,
       fullName,
-      emailVerified,
       hasPicture: !!profilePicture,
     });
 
@@ -130,106 +154,114 @@ export async function GET(req: NextRequest) {
     const userAgent = req.headers.get('user-agent') || 'Unknown';
     const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'Unknown';
 
-    // Locate or create user in our single-source-of-truth database pipeline
-    console.log('[GOOGLE_CALLBACK] DB - Checking user existence in database for:', email);
-    let user = await prisma.user.findUnique({
-      where: { email },
-    });
-
+    // Locate or create user in database safely
+    console.log(`[GOOGLE_CALLBACK][${requestId}] DB - Checking user existence in database for:`, email);
+    let user = null;
     let isNewUserCreated = false;
 
-    if (user) {
-      console.log('[GOOGLE_CALLBACK] DB - Existing user account found with ID:', user.id);
-      // If user exists, verify they can login
-      if (!user.canLogin || user.disabled) {
-        console.warn('[GOOGLE_CALLBACK] BLOCKED - User login disabled or locked out for ID:', user.id);
-        await logFailedAttempt(user.id, 'google_login_blocked', ip, userAgent);
-        return NextResponse.redirect(new URL(`/login?error=disabled`, appUrl));
-      }
-
-      // Update provider to GOOGLE if they are email but verified via Google (or preserve custom flow)
-      // and ensure email is verified since Google says so
-      const updatedData: any = {
-        emailVerified: true,
-      };
-
-      if (!user.profilePicture && profilePicture) {
-        updatedData.profilePicture = profilePicture;
-      }
-
-      console.log('[GOOGLE_CALLBACK] DB - Updating existing user metadata fields...');
-      user = await prisma.user.update({
-        where: { id: user.id },
-        data: updatedData,
-      });
-      console.log('[GOOGLE_CALLBACK] DB - User metadata updated successfully.');
-    } else {
-      // Create user account safely if not exists
-      console.log('[GOOGLE_CALLBACK] DB - User does not exist. Creating new federated account...');
-      isNewUserCreated = true;
-
-      // Extract firstName & lastName from name safely
-      const nameParts = fullName.trim().split(/\s+/);
-      const firstName = nameParts[0] || 'کاربر';
-      const lastName = nameParts.slice(1).join(' ') || 'گوگل';
-
-      // Generate a timing-attack-resistant, high-entropy password
-      const tempPass = generateSecurePassword();
-      const hashedPassword = await hashPassword(tempPass);
-
-      // Generate a unique beautiful username
-      const randomSuffix = Math.random().toString(36).substring(2, 7);
-      const username = `google_${firstName.toLowerCase()}_${randomSuffix}`.replace(/[^a-zA-Z0-9_]/g, '');
-
-      user = await prisma.user.create({
-        data: {
-          email,
-          password: hashedPassword,
-          firstName,
-          lastName,
-          username,
-          profilePicture,
-          role: 'USER',
-          emailVerified: true,
-          provider: 'GOOGLE',
-          canLogin: true,
-          disabled: false,
-          loginAttempts: 0,
-        },
+    try {
+      user = await prisma.user.findUnique({
+        where: { email },
       });
 
-      console.log('[GOOGLE_CALLBACK] DB - New Google user registered successfully with ID:', user.id);
+      if (user) {
+        console.log(`[GOOGLE_CALLBACK][${requestId}] DB - Existing user account found with ID:`, user.id);
+        if (!user.canLogin || user.disabled) {
+          console.warn(`[GOOGLE_CALLBACK][${requestId}] BLOCKED - User login disabled or locked out for ID:`, user.id);
+          await logFailedAttempt(user.id, 'google_login_blocked', ip, userAgent).catch(() => {});
+          return NextResponse.redirect(new URL('/login?error=disabled', appUrl));
+        }
+
+        const updatedData: Record<string, any> = { emailVerified: true };
+        if (!user.profilePicture && profilePicture) {
+          updatedData.profilePicture = profilePicture;
+        }
+
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: updatedData,
+        });
+      } else {
+        console.log(`[GOOGLE_CALLBACK][${requestId}] DB - User does not exist. Registering new account...`);
+        isNewUserCreated = true;
+
+        const nameParts = fullName.trim().split(/\s+/);
+        const firstName = nameParts[0] || 'کاربر';
+        const lastName = nameParts.slice(1).join(' ') || 'گوگل';
+
+        const tempPass = generateSecurePassword();
+        const hashedPassword = await hashPassword(tempPass);
+
+        const emailPrefix = email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '') || 'user';
+        const randomSuffix = crypto.randomBytes(3).toString('hex');
+        const username = `google_${emailPrefix}_${randomSuffix}`;
+
+        try {
+          user = await prisma.user.create({
+            data: {
+              email,
+              password: hashedPassword,
+              firstName,
+              lastName,
+              username,
+              profilePicture,
+              role: 'USER',
+              emailVerified: true,
+              provider: 'GOOGLE',
+              canLogin: true,
+              disabled: false,
+              loginAttempts: 0,
+            },
+          });
+        } catch (createError: any) {
+          // Handle concurrent creation race condition safely (Prisma P2002)
+          if (createError.code === 'P2002') {
+            console.warn(`[GOOGLE_CALLBACK][${requestId}] DB - Race condition detected on user creation. Refetching...`);
+            user = await prisma.user.findUnique({ where: { email } });
+            if (!user) throw createError;
+          } else {
+            throw createError;
+          }
+        }
+      }
+    } catch (dbError: any) {
+      console.error(`[GOOGLE_CALLBACK][${requestId}] FAILURE - Database operation error:`, dbError);
+      return NextResponse.redirect(new URL('/login?error=db_error', appUrl));
+    }
+
+    if (!user) {
+      console.error(`[GOOGLE_CALLBACK][${requestId}] FAILURE - User record unresolved.`);
+      return NextResponse.redirect(new URL('/login?error=db_error', appUrl));
     }
 
     // Issue Session, custom JWT, and Refresh Tokens
-    console.log('[GOOGLE_CALLBACK] SESSION - Creating secure user session for User ID:', user.id);
-    const { session, accessToken, refreshToken } = await createSession(
-      user.id,
+    console.log(`[GOOGLE_CALLBACK][${requestId}] SESSION - Creating secure session for User ID:`, user.id);
+    let sessionData;
+    try {
+      sessionData = await createSession(user.id, userAgent, ip);
+    } catch (sessionError: any) {
+      console.error(`[GOOGLE_CALLBACK][${requestId}] FAILURE - Session creation failed:`, sessionError);
+      return NextResponse.redirect(new URL('/login?error=db_error', appUrl));
+    }
+
+    const { session, accessToken, refreshToken } = sessionData;
+
+    // Audit log (fire and forget to prevent blocking authentication on audit failure)
+    logAudit(user.id, isNewUserCreated ? 'registration_success' : 'login_success', {
+      sessionId: session.id,
       userAgent,
-      ip
-    );
-    console.log('[GOOGLE_CALLBACK] SESSION - Session created successfully. ID:', session.id);
+      ip,
+      provider: 'GOOGLE',
+    }).catch((err) => console.error(`[GOOGLE_CALLBACK][${requestId}] Audit log error:`, err));
 
-    // Log successful audit trail
-    await logAudit(
-      user.id,
-      isNewUserCreated ? 'registration_success' : 'login_success',
-      {
-        sessionId: session.id,
-        userAgent,
-        ip,
-        provider: 'GOOGLE',
-      }
-    );
-
-    // Build redirect with successful authentication state identical to Email/Password
+    // Build redirect with successful authentication state
     const response = NextResponse.redirect(new URL('/?login_success=true', appUrl));
 
     // Clear temporary OAuth cookies
     response.cookies.delete('google-oauth-state');
     response.cookies.delete('google-oauth-verifier');
 
-    // Set short-lived secure access-token cookie
+    // Set secure access and refresh cookies
     const isProd = process.env.NODE_ENV === 'production';
 
     response.cookies.set('access-token', accessToken, {
@@ -240,7 +272,6 @@ export async function GET(req: NextRequest) {
       maxAge: 15 * 60, // 15 minutes
     });
 
-    // Set long-lived secure refresh-token cookie
     response.cookies.set('refresh-token', refreshToken, {
       httpOnly: true,
       secure: isProd,
@@ -249,13 +280,10 @@ export async function GET(req: NextRequest) {
       maxAge: 7 * 24 * 60 * 60, // 7 days
     });
 
-    console.log('[GOOGLE_CALLBACK] SUCCESS - Authentication completed. Cookies set, redirecting to app home page.');
+    console.log(`[GOOGLE_CALLBACK][${requestId}] SUCCESS - Authentication completed cleanly.`);
     return response;
-  } catch (error) {
-    console.error('[GOOGLE_CALLBACK] FAILURE - Critical exception occurred inside Google callback pipeline:', error);
-    const host = req.headers.get('host') || 'localhost:3000';
-    const proto = req.headers.get('x-forwarded-proto') || 'http';
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || `${proto}://${host}`;
-    return NextResponse.redirect(new URL(`/login?error=server_error`, appUrl));
+  } catch (error: any) {
+    console.error(`[GOOGLE_CALLBACK][${requestId}] FAILURE - Critical exception in Google callback:`, error);
+    return NextResponse.redirect(new URL('/login?error=server_error', appUrl));
   }
 }

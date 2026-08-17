@@ -1,6 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 
+export function getAppUrl(req: NextRequest): string {
+  let url = process.env.NEXT_PUBLIC_APP_URL;
+  if (!url) {
+    const host = req.headers.get('host') || 'localhost:3000';
+    const proto = req.headers.get('x-forwarded-proto') || 'http';
+    url = `${proto}://${host}`;
+  }
+  return url.replace(/\/+$/, '');
+}
+
 function generateState(): string {
   return crypto.randomBytes(32).toString('hex');
 }
@@ -17,24 +27,20 @@ function generateCodeChallenge(verifier: string): string {
 }
 
 export async function GET(req: NextRequest) {
-  console.log('[GOOGLE_AUTH] START - Initiating Google OAuth Flow...');
+  const requestId = crypto.randomUUID().substring(0, 8);
+  console.log(`[GOOGLE_AUTH][${requestId}] START - Initiating Google OAuth Flow...`);
   try {
     const clientId = process.env.GOOGLE_CLIENT_ID;
+    const appUrl = getAppUrl(req);
+
     if (!clientId) {
-      console.error('[GOOGLE_AUTH] FAILURE - Missing GOOGLE_CLIENT_ID environment variable.');
-      return NextResponse.json(
-        { success: false, message: 'تنظیمات گوگل آیدی در سرور انجام نشده است.' },
-        { status: 500 }
-      );
+      console.error(`[GOOGLE_AUTH][${requestId}] FAILURE - Missing GOOGLE_CLIENT_ID environment variable.`);
+      return NextResponse.redirect(new URL('/login?error=config_missing', appUrl));
     }
 
-    // Determine absolute application URL
-    const host = req.headers.get('host') || 'localhost:3000';
-    const proto = req.headers.get('x-forwarded-proto') || 'http';
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || `${proto}://${host}`;
     const redirectUri = `${appUrl}/api/auth/google/callback`;
 
-    console.log('[GOOGLE_AUTH] CONFIG - Environment Context:', {
+    console.log(`[GOOGLE_AUTH][${requestId}] CONFIG - Environment Context:`, {
       hasClientId: !!clientId,
       appUrl,
       redirectUri,
@@ -46,12 +52,6 @@ export async function GET(req: NextRequest) {
     const verifier = generateCodeVerifier();
     const challenge = generateCodeChallenge(verifier);
 
-    console.log('[GOOGLE_AUTH] PKCE - Generated cryptographic tokens:', {
-      stateLength: state.length,
-      verifierLength: verifier.length,
-      challengeLength: challenge.length,
-    });
-
     // Build Google OAuth 2.0 URL
     const googleAuthUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
     googleAuthUrl.searchParams.set('client_id', clientId);
@@ -62,7 +62,7 @@ export async function GET(req: NextRequest) {
     googleAuthUrl.searchParams.set('code_challenge', challenge);
     googleAuthUrl.searchParams.set('code_challenge_method', 'S256');
     googleAuthUrl.searchParams.set('access_type', 'offline');
-    googleAuthUrl.searchParams.set('prompt', 'consent');
+    googleAuthUrl.searchParams.set('prompt', 'select_account');
 
     const response = NextResponse.redirect(googleAuthUrl.toString());
 
@@ -85,13 +85,11 @@ export async function GET(req: NextRequest) {
       maxAge: 15 * 60, // 15 minutes
     });
 
-    console.log('[GOOGLE_AUTH] SUCCESS - Cookies set, redirecting user to Google Login Page:', googleAuthUrl.origin);
+    console.log(`[GOOGLE_AUTH][${requestId}] SUCCESS - Cookies set, redirecting user to Google Login Page.`);
     return response;
   } catch (error) {
-    console.error('[GOOGLE_AUTH] FAILURE - Error during authorization initiation:', error);
-    return NextResponse.json(
-      { success: false, message: 'خطای سیستمی در فرآیند ورود با گوگل.' },
-      { status: 500 }
-    );
+    console.error(`[GOOGLE_AUTH] FAILURE - Error during authorization initiation:`, error);
+    const appUrl = getAppUrl(req);
+    return NextResponse.redirect(new URL('/login?error=server_error', appUrl));
   }
 }
