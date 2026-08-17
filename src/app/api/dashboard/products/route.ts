@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { checkAccess } from '@/lib/checkAccess';
 import { ProductStatus, ProductCategory } from '@prisma/client';
 import { toNumber } from '@/lib/currency';
+import { cacheService } from '@/lib/cache/redis';
 
 export const dynamic = 'force-dynamic';
 
@@ -221,6 +222,10 @@ export async function PATCH(req: NextRequest) {
       where: { id },
       data: updateData,
     });
+
+    // Invalidate product & showcase caches
+    await cacheService.invalidateProductCache(id);
+    await cacheService.del('showcase_config_data');
 
     return NextResponse.json({
       success: true,
