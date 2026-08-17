@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useRequireRole } from '@/hooks/useRBAC';
-import { Package, Users, FileText, CreditCard, BarChart3, MessageSquare } from 'lucide-react';
+import { Package, Users, FileText, CreditCard, BarChart3, MessageSquare, Sliders } from 'lucide-react';
 
 export default function DashboardClient() {
   const hasAccess = useRequireRole(['ADMIN', 'SUPERADMIN']);
@@ -22,6 +22,12 @@ export default function DashboardClient() {
   }
 
   const dashboardCards = [
+    {
+      title: 'مدیریت کروسل (Carousel)',
+      description: 'مدیریت اسلایدر و بنرهای تبلیغاتی موبایل',
+      href: '/dashboard/mobile-carousel',
+      icon: Sliders,
+    },
     {
       title: 'Products',
       description: 'Manage your products',
