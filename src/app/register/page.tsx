@@ -284,6 +284,7 @@ export default function RegisterPage() {
   return (
     <AnimatedBackground>
       <AuthCard
+        showBrand={false}
         title="ایجاد حساب کاربری"
         subtitle="به تجربه ممتاز و لوکس ما بپیوندید"
         footer={(

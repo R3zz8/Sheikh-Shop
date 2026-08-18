@@ -145,8 +145,8 @@ export function LuxuryLoader() {
         </div>
 
         {/* 2. Main Heading */}
-        <h2 className="text-xl sm:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-stone-100 to-white mb-2 tracking-wide font-sans">
-          لطفاً کمی صبر کنید...
+        <h2 className="text-xl sm:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-stone-100 to-white mb-2 font-vazirmatn">
+          لطفا کمی صبر کنید
         </h2>
 
         {/* 3. Dynamic Subtitle (Smooth transition) */}

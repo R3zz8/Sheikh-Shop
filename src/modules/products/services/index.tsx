@@ -4,6 +4,7 @@ import type { Product } from '@prisma/client';
 import { redirect } from 'next/navigation';
 import { generateProductSlug } from '@/lib/utils/slug';
 import { cache } from 'react';
+import { cacheService } from '@/lib/cache/redis';
 import {
   sanitizeProductName,
   sanitizeProductDescription,
@@ -492,23 +493,50 @@ export const getProductByIdOrSlug = cache(async (identifier: string) => {
       return null;
     }
 
+    const cacheKey = `product:details:${identifier}`;
+    try {
+      const cached = await cacheService.get<any>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+    } catch (cacheError) {
+      console.error('Cache get failure in getProductByIdOrSlug:', cacheError);
+    }
+
+    let product: any = null;
+
     // Try slug first (more common for SEO-friendly URLs)
     // If it looks like a UUID, try ID lookup
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(identifier);
     
     if (isUUID) {
       // Try ID lookup first for UUIDs
-      const byId = await getProductById(identifier);
-      if (byId) return byId;
+      product = await getProductById(identifier);
     }
     
-    // Try slug lookup (for both UUIDs and slugs)
-    const bySlug = await getProductBySlug(identifier);
-    if (bySlug) return bySlug;
+    if (!product) {
+      product = await getProductBySlug(identifier);
+    }
 
-    // Try ID lookup as a final fallback (e.g. for mock non-UUID IDs like pd_speaker_1)
-    const byIdFallback = await getProductById(identifier);
-    if (byIdFallback) return byIdFallback;
+    if (!product) {
+      // Try ID lookup as a final fallback (e.g. for mock non-UUID IDs like pd_speaker_1)
+      product = await getProductById(identifier);
+    }
+
+    if (product) {
+      try {
+        await cacheService.set(cacheKey, product, 300); // 5 minutes cache
+        if (product.id && product.id !== identifier) {
+          await cacheService.set(`product:details:${product.id}`, product, 300);
+        }
+        if (product.slug && product.slug !== identifier) {
+          await cacheService.set(`product:details:${product.slug}`, product, 300);
+        }
+      } catch (cacheError) {
+        console.error('Cache set failure in getProductByIdOrSlug:', cacheError);
+      }
+      return product;
+    }
     
     // Product not found by either ID or slug
     console.error('Product not found by ID or slug:', identifier);
@@ -685,11 +713,32 @@ export const upsertProduct = async (
     });
   }
 
+  // Invalidate cache
+  try {
+    await cacheService.invalidateProductCache(result.id);
+    if (result.slug) {
+      await cacheService.del(`product:details:${result.slug}`);
+    }
+    await cacheService.del('products:all:active_50_minimal');
+  } catch (cacheErr) {
+    console.error('Error invalidating product cache on upsert:', cacheErr);
+  }
+
   return result;
 };
 
 export const deleteProduct = async (id: string) => {
+  const product = await prisma.product.findUnique({ where: { id }, select: { slug: true } });
   await prisma.product.delete({ where: { id } });
+  try {
+    await cacheService.invalidateProductCache(id);
+    if (product?.slug) {
+      await cacheService.del(`product:details:${product.slug}`);
+    }
+    await cacheService.del('products:all:active_50_minimal');
+  } catch (cacheErr) {
+    console.error('Error invalidating product cache on delete:', cacheErr);
+  }
   redirect('/dashboard/products');
 };
 

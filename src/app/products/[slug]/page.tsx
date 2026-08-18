@@ -173,7 +173,7 @@ async function getProduct(identifier: string) {
 }
 
 async function getAllProducts() {
-  const cacheKey = 'products:all:active_50';
+  const cacheKey = 'products:all:active_50_minimal';
   let cached: any[] | null = null;
 
   try {
@@ -186,16 +186,80 @@ async function getAllProducts() {
     return cached;
   }
 
-  // Database query (exceptions bubble up to standard error boundary)
+  // Database query selecting targeted fields for card recommendations
   const products = await prisma.product.findMany({
     where: { status: 'ACTIVE' },
-    include: {
-      images: true,
-      baseUnit: true,
-      units: true,
-      discounts: true,
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      basePrice: true,
+      baseUnitId: true,
+      status: true,
+      categoryType: true,
+      isNew: true,
+      isBestSeller: true,
+      isAmazing: true,
+      createdAt: true,
+      updatedAt: true,
+      excerpt: true,
+      description: true,
+      images: {
+        select: {
+          id: true,
+          image: true,
+          secureUrl: true,
+          publicId: true,
+          sortOrder: true,
+          isFeatured: true,
+          isVisible: true,
+          createdAt: true,
+        },
+        take: 2,
+      },
+      baseUnit: {
+        select: {
+          id: true,
+          name: true,
+          symbol: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      },
+      units: {
+        where: { isActive: true },
+        select: {
+          id: true,
+          productId: true,
+          name: true,
+          price: true,
+          stock: true,
+          isActive: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      },
+      discounts: {
+        where: {
+          isActive: true,
+          startDate: { lte: new Date() },
+          endDate: { gte: new Date() },
+        },
+        select: {
+          id: true,
+          productId: true,
+          discountType: true,
+          value: true,
+          startDate: true,
+          endDate: true,
+          isActive: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      },
     },
     take: 50,
+    orderBy: { createdAt: 'desc' },
   });
 
   const serialized = products.map(serializeProduct);
