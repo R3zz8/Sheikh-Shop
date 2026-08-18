@@ -15,6 +15,7 @@ import {
   RoyalShowcase,
 } from '@/components/DynamicClientComponents';
 import BMWCarousel from '@/components/BMWCarousel';
+import { getSpecialProducts } from '@/lib/services/getSpecialProducts';
 
 export async function generateMetadata(): Promise<Metadata> {
   const baseUrl = process.env.NODE_ENV === 'production' 
@@ -60,7 +61,9 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function Home() {
+export default async function Home() {
+  const specialProducts = await getSpecialProducts(10);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-950 via-stone-900 to-amber-950 relative">
       {/* Background effects */}
@@ -87,7 +90,7 @@ export default function Home() {
       {/* Premium Speaker Showcase Section */}
       <PremiumSpeakerShowcase />
 
-      <BMWCarousel />
+      <BMWCarousel products={specialProducts} />
 
       {/* Inject FAQ JSON-LD for common homepage questions */}
       <FAQSchema
