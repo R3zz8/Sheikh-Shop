@@ -22,13 +22,17 @@ export async function GET() {
     });
 
     const allProducts = await prisma.product.findMany({
-      where: { status: 'ACTIVE' },
+      where: {
+        status: 'ACTIVE',
+      },
       select: {
         id: true,
         name: true,
+        slug: true,
         category: true,
         categoryType: true,
         basePrice: true,
+        isBestSeller: true,
         images: {
           take: 1,
           select: {

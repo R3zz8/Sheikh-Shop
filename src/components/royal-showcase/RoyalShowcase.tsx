@@ -586,93 +586,6 @@ interface ProductWithMetadata {
   slug?: string;
 }
 
-const DEFAULT_PRODUCTS: ProductWithMetadata[] = [
-  {
-    id: 'pd_speaker_1',
-    name: 'اسپیکر ایستاده شیخ مدل Luxury X9',
-    category: 'OTHERS',
-    categoryType: 'SheikhDigital',
-    basePrice: 18900000,
-    images: [{ secureUrl: 'https://images.unsplash.com/photo-1545454675-3531b543be5d?q=80&w=600&auto=format&fit=crop' }],
-    badgeType: 'BEST_SELLER',
-    categoryEffect: 'SPEAKER',
-    ctaText: 'مشاهده اسپیکر ایستاده',
-    ctaLink: '/products/luxury-x9-speaker'
-  },
-  {
-    id: 'pd_speaker_2',
-    name: 'اسپیکر هوشمند شیخ مدل Royal Sound Pro',
-    category: 'OTHERS',
-    categoryType: 'SheikhDigital',
-    basePrice: 24500000,
-    images: [{ secureUrl: 'https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?q=80&w=600&auto=format&fit=crop' }],
-    badgeType: 'FEATURED',
-    categoryEffect: 'SPEAKER',
-    ctaText: 'مشاهده اسپیکر هوشمند',
-    ctaLink: '/products/royal-sound-pro-speaker'
-  },
-  {
-    id: 'pd_headphones',
-    name: 'هدفون بی‌سیم لوکس شیخ مدل Golden Scent',
-    category: 'OTHERS',
-    categoryType: 'SheikhDigital',
-    basePrice: 14200000,
-    images: [{ secureUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=600&auto=format&fit=crop' }],
-    badgeType: 'NEW',
-    categoryEffect: 'HEADPHONES',
-    ctaText: 'خرید هدفون بی‌سیم',
-    ctaLink: '/products/golden-scent-headphones'
-  },
-  {
-    id: 'pd_smartwatch',
-    name: 'ساعت هوشمند سلطنتی شیخ مدل Royal Watch V2',
-    category: 'OTHERS',
-    categoryType: 'SheikhDigital',
-    basePrice: 32800000,
-    images: [{ secureUrl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=600&auto=format&fit=crop' }],
-    badgeType: 'FEATURED',
-    categoryEffect: 'LIGHTING',
-    ctaText: 'خرید ساعت هوشمند',
-    ctaLink: '/products/royal-watch-v2'
-  },
-  {
-    id: 'p1',
-    name: 'عسل طبیعی کوهستان ممتاز شیخ',
-    category: 'HONEY',
-    categoryType: 'SheikhFood',
-    basePrice: 1250000,
-    images: [{ secureUrl: '/honey.webp' }],
-    badgeType: 'BEST_SELLER',
-    categoryEffect: 'HONEY',
-    ctaText: 'خرید عسل طبیعی',
-    ctaLink: '/products/p1'
-  },
-  {
-    id: 'p2',
-    name: 'زعفران سوپر نگین خراسان ممتاز',
-    category: 'SAFFRON',
-    categoryType: 'SheikhFood',
-    basePrice: 4250000,
-    images: [{ secureUrl: '/saffron.webp' }],
-    badgeType: 'NEW',
-    categoryEffect: 'SAFFRON',
-    ctaText: 'خرید زعفران سوپر نگین',
-    ctaLink: '/products/p2'
-  },
-  {
-    id: 'p3',
-    name: 'خرمای مجول ممتاز صادراتی شیخ',
-    category: 'DATES',
-    categoryType: 'SheikhFood',
-    basePrice: 890000,
-    images: [{ secureUrl: '/dates.webp' }],
-    badgeType: 'BEST_SELLER',
-    categoryEffect: 'DATES',
-    ctaText: 'خرید خرما مجول',
-    ctaLink: '/products/p3'
-  }
-];
-
 export default function RoyalShowcase() {
   const [mounted, setMounted] = useState(false);
   const [webGLSupported, setWebGLSupported] = useState(true);
@@ -693,7 +606,7 @@ export default function RoyalShowcase() {
     maxProducts: 8,
   });
 
-  const [products, setProducts] = useState<ProductWithMetadata[]>(DEFAULT_PRODUCTS);
+  const [products, setProducts] = useState<ProductWithMetadata[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [direction, setDirection] = useState(0); // -1: prev, 1: next
 
@@ -731,55 +644,48 @@ export default function RoyalShowcase() {
           if (data.config) {
             setConfig(data.config);
           }
+          const all = data.allProducts || [];
+          let mappedProducts: ProductWithMetadata[] = [];
+
           if (Array.isArray(data.featuredProducts) && data.featuredProducts.length > 0) {
-            // Map detailed product details from allProducts
-            const all = data.allProducts || [];
-            const mapped = data.featuredProducts.map((fp: any) => {
-              const baseProd = all.find((p: any) => p.id === fp.productId);
-              return {
-                id: fp.productId,
-                name: baseProd?.name || 'محصول ویژه شیخ',
-                category: baseProd?.category || 'HONEY',
-                categoryType: baseProd?.categoryType || 'SheikhFood',
-                basePrice: baseProd?.basePrice || 0,
-                images: baseProd?.images || [],
-                badgeType: fp.badgeType,
-                categoryEffect: fp.categoryEffect,
-                ctaText: fp.ctaText,
-                ctaLink: fp.ctaLink || `/products/${baseProd?.slug || fp.productId}`,
-                slug: baseProd?.slug,
-              };
-            });
-            setProducts(mapped);
-          } else {
-            // Fallback to mock catalog products if empty
-            const all = data.allProducts || [];
-            const mockFeatured = [
-              { id: 'pd_speaker_1', badgeType: 'BEST_SELLER', categoryEffect: 'SPEAKER', ctaText: 'مشاهده اسپیکر' },
-              { id: 'pd_speaker_2', badgeType: 'FEATURED', categoryEffect: 'SPEAKER', ctaText: 'مشاهده هوشمند' },
-              { id: 'pd_headphones', badgeType: 'NEW', categoryEffect: 'HEADPHONES', ctaText: 'خرید بی‌سیم' },
-              { id: 'pd_smartwatch', badgeType: 'FEATURED', categoryEffect: 'LIGHTING', ctaText: 'خرید ساعت' },
-              { id: 'p1', badgeType: 'BEST_SELLER', categoryEffect: 'HONEY', ctaText: 'خرید عسل' },
-              { id: 'p2', badgeType: 'NEW', categoryEffect: 'SAFFRON', ctaText: 'خرید زعفران' },
-              { id: 'p3', badgeType: 'BEST_SELLER', categoryEffect: 'DATES', ctaText: 'خرید خرما' },
-            ].map(f => {
-              const baseProd = all.find((p: any) => p.id === f.id);
-              return {
-                id: f.id,
-                name: baseProd?.name || 'محصول ویژه',
-                category: baseProd?.category || 'HONEY',
-                categoryType: baseProd?.categoryType || 'SheikhFood',
-                basePrice: baseProd?.basePrice || 1200000,
-                images: baseProd?.images || [],
-                badgeType: f.badgeType,
-                categoryEffect: f.categoryEffect,
-                ctaText: f.ctaText,
-                ctaLink: `/products/${baseProd?.slug || f.id}`,
-                slug: baseProd?.slug,
-              };
-            });
-            setProducts(mockFeatured);
+            mappedProducts = data.featuredProducts
+              .map((fp: any) => {
+                const baseProd = all.find((p: any) => p.id === fp.productId);
+                if (!baseProd) return null;
+                return {
+                  id: baseProd.id,
+                  name: baseProd.name,
+                  category: baseProd.category || 'OTHERS',
+                  categoryType: baseProd.categoryType || 'SheikhFood',
+                  basePrice: baseProd.basePrice || 0,
+                  images: baseProd.images || [],
+                  badgeType: fp.badgeType || 'BEST_SELLER',
+                  categoryEffect: fp.categoryEffect || 'SPEAKER',
+                  ctaText: fp.ctaText || 'مشاهده محصول',
+                  ctaLink: fp.ctaLink || `/products/${baseProd.slug || baseProd.id}`,
+                  slug: baseProd.slug,
+                };
+              })
+              .filter(Boolean);
           }
+
+          if (mappedProducts.length === 0 && all.length > 0) {
+            mappedProducts = all.map((baseProd: any) => ({
+              id: baseProd.id,
+              name: baseProd.name,
+              category: baseProd.category || 'OTHERS',
+              categoryType: baseProd.categoryType || 'SheikhFood',
+              basePrice: baseProd.basePrice || 0,
+              images: baseProd.images || [],
+              badgeType: 'BEST_SELLER',
+              categoryEffect: 'SPEAKER',
+              ctaText: 'مشاهده محصول',
+              ctaLink: `/products/${baseProd.slug || baseProd.id}`,
+              slug: baseProd.slug,
+            }));
+          }
+
+          setProducts(mappedProducts);
         }
       } catch (error) {
         console.error('Error in RoyalShowcase mount:', error);
