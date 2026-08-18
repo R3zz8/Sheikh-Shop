@@ -586,6 +586,33 @@ interface ProductWithMetadata {
   slug?: string;
 }
 
+const DEFAULT_PLACEHOLDER_PRODUCTS: ProductWithMetadata[] = [
+  {
+    id: 'placeholder_1',
+    name: 'خرمای مجول ممتاز صادراتی شیخ',
+    category: 'DATES',
+    categoryType: 'SheikhFood',
+    basePrice: 890000,
+    images: [{ image: '/assets/carousel/carousel1.jpg', secureUrl: '/assets/carousel/carousel1.jpg' }],
+    badgeType: 'BEST_SELLER',
+    categoryEffect: 'DATES',
+    ctaText: 'خرید خرما مجول',
+    ctaLink: '/products',
+  },
+  {
+    id: 'placeholder_2',
+    name: 'عسل طبیعی و ارگانیک سبلان شیخ',
+    category: 'HONEY',
+    categoryType: 'SheikhFood',
+    basePrice: 1250000,
+    images: [{ image: '/assets/carousel/carousel2.jpg', secureUrl: '/assets/carousel/carousel2.jpg' }],
+    badgeType: 'BEST_SELLER',
+    categoryEffect: 'HONEY',
+    ctaText: 'خرید عسل طبیعی',
+    ctaLink: '/products',
+  },
+];
+
 export default function RoyalShowcase() {
   const [mounted, setMounted] = useState(false);
   const [webGLSupported, setWebGLSupported] = useState(true);
@@ -670,7 +697,8 @@ export default function RoyalShowcase() {
           }
 
           if (mappedProducts.length === 0 && all.length > 0) {
-            mappedProducts = all.map((baseProd: any) => ({
+            const specialOnly = all.filter((p: any) => p.isBestSeller);
+            mappedProducts = specialOnly.map((baseProd: any) => ({
               id: baseProd.id,
               name: baseProd.name,
               category: baseProd.category || 'OTHERS',
@@ -683,6 +711,10 @@ export default function RoyalShowcase() {
               ctaLink: `/products/${baseProd.slug || baseProd.id}`,
               slug: baseProd.slug,
             }));
+          }
+
+          if (mappedProducts.length === 0) {
+            mappedProducts = DEFAULT_PLACEHOLDER_PRODUCTS;
           }
 
           setProducts(mappedProducts);
@@ -790,11 +822,9 @@ export default function RoyalShowcase() {
     );
   }
 
-  if (!config.isEnabled || products.length === 0) {
-    return null;
-  }
-
-  const activeProduct = products[activeIndex];
+  const displayProducts = products.length > 0 ? products : DEFAULT_PLACEHOLDER_PRODUCTS;
+  const safeActiveIndex = activeIndex % displayProducts.length;
+  const activeProduct = displayProducts[safeActiveIndex];
 
   // Map premium badges
   const getBadgeElement = (badgeType?: string) => {
