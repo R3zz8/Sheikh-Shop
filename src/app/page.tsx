@@ -15,6 +15,7 @@ import {
   RoyalShowcase,
 } from '@/components/DynamicClientComponents';
 import BMWCarousel from '@/components/BMWCarousel';
+import LuxuryProductArchCarousel from '@/components/home/LuxuryProductArchCarousel';
 
 export async function generateMetadata(): Promise<Metadata> {
   const baseUrl = process.env.NODE_ENV === 'production' 
@@ -80,6 +81,9 @@ export default function Home() {
       <div className="relative z-20 px-4 py-6">
         <CarouselMobile />
       </div>
+
+      {/* Luxury Product Arch Carousel */}
+      <LuxuryProductArchCarousel />
 
       {/* Amazing Deals Section */}
       <AmazingDeals />
