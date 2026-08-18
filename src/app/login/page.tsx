@@ -269,6 +269,7 @@ export default function LoginPage() {
   return (
     <AnimatedBackground>
       <AuthCard
+        showBrand={false}
         title="خوش آمدید"
         subtitle="برای ادامه وارد حساب خود شوید"
         footer={(
