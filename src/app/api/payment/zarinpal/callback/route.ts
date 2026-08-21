@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { verifyZarinPalPayment } from "@/lib/payment/zarinpal";
 
 export async function GET(req: Request) {
@@ -97,7 +98,7 @@ export async function GET(req: Request) {
       const refId = String(verifyData.ref_id || transaction.reference || "0");
 
       // Perform atomic database state transition and side effects
-      await prisma.$transaction(async (tx) => {
+      await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         // Re-check order status inside transaction boundary to prevent concurrent race conditions
         const currentOrder = await tx.order.findUnique({
           where: { id: order.id },

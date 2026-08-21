@@ -39,9 +39,9 @@ export function generateCSV(
   // Summary Section
   lines.push('SUMMARY');
   lines.push('Total Transactions,' + summary.totalTransactions);
-  lines.push('Total Amount (EUR),' + summary.totalAmount.toFixed(2));
+  lines.push('Total Amount (Toman),' + summary.totalAmount.toFixed(0));
   lines.push('Success Rate (%),' + summary.successRate.toFixed(2));
-  lines.push('Average Amount (EUR),' + summary.averageAmount.toFixed(2));
+  lines.push('Average Amount (Toman),' + summary.averageAmount.toFixed(0));
   lines.push('Successful Count,' + summary.successfulCount);
   lines.push('Failed Count,' + summary.failedCount);
   lines.push('Pending Count,' + summary.pendingCount);
@@ -49,7 +49,7 @@ export function generateCSV(
 
   // Transactions Section
   lines.push('TRANSACTIONS');
-  lines.push('ID,Authority,Reference,Amount (EUR),Status,Description,Created At');
+  lines.push('ID,Authority,Reference,Amount (Toman),Status,Description,Created At');
 
   // Limit to 1000 rows for export
   const limitedTransactions = transactions.slice(0, 1000);

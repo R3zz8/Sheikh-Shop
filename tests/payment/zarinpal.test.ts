@@ -154,7 +154,7 @@ describe("ZarinPal Payment Gateway Engine", () => {
         callbackUrl: "https://example.com/callback",
       });
 
-      expect(result.errors[0].code).toBe(-11);
+      expect(result.errors?.[0]?.code).toBe(-11);
     });
 
     test("throws error when ZarinPal HTTP status is not ok", async () => {

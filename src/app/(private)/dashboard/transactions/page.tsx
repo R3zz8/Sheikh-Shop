@@ -163,12 +163,9 @@ export default function TransactionsPage() {
     });
   };
 
-  // Format currency
+  // Format currency in Toman
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'EUR',
-    }).format(amount);
+    return `${new Intl.NumberFormat('fa-IR').format(amount)} تومان`;
   };
 
   // Get status badge
@@ -287,9 +284,9 @@ Created: ${formatDate(transaction.createdAt)}`;
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Transaction Management</h1>
+          <h1 className="text-3xl font-bold">مدیریت تراکنش‌ها</h1>
           <p className="text-muted-foreground mt-1">
-            View and manage all YekPay payment transactions
+            مشاهده و مدیریت تراکنش‌های پرداخت زرین‌پال
           </p>
         </div>
         <div className="flex gap-2">

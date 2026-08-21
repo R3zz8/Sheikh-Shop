@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { createZarinPalPaymentRequest, getZarinPalStartPayUrl } from "@/lib/payment/zarinpal";
-import { getCurrentUser } from "@/lib/auth/server-auth";
+import { getServerUser } from "@/lib/auth/server-auth";
 
 export async function POST(req: Request) {
   try {
-    const user = await getCurrentUser();
+    const user = await getServerUser();
     let userId = user?.id;
 
     const body = await req.json().catch(() => ({}));
@@ -17,9 +18,9 @@ export async function POST(req: Request) {
       quantity: number;
       product: {
         id: string;
-        basePrice: number;
-        shippingCost?: number | null;
-        units?: Array<{ id: string; price: any }>;
+        basePrice: number | Prisma.Decimal;
+        shippingCost?: number | Prisma.Decimal | null;
+        units?: Array<{ id: string; price: number | Prisma.Decimal }>;
       };
     }> = [];
 
@@ -39,24 +40,37 @@ export async function POST(req: Request) {
     // Fallback if DB cart is empty or guest checkout
     if (cartItems.length === 0 && Array.isArray(bodyItems) && bodyItems.length > 0) {
       // Re-verify all product prices directly from the database to guarantee amount security
-      const productIds = bodyItems.map((i: any) => i.productId || i.id).filter(Boolean);
+      const productIds = bodyItems.map((i: { productId?: string; id?: string }) => i.productId || i.id).filter((id): id is string => Boolean(id));
       const dbProducts = await prisma.product.findMany({
         where: { id: { in: productIds } },
         include: { units: true },
       });
 
-      const productMap = new Map(dbProducts.map((p) => [p.id, p]));
+      type DbProductWithUnits = Prisma.ProductGetPayload<{ include: { units: true } }>;
+      const productMap = new Map<string, DbProductWithUnits>(
+        dbProducts.map((p: DbProductWithUnits) => [p.id, p])
+      );
 
-      cartItems = bodyItems.map((item: any) => {
+      cartItems = bodyItems.map((item: { productId?: string; id?: string; quantity?: number | string }) => {
         const pId = item.productId || item.id;
+        if (!pId) {
+          throw new Error("شناسه محصول معتبر نیست");
+        }
         const dbP = productMap.get(pId);
         if (!dbP) {
           throw new Error(`محصول با شناسه ${pId} یافت نشد`);
         }
         return {
           productId: pId,
-          quantity: Math.max(1, parseInt(item.quantity || 1, 10)),
-          product: dbP,
+          quantity: Math.max(1, parseInt(String(item.quantity || 1), 10)),
+          product: {
+            id: String(dbP.id),
+            basePrice: Number(dbP.basePrice),
+            shippingCost: dbP.shippingCost ? Number(dbP.shippingCost) : null,
+            units: Array.isArray(dbP.units)
+              ? dbP.units.map((u: Prisma.ProductUnitGetPayload<{}>) => ({ id: String(u.id), price: Number(u.price) }))
+              : [],
+          },
         };
       });
     }
@@ -146,8 +160,11 @@ export async function POST(req: Request) {
       mobile: contactInfo?.phone || contactInfo?.mobile,
     });
 
-    if (zarinpalRes.data && zarinpalRes.data.code === 100 && zarinpalRes.data.authority) {
-      const authority = zarinpalRes.data.authority;
+    const resData = zarinpalRes?.data;
+    const resErrors = zarinpalRes?.errors;
+
+    if (resData && resData.code === 100 && resData.authority) {
+      const authority = String(resData.authority);
 
       // Persist pending Transaction token mapped to Order ID
       await prisma.transaction.create({
@@ -171,12 +188,12 @@ export async function POST(req: Request) {
     }
 
     const errorMessage =
-      zarinpalRes.errors && zarinpalRes.errors.length > 0
-        ? zarinpalRes.errors[0].message
+      Array.isArray(resErrors) && resErrors.length > 0 && resErrors[0]?.message
+        ? resErrors[0].message
         : "خطا در ارتباط با درگاه پرداخت زرین‌پال";
 
     return NextResponse.json(
-      { error: errorMessage, code: zarinpalRes.data?.code },
+      { error: errorMessage, code: resData?.code },
       { status: 400 }
     );
   } catch (error: any) {
