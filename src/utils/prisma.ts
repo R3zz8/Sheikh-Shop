@@ -7,10 +7,10 @@ import { Pool } from 'pg';
 
 // Mock data for development when PostgreSQL is not running
 const mockCategories = [
-  { id: '1', name: 'Dates', slug: 'dates', description: 'Premium quality dates from the finest orchards. Rich in natural sugars, fiber, and essential minerals.', isActive: true, sortOrder: 1 },
-  { id: '2', name: 'Honey', slug: 'honey', description: 'Pure, natural honey sourced from pristine locations. Rich in antioxidants and natural enzymes.', isActive: true, sortOrder: 2 },
-  { id: '3', name: 'Saffron', slug: 'saffron', description: 'Premium saffron threads hand-picked from the highest quality crocus flowers.', isActive: true, sortOrder: 3 },
-  { id: '4', name: 'Other', slug: 'other', description: 'A diverse collection of premium products including nuts, spices, and traditional items.', isActive: true, sortOrder: 4 },
+  { id: 'cat_home', name: 'لوازم خانگی شیخ', slug: 'sheikh-home', description: 'مجموعه تخصصی و لوکس لوازم خانگی شیخ', image: '/sheikhhome.webp', imagePublicId: null, isActive: true, sortOrder: 1, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'cat_digital', name: 'لوازم دیجیتال شیخ', slug: 'sheikh-digital', description: 'جدیدترین و پیشرفته‌ترین لوازم دیجیتال شیخ', image: '/sheikhdigital.webp', imagePublicId: null, isActive: true, sortOrder: 2, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'cat_tech', name: 'شیخ نوا', slug: 'tech-products', description: 'گجت‌های هوشمند و تجهیزات مدرن شیخ نوا', image: '/sheikhgajet.webp', imagePublicId: null, isActive: true, sortOrder: 3, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'cat_food', name: 'مواد غذایی شیخ', slug: 'products', description: 'بهترین مواد غذایی ارگانیک، عسل و زعفران ممتازم شیخ', image: '/food.webp', imagePublicId: null, isActive: true, sortOrder: 4, createdAt: new Date(), updatedAt: new Date() },
 ];
 
 const mockUnits = [

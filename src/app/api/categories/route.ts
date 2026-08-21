@@ -1,45 +1,54 @@
 import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
+import { cacheService } from '@/lib/cache/redis';
 
-// Revalidate this route every hour
-export const revalidate = 3600;
+// Force dynamic rendering for freshness when requested
+export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const includeProducts = searchParams.get('includeProducts') === 'true';
-    const isActive = searchParams.get('isActive') !== 'false'; // Default to true
+    const includeInactive = searchParams.get('includeInactive') === 'true';
 
-    // Build where clause
+    const cacheKey = `categories_list_${includeProducts}_${includeInactive}`;
+
+    // Try cache first if not including inactive items or products
+    if (!includeProducts && !includeInactive) {
+      const cached = await cacheService.get<any>(cacheKey);
+      if (cached) {
+        return NextResponse.json({
+          success: true,
+          data: cached,
+          count: cached.length,
+          cached: true
+        });
+      }
+    }
+
     const where: any = {};
-    if (isActive) {
+    if (!includeInactive) {
       where.isActive = true;
     }
 
-    // Build include clause
     const include: any = {};
     if (includeProducts) {
       include.products = {
-        where: {
-          status: 'ACTIVE'
-        },
-        include: {
-          images: true,
-          units: true
-        },
-        orderBy: {
-          createdAt: 'desc'
-        }
+        where: { status: 'ACTIVE' },
+        include: { images: true, units: true },
+        orderBy: { createdAt: 'desc' }
       };
     }
 
     const categories = await prisma.category.findMany({
       where,
       include,
-      orderBy: {
-        sortOrder: 'asc'
-      }
+      orderBy: { sortOrder: 'asc' }
     });
+
+    if (!includeProducts && !includeInactive) {
+      await cacheService.set(cacheKey, categories, 300); // 5 min TTL
+    }
 
     const response = NextResponse.json({
       success: true,
@@ -47,83 +56,13 @@ export async function GET(req: NextRequest) {
       count: categories.length
     });
 
-    // Add cache control headers
-    response.headers.set('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=7200');
-
+    response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
     return response;
   } catch (error) {
     console.error('Categories API error:', error);
     return NextResponse.json(
-      { 
-        success: false,
-        error: 'Internal server error' 
-      },
+      { success: false, error: 'Internal server error' },
       { status: 500 }
     );
   }
 }
-
-export async function POST(req: NextRequest) {
-  try {
-    const body = await req.json();
-    const { name, slug, description, image, isActive = true, sortOrder = 0 } = body;
-
-    // Validate required fields
-    if (!name || !slug) {
-      return NextResponse.json(
-        { 
-          success: false,
-          error: 'Name and slug are required' 
-        },
-        { status: 400 }
-      );
-    }
-
-    // Check if category with same name or slug already exists
-    const existingCategory = await prisma.category.findFirst({
-      where: {
-        OR: [
-          { name },
-          { slug }
-        ]
-      }
-    });
-
-    if (existingCategory) {
-      return NextResponse.json(
-        { 
-          success: false,
-          error: 'Category with this name or slug already exists' 
-        },
-        { status: 409 }
-      );
-    }
-
-    const category = await prisma.category.create({
-      data: {
-        name,
-        slug,
-        description,
-        image,
-        isActive,
-        sortOrder
-      }
-    });
-
-    return NextResponse.json({
-      success: true,
-      data: category
-    }, { status: 201 });
-  } catch (error) {
-    console.error('Create category error:', error);
-    return NextResponse.json(
-      { 
-        success: false,
-        error: 'Internal server error' 
-      },
-      { status: 500 }
-    );
-  }
-}
-
-

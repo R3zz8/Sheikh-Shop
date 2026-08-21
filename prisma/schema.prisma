@@ -565,16 +565,17 @@ model Transaction {
 }
 
 model Category {
-  id          String    @id @default(cuid())
-  name        String    @unique @db.VarChar(100)
-  slug        String    @unique @db.VarChar(100)
-  createdAt   DateTime  @default(now())
-  description String?   @db.VarChar(500)
-  image       String?   @db.VarChar(500)
-  isActive    Boolean   @default(true)
-  sortOrder   Int       @default(0)
-  updatedAt   DateTime  @updatedAt
-  products    Product[]
+  id            String    @id @default(cuid())
+  name          String    @unique @db.VarChar(100)
+  slug          String    @unique @db.VarChar(100)
+  createdAt     DateTime  @default(now())
+  description   String?   @db.VarChar(500)
+  image         String?   @db.VarChar(500)
+  imagePublicId String?   @db.VarChar(255)
+  isActive      Boolean   @default(true)
+  sortOrder     Int       @default(0)
+  updatedAt     DateTime  @updatedAt
+  products      Product[]
 
   @@index([slug])
   @@index([isActive])
