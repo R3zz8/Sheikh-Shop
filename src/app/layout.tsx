@@ -10,7 +10,7 @@ import { LuxuryUnboxingProvider } from '@/components/3d/LuxuryUnboxingProvider';
 import { OrganizationJsonLd, WebsiteJsonLd } from '@/components/seo/JsonLd';
 import { generatePageSEO } from '@/lib/seo/core';
 import AppLayoutContent from '@/components/AppLayoutContent';
-import { Inter, Tajawal, Poppins, JetBrains_Mono, Vazirmatn } from 'next/font/google';
+import { Inter, Vazirmatn } from 'next/font/google';
 import PWAResponsiveSplash from '@/components/PWAResponsiveSplash';
 import Script from 'next/script';
 
@@ -18,35 +18,16 @@ const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-inter',
-  weight: ['300', '400', '500', '600', '700', '800', '900'],
-});
-
-const tajawal = Tajawal({
-  subsets: ['arabic'],
-  display: 'swap',
-  variable: '--font-tajawal',
-  weight: ['400', '700'],
-});
-
-const poppins = Poppins({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-poppins',
-  weight: ['300', '400', '500', '600', '700', '800', '900'],
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-jetbrains-mono',
-  weight: ['400', '500', '600'],
+  weight: ['400', '600', '700'],
+  adjustFontFallback: true,
 });
 
 const vazirmatn = Vazirmatn({
   subsets: ['arabic'],
   display: 'swap',
   variable: '--font-vazirmatn',
-  weight: ['300', '400', '500', '600', '700', '800', '900'],
+  weight: ['400', '500', '700', '800'],
+  adjustFontFallback: true,
 });
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -113,7 +94,7 @@ export default function RootLayout({
         <WebsiteJsonLd />
       </head>
       <body
-        className={`${inter.variable} ${tajawal.variable} ${poppins.variable} ${jetbrainsMono.variable} ${vazirmatn.variable} antialiased font-sans font-vazirmatn`}
+        className={`${inter.variable} ${vazirmatn.variable} antialiased font-sans font-vazirmatn`}
       >
         <PWAResponsiveSplash>
           <ErrorBoundary>
