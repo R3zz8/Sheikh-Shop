@@ -27,7 +27,6 @@ export default function CategoryManagementView({ initialCategories }: CategoryMa
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [isDeletingImage, setIsDeletingImage] = useState(false);
   const [isSavingInfo, setIsSavingInfo] = useState(false);
 
   // Form states for text editing
@@ -125,37 +124,6 @@ export default function CategoryManagementView({ initialCategories }: CategoryMa
     }
   };
 
-  const handleDeleteImage = async () => {
-    if (!editingCategory) return;
-    if (!confirm('آیا از حذف تصویر این دسته‌بندی اطمینان دارید؟')) return;
-
-    setIsDeletingImage(true);
-    try {
-      const res = await fetch(`/api/admin/categories/${editingCategory.id}/image`, {
-        method: 'DELETE',
-      });
-
-      const data = await res.json();
-      if (!res.ok || data.error) {
-        throw new Error(data.error || 'خطا در حذف تصویر');
-      }
-
-      toast.success('تصویر دسته‌بندی با موفقیت حذف شد.');
-      await fetchLatestCategories();
-      if (data.data) {
-        setEditingCategory(data.data);
-      }
-      setSelectedFile(null);
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-        setPreviewUrl(null);
-      }
-    } catch (err: any) {
-      toast.error(err.message || 'خطا در حذف تصویر');
-    } finally {
-      setIsDeletingImage(false);
-    }
-  };
 
   const handleSaveCategoryInfo = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -222,17 +190,24 @@ export default function CategoryManagementView({ initialCategories }: CategoryMa
               {categories.map((cat) => (
                 <tr key={cat.id} className="hover:bg-amber-500/5 transition-colors duration-200">
                   <td className="px-6 py-4">
-                    <div className="relative w-14 h-14 rounded-full overflow-hidden border border-amber-500/30 bg-stone-950 flex items-center justify-center">
-                      {cat.image ? (
-                        <Image
-                          src={cat.image}
-                          alt={cat.name}
-                          fill
-                          className="object-cover"
-                          unoptimized
-                        />
-                      ) : (
-                        <ImageIcon className="w-6 h-6 text-stone-600" />
+                    <div className="flex items-center gap-3">
+                      <div className="relative w-14 h-14 rounded-full overflow-hidden border border-amber-500/30 bg-stone-950 flex items-center justify-center shrink-0">
+                        {cat.image ? (
+                          <Image
+                            src={cat.image}
+                            alt={cat.name}
+                            fill
+                            className="object-cover"
+                            unoptimized
+                          />
+                        ) : (
+                          <ImageIcon className="w-6 h-6 text-amber-500/60" />
+                        )}
+                      </div>
+                      {!cat.image && (
+                        <span className="px-2 py-1 rounded text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                          ⚠️ فاقد تصویر
+                        </span>
                       )}
                     </div>
                   </td>
@@ -320,29 +295,21 @@ export default function CategoryManagementView({ initialCategories }: CategoryMa
                     />
                   </div>
 
-                  <div className="flex flex-wrap gap-2 pt-2">
-                    {selectedFile && (
+                  <div className="flex flex-col gap-2 pt-2">
+                    {selectedFile ? (
                       <button
                         type="button"
                         onClick={handleSaveImageUpload}
                         disabled={isUploading}
-                        className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 font-bold rounded-xl text-xs shadow-lg hover:brightness-110 transition-all disabled:opacity-50"
+                        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 font-bold rounded-xl text-xs shadow-lg hover:brightness-110 transition-all disabled:opacity-50"
                       >
                         {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-                        <span>ذخیره تصویر جدید</span>
+                        <span>جایگزینی و ذخیره تصویر جدید</span>
                       </button>
-                    )}
-
-                    {editingCategory.image && (
-                      <button
-                        type="button"
-                        onClick={handleDeleteImage}
-                        disabled={isDeletingImage || isUploading}
-                        className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-400 font-bold rounded-xl text-xs transition-all disabled:opacity-50"
-                      >
-                        {isDeletingImage ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-                        <span>حذف تصویر فعلی</span>
-                      </button>
+                    ) : (
+                      <p className="text-[11px] text-amber-200/70 bg-amber-500/10 p-2 rounded-lg border border-amber-500/20">
+                        ✦ طبق قوانین سیستم، هر دسته‌بندی باید همواره دارای یک تصویر اصلی باشد. برای تغییر تصویر فعلی، فایل جدید انتخاب کنید.
+                      </p>
                     )}
                   </div>
                 </div>

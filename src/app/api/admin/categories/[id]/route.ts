@@ -20,11 +20,15 @@ export async function PATCH(
     }
 
     const body = await req.json();
-    const { name, description, isActive, sortOrder, slug } = body;
+    const { name, description, isActive, sortOrder, slug, image } = body;
 
     const existingCategory = await prisma.category.findUnique({ where: { id } });
     if (!existingCategory) {
       return NextResponse.json({ error: 'دسته‌بندی یافت نشد.' }, { status: 404 });
+    }
+
+    if (image !== undefined && (!image || typeof image !== 'string' || image.trim() === '')) {
+      return NextResponse.json({ error: 'دسته‌بندی باید همواره دارای یک تصویر معتبر باشد.' }, { status: 400 });
     }
 
     if (name && name !== existingCategory.name) {

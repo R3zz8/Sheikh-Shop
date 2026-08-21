@@ -132,43 +132,13 @@ export async function DELETE(
       return NextResponse.json({ error: 'دسته‌بندی یافت نشد.' }, { status: 404 });
     }
 
-    const publicId = category.imagePublicId;
-
-    // Delete asset from Cloudinary if public ID exists
-    if (publicId) {
-      try {
-        const cloudinary = getCloudinary();
-        await cloudinary.uploader.destroy(publicId);
-      } catch (err) {
-        console.error('[CATEGORY IMAGE DELETE] Cloudinary destroy error:', err);
-      }
-    }
-
-    // Clear image references in DB, keep Category record intact
-    const updatedCategory = await prisma.category.update({
-      where: { id },
-      data: {
-        image: null,
-        imagePublicId: null
-      }
-    });
-
-    await cacheService.del('categories_list_false_false');
-    await cacheService.del('categories_list_true_false');
-    try {
-      revalidatePath('/');
-      revalidatePath('/dashboard/categories');
-    } catch (e) {
-      // Ignore static generation store missing in unit tests
-    }
-
+    // Every category MUST have exactly one image. Standalone deletion that leaves a category without an image is prohibited.
     return NextResponse.json({
-      success: true,
-      data: updatedCategory,
-      message: 'تصویر دسته‌بندی با موفقیت حذف شد.'
-    });
+      error: 'هر دسته‌بندی باید همواره دارای یک تصویر باشد. برای تغییر تصویر فعلی، لطفاً تصویر جدید بارگذاری کنید.'
+    }, { status: 400 });
+
   } catch (error: any) {
     console.error('[CATEGORY IMAGE DELETE ERROR]:', error);
-    return NextResponse.json({ error: 'خطا در حذف تصویر دسته‌بندی.' }, { status: 500 });
+    return NextResponse.json({ error: 'خطا در عملیات تصویر دسته‌بندی.' }, { status: 500 });
   }
 }
