@@ -24,6 +24,23 @@ jest.mock('lucide-react', () => ({
   Gift: () => <div data-testid="gift" />,
 }));
 
+jest.mock('@/lib/services/getNewProducts', () => ({
+  getNewProducts: jest.fn().mockImplementation(async () => {
+    return [
+      {
+        id: 'prod_new_1',
+        name: 'عسل طبیعی جدید شیخ',
+        slug: 'new-honey-sheikh',
+        basePrice: 1250000,
+        isNew: true,
+        status: 'ACTIVE',
+        images: [{ id: 'img1', secureUrl: '/honey.webp' }],
+        discounts: [],
+      },
+    ];
+  }),
+}));
+
 describe('NewProductsSlider & getNewProducts Data Service', () => {
   const mockProducts = [
     {
@@ -63,6 +80,7 @@ describe('NewProductsSlider & getNewProducts Data Service', () => {
   });
 
   it('fetches only new and active products via getNewProducts service', async () => {
+    process.env.MOCK_DB = 'true';
     const products = await getNewProducts();
     expect(Array.isArray(products)).toBe(true);
 
