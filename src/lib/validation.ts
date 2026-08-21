@@ -183,6 +183,46 @@ export class Validator {
   }
 }
 
+/**
+ * Normalizes Persian and Arabic digits in a string to English standard digits.
+ */
+export function normalizePersianDigits(input: string): string {
+  if (!input) return '';
+  const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+  const arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+
+  let normalized = input;
+  for (let i = 0; i < 10; i++) {
+    const pDigit = persianDigits[i];
+    const aDigit = arabicDigits[i];
+    if (pDigit) {
+      normalized = normalized.replace(new RegExp(pDigit, 'g'), String(i));
+    }
+    if (aDigit) {
+      normalized = normalized.replace(new RegExp(aDigit, 'g'), String(i));
+    }
+  }
+  return normalized;
+}
+
+/**
+ * Validates an Iranian mobile phone number format (e.g. 09123456789).
+ */
+export function isValidIranianMobile(mobile: string): boolean {
+  if (!mobile) return false;
+  const clean = normalizePersianDigits(mobile).trim();
+  return /^09\d{9}$/.test(clean);
+}
+
+/**
+ * Validates a 10-digit Iranian postal code.
+ */
+export function isValidIranianPostalCode(postalCode: string): boolean {
+  if (!postalCode) return false;
+  const clean = normalizePersianDigits(postalCode).trim();
+  return /^\d{10}$/.test(clean);
+}
+
 // Utility function to create validator from request
 export function validateRequest(requestBody: any): Validator {
   return new Validator(requestBody);

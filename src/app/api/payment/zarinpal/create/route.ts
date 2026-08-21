@@ -1,25 +1,46 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { createZarinPalPaymentRequest, getZarinPalStartPayUrl } from "@/lib/payment/zarinpal";
 import { getServerUser } from "@/lib/auth/server-auth";
+import { calculateCartShipping, calculateSubtotal } from "@/lib/shipping";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     const user = await getServerUser();
     let userId = user?.id;
 
     const body = await req.json().catch(() => ({}));
-    const { items: bodyItems, shippingAddress, contactInfo } = body;
 
-    // Fetch user cart from DB
+    // Support both nested payload ({ items, shippingAddress, contactInfo }) and flat payload
+    const bodyItems = body.items || [];
+    const contactInfo = body.contactInfo || {
+      firstName: body.firstName || '',
+      lastName: body.lastName || '',
+      email: body.email || '',
+      phone: body.mobile || body.phone || '',
+      mobile: body.mobile || body.phone || '',
+    };
+    const shippingAddress = body.shippingAddress || {
+      province: body.province || '',
+      city: body.city || '',
+      address: body.address || '',
+      postalCode: body.postalCode || body.zipCode || '',
+      recipientName: body.recipientName || `${contactInfo.firstName} ${contactInfo.lastName}`.trim(),
+      recipientPhone: body.recipientPhone || contactInfo.phone,
+    };
+    const orderNotes = body.orderNotes || body.description || '';
+
+    // Fetch user cart from DB if logged in
     let cartItems: Array<{
       productId: string;
       quantity: number;
+      unitPrice?: number | Prisma.Decimal;
       product: {
         id: string;
         basePrice: number | Prisma.Decimal;
         shippingCost?: number | Prisma.Decimal | null;
+        allowFreeShipping?: boolean | null;
         units?: Array<{ id: string; price: number | Prisma.Decimal }>;
       };
     }> = [];
@@ -37,52 +58,55 @@ export async function POST(req: Request) {
       });
     }
 
-    // Fallback if DB cart is empty or guest checkout
+    // Fallback for guest checkout or when DB cart is empty but items were passed from client
     if (cartItems.length === 0 && Array.isArray(bodyItems) && bodyItems.length > 0) {
-      // Re-verify all product prices directly from the database to guarantee amount security
-      const productIds = bodyItems.map((i: { productId?: string; id?: string }) => i.productId || i.id).filter((id): id is string => Boolean(id));
-      const dbProducts = await prisma.product.findMany({
-        where: { id: { in: productIds } },
-        include: { units: true },
-      });
+      const productIds = bodyItems
+        .map((i: { productId?: string; id?: string }) => i.productId || i.id)
+        .filter((id): id is string => Boolean(id));
 
-      type DbProductWithUnits = Prisma.ProductGetPayload<{ include: { units: true } }>;
-      const productMap = new Map<string, DbProductWithUnits>(
-        dbProducts.map((p: DbProductWithUnits) => [p.id, p])
-      );
+      if (productIds.length > 0) {
+        const dbProducts = await prisma.product.findMany({
+          where: { id: { in: productIds } },
+          include: { units: true },
+        });
 
-      cartItems = bodyItems.map((item: { productId?: string; id?: string; quantity?: number | string }) => {
-        const pId = item.productId || item.id;
-        if (!pId) {
-          throw new Error("شناسه محصول معتبر نیست");
-        }
-        const dbP = productMap.get(pId);
-        if (!dbP) {
-          throw new Error(`محصول با شناسه ${pId} یافت نشد`);
-        }
-        return {
-          productId: pId,
-          quantity: Math.max(1, parseInt(String(item.quantity || 1), 10)),
-          product: {
-            id: String(dbP.id),
-            basePrice: Number(dbP.basePrice),
-            shippingCost: dbP.shippingCost ? Number(dbP.shippingCost) : null,
-            units: Array.isArray(dbP.units)
-              ? dbP.units.map((u: Prisma.ProductUnitGetPayload<{}>) => ({ id: String(u.id), price: Number(u.price) }))
-              : [],
-          },
-        };
-      });
+        type DbProductWithUnits = Prisma.ProductGetPayload<{ include: { units: true } }>;
+        const productMap = new Map<string, DbProductWithUnits>(
+          dbProducts.map((p: DbProductWithUnits) => [p.id, p])
+        );
+
+        cartItems = bodyItems
+          .map((item: { productId?: string; id?: string; quantity?: number | string }) => {
+            const pId = item.productId || item.id;
+            if (!pId) return null;
+            const dbP = productMap.get(pId);
+            if (!dbP) return null;
+            return {
+              productId: pId,
+              quantity: Math.max(1, parseInt(String(item.quantity || 1), 10)),
+              product: {
+                id: String(dbP.id),
+                basePrice: Number(dbP.basePrice),
+                shippingCost: dbP.shippingCost ? Number(dbP.shippingCost) : null,
+                allowFreeShipping: dbP.allowFreeShipping ?? false,
+                units: Array.isArray(dbP.units)
+                  ? dbP.units.map((u: Prisma.ProductUnitGetPayload<{}>) => ({ id: String(u.id), price: Number(u.price) }))
+                  : [],
+              },
+            };
+          })
+          .filter((item): item is NonNullable<typeof item> => item !== null);
+      }
     }
 
     if (cartItems.length === 0) {
       return NextResponse.json(
-        { error: "سبد خرید شما خالی است" },
+        { success: false, error: "سبد خرید شما خالی است" },
         { status: 400 }
       );
     }
 
-    // Calculate authoritative subtotal strictly on the server side
+    // Calculate authoritative subtotal and dynamic shipping cost
     let subtotalToman = 0;
     const orderItemData: Array<{
       productId: string;
@@ -92,24 +116,38 @@ export async function POST(req: Request) {
     }> = [];
 
     for (const item of cartItems) {
-      const unitPrice = Number(item.product.basePrice) || 0;
+      const unitPrice = Number(item.unitPrice || item.product.basePrice) || 0;
       const itemSubtotal = unitPrice * item.quantity;
       subtotalToman += itemSubtotal;
+
+      const itemShippingCost = item.product.allowFreeShipping
+        ? 0
+        : (item.product.shippingCost !== undefined && item.product.shippingCost !== null)
+          ? Number(item.product.shippingCost)
+          : 200000;
 
       orderItemData.push({
         productId: item.productId,
         quantity: item.quantity,
         price: unitPrice,
-        shippingCost: Number(item.product.shippingCost) || 0,
+        shippingCost: itemShippingCost,
       });
     }
 
-    const shippingCostToman = 200000; // Flat shipping cost in Toman
+    // Calculate dynamic shipping cost for entire order using shipping resolver
+    const shippingItems = cartItems.map((item) => ({
+      quantity: item.quantity,
+      product: {
+        shippingCost: item.product.shippingCost ? Number(item.product.shippingCost) : null,
+        allowFreeShipping: item.product.allowFreeShipping ?? false,
+      },
+    }));
+    const shippingCostToman = calculateCartShipping(shippingItems);
     const totalPriceToman = subtotalToman + shippingCostToman;
 
-    // Create user if guest user email/username provided and not authenticated
+    // Handle guest user provisioning
     if (!userId) {
-      const email = contactInfo?.email || `guest_${Date.now()}@sheikhshops.com`;
+      const email = contactInfo.email?.trim() || `guest_${Date.now()}@sheikhshops.com`;
       let dbUser = await prisma.user.findUnique({ where: { email } });
       if (!dbUser) {
         dbUser = await prisma.user.create({
@@ -117,12 +155,32 @@ export async function POST(req: Request) {
             email,
             username: `guest_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
             password: `guest_${Date.now()}`,
+            firstName: contactInfo.firstName?.trim() || null,
+            lastName: contactInfo.lastName?.trim() || null,
             role: "USER",
+          },
+        });
+      } else if (contactInfo.firstName || contactInfo.lastName) {
+        // Update user names if missing
+        await prisma.user.update({
+          where: { id: dbUser.id },
+          data: {
+            firstName: dbUser.firstName || contactInfo.firstName?.trim() || null,
+            lastName: dbUser.lastName || contactInfo.lastName?.trim() || null,
           },
         });
       }
       userId = dbUser.id;
     }
+
+    // Construct shipping description for order audit
+    const fullShippingNote = [
+      `تحویل‌گیرنده: ${shippingAddress.recipientName || `${contactInfo.firstName} ${contactInfo.lastName}`}`,
+      `تماس: ${shippingAddress.recipientPhone || contactInfo.phone}`,
+      `آدرس: استان ${shippingAddress.province}، شهر ${shippingAddress.city}، ${shippingAddress.address}`,
+      `کدپستی: ${shippingAddress.postalCode}`,
+      orderNotes ? `توضیحات: ${orderNotes}` : '',
+    ].filter(Boolean).join(' | ');
 
     // Create pending Order in database
     const order = await prisma.order.create({
@@ -153,11 +211,11 @@ export async function POST(req: Request) {
     // Initiate ZarinPal payment request
     const zarinpalRes = await createZarinPalPaymentRequest({
       amountToman: totalPriceToman,
-      description: `پرداخت سفارش شماره ${order.id} فروشگاه شیخ`,
+      description: `پرداخت سفارش ${order.id} | ${fullShippingNote.slice(0, 200)}`,
       callbackUrl,
       orderId: order.id,
-      email: contactInfo?.email,
-      mobile: contactInfo?.phone || contactInfo?.mobile,
+      email: contactInfo.email || undefined,
+      mobile: contactInfo.phone || contactInfo.mobile || undefined,
     });
 
     const resData = zarinpalRes?.data;
@@ -172,7 +230,7 @@ export async function POST(req: Request) {
           authority,
           amount: totalPriceToman,
           status: "PENDING",
-          description: `سفارش ${order.id}`,
+          description: `سفارش ${order.id} | ${fullShippingNote.slice(0, 200)}`,
           orderId: order.id,
         },
       });
@@ -183,6 +241,7 @@ export async function POST(req: Request) {
         success: true,
         authority,
         url: startPayUrl,
+        paymentUrl: startPayUrl,
         orderId: order.id,
       });
     }
@@ -193,13 +252,13 @@ export async function POST(req: Request) {
         : "خطا در ارتباط با درگاه پرداخت زرین‌پال";
 
     return NextResponse.json(
-      { error: errorMessage, code: resData?.code },
+      { success: false, error: errorMessage, code: resData?.code },
       { status: 400 }
     );
   } catch (error: any) {
     console.error("[ZarinPal Create API Error]", error);
     return NextResponse.json(
-      { error: error.message || "خطای سرور در ایجاد درخواست پرداخت" },
+      { success: false, error: error.message || "خطای سرور در ایجاد درخواست پرداخت" },
       { status: 500 }
     );
   }
