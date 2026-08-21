@@ -283,7 +283,7 @@ const mockProducts = [
     basePrice: 32800000,
     baseUnitId: 'u3',
     quantity: 30,
-    status: 'ACTIVE', // Set to ACTIVE so it loads in catalogs and views!
+    status: 'ACTIVE',
     isNew: true,
     isBestSeller: true,
     isAmazing: false,
@@ -387,108 +387,6 @@ const mockProducts = [
     updatedAt: new Date(),
   }
 ];
-
-// Dynamically expand mockProducts with more high-quality items for pagination testing under MOCK_DB
-for (let i = 5; i <= 25; i++) {
-  mockProducts.push({
-    id: `p_extra_food_${i}`,
-    name: `محصول غذایی فرعی شماره ${i}`,
-    category: 'OTHERS',
-    categoryId: '4',
-    description: `این یک محصول آزمایشی برای تست صفحه‌بندی لوکس فروشگاه شیخ است. محصول غذایی فرعی شماره ${i}.`,
-    basePrice: 500000 + i * 50000,
-    baseUnitId: 'u3',
-    quantity: 50,
-    status: 'ACTIVE',
-    isNew: false,
-    isBestSeller: false,
-    isAmazing: false,
-    categoryType: 'SheikhFood',
-    baseUnit: mockUnits[2],
-    categoryRelation: mockCategories[3],
-    images: [{ id: `img_extra_food_${i}`, image: '/other.webp', secureUrl: '/other.webp', createdAt: new Date() }],
-    discounts: [],
-    units: [
-      { id: `pu_extra_food_${i}`, productId: `p_extra_food_${i}`, name: 'Piece', price: 500000 + i * 50000, unitId: 'u3', unit: mockUnits[2], isActive: true, stock: 50, createdAt: new Date(), updatedAt: new Date() }
-    ],
-    createdAt: new Date(Date.now() - i * 3600000), // separate creation dates to order nicely
-    updatedAt: new Date(),
-  } as any);
-}
-
-for (let i = 5; i <= 25; i++) {
-  mockProducts.push({
-    id: `p_extra_digital_${i}`,
-    name: `گجت دیجیتال فرعی شماره ${i}`,
-    category: 'OTHERS',
-    categoryId: '4',
-    description: `این یک گجت آزمایشی صوتی و دیجیتالی برای تست صفحه‌بندی لوکس فروشگاه شیخ است. گجت دیجیتال فرعی شماره ${i}.`,
-    basePrice: 12000000 + i * 1000000,
-    baseUnitId: 'u3',
-    quantity: 30,
-    status: 'ACTIVE',
-    isNew: false,
-    isBestSeller: false,
-    isAmazing: false,
-    categoryType: 'SheikhDigital',
-    slug: `extra-digital-gadget-${i}`,
-    brand: 'Sheikh Shop',
-    sku: `SH-D-EG${i}`,
-    features: ['طراحی ارگونومیک ممتاز', 'بدنه با مقاومت بالا'],
-    technicalSpecs: { size: 'Standard' },
-    tags: ['دیجیتال', 'لوکس', 'تست'],
-    weight: 0.5,
-    warranty: 'ضمانت طلایی ۲۴ ماهه شیخ',
-    origin: 'ایران',
-    color: 'مشکی طلایی',
-    baseUnit: mockUnits[2],
-    categoryRelation: mockCategories[3],
-    images: [{ id: `img_extra_digital_${i}`, image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=600&auto=format&fit=crop', secureUrl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=600&auto=format&fit=crop', createdAt: new Date() }],
-    discounts: [],
-    units: [
-      { id: `pu_extra_digital_${i}`, productId: `p_extra_digital_${i}`, name: 'Piece', price: 12000000 + i * 1000000, unitId: 'u3', unit: mockUnits[2], isActive: true, stock: 30, createdAt: new Date(), updatedAt: new Date() }
-    ],
-    createdAt: new Date(Date.now() - i * 3600000),
-    updatedAt: new Date(),
-  } as any);
-}
-
-for (let i = 5; i <= 25; i++) {
-  mockProducts.push({
-    id: `p_extra_home_${i}`,
-    name: `لوازم خانگی فرعی شماره ${i}`,
-    category: 'OTHERS',
-    categoryId: '4',
-    description: `این یک لوازم خانگی لوکس آزمایشی برای تست صفحه‌بندی لوکس فروشگاه شیخ است. محصول فرعی شماره ${i}.`,
-    basePrice: 15000000 + i * 1500000,
-    baseUnitId: 'u3',
-    quantity: 15,
-    status: 'ACTIVE',
-    isNew: false,
-    isBestSeller: false,
-    isAmazing: false,
-    categoryType: 'SheikhHome',
-    slug: `extra-home-gadget-${i}`,
-    brand: 'Sheikh Shop',
-    sku: `SH-H-EG${i}`,
-    features: ['طراحی ارگونومیک ممتاز', 'بدنه با مقاومت بالا'],
-    technicalSpecs: { size: 'Standard' },
-    tags: ['لوازم خانگی', 'لوکس', 'تست'],
-    weight: 12.5,
-    warranty: 'ضمانت طلایی ۲۴ ماهه شیخ',
-    origin: 'ایران',
-    color: 'مشکی طلایی',
-    baseUnit: mockUnits[2],
-    categoryRelation: mockCategories[3],
-    images: [{ id: `img_extra_home_${i}`, image: 'https://images.unsplash.com/photo-1582730149719-61113dc52c7b?q=80&w=600&auto=format&fit=crop', secureUrl: 'https://images.unsplash.com/photo-1582730149719-61113dc52c7b?q=80&w=600&auto=format&fit=crop', createdAt: new Date() }],
-    discounts: [],
-    units: [
-      { id: `pu_extra_home_${i}`, productId: `p_extra_home_${i}`, name: 'Piece', price: 15000000 + i * 1500000, unitId: 'u3', unit: mockUnits[2], isActive: true, stock: 15, createdAt: new Date(), updatedAt: new Date() }
-    ],
-    createdAt: new Date(Date.now() - i * 3600000),
-    updatedAt: new Date(),
-  } as any);
-}
 
 const mockCarousel = [
   {
@@ -607,7 +505,6 @@ const mockFeaturedProducts = [
   }
 ];
 
-// Initialize mock dynamic lists for images and videos from mockProducts initial state
 let mockImages: any[] = mockProducts.flatMap(p => {
   const images = (p as any).images || [];
   return images.map((img: any, idx: number) => ({
@@ -628,6 +525,11 @@ let mockImages: any[] = mockProducts.flatMap(p => {
 });
 
 let mockVideos: any[] = [];
+let mockOrders: any[] = [];
+let mockOrderItems: any[] = [];
+let mockTransactions: any[] = [];
+let mockReferrals: any[] = [];
+let mockAffiliates: any[] = [];
 
 const matchFilter = (item: any, where: any): boolean => {
   if (!where) return true;
@@ -664,17 +566,34 @@ const matchFilter = (item: any, where: any): boolean => {
   return true;
 };
 
-const normalizeMockProduct = (item: any) => {
+const normalizeMockRecord = (modelName: string, item: any): any => {
   if (!item || typeof item !== 'object') return item;
 
-  // Dynamically query from the single mutable mock collections
-  const productImages = mockImages.filter(img => img.productId === item.id)
-    .sort((a, b) => a.sortOrder - b.sortOrder);
+  if (modelName === 'transaction') {
+    const order = mockOrders.find(o => o.id === item.orderId);
+    return {
+      ...item,
+      order: order ? normalizeMockRecord('order', order) : null,
+    };
+  }
 
-  const productVideos = mockVideos.filter(vid => vid.productId === item.id)
-    .sort((a, b) => a.sortOrder - b.sortOrder);
+  if (modelName === 'order') {
+    const items = mockOrderItems.filter(i => i.orderId === item.id);
+    const referral = mockReferrals.find(r => r.orderId === item.id);
+    return {
+      ...item,
+      items,
+      referral: referral ? normalizeMockRecord('referral', referral) : null,
+    };
+  }
 
-  if ('basePrice' in item || 'category' in item) {
+  if (modelName === 'product') {
+    const productImages = mockImages.filter(img => img.productId === item.id)
+      .sort((a, b) => a.sortOrder - b.sortOrder);
+
+    const productVideos = mockVideos.filter(vid => vid.productId === item.id)
+      .sort((a, b) => a.sortOrder - b.sortOrder);
+
     let enriched = {
       shippingCost: null,
       shippingMode: null,
@@ -782,6 +701,7 @@ const normalizeMockProduct = (item: any) => {
 
     return enriched;
   }
+
   return item;
 };
 
@@ -802,7 +722,7 @@ const makeMockModel = (name: string, data: any[]) => {
               return true;
             });
           }
-          return result.map(normalizeMockProduct);
+          return result.map(item => normalizeMockRecord(name, item));
         };
       }
       if (prop === 'findFirst' || prop === 'findUnique') {
@@ -817,10 +737,10 @@ const makeMockModel = (name: string, data: any[]) => {
               }
               return true;
             });
-            return normalizeMockProduct(item || null);
+            return item ? normalizeMockRecord(name, item) : null;
           }
           if (prop === 'findFirst') {
-            return normalizeMockProduct(data[0] || null);
+            return data[0] ? normalizeMockRecord(name, data[0]) : null;
           }
           return null;
         };
@@ -854,7 +774,7 @@ const makeMockModelWithWrites = (name: string, data: any[]) => {
               });
             }
           }
-          return result.map(normalizeMockProduct);
+          return result.map(item => normalizeMockRecord(name, item));
         };
       }
       if (prop === 'findFirst' || prop === 'findUnique') {
@@ -863,13 +783,26 @@ const makeMockModelWithWrites = (name: string, data: any[]) => {
           if (args?.where) {
             result = result.filter(item => matchFilter(item, args.where));
           }
-          return result[0] ? normalizeMockProduct(result[0]) : null;
+          return result[0] ? normalizeMockRecord(name, result[0]) : null;
         };
       }
       if (prop === 'create') {
         return async (args: any) => {
           const generatedId = name === 'product' ? `p_${Date.now()}` : `id_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
           let newItem = { id: args?.data?.id || generatedId, ...args.data, createdAt: new Date(), updatedAt: new Date() };
+
+          if (name === 'order' && args?.data?.items?.create) {
+            const itemsData = args.data.items.create;
+            delete newItem.items;
+            itemsData.forEach((i: any) => {
+              mockOrderItems.push({
+                id: `ord_item_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+                orderId: newItem.id,
+                ...i,
+              });
+            });
+          }
+
           if (name === 'cartItem') {
             const product = mockProducts.find(p => p.id === newItem.productId);
             let unit = mockUnits.find(u => u.id === newItem.unitId);
@@ -882,15 +815,22 @@ const makeMockModelWithWrites = (name: string, data: any[]) => {
               unit: unit as any,
             };
           }
+
           localData.push(newItem);
           if (name === 'image') mockImages = localData;
           if (name === 'video') mockVideos = localData;
+          if (name === 'order') mockOrders = localData;
+          if (name === 'orderItem') mockOrderItems = localData;
+          if (name === 'transaction') mockTransactions = localData;
+          if (name === 'referral') mockReferrals = localData;
+          if (name === 'affiliate') mockAffiliates = localData;
+
           if (name === 'product') {
             const temp = [...localData];
             mockProducts.length = 0;
             mockProducts.push(...temp);
           }
-          return normalizeMockProduct(newItem);
+          return normalizeMockRecord(name, newItem);
         };
       }
       if (prop === 'update' || prop === 'updateMany') {
@@ -912,6 +852,12 @@ const makeMockModelWithWrites = (name: string, data: any[]) => {
 
           if (name === 'image') mockImages = localData;
           if (name === 'video') mockVideos = localData;
+          if (name === 'order') mockOrders = localData;
+          if (name === 'orderItem') mockOrderItems = localData;
+          if (name === 'transaction') mockTransactions = localData;
+          if (name === 'referral') mockReferrals = localData;
+          if (name === 'affiliate') mockAffiliates = localData;
+
           if (name === 'product') {
             const temp = [...localData];
             mockProducts.length = 0;
@@ -919,7 +865,7 @@ const makeMockModelWithWrites = (name: string, data: any[]) => {
           }
 
           if (prop === 'update') {
-            return firstUpdatedItem ? normalizeMockProduct(firstUpdatedItem) : null;
+            return firstUpdatedItem ? normalizeMockRecord(name, firstUpdatedItem) : null;
           }
           return { count: updatedCount };
         };
@@ -933,6 +879,12 @@ const makeMockModelWithWrites = (name: string, data: any[]) => {
 
           if (name === 'image') mockImages = localData;
           if (name === 'video') mockVideos = localData;
+          if (name === 'order') mockOrders = localData;
+          if (name === 'orderItem') mockOrderItems = localData;
+          if (name === 'transaction') mockTransactions = localData;
+          if (name === 'referral') mockReferrals = localData;
+          if (name === 'affiliate') mockAffiliates = localData;
+
           if (name === 'product') {
             const temp = [...localData];
             mockProducts.length = 0;
@@ -1059,361 +1011,25 @@ const mockArticles = [
     slug: 'honey',
     imageUrl: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=600&auto=format&fit=crop',
     summary: 'سفری به دنیای شگفت‌انگیز عسل طبیعی کوهستان؛ با خواص شگفت‌انگیز ضدباکتریایی، درمان‌های سنتی و بهبود سیستم ایمنی بدن آشنا شوید.',
-    content: `<p>عسل طبیعی کوهستان فراتر از یک شیرین‌کننده لذیذ، معجزه درمان‌بخش طبیعت است که هزاران سال است در سراسر گیتی مورد ستایش بوده است. این شهد گران‌بها سرشار از آنزیم‌های فعال، آنتی‌اکسیدان‌های قوی و مواد معدنی حیاتی است.</p>
-<h2>خواص معجزه‌آسای عسل طبیعی برای سلامت بدن</h2>
-<p>پژوهش‌های کلینیکی نوین ثابت کرده‌اند که عسل خام و تصفیه‌نشده نقش بسیار موثری در درمان بیماری‌ها و ارتقای تندرستی ایفا می‌کند.</p>
-<h3>۱. تقویت فوق‌العاده سیستم ایمنی بدن</h3>
-<p>عسل به دلیل دارا بودن آنتی‌اکسیدان‌های غنی نظیر فلاونوئیدها، به مبارزه با رادیکال‌های آزاد پرداخته و مانع از بروز بیماری‌های مزمن و سرطان می‌گردد.</p>
-<h3>۲. تسکین فوری سرفه و بهبود گلو درد</h3>
-<p>این اکسیر طبیعی به عنوان یک لایه‌بردار و نرم‌کننده طبیعی گلو عمل کرده و التهابات مجاری تنفسی را در کوتاه‌ترین زمان کاهش می‌دهد.</p>
-<h3>۳. التیام و ترمیم سریع زخم‌ها و سوختگی‌ها</h3>
-<p>استعمال موضعی عسل مرغوب روی بریدگی‌ها و سوختگی‌ها، به علت خاصیت اسمزی و هیدروژن پراکسید طبیعی موجود در آن، روند بازسازی سلول‌های پوست را سرعت می‌بخشد.</p>
-
-<h2>جدول ارزش غذایی عسل طبیعی کوهستان (در هر ۱۰۰ گرم)</h2>
-<table class="min-w-full divide-y divide-white/10 text-right my-6">
-  <thead>
-    <tr class="bg-white/5">
-      <th class="px-4 py-2 text-white font-medium">ماده مغذی</th>
-      <th class="px-4 py-2 text-white font-medium">مقدار</th>
-    </tr>
-  </thead>
-  <tbody class="divide-y divide-white/5 text-gray-300">
-    <tr>
-      <td class="px-4 py-2">انرژی (کالری)</td>
-      <td class="px-4 py-2">۳۰۴ کیلوکالری</td>
-    </tr>
-    <tr>
-      <td class="px-4 py-2">کربوهیدرات طبیعی</td>
-      <td class="px-4 py-2">۸۲ گرم</td>
-    </tr>
-    <tr>
-      <td class="px-4 py-2">پتاسیم، کلسیم و روی</td>
-      <td class="px-4 py-2">سرشار</td>
-    </tr>
-  </tbody>
-</table>
-
-<h2>سوالات متداول درباره عسل طبیعی کوهستان</h2>
-<div class="space-y-4 my-6">
-  <div class="bg-white/5 p-4 rounded-xl border border-white/10">
-    <p class="font-bold text-amber-300">چگونه عسل طبیعی اصل را از تقلبی تشخیص دهیم؟</p>
-    <p class="text-gray-300">مطمئن‌ترین روش، سنجش غلظت ساکاروز و انجام آزمایش‌های تخصصی در آزمایشگاه‌های معتبر است. عسل‌های فروشگاه شیخ تماماً دارای شناسنامه اصالت هستند.</p>
-  </div>
-  <div class="bg-white/5 p-4 rounded-xl border border-white/10">
-    <p class="font-bold text-amber-300">آیا عسل طبیعی شکرک می‌زند؟</p>
-    <p class="text-gray-300">بله، شکرک زدن (یا رس بستن) یکی از نشانه‌های طبیعی عسل خام و حرارت‌ندیده است که به دلیل وجود ذرات معلق گرده گل رخ می‌دهد.</p>
-  </div>
-</div>
-
-<h2>نتیجه‌گیری و پیشنهاد خرید</h2>
-<p>عسل طبیعی کوهستان تلاقی بی‌نظیر سنت‌های کهن و علم تندرستی مدرن است. برای بهره‌مندی از فواید واقعی این سوپرفود ممتاز، همواره عسل‌های ارگانیک و تصفیه‌نشده را انتخاب نمایید.</p>
-<div class="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-6 text-center my-8">
-  <h3 class="text-xl font-bold text-amber-300 mb-2">همین امروز سلامت خود را تضمین کنید!</h3>
-  <p class="text-gray-300 mb-4">کلکسیون عسل‌های طبیعی و خام فروشگاه شیخ با دقت مستقیم و گواهی اصالت در اختیار شماست.</p>
-  <a href="https://sheikhshops.com/product/p1" class="inline-block bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all duration-300">خرید عسل ممتاز کوهستان</a>
-</div>`,
+    content: `<p>عسل طبیعی کوهستان فراتر از یک شیرین‌کننده لذیذ، معجزه درمان‌بخش طبیعت است که هزاران سال است در سراسر گیتی مورد ستایش بوده است. این شهد گران‌بها سرشار از آنزیم‌های فعال، آنتی‌اکسیدان‌های قوی و مواد معدنی حیاتی است.</p>`,
     status: 'PUBLISHED',
     createdAt: new Date(),
     updatedAt: new Date(),
     authorId: 'mock-user-id',
     category: 'عسل طبیعی',
-    tags: ['عسل', 'شیرین‌کننده طبیعی', 'ارگانیک', 'سلامت', 'زنبورها', 'دارویی', 'عسل خام', 'تغذیه', 'آنتی‌اکسیدان‌ها', 'تندرستی'],
+    tags: ['عسل', 'شیرین‌کننده طبیعی', 'ارگانیک', 'سلامت'],
     excerpt: 'خواص بی‌نظیر عسل طبیعی کوهستان برای سلامتی و تقویت قوی سیستم ایمنی بدن.',
-    externalLinks: ['https://wikipedia.org'],
-    internalLinks: ['https://sheikhshops.com/product/p1'],
-    keywords: ['عسل طبیعی', 'عسل کوهستان', 'خواص عسل', 'عسل ارگانیک', 'خرید عسل'],
-    metaTitle: 'عسل طبیعی کوهستان: اکسیر طلایی طبیعت با خواص بی‌نظیر درمانی',
-    metaDescription: 'سفری به دنیای شگفت‌انگیز عسل طبیعی کوهستان؛ با خواص شگفت‌انگیز ضدباکتریایی، درمان‌های سنتی و بهبود سیستم ایمنی بدن آشنا شوید.',
     language: 'fa',
     views: 120,
     shares: 15,
     likes: 45,
     author: mockUser[0],
     comments: [],
-  },
-  {
-    id: 'art2',
-    title: 'زعفران نگین خراسان: طلای سرخ ناب با عطر بی‌نظیر و خواص شگفت‌انگیز درمانی',
-    slug: 'saffron',
-    imageUrl: 'https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?q=80&w=600&auto=format&fit=crop',
-    summary: 'با خواص درمانی بی‌نظیر، بهبود افسردگی و استرس، و جایگاه استثنایی زعفران نگین خراسان به عنوان گران‌ترین ادویه جهان آشنا شوید.',
-    content: `<p>زعفران نگین که به شایستگی لقب «طلای سرخ» را به خود اختصاص داده است، ارزشمندترین ادویه در سراسر گیتی به شمار می‌رود. این چاشنی سلطنتی علاوه بر عطر و رنگ مسحورکننده در هنر آشپزی، یک داروی طبیعی فوق‌العاده قوی در طب سنتی و نوین است.</p>
-<h2>چرا زعفران نگین خراسان مرغوب‌ترین نوع زعفران است؟</h2>
-<p>کشت و برداشت زعفران فرآیندی بسیار ظریف و کارطلب است. کلاله‌های سه‌شاخه و سرخ‌رنگ زعفران نگین کاملاً دست‌چین شده و عاری از هرگونه ریشه یا بخش زرد رنگ هستند، که عطر فوق‌العاده و قدرت رنگ‌دهی بی‌رقیبی را به ارمغان می‌آورد.</p>
-<h3>۱. بهبود شادابی ذهن و رفع افسردگی</h3>
-<p>تحقیقات کلینیکی اثبات کرده‌اند که زعفران اثرات شگرفی در تنظیم نوسانات خلقی، بهبود کیفیت خواب و کاهش چشمگیر اضطراب و استرس روزمره دارد.</p>
-<h3>۲. سلامت قلب و عروق</h3>
-<p>مصرف متعادل این چاشنی سلطنتی به تنظیم فشار خون، کاهش کلسترول مضر و بهبود جریان خون در رگ‌ها کمک شایانی می‌کند.</p>
-<h3>۳. خواص ضدسرطانی قوی</h3>
-<p>ترکیبات فعال زیستی موجود در زعفران مانند کروسین و سافرانال، با رادیکال‌های آزاد مبارزه کرده و مانع از رشد سلول‌های سرطانی می‌شوند.</p>
-
-<h2>جدول مشخصات کیفی زعفران ممتاز نگین</h2>
-<table class="min-w-full divide-y divide-white/10 text-right my-6">
-  <thead>
-    <tr class="bg-white/5">
-      <th class="px-4 py-2 text-white font-medium">شاخص سنجش</th>
-      <th class="px-4 py-2 text-white font-medium">میزان غلظت</th>
-    </tr>
-  </thead>
-  <tbody class="divide-y divide-white/5 text-gray-300">
-    <tr>
-      <td class="px-4 py-2">کروسین (قدرت رنگ‌دهی طبیعی)</td>
-      <td class="px-4 py-2">بالای ۲۴۰ (گرید ممتاز ممتاز)</td>
-    </tr>
-    <tr>
-      <td class="px-4 py-2">سافرانال (رایحه و عطر اصیل)</td>
-      <td class="px-4 py-2">بسیار بالا و خالص</td>
-    </tr>
-  </tbody>
-</table>
-
-<h2>سوالات متداول درباره زعفران نگین اصل</h2>
-<div class="space-y-4 my-6">
-  <div class="bg-white/5 p-4 rounded-xl border border-white/10">
-    <p class="font-bold text-amber-300">بهترین روش مصرف زعفران برای بیشترین رنگ‌دهی چیست؟</p>
-    <p class="text-gray-300">سابیدن کلاله‌ها به همراه مقدار کمی قند یا شکر و سپس دم کردن آن با چند قالب یخ کوچک به مدت ۲۰ دقیقه، بیشترین میزان رنگ و عطر را آزاد می‌کند.</p>
-  </div>
-</div>
-
-<h2>نتیجه‌گیری و پیشنهاد خرید</h2>
-<p>خرید زعفران اصیل، سرمایه‌گذاری بر روی طعم‌های جادویی آشپزی و تندرستی خانواده است. ما در فروشگاه شیخ مفتخریم که ناب‌ترین زعفران نگین خراسان را با شناسنامه تضمین کیفیت ارائه دهیم.</p>
-<div class="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-6 text-center my-8">
-  <h3 class="text-xl font-bold text-amber-300 mb-2">تجربه طعم واقعی طلای سرخ ایرانی!</h3>
-  <p class="text-gray-300 mb-4">هم‌اکنون زعفران نگین دست‌چین شده فروشگاه شیخ را با ضمانت مرجوعی سفارش دهید.</p>
-  <a href="https://sheikhshops.com/product/p2" class="inline-block bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all duration-300">خرید زعفران ممتاز نگین</a>
-</div>`,
-    status: 'PUBLISHED',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    authorId: 'mock-user-id',
-    category: 'زعفران ممتاز',
-    tags: ['زعفران', 'ادویه', 'ارگانیک', 'لوکس', 'سلامت', 'محصولات طبیعی', 'آشپزی', 'دارویی', 'ممتاز', 'بازار جهانی'],
-    excerpt: 'بررسی جامع زعفران نگین خراسان، عطر شگفت‌انگیز و فواید آن در بهبود خلق و خو و ارتقای سلامتی.',
-    externalLinks: ['https://wikipedia.org'],
-    internalLinks: ['https://sheikhshops.com/product/p2'],
-    keywords: ['زعفران نگین', 'زعفران خراسان', 'خواص زعفران', 'طلای سرخ', 'قیمت زعفران'],
-    metaTitle: 'زعفران نگین خراسان: طلای سرخ ناب با عطر بی‌نظیر و خواص درمانی',
-    metaDescription: 'با خواص درمانی بی‌نظیر، بهبود افسردگی و استرس، و جایگاه استثنایی زعفران نگین خراسان به عنوان گران‌ترین ادویه جهان آشنا شوید.',
-    language: 'fa',
-    views: 250,
-    shares: 30,
-    likes: 85,
-    author: mockUser[0],
-    comments: [],
-  },
-  {
-    id: 'art3',
-    title: 'خرمای مجول پادشاه خرماها: سوپرفود باستانی با ارزش غذایی بی‌نظیر و انرژی پایدار',
-    slug: 'dates',
-    imageUrl: 'https://images.unsplash.com/photo-1596797038530-2c107229654b?q=80&w=600&auto=format&fit=crop',
-    summary: 'آشنایی جامع با خرمای مجول لوکس؛ ارزش غذایی فوق‌العاده، خواص بی‌شمار برای شادابی و تندرستی روزانه.',
-    content: `<p>خرمای مجول به دلیل اندازه بزرگ، بافت نرم کاراملی و طعم عسلی مسحورکننده به شایستگی لقب «پادشاه خرماها» را از آن خود کرده است. این میوه باستانی، منبع غنی از فیبر, پتاسیم و انرژی ارگانیک است.</p>
-<h2>خواص شگفت‌انگیز خرمای مجول ممتاز برای سلامتی</h2>
-<p>خرما مجول به عنوان یک میان‌وعده سالم و کامل، جایگزینی ایده‌آل برای شیرینی‌های مصنوعی در رژیم غذایی مدرن به شمار می‌رود.</p>
-<h3>۱. بمب انرژی طبیعی و رفع خستگی</h3>
-<p>قندهای طبیعی موجود در خرمای مجول (فروکتوز و گلوکز) به آرامی جذب بدن شده و بدون ایجاد نوسانات ناگهانی قند خون، انرژی پایدار و طولانی‌مدتی را برای ورزشکاران و کارهای روزانه تامین می‌کنند.</p>
-<h3>۲. ارتقای سلامت دستگاه گوارش</h3>
-<p>فیبر بالا در این سوپرفود، عملکرد روده را تسهیل نموده، از بروز یبوست پیشگیری کرده و به عنوان یک پری‌بیوتیک طبیعی به تغذیه باکتری‌های مفید گوارشی کمک می‌کند.</p>
-<h3>۳. تنظیم فشار خون و سلامت قلب</h3>
-<p>به دلیل غنای بالا در ماده معدنی پتاسیم، خرمای مجول نقش مهمی در تنظیم فشار خون، آرامش ماهیچه‌های قلب و کاهش خطر بروز سکته‌های ناگهانی دارد.</p>
-
-<h2>جدول ارزش غذایی خرمای مجول (در هر ۱۰۰ گرم)</h2>
-<table class="min-w-full divide-y divide-white/10 text-right my-6">
-  <thead>
-    <tr class="bg-white/5">
-      <th class="px-4 py-2 text-white font-medium">ماده معدنی و مغذی</th>
-      <th class="px-4 py-2 text-white font-medium">مقدار در هر ۱۰۰ گرم</th>
-    </tr>
-  </thead>
-  <tbody class="divide-y divide-white/5 text-gray-300">
-    <tr>
-      <td class="px-4 py-2">پتاسیم</td>
-      <td class="px-4 py-2">۶۹۶ میلی‌گرم</td>
-    </tr>
-    <tr>
-      <td class="px-4 py-2">فیبر رژیمی</td>
-      <td class="px-4 py-2">۶.۷ گرم</td>
-    </tr>
-    <tr>
-      <td class="px-4 py-2">آهن و منیزیم</td>
-      <td class="px-4 py-2">بسیار عالی</td>
-    </tr>
-  </tbody>
-</table>
-
-<h2>سوالات متداول درباره خرمای مجول لوکس</h2>
-<div class="space-y-4 my-6">
-  <div class="bg-white/5 p-4 rounded-xl border border-white/10">
-    <p class="font-bold text-amber-300">چرا قیمت خرمای مجول نسبت به سایر خرماها بیشتر است؟</p>
-    <p class="text-gray-300">پرورش خرمای مجول نیازمند شرایط اقلیمی خاص، نگهداری بسیار حساس و چیدن تک به تک به روش دستی است. اندازه بسیار درشت و کیفیت برتر آن نیز بر ارزش ویژه آن می‌افزاید.</p>
-  </div>
-</div>
-
-<h2>نتیجه‌گیری و پیشنهاد خرید</h2>
-<p>خرما مجول انتخابی لوکس برای ارتقای سلامت فردی و شیرین کردن لحظات زندگی به روشی ۱۰۰ درصد ارگانیک است.</p>
-<div class="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-6 text-center my-8">
-  <h3 class="text-xl font-bold text-amber-300 mb-2">طعم بی‌بدیل شکلات طبیعی طبیعت را تجربه کنید!</h3>
-  <p class="text-gray-300 mb-4">کلکسیون خرمای مجول لوکس فروشگاه شیخ با بسته‌بندی سلطنتی آماده ارسال به سراسر کشور است.</p>
-  <a href="https://sheikhshops.com/product/p3" class="inline-block bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all duration-300">خرید خرمای لوکس مجول</a>
-</div>`,
-    status: 'PUBLISHED',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    authorId: 'mock-user-id',
-    category: 'خرمای لوکس',
-    tags: ['خرما', 'میوه', 'تغذیه', 'خاورمیانه', 'انرژی', 'سوپرفود', 'طبیعی', 'سلامت', 'سنتی', 'تجارت جهانی'],
-    excerpt: 'آشنایی با ارزش غذایی فوق‌العاده، خواص بی‌شمار و تاثیرات تندرستی خرمای مجول لوکس پادشاه خرماها.',
-    externalLinks: ['https://wikipedia.org'],
-    internalLinks: ['https://sheikhshops.com/product/p3'],
-    keywords: ['خرمای مجول', 'خرما مجول', 'ارزش غذایی خرما', 'خرید خرما', 'پادشاه خرماها'],
-    metaTitle: 'خرمای مجول پادشاه خرماها: سوپرفود باستانی با ارزش غذایی بی‌نظیر',
-    metaDescription: 'درباره خرمای مجول لوکس و تاثیرات شگفت‌انگیز آن بر افزایش سطح انرژی، تندرستی و سلامت گوارش بیشتر بخوانید.',
-    language: 'fa',
-    views: 180,
-    shares: 20,
-    likes: 60,
-    author: mockUser[0],
-    comments: [],
-  },
-  {
-    id: 'art4',
-    title: 'زرشک پفکی سوپرفود ایرانی: یاقوت سرخ با خواص معجزه‌آسا برای کبد و قلب',
-    slug: 'premium-barberries-superfood',
-    imageUrl: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?q=80&w=600&auto=format&fit=crop',
-    summary: 'خواص زرشک پفکی ممتاز خراسان برای سلامت قلب، پاکسازی کبد چرب و شادابی پوست؛ بررسی علمی و کاربردها.',
-    content: `<p>زرشک پفکی ممتاز که به عنوان «یاقوت سرخ» ایران شناخته می‌شود، یکی از غنی‌ترین سوپرفودهای طبیعی جهان است. فرآیند خشک کردن طولانی و اصیل این محصول در سایه، رنگ درخشان، بافت نرم و طعم ترش ترش متمایز آن را کاملاً حفظ می‌کند.</p>
-<h2>خواص شگفت‌انگیز زرشک پفکی برای تندرستی</h2>
-<p>زرشک حاوی ترکیب زیستی فعال بسیار قدرتمندی به نام بربرین (Berberine) است که فواید خارق‌العاده‌ای برای ارگان‌های مختلف بدن دارد.</p>
-<h3>۱. پاکسازی کبد و بهبود کبد چرب</h3>
-<p>بربرین موجود در زرشک پفکی، ترشح صفرا را افزایش داده، به سم‌زدایی طبیعی کبد کمک کرده و مانع تجمع چربی‌های مضر در بافت کبد می‌گردد.</p>
-<h3>۲. کنترل قند خون و چربی خون</h3>
-<p>پژوهش‌های نوین نشان می‌دهند مصرف مداوم دمنوش یا آب زرشک به تنظیم میزان قند خون کمک کرده و سطح چربی‌های مضر مانند کلسترول LDL را کاهش می‌دهد.</p>
-<h3>۳. تقویت قلب و شادابی پوست</h3>
-<p>آنتی‌اکسیدان‌های قوی و ویتامین C فراوان در زرشک پفکی، رگ‌های خونی را تقویت کرده و با رفع جوش‌ها، موجب شفافیت و جوانی پوست می‌شوند.</p>
-
-<h2>جدول فواید بیوشیمیایی زرشک ممتاز</h2>
-<table class="min-w-full divide-y divide-white/10 text-right my-6">
-  <thead>
-    <tr class="bg-white/5">
-      <th class="px-4 py-2 text-white font-medium">ترکیب فعال</th>
-      <th class="px-4 py-2 text-white font-medium">تاثیر درمانی روی بدن</th>
-    </tr>
-  </thead>
-  <tbody class="divide-y divide-white/5 text-gray-300">
-    <tr>
-      <td class="px-4 py-2">بربرین (Berberine)</td>
-      <td class="px-4 py-2">تنظیم انسولین، رفع کبد چرب و بهبود هضم غذا</td>
-    </tr>
-    <tr>
-      <td class="px-4 py-2">ویتامین C</td>
-      <td class="px-4 py-2">کلاژن‌سازی پوست و تقویت قوی سیستم دفاعی بدن</td>
-    </tr>
-  </tbody>
-</table>
-
-<h2>سوالات متداول درباره زرشک پفکی</h2>
-<div class="space-y-4 my-6">
-  <div class="bg-white/5 p-4 rounded-xl border border-white/10">
-    <p class="font-bold text-amber-300">تفاوت زرشک پفکی با زرشک دانه اناری چیست؟</p>
-    <p class="text-gray-300">زرشک پفکی در سایه و در طی چند ماه به آرامی خشک می‌شود، بنابراین پفکی و خوش‌رنگ باقی می‌ماند. زرشک دانه اناری در آفتاب مستقیم و با سرعت خشک شده و رنگ تیره‌تری دارد.</p>
-  </div>
-</div>
-
-<h2>نتیجه‌گیری و پیشنهاد خرید</h2>
-<p>زرشک پفکی ممتاز انتخابی عالی برای عطرآگین کردن برنج اصیل ایرانی و ارتقای سلامت کبد است.</p>
-<div class="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-6 text-center my-8">
-  <h3 class="text-xl font-bold text-amber-300 mb-2">یاقوت سرخ خراسان را به سفره خود هدیه دهید!</h3>
-  <p class="text-gray-300 mb-4">زرشک پفکی درجه یک و اعلای دست‌چین شده فروشگاه شیخ را با کیفیت و تمیزی تضمینی تهیه کنید.</p>
-  <a href="https://sheikhshops.com/product/p4" class="inline-block bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all duration-300">خرید زرشک پفکی ممتاز</a>
-</div>`,
-    status: 'PUBLISHED',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    authorId: 'mock-user-id',
-    category: 'سایر محصولات',
-    tags: ['زرشک', 'سوپرفود', 'سلامتی', 'یاقوت سرخ', 'زرشک خراسان'],
-    excerpt: 'خواص شگفت‌انگیز زرشک پفکی ممتاز برای سلامت قلب، کبد چرب، سم‌زدایی بدن و شادابی پوست.',
-    externalLinks: ['https://wikipedia.org'],
-    internalLinks: ['https://sheikhshops.com/product/p4'],
-    keywords: ['زرشک پفکی', 'زرشک ممتاز', 'خواص زرشک', 'زرشک خراسان', 'یاقوت سرخ'],
-    metaTitle: 'زرشک پفکی سوپرفود ایرانی: یاقوت سرخ با خواص معجزه‌آسا برای کبد',
-    metaDescription: 'درباره خواص زرشک پفکی ممتاز و تاثیر بیوشیمیایی و بی نظیر آن در تنظیم قند خون، کاهش غلظت خون و پاکسازی کبد چرب بخوانید.',
-    language: 'fa',
-    views: 95,
-    shares: 8,
-    likes: 32,
-    author: mockUser[0],
-    comments: [],
-  },
-  {
-    id: 'art5',
-    title: 'زرشک کوهی ممتاز: هدیه وحشی طبیعت با خواص معجزه‌آسای سم‌زدایی و درمانی',
-    slug: 'barberries',
-    imageUrl: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?q=80&w=600&auto=format&fit=crop',
-    summary: 'بررسی خواص بی‌نظیر زرشک کوهی ممتاز؛ بمب ویتامین ث برای تقویت تندرستی، شادابی و تصفیه قوی خون.',
-    content: `<p>زرشک کوهی ممتاز هدیه‌ای گران‌بها و وحشی از دامنه‌های بکر کوهستان است. این نوع زرشک ارگانیک به دلیل رشد کاملاً طبیعی در آغوش طبیعت، سرشار از املاح معدنی، آنتی‌اکسیدان‌های کوهستانی و ویتامین‌های سر زنده است.</p>
-<h2>خواص بی‌نظیر و تایید شده زرشک کوهی ممتاز</h2>
-<p>زرشک وحشی کوهستان از دیرباز به عنوان تصفیه‌کننده طبیعی خون و بهبوددهنده عملکرد کبد و طحال مورد استفاده قرار گرفته است.</p>
-<h3>۱. تصفیه قوی جریان خون</h3>
-<p>این یاقوت‌های وحشی ترش‌مزه به طرز اعجاب‌انگیزی به پاکسازی سموم از جریان خون کمک کرده و غلظت خون را تنظیم می‌نمایند.</p>
-<h3>۲. تنظیم فشار خون و کمک به سیستم عروقی</h3>
-<p>ترکیبات طبیعی موجود در زرشک کوهی سبب آرامش رگ‌ها و بهبود گردش خون شده و فشار خون بالا را به شکل ارگانیک متعادل می‌سازد.</p>
-<h3>۳. بمب ویتامین C برای شادابی پوست</h3>
-<p>ویتامین C غنی موجود در زرشک کوهستان وحشی، در بهبود لک‌های پوستی، بازسازی کلاژن و رفع جوش‌های کبد چرب معجزه می‌کند.</p>
-
-<h2>جدول مقایسه زرشک کوهی با زرشک پرورشی</h2>
-<table class="min-w-full divide-y divide-white/10 text-right my-6">
-  <thead>
-    <tr class="bg-white/5">
-      <th class="px-4 py-2 text-white font-medium">ویژگی بارز</th>
-      <th class="px-4 py-2 text-white font-medium">زرشک کوهی ممتاز</th>
-      <th class="px-4 py-2 text-white font-medium">زرشک پرورشی معمولی</th>
-    </tr>
-  </thead>
-  <tbody class="divide-y divide-white/5 text-gray-300">
-    <tr>
-      <td class="px-4 py-2">شیوه رشد</td>
-      <td class="px-4 py-2">کاملاً وحشی و بدون کود و سموم شیمیایی</td>
-      <td class="px-4 py-2">پرورش یافته در مزارع کشاورزی با مراقبت انسانی</td>
-    </tr>
-    <tr>
-      <td class="px-4 py-2">غلظت املاح معدنی</td>
-      <td class="px-4 py-2">بسیار غنی به دلیل رشد دیم در خاک کوهستان</td>
-      <td class="px-4 py-2">متوسط و استاندارد</td>
-    </tr>
-  </tbody>
-</table>
-
-<h2>نتیجه‌گیری و پیشنهاد خرید</h2>
-<p>زرشک کوهی وحشی بهترین گزینه برای دمنوش‌های درمانی، تهیه آب زرشک طبیعی و ارتقای جادویی سلامت جسمانی است.</p>
-<div class="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-6 text-center my-8">
-  <h3 class="text-xl font-bold text-amber-300 mb-2">سلامت کبد و خون خود را با طعم ترش کوهستان احیا کنید!</h3>
-  <p class="text-gray-300 mb-4">زرشک کوهی مرغوب دست‌چین شده از مناطق بکر کوهستانی هم‌اکنون در فروشگاه شیخ موجود است.</p>
-  <a href="https://sheikhshops.com/product/p4" class="inline-block bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all duration-300">خرید زرشک کوهی ممتاز</a>
-</div>`,
-    status: 'PUBLISHED',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    authorId: 'mock-user-id',
-    category: 'سایر محصولات',
-    tags: ['زرشک', 'سوپرفود', 'سلامتی', 'زرشک کوهی', 'وحشی'],
-    excerpt: 'بررسی خواص بی‌نظیر زرشک کوهی وحشی؛ بمب ویتامین ث برای تصفیه خون، سم‌زدایی بدن و افزایش تندرستی.',
-    externalLinks: ['https://wikipedia.org'],
-    internalLinks: ['https://sheikhshops.com/product/p4'],
-    keywords: ['زرشک کوهی', 'زرشک ممتاز', 'خواص زرشک', 'زرشک وحشی', 'تصفیه خون'],
-    metaTitle: 'زرشک کوهی ممتاز: هدیه وحشی طبیعت با خواص معجزه‌آسای سم‌زدایی',
-    metaDescription: 'درباره خواص زرشک کوهی ممتاز وحشی و تاثیرات جادویی آن بر افزایش سطح انرژی، تصفیه جریان خون و سلامت پوست بیشتر بخوانید.',
-    language: 'fa',
-    views: 99,
-    shares: 9,
-    likes: 33,
-    author: mockUser[0],
-    comments: [],
   }
 ];
 
 const createMockPrisma = () => {
-  return new Proxy({}, {
+  const mockModelProxy = new Proxy({}, {
     get(target, prop) {
       if (prop === 'article') return makeMockModelWithWrites('article', mockArticles);
       if (prop === 'product') return makeMockModelWithWrites('product', mockProducts);
@@ -1425,9 +1041,11 @@ const createMockPrisma = () => {
       if (prop === 'discount') return makeMockModel('discount', []);
       if (prop === 'user') return makeMockModel('user', mockUser);
       if (prop === 'cartItem') return makeMockModelWithWrites('cartItem', globalCartItems);
-      if (prop === 'order') return makeMockModelWithWrites('order', []);
-      if (prop === 'orderItem') return makeMockModelWithWrites('orderItem', []);
-      if (prop === 'transaction') return makeMockModelWithWrites('transaction', []);
+      if (prop === 'order') return makeMockModelWithWrites('order', mockOrders);
+      if (prop === 'orderItem') return makeMockModelWithWrites('orderItem', mockOrderItems);
+      if (prop === 'transaction') return makeMockModelWithWrites('transaction', mockTransactions);
+      if (prop === 'referral') return makeMockModelWithWrites('referral', mockReferrals);
+      if (prop === 'affiliate') return makeMockModelWithWrites('affiliate', mockAffiliates);
       if (prop === 'showcaseConfig') return makeMockModelWithWrites('showcaseConfig', mockShowcaseConfig);
       if (prop === 'featuredProduct') return makeMockModelWithWrites('featuredProduct', mockFeaturedProducts);
       if (prop === 'luxuryUnboxingConfig') return makeMockModelWithWrites('luxuryUnboxingConfig', mockLuxuryUnboxingConfig);
@@ -1435,11 +1053,23 @@ const createMockPrisma = () => {
       if (prop === 'luxuryUnboxingSettings') return makeMockModelWithWrites('luxuryUnboxingSettings', mockLuxuryUnboxingSettings);
       if (prop === '$connect') return async () => {};
       if (prop === '$disconnect') return async () => {};
+      if (prop === '$transaction') {
+        return async (arg: any) => {
+          if (typeof arg === 'function') {
+            return arg(mockModelProxy);
+          }
+          if (Array.isArray(arg)) {
+            return Promise.all(arg);
+          }
+          return null;
+        };
+      }
 
-      // Default mock model for any other accesses
       return makeMockModel(String(prop), []);
     }
   });
+
+  return mockModelProxy;
 };
 
 const createPrismaClient = () => {
