@@ -119,7 +119,7 @@ describe('Category API Routes & Security Tests', () => {
     expect(json.data.image).toContain('new.jpg');
   });
 
-  it('DELETE /api/admin/categories/[id]/image clears image fields in DB and removes asset', async () => {
+  it('DELETE /api/admin/categories/[id]/image rejects standalone deletion to enforce one image per category rule', async () => {
     const { checkAccess } = require('@/lib/checkAccess');
     checkAccess.mockResolvedValue(true);
 
@@ -131,9 +131,25 @@ describe('Category API Routes & Security Tests', () => {
     const res = await deleteImageHandler(req, { params });
     const json = await res.json();
 
-    expect(res.status).toBe(200);
-    expect(json.success).toBe(true);
-    expect(json.data.image).toBeNull();
+    expect(res.status).toBe(400);
+    expect(json.error).toContain('هر دسته‌بندی باید همواره دارای یک تصویر باشد');
+  });
+
+  it('PATCH /api/admin/categories/[id] rejects empty or null image', async () => {
+    const { checkAccess } = require('@/lib/checkAccess');
+    checkAccess.mockResolvedValue(true);
+
+    const req = new NextRequest('http://localhost:3000/api/admin/categories/cat_test_1', {
+      method: 'PATCH',
+      body: JSON.stringify({ image: '' }),
+    });
+
+    const params = Promise.resolve({ id: 'cat_test_1' });
+    const res = await patchCategoryHandler(req, { params });
+    const json = await res.json();
+
+    expect(res.status).toBe(400);
+    expect(json.error).toContain('دسته‌بندی باید همواره دارای یک تصویر معتبر باشد');
   });
 
   it('PATCH /api/admin/categories/[id] updates category metadata', async () => {

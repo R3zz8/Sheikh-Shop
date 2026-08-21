@@ -1035,7 +1035,7 @@ const createMockPrisma = () => {
       if (prop === 'product') return makeMockModelWithWrites('product', mockProducts);
       if (prop === 'image') return makeMockModelWithWrites('image', mockImages);
       if (prop === 'video') return makeMockModelWithWrites('video', mockVideos);
-      if (prop === 'category') return makeMockModel('category', mockCategories);
+      if (prop === 'category') return makeMockModelWithWrites('category', mockCategories);
       if (prop === 'unit') return makeMockModel('unit', mockUnits);
       if (prop === 'mobileCarousel') return makeMockModelWithWrites('mobileCarousel', mockCarousel);
       if (prop === 'discount') return makeMockModel('discount', []);
