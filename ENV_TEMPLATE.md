@@ -130,11 +130,15 @@ YAHOO_VERIFICATION_CODE="your-yahoo-verification-code"
 NEXT_UPGRADE_IN_PROGRESS="false"
 
 # =============================================================================
-# E-COMMERCE CONFIGURATION (OPTIONAL)
+# E-COMMERCE & PAYMENT GATEWAY CONFIGURATION
 # =============================================================================
 
-# Default Currency (OPTIONAL - defaults to USD)
-SHOP_DEFAULT_CURRENCY="USD"
+# ZarinPal Merchant ID (REQUIRED for payment processing in production)
+# 36-character UUID provided by ZarinPal merchant portal
+ZARINPAL_MERCHANT_ID="00000000-0000-0000-0000-000000000000"
+
+# Default Currency (TOMAN)
+SHOP_DEFAULT_CURRENCY="TOMAN"
 
 # =============================================================================
 # DEPLOYMENT CONFIGURATION (OPTIONAL)

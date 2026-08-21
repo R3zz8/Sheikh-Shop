@@ -36,19 +36,56 @@ export default function PaymentCallbackPage() {
   const [errorMessage, setErrorMessage] = useState<string>('');
 
   useEffect(() => {
-    // Get authority and status from URL params (YekPay sends these via GET)
     const authority = searchParams.get('Authority') || searchParams.get('authority');
     const status = searchParams.get('Status') || searchParams.get('status');
+    const refId = searchParams.get('ref_id') || searchParams.get('refId');
+    const amount = searchParams.get('amount');
+    const reason = searchParams.get('reason');
 
-    if (!authority) {
-      setState('failed');
-      setErrorMessage('Payment authority not found in callback');
+    if (status === 'success') {
+      setState('success');
+      setVerificationData({
+        success: true,
+        authority: authority || '',
+        reference: refId || '',
+        details: amount ? { Amount: amount } : undefined,
+      });
+      toast.success('پرداخت با موفقیت انجام شد', {
+        description: refId ? `کد پیگیری: ${refId}` : 'سفارش شما با موفقیت ثبت شد.',
+        duration: 5000,
+      });
+
+      const redirectDelay = 3000;
+      setTimeout(() => {
+        router.push('/success');
+      }, redirectDelay);
       return;
     }
 
-    // Verify payment with YekPay
+    if (status === 'failed') {
+      setState('failed');
+      let msg = 'پرداخت ناموفق بود یا توسط کاربر لغو شد.';
+      if (reason === 'payment_cancelled_by_user') {
+        msg = 'پرداخت توسط کاربر لغو شد.';
+      } else if (reason === 'verification_failed') {
+        msg = 'تایید پرداخت از سوی درگاه ناموفق بود.';
+      } else if (reason === 'missing_authority') {
+        msg = 'شناسه ارجاع پرداخت یافت نشد.';
+      }
+      setErrorMessage(msg);
+      toast.error('پرداخت ناموفق', { description: msg, duration: 6000 });
+      return;
+    }
+
+    if (!authority) {
+      setState('failed');
+      setErrorMessage('شناسه پرداخت یافت نشد.');
+      return;
+    }
+
+    // Legacy fallback verification if needed
     verifyPayment(authority, status);
-  }, [searchParams]);
+  }, [searchParams, router]);
 
   const verifyPayment = async (authority: string, status: string | null) => {
     try {
@@ -183,10 +220,10 @@ export default function PaymentCallbackPage() {
                     <Loader2 className="h-8 w-8 text-amber-600 animate-spin" />
                   </div>
                   <CardTitle className="text-2xl font-semibold text-gray-900">
-                    Verifying Payment
+                    در حال تایید پرداخت
                   </CardTitle>
                   <p className="text-gray-600">
-                    Please wait while we confirm your payment...
+                    لطفاً چند لحظه شکیبا باشید...
                   </p>
                 </motion.div>
               )}
@@ -214,10 +251,10 @@ export default function PaymentCallbackPage() {
                     <CheckCircle className="h-10 w-10 text-green-600" />
                   </motion.div>
                   <CardTitle className="text-2xl font-semibold text-gray-900">
-                    Payment Successful!
+                    پرداخت موفقیت‌آمیز بود!
                   </CardTitle>
                   <p className="text-gray-600">
-                    Your payment has been verified and processed successfully.
+                    پرداخت شما تایید شد و سفارش با موفقیت ثبت گردید.
                   </p>
                 </motion.div>
               )}
@@ -245,10 +282,10 @@ export default function PaymentCallbackPage() {
                     <XCircle className="h-10 w-10 text-red-600" />
                   </motion.div>
                   <CardTitle className="text-2xl font-semibold text-gray-900">
-                    Payment Failed
+                    پرداخت ناموفق
                   </CardTitle>
                   <p className="text-gray-600">
-                    {errorMessage || 'Your payment could not be processed.'}
+                    {errorMessage || 'پرداخت شما انجام نشد.'}
                   </p>
                 </motion.div>
               )}
