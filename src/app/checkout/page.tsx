@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
+import Link from 'next/link';
 import { 
   CreditCard, 
   Lock, 
@@ -14,25 +15,25 @@ import {
   ShoppingBag, 
   Truck, 
   Shield,
-  CheckCircle,
-  ArrowRight,
+  CheckCircle2,
+  ArrowLeft,
   ShoppingCart,
   Package,
   BadgeCheck,
-  Receipt
+  Receipt,
+  FileText
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Checkbox } from '@/components/ui/checkbox';
 import { useCart } from '@/hooks/useCart';
 import { useUser } from '@/hooks/useUser';
 import { formatPrice } from '@/lib/currency';
 import { getShippingCost, calculateOrderTotal } from '@/lib/shipping';
 import EstimatedDelivery from '@/components/shipping/EstimatedDelivery';
-import Link from 'next/link';
+import { normalizePersianDigits, isValidIranianMobile, isValidIranianPostalCode } from '@/lib/validation';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -42,25 +43,29 @@ export default function CheckoutPage() {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
-    email: '',
     phone: '',
-    address: '',
+    email: '',
+    province: '',
     city: '',
+    address: '',
     zipCode: '',
-    country: '',
-    saveInfo: false,
+    recipientName: '',
+    recipientPhone: '',
+    orderNotes: '',
   });
 
-  const [paymentMethod, setPaymentMethod] = useState('credit-card');
   const [isLoadingApi, setIsLoadingApi] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Pre-fill form with user data if available
   useEffect(() => {
     if (user) {
+      const u = user as any;
       setFormData(prev => ({
         ...prev,
-        email: user.email || prev.email,
+        firstName: u.firstName || prev.firstName,
+        lastName: u.lastName || prev.lastName,
+        email: u.email || prev.email,
       }));
     }
   }, [user]);
@@ -78,58 +83,91 @@ export default function CheckoutPage() {
   const shipping = cartTotals.shippingTotal || 0;
   const total = subtotal + shipping;
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: value
     }));
   };
 
   const handlePlaceOrder = async () => {
     setError(null);
 
-    // Basic client-side validation
-    const requiredFields: (keyof typeof formData)[] = [
-      'firstName', 'lastName', 'email', 'phone',
-      'address', 'city', 'zipCode', 'country'
-    ];
+    // Validate required Iranian checkout fields
+    if (!formData.firstName.trim()) {
+      setError('لطفاً نام خود را وارد کنید.');
+      return;
+    }
 
-    const missingField = requiredFields.find(field => !formData[field]);
-    if (missingField) {
-      setError(`Please fill in the ${missingField.replace(/([A-Z])/g, ' $1').toLowerCase()} field.`);
+    if (!formData.lastName.trim()) {
+      setError('لطفاً نام خانوادگی خود را وارد کنید.');
+      return;
+    }
+
+    const normalizedPhone = normalizePersianDigits(formData.phone).trim();
+    if (!normalizedPhone || !isValidIranianMobile(normalizedPhone)) {
+      setError('لطفاً شماره موبایل معتبر ۱۱ رقمی (مانند ۰۹۱۲۳۴۵۶۷۸۹) وارد کنید.');
+      return;
+    }
+
+    if (formData.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+      setError('فرمت ایمیل وارد شده معتبر نیست.');
+      return;
+    }
+
+    if (!formData.province.trim()) {
+      setError('لطفاً استان خود را وارد کنید.');
+      return;
+    }
+
+    if (!formData.city.trim()) {
+      setError('لطفاً شهر خود را وارد کنید.');
+      return;
+    }
+
+    if (!formData.address.trim() || formData.address.trim().length < 5) {
+      setError('لطفاً آدرس کامل و دقیق خود را وارد کنید.');
+      return;
+    }
+
+    const normalizedZip = normalizePersianDigits(formData.zipCode).trim();
+    if (!normalizedZip || !isValidIranianPostalCode(normalizedZip)) {
+      setError('لطفاً کد پستی ۱۰ رقمی معتبر وارد کنید.');
       return;
     }
 
     if (!cart || cart.length === 0) {
-      setError('Your cart is empty.');
+      setError('سبد خرید شما خالی است.');
       router.push('/cart');
       return;
     }
 
     setIsLoadingApi(true);
 
-    // --- CURRENCY CONSTANTS ---
-    const CURRENCY_IRR = 2; // Using the appropriate code for IRR
-
-    // Construct payload for the API
+    // Construct unified payload for ZarinPal checkout API
     const payload = {
-      amount: total,
-      currencyFrom: CURRENCY_IRR,
-      currencyTo: CURRENCY_IRR,
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-      email: formData.email,
-      mobile: formData.phone, // Map phone to mobile
-      address: formData.address,
-      postalCode: formData.zipCode, // Map zipCode to postalCode
-      country: formData.country,
-      city: formData.city,
-      description: `Order from Sheikh-Shop for ${cartTotals.itemCount} items.`,
+      items: cart,
+      shippingAddress: {
+        province: formData.province.trim(),
+        city: formData.city.trim(),
+        address: formData.address.trim(),
+        postalCode: normalizedZip,
+        recipientName: formData.recipientName.trim() || `${formData.firstName.trim()} ${formData.lastName.trim()}`,
+        recipientPhone: formData.recipientPhone.trim() ? normalizePersianDigits(formData.recipientPhone).trim() : normalizedPhone,
+      },
+      contactInfo: {
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+        phone: normalizedPhone,
+        mobile: normalizedPhone,
+        email: formData.email.trim(),
+      },
+      orderNotes: formData.orderNotes.trim(),
     };
 
     try {
-      const response = await fetch('/api/payment/request', {
+      const response = await fetch('/api/payment/zarinpal/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -139,524 +177,428 @@ export default function CheckoutPage() {
 
       const data = await response.json();
 
-      if (response.ok && data.success) {
-        // Redirect to payment gateway
-        router.push(data.paymentUrl);
+      if (response.ok && data.success && data.url) {
+        // Redirect directly to ZarinPal payment gateway
+        window.location.href = data.url;
       } else {
-        // Handle API error
-        const errorMessage = data.description || data.error || 'An unexpected error occurred.';
+        const errorMessage = data.error || data.description || 'ایجاد درخواست پرداخت با خطا مواجه شد.';
         setError(errorMessage);
         console.error('Payment request failed:', data);
+        setIsLoadingApi(false);
       }
     } catch (err) {
-      // Handle network or unexpected errors
-      setError('Failed to connect to the payment service. Please try again later.');
+      setError('ارتباط با درگاه پرداخت برقرار نشد. لطفاً چند لحظه بعد دوباره تلاش کنید.');
       console.error('Network or unexpected error:', err);
-    } finally {
       setIsLoadingApi(false);
     }
   };
 
-  // Show loading or empty state
+  // Show loading state
   if (isUserLoading || isCartLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-950 via-stone-900 to-black flex items-center justify-center">
-        <div className="text-white text-xl">Loading cart...</div>
+      <div className="min-h-screen bg-gradient-to-br from-amber-950 via-stone-900 to-black flex items-center justify-center font-vazirmatn" dir="rtl">
+        <div className="flex flex-col items-center gap-3 text-white">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-amber-400"></div>
+          <span className="text-lg">در حال بارگذاری اطلاعات سبد خرید...</span>
+        </div>
       </div>
     );
   }
 
+  // Show empty cart state
   if (!cart || cart.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-950 via-stone-900 to-black flex items-center justify-center">
-        <div className="text-center">
+      <div className="min-h-screen bg-gradient-to-br from-amber-950 via-stone-900 to-black flex items-center justify-center font-vazirmatn p-4" dir="rtl">
+        <div className="text-center bg-stone-900/80 border border-amber-500/20 p-8 rounded-3xl max-w-md w-full shadow-2xl backdrop-blur-xl">
           <ShoppingCart className="w-16 h-16 text-amber-400 mx-auto mb-4" />
-          <h2 className="text-white text-2xl mb-2">Your cart is empty</h2>
-          <p className="text-gray-400 mb-4">Add items to your cart before checkout</p>
+          <h2 className="text-white text-2xl font-bold mb-2">سبد خرید شما خالی است</h2>
+          <p className="text-stone-400 mb-6 text-sm">برای تکمیل خرید، ابتدا کالاهای مورد نظر خود را به سبد اضافه کنید.</p>
           <Link href="/">
-            <Button>Continue Shopping</Button>
+            <Button className="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-black font-bold py-3 rounded-xl hover:opacity-90">
+              بازگشت به فروشگاه
+            </Button>
           </Link>
         </div>
       </div>
     );
   }
 
-    return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-950 via-stone-900 to-black relative overflow-hidden">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 bg-[url('/public/assets/pattern.png')] opacity-5"></div>
-      
-      <div className="relative z-10">
-                    {/* Header */}
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-amber-950 via-stone-900 to-black relative overflow-hidden font-vazirmatn text-right" dir="rtl">
+      {/* Ambient background glow */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-amber-900/20 via-transparent to-transparent pointer-events-none"></div>
+
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          className="pt-20 pb-8"
+          transition={{ duration: 0.5 }}
+          className="mb-8 text-center md:text-right flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-amber-500/15 pb-6"
         >
-          <div className="container mx-auto px-4 text-center">
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-              className="flex items-center justify-center gap-4 mb-4"
-            >
-              <ShoppingBag className="w-10 h-10 text-amber-400" />
-              <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
-                            Checkout
-                        </h1>
-            </motion.div>
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
-              className="text-gray-300 text-lg"
-            >
-              Complete your order securely
-            </motion.p>
+          <div>
+            <div className="flex items-center justify-center md:justify-start gap-3 mb-2">
+              <ShoppingBag className="w-8 h-8 text-amber-400" />
+              <h1 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100">
+                تکمیل سفارش و پرداخت
+              </h1>
+            </div>
+            <p className="text-stone-400 text-sm">
+              لطفاً اطلاعات تحویل گیرنده را با دقت وارد کنید تا سفارش شما ثبت و ارسال گردد.
+            </p>
           </div>
+
+          <Link href="/cart">
+            <Button variant="outline" className="border-amber-500/30 text-amber-200 hover:bg-amber-500/10 hover:text-white rounded-xl text-sm gap-2">
+              <ArrowLeft className="w-4 h-4" />
+              بازگشت به سبد خرید
+            </Button>
+          </Link>
         </motion.div>
 
-        {/* Main Content */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
-          className="container mx-auto px-4 pb-20"
-        >
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Left Column - Customer & Payment Information */}
-            <div className="space-y-6">
-              {/* Customer Information */}
-              <Card className="bg-white/5 backdrop-blur-sm border border-amber-200/20 rounded-2xl overflow-hidden">
-                <CardHeader className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 border-b border-amber-200/20">
-                  <CardTitle className="flex items-center gap-3 text-white">
-                    <User className="w-6 h-6 text-amber-400" />
-                    Customer Information
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-6 space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="firstName" className="text-gray-300">First Name *</Label>
-                      <Input
-                        id="firstName"
-                        name="firstName"
-                        value={formData.firstName}
-                        onChange={handleInputChange}
-                        className="mt-1 bg-white/10 border-amber-200/20 text-white placeholder-gray-400 focus:border-amber-400"
-                        placeholder="Enter your first name"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="lastName" className="text-gray-300">Last Name *</Label>
-                      <Input
-                        id="lastName"
-                        name="lastName"
-                        value={formData.lastName}
-                        onChange={handleInputChange}
-                        className="mt-1 bg-white/10 border-amber-200/20 text-white placeholder-gray-400 focus:border-amber-400"
-                        placeholder="Enter your last name"
-                                            />
-                                        </div>
-                                        </div>
-
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* Right Column (Mobile 1st/Desktop Right) - Customer & Delivery Forms */}
+          <div className="lg:col-span-7 space-y-6">
+            {/* Customer Information Card */}
+            <Card className="bg-stone-900/70 backdrop-blur-xl border border-amber-500/20 rounded-3xl overflow-hidden shadow-2xl">
+              <CardHeader className="bg-gradient-to-l from-amber-950/40 via-amber-900/10 to-stone-900/20 border-b border-amber-500/20 px-6 py-4">
+                <CardTitle className="flex items-center gap-3 text-white text-lg font-bold">
+                  <User className="w-5 h-5 text-amber-400" />
+                  اطلاعات خریدار و تحویل‌گیرنده
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6 space-y-4">
+                {/* Name Fields */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="email" className="text-gray-300">Email Address *</Label>
-                    <div className="relative mt-1">
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                      <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        className="pl-10 bg-white/10 border-amber-200/20 text-white placeholder-gray-400 focus:border-amber-400"
-                        placeholder="Enter your email"
-                      />
-                                        </div>
-                                    </div>
-
+                    <Label htmlFor="firstName" className="text-stone-300 text-sm mb-1.5 block">نام *</Label>
+                    <Input
+                      id="firstName"
+                      name="firstName"
+                      value={formData.firstName}
+                      onChange={handleInputChange}
+                      className="bg-stone-950/60 border-amber-500/20 text-white placeholder-stone-500 focus:border-amber-400 rounded-xl py-2.5"
+                      placeholder="مثال: علی"
+                    />
+                  </div>
                   <div>
-                    <Label htmlFor="phone" className="text-gray-300">Phone Number *</Label>
-                    <div className="relative mt-1">
-                      <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <Label htmlFor="lastName" className="text-stone-300 text-sm mb-1.5 block">نام خانوادگی *</Label>
+                    <Input
+                      id="lastName"
+                      name="lastName"
+                      value={formData.lastName}
+                      onChange={handleInputChange}
+                      className="bg-stone-950/60 border-amber-500/20 text-white placeholder-stone-500 focus:border-amber-400 rounded-xl py-2.5"
+                      placeholder="مثال: محمدی"
+                    />
+                  </div>
+                </div>
+
+                {/* Contact Fields */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="phone" className="text-stone-300 text-sm mb-1.5 block">شماره موبایل *</Label>
+                    <div className="relative">
+                      <Phone className="absolute right-3 top-1/2 transform -translate-y-1/2 text-stone-500 w-4 h-4" />
                       <Input
                         id="phone"
                         name="phone"
                         type="tel"
+                        dir="ltr"
                         value={formData.phone}
                         onChange={handleInputChange}
-                        className="pl-10 bg-white/10 border-amber-200/20 text-white placeholder-gray-400 focus:border-amber-400"
-                        placeholder="Enter your phone number"
+                        className="pr-10 bg-stone-950/60 border-amber-500/20 text-white placeholder-stone-500 focus:border-amber-400 rounded-xl py-2.5 text-left"
+                        placeholder="09123456789"
                       />
                     </div>
-                            </div>
-
+                  </div>
                   <div>
-                    <Label htmlFor="address" className="text-gray-300">Street Address *</Label>
-                    <div className="relative mt-1">
-                      <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <Label htmlFor="email" className="text-stone-300 text-sm mb-1.5 block">ایمیل (اختیاری)</Label>
+                    <div className="relative">
+                      <Mail className="absolute right-3 top-1/2 transform -translate-y-1/2 text-stone-500 w-4 h-4" />
                       <Input
-                        id="address"
-                        name="address"
-                        value={formData.address}
+                        id="email"
+                        name="email"
+                        type="email"
+                        dir="ltr"
+                        value={formData.email}
                         onChange={handleInputChange}
-                        className="pl-10 bg-white/10 border-amber-200/20 text-white placeholder-gray-400 focus:border-amber-400"
-                        placeholder="Enter your street address"
-                      />
-                            </div>
-                        </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <Label htmlFor="city" className="text-gray-300">City *</Label>
-                      <Input
-                        id="city"
-                        name="city"
-                        value={formData.city}
-                        onChange={handleInputChange}
-                        className="mt-1 bg-white/10 border-amber-200/20 text-white placeholder-gray-400 focus:border-amber-400"
-                        placeholder="City"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="country" className="text-gray-300">Country *</Label>
-                      <Input
-                        id="country"
-                        name="country"
-                        value={formData.country}
-                        onChange={handleInputChange}
-                        className="mt-1 bg-white/10 border-amber-200/20 text-white placeholder-gray-400 focus:border-amber-400"
-                        placeholder="Country"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="zipCode" className="text-gray-300">ZIP Code *</Label>
-                      <Input
-                        id="zipCode"
-                        name="zipCode"
-                        value={formData.zipCode}
-                        onChange={handleInputChange}
-                        className="mt-1 bg-white/10 border-amber-200/20 text-white placeholder-gray-400 focus:border-amber-400"
-                        placeholder="ZIP"
+                        className="pr-10 bg-stone-950/60 border-amber-500/20 text-white placeholder-stone-500 focus:border-amber-400 rounded-xl py-2.5 text-left"
+                        placeholder="example@gmail.com"
                       />
                     </div>
                   </div>
+                </div>
 
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="saveInfo"
-                      name="saveInfo"
-                      checked={formData.saveInfo}
-                      onCheckedChange={(checked) => setFormData(prev => ({ ...prev, saveInfo: checked as boolean }))}
-                      className="border-amber-400 data-[state=checked]:bg-amber-500"
+                {/* Province & City */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                  <div>
+                    <Label htmlFor="province" className="text-stone-300 text-sm mb-1.5 block">استان *</Label>
+                    <Input
+                      id="province"
+                      name="province"
+                      value={formData.province}
+                      onChange={handleInputChange}
+                      className="bg-stone-950/60 border-amber-500/20 text-white placeholder-stone-500 focus:border-amber-400 rounded-xl py-2.5"
+                      placeholder="مثال: تهران"
                     />
-                    <Label htmlFor="saveInfo" className="text-gray-300 text-sm">
-                      Save this information for future orders
-                    </Label>
                   </div>
-                </CardContent>
-              </Card>
+                  <div>
+                    <Label htmlFor="city" className="text-stone-300 text-sm mb-1.5 block">شهر *</Label>
+                    <Input
+                      id="city"
+                      name="city"
+                      value={formData.city}
+                      onChange={handleInputChange}
+                      className="bg-stone-950/60 border-amber-500/20 text-white placeholder-stone-500 focus:border-amber-400 rounded-xl py-2.5"
+                      placeholder="مثال: تهران"
+                    />
+                  </div>
+                </div>
 
-              {/* Payment Methods */}
-              <Card className="bg-white/5 backdrop-blur-sm border border-amber-200/20 rounded-2xl overflow-hidden">
-                <CardHeader className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 border-b border-amber-200/20">
-                  <CardTitle className="flex items-center gap-3 text-white">
-                    <CreditCard className="w-6 h-6 text-amber-400" />
-                    Payment Method
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-6 space-y-4">
-                  <div className="space-y-3">
-                    <div 
-                      className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 ${
-                        paymentMethod === 'credit-card' 
-                          ? 'border-amber-400 bg-amber-500/10' 
-                          : 'border-amber-200/20 bg-white/5 hover:bg-white/10'
-                      }`}
-                      onClick={() => setPaymentMethod('credit-card')}
-                    >
-                      <CreditCard className="w-6 h-6 text-amber-400 mr-3" />
-                      <div className="flex-1">
-                        <h3 className="text-white font-semibold">Credit Card</h3>
-                        <p className="text-gray-400 text-sm">Visa, Mastercard, American Express</p>
-                      </div>
-                      {paymentMethod === 'credit-card' && (
-                        <CheckCircle className="w-5 h-5 text-amber-400" />
-                      )}
+                {/* Street Address */}
+                <div>
+                  <Label htmlFor="address" className="text-stone-300 text-sm mb-1.5 block">آدرس کامل پستی *</Label>
+                  <div className="relative">
+                    <MapPin className="absolute right-3 top-3 text-stone-500 w-4 h-4" />
+                    <Input
+                      id="address"
+                      name="address"
+                      value={formData.address}
+                      onChange={handleInputChange}
+                      className="pr-10 bg-stone-950/60 border-amber-500/20 text-white placeholder-stone-500 focus:border-amber-400 rounded-xl py-2.5"
+                      placeholder="خیابان، کوچه، پلاک، طبقه، واحد"
+                    />
+                  </div>
+                </div>
+
+                {/* Postal Code */}
+                <div>
+                  <Label htmlFor="zipCode" className="text-stone-300 text-sm mb-1.5 block">کد پستی ۱۰ رقمی *</Label>
+                  <Input
+                    id="zipCode"
+                    name="zipCode"
+                    dir="ltr"
+                    value={formData.zipCode}
+                    onChange={handleInputChange}
+                    className="bg-stone-950/60 border-amber-500/20 text-white placeholder-stone-500 focus:border-amber-400 rounded-xl py-2.5 text-left font-mono"
+                    placeholder="1234567890"
+                  />
+                </div>
+
+                {/* Secondary Recipient (Optional) */}
+                <div className="border-t border-amber-500/10 pt-4 mt-4 space-y-4">
+                  <span className="text-xs font-semibold text-amber-300/80 block">تحویل به شخص دیگر (اختیاری)</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="recipientName" className="text-stone-400 text-xs mb-1 block">نام تحویل‌گیرنده</Label>
+                      <Input
+                        id="recipientName"
+                        name="recipientName"
+                        value={formData.recipientName}
+                        onChange={handleInputChange}
+                        className="bg-stone-950/40 border-amber-500/15 text-white placeholder-stone-600 focus:border-amber-400 rounded-xl py-2 text-sm"
+                        placeholder="در صورت تفاوت با خریدار"
+                      />
                     </div>
-
-                    <div 
-                      className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 ${
-                        paymentMethod === 'paypal' 
-                          ? 'border-amber-400 bg-amber-500/10' 
-                          : 'border-amber-200/20 bg-white/5 hover:bg-white/10'
-                      }`}
-                      onClick={() => setPaymentMethod('paypal')}
-                    >
-                      <div className="w-6 h-6 bg-blue-600 rounded mr-3 flex items-center justify-center">
-                        <span className="text-white text-xs font-bold">P</span>
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-white font-semibold">PayPal</h3>
-                        <p className="text-gray-400 text-sm">Pay securely with PayPal</p>
-                      </div>
-                      {paymentMethod === 'paypal' && (
-                        <CheckCircle className="w-5 h-5 text-amber-400" />
-                      )}
+                    <div>
+                      <Label htmlFor="recipientPhone" className="text-stone-400 text-xs mb-1 block">شماره تماس تحویل‌گیرنده</Label>
+                      <Input
+                        id="recipientPhone"
+                        name="recipientPhone"
+                        dir="ltr"
+                        value={formData.recipientPhone}
+                        onChange={handleInputChange}
+                        className="bg-stone-950/40 border-amber-500/15 text-white placeholder-stone-600 focus:border-amber-400 rounded-xl py-2 text-sm text-left font-mono"
+                        placeholder="09120000000"
+                      />
                     </div>
                   </div>
+                </div>
 
-                  {paymentMethod === 'credit-card' && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="space-y-4 pt-4 border-t border-amber-200/20"
-                    >
-                      <div>
-                        <Label htmlFor="cardNumber" className="text-gray-300">Card Number *</Label>
-                        <Input
-                          id="cardNumber"
-                          placeholder="1234 5678 9012 3456"
-                          className="mt-1 bg-white/10 border-amber-200/20 text-white placeholder-gray-400 focus:border-amber-400"
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="expiryDate" className="text-gray-300">Expiry Date *</Label>
-                          <Input
-                            id="expiryDate"
-                            placeholder="MM/YY"
-                            className="mt-1 bg-white/10 border-amber-200/20 text-white placeholder-gray-400 focus:border-amber-400"
-                          />
-                        </div>
-                                <div>
-                          <Label htmlFor="cvv" className="text-gray-300">CVV *</Label>
-                          <Input
-                            id="cvv"
-                            placeholder="123"
-                            className="mt-1 bg-white/10 border-amber-200/20 text-white placeholder-gray-400 focus:border-amber-400"
-                                    />
-                                </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </CardContent>
-              </Card>
-                            </div>
+                {/* Order Notes */}
+                <div className="border-t border-amber-500/10 pt-4">
+                  <Label htmlFor="orderNotes" className="text-stone-300 text-sm mb-1.5 flex items-center gap-1.5 block">
+                    <FileText className="w-4 h-4 text-amber-400" />
+                    توضیحات سفارش / ارسال (اختیاری)
+                  </Label>
+                  <Input
+                    id="orderNotes"
+                    name="orderNotes"
+                    value={formData.orderNotes}
+                    onChange={handleInputChange}
+                    className="bg-stone-950/60 border-amber-500/20 text-white placeholder-stone-500 focus:border-amber-400 rounded-xl py-2.5"
+                    placeholder="نکات خاص جهت زمان ارسال یا تحویل کالا"
+                  />
+                </div>
+              </CardContent>
+            </Card>
 
-            {/* Right Column - Order Summary */}
-            <div className="space-y-6 font-vazirmatn" dir="rtl">
-              <Card className="relative bg-stone-900/60 backdrop-blur-xl border border-amber-500/20 rounded-3xl overflow-hidden sticky top-24 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8),0_0_50px_rgba(217,119,6,0.15)] group transition-all duration-300 hover:border-amber-500/30">
-                {/* Visual Accent Glow */}
-                <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full blur-2xl pointer-events-none group-hover:bg-amber-500/10 transition-all duration-500"></div>
-
-                <CardHeader className="bg-gradient-to-l from-amber-950/40 via-amber-900/10 to-stone-900/20 border-b border-amber-500/20 px-6 py-5">
-                  <CardTitle className="flex items-center justify-between text-white">
-                    <div className="flex items-center gap-3">
-                      <ShoppingBag className="w-6 h-6 text-amber-500" />
-                      <span className="font-bold text-lg tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100">
-                        خلاصه سفارش
-                      </span>
+            {/* Payment Gateway Option Card */}
+            <Card className="bg-stone-900/70 backdrop-blur-xl border border-amber-500/20 rounded-3xl overflow-hidden shadow-2xl">
+              <CardHeader className="bg-gradient-to-l from-amber-950/40 via-amber-900/10 to-stone-900/20 border-b border-amber-500/20 px-6 py-4">
+                <CardTitle className="flex items-center gap-3 text-white text-lg font-bold">
+                  <CreditCard className="w-5 h-5 text-amber-400" />
+                  روش پرداخت
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="p-4 rounded-2xl border-2 border-amber-400 bg-amber-500/10 flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center flex-shrink-0">
+                      <span className="text-amber-300 font-black text-sm">زرین</span>
                     </div>
-                    {cartTotals.itemCount > 0 && (
-                      <span className="px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/25 border border-amber-400/30 text-amber-200">
-                        {cartTotals.itemCount} کالا
-                      </span>
-                    )}
-                  </CardTitle>
-                </CardHeader>
-
-                <CardContent className="p-6">
-                  {/* Cart Items */}
-                  <div className="space-y-4 mb-6 max-h-[240px] overflow-y-auto pr-1">
-                    {cart.map((item: any) => {
-                      const unitPrice = item.unitPrice || item.product?.basePrice || 0;
-                      const itemTotal = unitPrice * item.quantity;
-                      const productImage = item.product?.images?.[0]?.image || '/assets/noImage.jpg';
-                      const productName = item.product?.name || 'محصول';
-                      const unitName = item.unit?.name || item.unit?.symbol || '';
-                      
-                      return (
-                        <motion.div
-                          key={item.id}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.4 }}
-                          className="flex items-center justify-between gap-4 p-3 bg-white/5 rounded-xl border border-white/5 hover:bg-white/10 hover:border-white/10 transition-all duration-300 group"
-                        >
-                          <div className="flex items-center gap-3 min-w-0">
-                            <div className="relative w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 border border-white/10 group-hover:border-amber-500/30 transition-colors">
-                              <Image
-                                src={productImage}
-                                alt={productName}
-                                fill
-                                className="object-cover"
-                                sizes="56px"
-                              />
-                            </div>
-                            <div className="min-w-0">
-                              <h4 className="text-white font-medium text-sm truncate group-hover:text-amber-200 transition-colors">{productName}</h4>
-                              <p className="text-gray-400 text-xs mt-0.5">
-                                {unitName && <span className="bg-amber-500/10 text-amber-300 text-[10px] px-2 py-0.5 rounded-full ml-1.5 font-semibold">{unitName}</span>}
-                                تعداد: {item.quantity}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="text-left flex-shrink-0">
-                            <p className="text-amber-400 font-semibold text-sm">{formatPrice(itemTotal)}</p>
-                            <p className="text-gray-500 text-[10px] mt-0.5">{formatPrice(unitPrice)} هر کدام</p>
-                          </div>
-                        </motion.div>
-                      );
-                    })}
-                  </div>
-
-                  <div className="border-t border-amber-500/10 pt-5 space-y-4">
-                    {/* Section 1: Subtotal */}
-                    <motion.div
-                      layout
-                      className="flex justify-between items-center text-gray-300"
-                    >
-                      <span className="flex items-center gap-2 text-sm">
-                        <Package className="w-4 h-4 text-amber-500/70" />
-                        جمع کالاها
-                      </span>
-                      <span className="font-semibold text-white text-sm">{formatPrice(subtotal)}</span>
-                    </motion.div>
-
-                    {/* Section 2: Per Product Shipping */}
-                    <motion.div
-                      layout
-                      className="flex justify-between items-center text-gray-300"
-                    >
-                      <span className="flex items-center gap-2 text-sm">
-                        <Truck className="w-4 h-4 text-amber-500/70" />
-                        هزینه ارسال کالاها
-                      </span>
-                      <span className="font-semibold text-white text-sm">{formatPrice(shipping)}</span>
-                    </motion.div>
-
-                    {/* Section 3: Shipping Total with inline info */}
-                    <div className="space-y-2.5 bg-amber-500/5 p-3 rounded-xl border border-amber-500/10">
-                      <motion.div
-                        layout
-                        className="flex justify-between items-center text-gray-300"
-                      >
-                        <span className="flex items-center gap-2 text-sm font-medium">
-                          <Truck className="w-4 h-4 text-amber-500" />
-                          جمع کل ارسال
-                        </span>
-                        <span className="font-semibold text-amber-400 text-sm">
-                          {shipping === 0 ? 'رایگان' : formatPrice(shipping)}
-                        </span>
-                      </motion.div>
-
-                      <EstimatedDelivery variant="glass" showDivider={false} className="border-amber-500/10 bg-amber-500/5 py-1 px-2.5" />
-
-                      <div className="flex items-center gap-2 text-[11px] text-gray-400 pr-1 select-none">
-                        <BadgeCheck className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />
-                        <span>ارسال سفارش با بسته‌بندی ایمن و استاندارد انجام خواهد شد.</span>
-                      </div>
+                    <div>
+                      <h3 className="text-white font-bold text-base">درگاه آنلاین زرین‌پال</h3>
+                      <p className="text-stone-300 text-xs mt-0.5">پرداخت امن با تمامی کارت‌های عضو شتاب</p>
                     </div>
-
-                    {/* Section 4: Discount */}
-                    <motion.div
-                      layout
-                      className="flex justify-between items-center text-gray-300"
-                    >
-                      <span className="flex items-center gap-2 text-sm">
-                        <span className="text-amber-500/70">🏷️</span>
-                        تخفیف
-                      </span>
-                      <span className="font-semibold text-green-400 text-sm">{formatPrice(0)}</span>
-                    </motion.div>
-
-                    {/* Section 4.5: Tax (Future Ready) */}
-                    <motion.div
-                      layout
-                      className="flex justify-between items-center text-gray-300"
-                    >
-                      <span className="flex items-center gap-2 text-sm">
-                        <span>🧾</span>
-                        مالیات (آماده برای آینده)
-                      </span>
-                      <span className="font-semibold text-gray-400 text-sm">{formatPrice(0)}</span>
-                    </motion.div>
-
-                    <Separator className="bg-amber-500/10" />
-
-                    {/* Section 5: Grand Total - strongest visual emphasis */}
-                    <motion.div
-                      layout
-                      className="flex justify-between items-center p-3 bg-gradient-to-l from-amber-500/10 to-transparent rounded-xl border-r-4 border-amber-500"
-                    >
-                      <span className="flex items-center gap-2 text-base font-bold text-white">
-                        <Receipt className="w-5 h-5 text-amber-400" />
-                        مبلغ نهایی
-                      </span>
-                      <span className="text-xl md:text-2xl font-black bg-gradient-to-r from-amber-300 via-yellow-300 to-orange-400 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(245,158,11,0.2)]">
-                        {formatPrice(total)}
-                      </span>
-                    </motion.div>
                   </div>
-
-                  {/* Security Badge */}
-                  <div className="flex items-center justify-center gap-2.5 mt-6 p-3 bg-green-500/10 border border-green-500/20 rounded-xl">
-                    <Shield className="w-4 h-4 text-green-400" />
-                    <span className="text-green-400 text-xs font-semibold">پرداخت امن و تضمین شده</span>
-                  </div>
-
-                  {/* Place Order Button */}
-                  {/* Error Message */}
-                  {error && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-center"
-                    >
-                      <p className="text-red-400 text-sm">{error}</p>
-                    </motion.div>
-                  )}
-
-                  {/* Place Order Button */}
-                  <motion.div
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="mt-6"
-                  >
-                    <Button
-                      onClick={handlePlaceOrder}
-                      disabled={isLoadingApi}
-                      className="w-full bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 hover:from-amber-600 hover:via-yellow-600 hover:to-orange-600 text-black font-bold text-lg py-6 rounded-xl shadow-lg hover:shadow-xl hover:shadow-amber-500/25 transition-all duration-300 group disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isLoadingApi ? (
-                        <>
-                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black mr-3"></div>
-                          Processing...
-                        </>
-                      ) : (
-                        <>
-                          <Lock className="w-5 h-5 mr-2" />
-                          Place Order
-                          <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
-                        </>
-                      )}
-                    </Button>
-                  </motion.div>
-
-                  <p className="text-center text-gray-400 text-xs mt-4">
-                    By placing this order, you agree to our Terms of Service and Privacy Policy
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
+                  <CheckCircle2 className="w-6 h-6 text-amber-400 flex-shrink-0" />
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        </motion.div>
-            </div>
+
+          {/* Left Column (Desktop Left) - Order Summary & Payment Button */}
+          <div className="lg:col-span-5 space-y-6 lg:sticky lg:top-24">
+            <Card className="bg-stone-900/80 backdrop-blur-xl border border-amber-500/25 rounded-3xl overflow-hidden shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8),0_0_50px_rgba(217,119,6,0.15)]">
+              <CardHeader className="bg-gradient-to-l from-amber-950/50 via-amber-900/20 to-stone-900/30 border-b border-amber-500/20 px-6 py-4">
+                <CardTitle className="flex items-center justify-between text-white">
+                  <div className="flex items-center gap-2.5">
+                    <Receipt className="w-5 h-5 text-amber-400" />
+                    <span className="font-bold text-lg">خلاصه سفارش</span>
+                  </div>
+                  {cartTotals.itemCount > 0 && (
+                    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/20 border border-amber-400/30 text-amber-200">
+                      {cartTotals.itemCount} کالا
+                    </span>
+                  )}
+                </CardTitle>
+              </CardHeader>
+
+              <CardContent className="p-6">
+                {/* Cart Items List */}
+                <div className="space-y-3 mb-6 max-h-[220px] overflow-y-auto pl-1">
+                  {cart.map((item: any) => {
+                    const unitPrice = item.unitPrice || item.product?.basePrice || 0;
+                    const itemTotal = unitPrice * item.quantity;
+                    const productImage = item.product?.images?.[0]?.image || '/assets/noImage.jpg';
+                    const productName = item.product?.name || 'محصول';
+                    const unitName = item.unit?.name || item.unit?.symbol || '';
+
+                    return (
+                      <div
+                        key={item.id}
+                        className="flex items-center justify-between gap-3 p-3 bg-stone-950/50 rounded-2xl border border-stone-800"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="relative w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 border border-stone-800 bg-stone-900">
+                            <Image
+                              src={productImage}
+                              alt={productName}
+                              fill
+                              className="object-cover"
+                              sizes="48px"
+                            />
+                          </div>
+                          <div className="min-w-0">
+                            <h4 className="text-white font-medium text-xs truncate">{productName}</h4>
+                            <p className="text-stone-400 text-[11px] mt-0.5">
+                              {unitName && <span className="text-amber-300 ml-1">{unitName}</span>}
+                              تعداد: {item.quantity}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-left flex-shrink-0">
+                          <p className="text-amber-300 font-bold text-xs">{formatPrice(itemTotal)}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="space-y-3.5 border-t border-amber-500/15 pt-4">
+                  {/* Subtotal */}
+                  <div className="flex justify-between items-center text-stone-300 text-sm">
+                    <span className="flex items-center gap-2">
+                      <Package className="w-4 h-4 text-amber-500/70" />
+                      جمع کالاها
+                    </span>
+                    <span className="font-semibold text-white">{formatPrice(subtotal)}</span>
+                  </div>
+
+                  {/* Shipping Total */}
+                  <div className="flex justify-between items-center text-stone-300 text-sm">
+                    <span className="flex items-center gap-2">
+                      <Truck className="w-4 h-4 text-amber-500/70" />
+                      هزینه ارسال
+                    </span>
+                    <span className="font-semibold text-amber-300">
+                      {shipping === 0 ? 'رایگان' : formatPrice(shipping)}
+                    </span>
+                  </div>
+
+                  {/* Delivery Estimate Box */}
+                  <div className="bg-amber-500/10 p-3 rounded-2xl border border-amber-500/15 space-y-2">
+                    <EstimatedDelivery variant="glass" showDivider={false} className="py-0 px-0 border-none bg-transparent" />
+                    <div className="flex items-center gap-1.5 text-[11px] text-stone-400">
+                      <BadgeCheck className="w-3.5 h-3.5 text-green-400 flex-shrink-0" />
+                      <span>ارسال سریع با بسته‌بندی ایمن</span>
+                    </div>
+                  </div>
+
+                  <Separator className="bg-amber-500/15" />
+
+                  {/* Grand Total */}
+                  <div className="flex justify-between items-center p-3.5 bg-gradient-to-r from-amber-500/15 to-orange-500/10 rounded-2xl border-r-4 border-amber-500">
+                    <span className="font-bold text-white text-base">مبلغ قابل پرداخت</span>
+                    <span className="text-xl font-black text-amber-300 drop-shadow">
+                      {formatPrice(total)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Error Banner */}
+                {error && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-4 p-3.5 bg-red-500/15 border border-red-500/30 rounded-xl text-center"
+                  >
+                    <p className="text-red-300 text-xs font-semibold">{error}</p>
+                  </motion.div>
+                )}
+
+                {/* Payment Submit Button */}
+                <Button
+                  onClick={handlePlaceOrder}
+                  disabled={isLoadingApi}
+                  className="w-full mt-6 bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-black font-extrabold text-base py-6 rounded-2xl shadow-lg hover:shadow-amber-500/20 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoadingApi ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black"></div>
+                      <span>در حال انتقال به درگاه پرداخت...</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center gap-2">
+                      <Lock className="w-4 h-4" />
+                      <span>پرداخت و تکمیل سفارش</span>
+                    </div>
+                  )}
+                </Button>
+
+                {/* Guarantee Banner */}
+                <div className="flex items-center justify-center gap-2 mt-4 p-2.5 bg-green-500/10 border border-green-500/20 rounded-xl">
+                  <Shield className="w-4 h-4 text-green-400" />
+                  <span className="text-green-300 text-xs font-medium">ضمانت پرداخت امن زرین‌پال</span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
-    );
-} 
+      </div>
+    </div>
+  );
+}
