@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -11,7 +11,7 @@ interface Category {
     url?: string;
 }
 
-const categories: Category[] = [
+const defaultCategories: Category[] = [
     {
         name: 'لوازم خانگی شیخ',
         image: '/sheikhhome.webp',
@@ -38,7 +38,56 @@ const categories: Category[] = [
     }
 ];
 
-const Categories = React.memo(function Categories() {
+interface CategoriesProps {
+    initialCategories?: Category[];
+}
+
+const Categories = React.memo(function Categories({ initialCategories }: CategoriesProps) {
+    const [categories, setCategories] = useState<Category[]>(
+        initialCategories && initialCategories.length > 0 ? initialCategories : defaultCategories
+    );
+
+    useEffect(() => {
+        // Fetch fresh category data from DB/API dynamically
+        let isMounted = true;
+        fetch('/api/categories')
+            .then((res) => res.json())
+            .then((data) => {
+                if (isMounted && data.success && Array.isArray(data.data) && data.data.length > 0) {
+                    const mapped: Category[] = data.data.slice(0, 4).map((cat: any) => {
+                        let url = `/categories/${cat.slug}`;
+                        if (cat.slug === 'sheikh-home') url = '/sheikh-home';
+                        else if (cat.slug === 'sheikh-digital') url = '/sheikh-digital';
+                        else if (cat.slug === 'tech-products') url = '/tech-products';
+                        else if (cat.slug === 'products') url = '/products';
+
+                        let img = cat.image;
+                        if (!img) {
+                            if (cat.slug === 'sheikh-home') img = '/sheikhhome.webp';
+                            else if (cat.slug === 'sheikh-digital') img = '/sheikhdigital.webp';
+                            else if (cat.slug === 'tech-products') img = '/sheikhgajet.webp';
+                            else img = '/food.webp';
+                        }
+
+                        return {
+                            name: cat.name,
+                            image: img,
+                            slug: cat.slug,
+                            url,
+                        };
+                    });
+                    setCategories(mapped);
+                }
+            })
+            .catch((err) => {
+                console.error('[Categories Component] Error fetching categories:', err);
+            });
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
+
     return (
         <section className="container-fluid section-padding relative">
             <div className="max-w-6xl mx-auto">

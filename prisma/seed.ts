@@ -93,18 +93,91 @@ async function main() {
 
   console.log(`✅ Created ${units.length} units`);
 
-  // Create Categories
+  // Create Categories (Canonical 4 main categories)
   console.log('📂 Creating categories...');
   const categories = await Promise.all([
+    prisma.category.upsert({
+      where: { slug: 'sheikh-home' },
+      update: {
+        name: 'لوازم خانگی شیخ',
+        description: 'مجموعه تخصصی و لوکس لوازم خانگی شیخ',
+        image: '/sheikhhome.webp',
+        isActive: true,
+        sortOrder: 1,
+      },
+      create: {
+        name: 'لوازم خانگی شیخ',
+        slug: 'sheikh-home',
+        description: 'مجموعه تخصصی و لوکس لوازم خانگی شیخ',
+        image: '/sheikhhome.webp',
+        isActive: true,
+        sortOrder: 1,
+      },
+    }),
+    prisma.category.upsert({
+      where: { slug: 'sheikh-digital' },
+      update: {
+        name: 'لوازم دیجیتال شیخ',
+        description: 'جدیدترین و پیشرفته‌ترین لوازم دیجیتال شیخ',
+        image: '/sheikhdigital.webp',
+        isActive: true,
+        sortOrder: 2,
+      },
+      create: {
+        name: 'لوازم دیجیتال شیخ',
+        slug: 'sheikh-digital',
+        description: 'جدیدترین و پیشرفته‌ترین لوازم دیجیتال شیخ',
+        image: '/sheikhdigital.webp',
+        isActive: true,
+        sortOrder: 2,
+      },
+    }),
+    prisma.category.upsert({
+      where: { slug: 'tech-products' },
+      update: {
+        name: 'شیخ نوا',
+        description: 'گجت‌های هوشمند و تجهیزات مدرن شیخ نوا',
+        image: '/sheikhgajet.webp',
+        isActive: true,
+        sortOrder: 3,
+      },
+      create: {
+        name: 'شیخ نوا',
+        slug: 'tech-products',
+        description: 'گجت‌های هوشمند و تجهیزات مدرن شیخ نوا',
+        image: '/sheikhgajet.webp',
+        isActive: true,
+        sortOrder: 3,
+      },
+    }),
+    prisma.category.upsert({
+      where: { slug: 'products' },
+      update: {
+        name: 'مواد غذایی شیخ',
+        description: 'بهترین مواد غذایی ارگانیک، عسل و زعفران ممتاز شیخ',
+        image: '/food.webp',
+        isActive: true,
+        sortOrder: 4,
+      },
+      create: {
+        name: 'مواد غذایی شیخ',
+        slug: 'products',
+        description: 'بهترین مواد غذایی ارگانیک، عسل و زعفران ممتاز شیخ',
+        image: '/food.webp',
+        isActive: true,
+        sortOrder: 4,
+      },
+    }),
+    // Preserve secondary legacy category references for existing products
     prisma.category.upsert({
       where: { slug: 'dates' },
       update: {},
       create: {
         name: 'Dates',
         slug: 'dates',
-        description: 'Premium quality dates from the finest orchards. Rich in natural sugars, fiber, and essential minerals.',
+        description: 'Premium quality dates from the finest orchards.',
         isActive: true,
-        sortOrder: 1,
+        sortOrder: 5,
       },
     }),
     prisma.category.upsert({
@@ -113,9 +186,9 @@ async function main() {
       create: {
         name: 'Honey',
         slug: 'honey',
-        description: 'Pure, natural honey sourced from pristine locations. Rich in antioxidants and natural enzymes.',
+        description: 'Pure, natural honey sourced from pristine locations.',
         isActive: true,
-        sortOrder: 2,
+        sortOrder: 6,
       },
     }),
     prisma.category.upsert({
@@ -124,9 +197,9 @@ async function main() {
       create: {
         name: 'Saffron',
         slug: 'saffron',
-        description: 'Premium saffron threads hand-picked from the highest quality crocus flowers.',
+        description: 'Premium saffron threads.',
         isActive: true,
-        sortOrder: 3,
+        sortOrder: 7,
       },
     }),
     prisma.category.upsert({
@@ -135,9 +208,9 @@ async function main() {
       create: {
         name: 'Other',
         slug: 'other',
-        description: 'A diverse collection of premium products including nuts, spices, and traditional items.',
+        description: 'A diverse collection of premium products.',
         isActive: true,
-        sortOrder: 4,
+        sortOrder: 8,
       },
     }),
   ]);
@@ -151,10 +224,10 @@ async function main() {
   const LUnit = units.find((u: any) => u.symbol === 'L');
   const pcsUnit = units.find((u: any) => u.symbol === 'pcs');
   
-  const datesCategory = categories.find((c: any) => c.slug === 'dates');
-  const honeyCategory = categories.find((c: any) => c.slug === 'honey');
-  const saffronCategory = categories.find((c: any) => c.slug === 'saffron');
-  const otherCategory = categories.find((c: any) => c.slug === 'other');
+  const datesCategory = categories.find((c: any) => c.slug === 'dates') || categories[0];
+  const honeyCategory = categories.find((c: any) => c.slug === 'honey') || categories[0];
+  const saffronCategory = categories.find((c: any) => c.slug === 'saffron') || categories[0];
+  const otherCategory = categories.find((c: any) => c.slug === 'other') || categories[0];
   
   if (!kgUnit || !gUnit || !pkgUnit || !LUnit || !pcsUnit) {
     throw new Error('Required units not found');
