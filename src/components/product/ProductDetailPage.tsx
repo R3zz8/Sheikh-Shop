@@ -299,7 +299,7 @@ export default function ProductDetailPage({
 
               {/* 1. HERO GALLERY (RIGHT COLUMN - occupies 6 columns) */}
               <div className="lg:col-span-6 space-y-8 w-full relative z-10">
-                <ImageGallery images={images} productName={product.name} layoutIdPrefix="desktop" />
+                <ImageGallery images={images} videos={product.videos || []} productName={product.name} layoutIdPrefix="desktop" />
 
                 {/* ✨ LUXURY UNBOXING TRIGGER - Elegant gold box */}
                 {unboxingConfig?.isEnabled !== false && (
@@ -973,7 +973,7 @@ export default function ProductDetailPage({
 
             {/* 1. IMAGE GALLERY */}
             <div className="w-full px-3">
-              <ImageGallery images={images} productName={product.name} layoutIdPrefix="mobile" />
+              <ImageGallery images={images} videos={product.videos || []} productName={product.name} layoutIdPrefix="mobile" />
             </div>
 
             {/* 2 & 3. PRODUCT NAME & RATING - UPGRADED TO MOBILE LUXURY FLOATING CONTAINER */}

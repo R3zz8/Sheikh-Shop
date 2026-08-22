@@ -26,6 +26,7 @@ async function main() {
     const products = await prisma.product.findMany({
       include: {
         images: true,
+        videos: true,
         baseUnit: true,
         discounts: true,
         units: true,
