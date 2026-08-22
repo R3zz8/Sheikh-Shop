@@ -14,6 +14,7 @@ export type ProductUnit = Omit<PrismaProductUnitPayload, 'price' | 'oldPrice'> &
 type PrismaProductPayload = Prisma.ProductGetPayload<{
   include: {
     images: true;
+    videos: true;
     baseUnit: true;
     discounts: true;
     units: true; // This will be Prisma's ProductUnitPayload
@@ -24,6 +25,15 @@ export type Product = Omit<PrismaProductPayload, 'basePrice' | 'oldPrice' | 'uni
   basePrice: number;
   oldPrice: number | null;
   units: ProductUnit[]; // This uses my overridden ProductUnit type
+  videos?: Array<{
+    id: string;
+    url: string;
+    thumbnailUrl?: string | null;
+    productId?: string;
+    sortOrder?: number;
+    isFeatured?: boolean;
+    isVisible?: boolean;
+  }>;
   // Ensure slug and SEO fields are properly typed
   slug?: string | null;
   seoTitle?: string | null;
@@ -57,6 +67,7 @@ export type Product = Omit<PrismaProductPayload, 'basePrice' | 'oldPrice' | 'uni
 export type Unit = Prisma.UnitGetPayload<{}>;
 export type Discount = Prisma.DiscountGetPayload<{}>;
 export type Image = Prisma.ImageGetPayload<{}>;
+export type Video = Prisma.VideoGetPayload<{}>;
 export type User = Prisma.UserGetPayload<{}>;
 export type Session = Prisma.SessionGetPayload<{}>;
 export type BlacklistedToken = Prisma.BlacklistedTokenGetPayload<{}>;
