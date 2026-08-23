@@ -90,8 +90,25 @@ export default function MarketingShowcaseTable({ slides }: MarketingShowcaseTabl
       </div>
 
       {slides.length === 0 ? (
-        <div className="text-center py-16 bg-stone-900/40 rounded-2xl border border-stone-800">
-          <p className="text-stone-400 text-sm">هنوز ویترین تبلیغاتی ایجاد نشده است. برای شروع یک اسلاید جدید بیفزایید.</p>
+        <div className="flex flex-col items-center justify-center text-center py-16 px-4 bg-stone-900/40 rounded-2xl border border-amber-500/10 backdrop-blur-md shadow-xl">
+          <div className="w-16 h-16 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mb-4 text-amber-400">
+            <PlusCircle className="w-8 h-8" />
+          </div>
+          <h2 className="text-lg sm:text-xl font-bold text-amber-100 mb-2 font-vazirmatn">
+            هنوز اسلایدی ایجاد نشده است
+          </h2>
+          <p className="text-stone-400 text-xs sm:text-sm max-w-md mb-6 leading-relaxed font-vazirmatn">
+            ویترین تبلیغاتی هنوز خالی است. برای نمایش بنرهای برتر محصولات Sheikh Shop در صفحه اصلی، اولین اسلاید ویترین را ایجاد کنید.
+          </p>
+          <Button
+            onClick={() => {
+              setSelectedSlide(null);
+              setIsFormOpen(true);
+            }}
+            className="bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-stone-950 font-bold px-6 py-2.5 rounded-xl shadow-lg shadow-amber-500/20 transition-all font-vazirmatn"
+          >
+            <PlusCircle className="ml-2 h-5 w-5" /> افزودن اولین اسلاید
+          </Button>
         </div>
       ) : (
         <div className="border border-stone-800 rounded-2xl overflow-hidden bg-stone-950/60 backdrop-blur-md shadow-2xl">
