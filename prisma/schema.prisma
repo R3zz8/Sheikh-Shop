@@ -62,6 +62,7 @@ model Product {
   reviews        Review[]
   videos         Video[]
   productAttributes ProductAttribute[]
+  marketingShowcaseSlides MarketingShowcaseSlide[]
 
   @@index([category])
   @@index([basePrice])
@@ -777,5 +778,22 @@ model Video {
   product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@index([productId])
+  @@index([sortOrder])
+}
+
+model MarketingShowcaseSlide {
+  id            String   @id @default(cuid())
+  title         String   @db.VarChar(255)
+  imageUrl      String   @db.VarChar(500)
+  imagePublicId String?  @db.VarChar(255)
+  productId     String
+  sortOrder     Int      @default(0)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  product       Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@index([isActive])
   @@index([sortOrder])
 }

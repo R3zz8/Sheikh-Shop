@@ -531,6 +531,64 @@ let mockTransactions: any[] = [];
 let mockReferrals: any[] = [];
 let mockAffiliates: any[] = [];
 
+let mockMarketingShowcaseSlides: any[] = [
+  {
+    id: 'mss_1',
+    title: 'اسپیکر ایستاده لوکس شیخ شاپ',
+    imageUrl: '/sheikhdigital.webp',
+    imagePublicId: null,
+    productId: 'pd_speaker_1',
+    sortOrder: 0,
+    isActive: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'mss_2',
+    title: 'اسپیکر هوشمند رویال سوند شیخ',
+    imageUrl: '/sheikhgajet.webp',
+    imagePublicId: null,
+    productId: 'pd_speaker_2',
+    sortOrder: 1,
+    isActive: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'mss_3',
+    title: 'ساعت هوشمند سلطنتی شیخ',
+    imageUrl: '/sheikhgajet.webp',
+    imagePublicId: null,
+    productId: 'pd_smartwatch',
+    sortOrder: 2,
+    isActive: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'mss_4',
+    title: 'یخچال فریزر هوشمند رویال فراست',
+    imageUrl: '/sheikhhome.webp',
+    imagePublicId: null,
+    productId: 'ph_refrigerator_1',
+    sortOrder: 3,
+    isActive: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'mss_5',
+    title: 'عسل طبیعی و ممتاز کوهستان شیخ',
+    imageUrl: '/honey.webp',
+    imagePublicId: null,
+    productId: 'p1',
+    sortOrder: 4,
+    isActive: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+];
+
 const matchFilter = (item: any, where: any): boolean => {
   if (!where) return true;
   for (const key in where) {
@@ -568,6 +626,14 @@ const matchFilter = (item: any, where: any): boolean => {
 
 const normalizeMockRecord = (modelName: string, item: any): any => {
   if (!item || typeof item !== 'object') return item;
+
+  if (modelName === 'marketingShowcaseSlide') {
+    const product = mockProducts.find(p => p.id === item.productId);
+    return {
+      ...item,
+      product: product ? normalizeMockRecord('product', product) : null,
+    };
+  }
 
   if (modelName === 'transaction') {
     const order = mockOrders.find(o => o.id === item.orderId);
@@ -824,6 +890,7 @@ const makeMockModelWithWrites = (name: string, data: any[]) => {
           if (name === 'transaction') mockTransactions = localData;
           if (name === 'referral') mockReferrals = localData;
           if (name === 'affiliate') mockAffiliates = localData;
+          if (name === 'marketingShowcaseSlide') mockMarketingShowcaseSlides = localData;
 
           if (name === 'product') {
             const temp = [...localData];
@@ -857,6 +924,7 @@ const makeMockModelWithWrites = (name: string, data: any[]) => {
           if (name === 'transaction') mockTransactions = localData;
           if (name === 'referral') mockReferrals = localData;
           if (name === 'affiliate') mockAffiliates = localData;
+          if (name === 'marketingShowcaseSlide') mockMarketingShowcaseSlides = localData;
 
           if (name === 'product') {
             const temp = [...localData];
@@ -884,6 +952,7 @@ const makeMockModelWithWrites = (name: string, data: any[]) => {
           if (name === 'transaction') mockTransactions = localData;
           if (name === 'referral') mockReferrals = localData;
           if (name === 'affiliate') mockAffiliates = localData;
+          if (name === 'marketingShowcaseSlide') mockMarketingShowcaseSlides = localData;
 
           if (name === 'product') {
             const temp = [...localData];
@@ -1038,6 +1107,7 @@ const createMockPrisma = () => {
       if (prop === 'category') return makeMockModelWithWrites('category', mockCategories);
       if (prop === 'unit') return makeMockModel('unit', mockUnits);
       if (prop === 'mobileCarousel') return makeMockModelWithWrites('mobileCarousel', mockCarousel);
+      if (prop === 'marketingShowcaseSlide') return makeMockModelWithWrites('marketingShowcaseSlide', mockMarketingShowcaseSlides);
       if (prop === 'discount') return makeMockModel('discount', []);
       if (prop === 'user') return makeMockModel('user', mockUser);
       if (prop === 'cartItem') return makeMockModelWithWrites('cartItem', globalCartItems);

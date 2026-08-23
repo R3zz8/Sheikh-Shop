@@ -5,25 +5,23 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Keyboard } from 'swiper/modules';
-import type { ArchProductData } from '@/lib/services/getArchProducts';
+import type { MarketingShowcaseSlideData } from '@/lib/services/getMarketingShowcase';
 
 // Import Swiper core styles
 import 'swiper/css';
 
 interface LuxuryProductArchCarouselClientProps {
-  products: ArchProductData[];
+  slides: MarketingShowcaseSlideData[];
 }
 
-function ArchProductCard({ product }: { product: ArchProductData }) {
-  const imageUrl =
-    product.images && product.images.length > 0
-      ? product.images[0]?.secureUrl || product.images[0]?.image || '/noImage.jpg'
-      : '/noImage.jpg';
+function ArchSlideCard({ slide }: { slide: MarketingShowcaseSlideData }) {
+  const imageUrl = slide.imageUrl || '/noImage.jpg';
+  const targetProductUrl = `/products/${slide.product?.slug || slide.product?.id || slide.productId}`;
 
   return (
     <div className="flex flex-col items-center w-full group/arch select-none">
       <Link
-        href={`/products/${product.slug || product.id}`}
+        href={targetProductUrl}
         className="w-full flex flex-col items-center focus:outline-none"
       >
         {/*
@@ -41,15 +39,15 @@ function ArchProductCard({ product }: { product: ArchProductData }) {
           {/* Top Radial Ambient Gold Glow */}
           <div className="absolute -top-12 inset-x-0 h-32 bg-[radial-gradient(ellipse_at_top,rgba(245,158,11,0.22)_0%,transparent_70%)] pointer-events-none group-hover/arch:opacity-100 transition-opacity duration-500" />
 
-          {/* Product Image Stage */}
+          {/* Marketing Image Stage (AI Marketer holding product) */}
           <div className="relative w-full h-full flex items-center justify-center p-2 xs:p-3 sm:p-4 z-10">
-            {/* Soft background aura behind product image */}
+            {/* Soft background aura behind marketing image */}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(245,158,11,0.12)_0%,transparent_65%)] pointer-events-none" />
 
             <div className="relative w-full h-full min-h-[140px] xs:min-h-[170px] sm:min-h-[200px] md:min-h-[230px] flex items-center justify-center">
               <Image
                 src={imageUrl}
-                alt={product.name}
+                alt={slide.title}
                 fill
                 sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 20vw"
                 className="object-contain p-2 filter drop-shadow-[0_12px_24px_rgba(0,0,0,0.75)] group-hover/arch:scale-108 transition-transform duration-500 ease-out"
@@ -63,10 +61,10 @@ function ArchProductCard({ product }: { product: ArchProductData }) {
           <div className="w-full h-1 bg-gradient-to-r from-transparent via-amber-500/40 to-transparent shrink-0 mb-1" />
         </div>
 
-        {/* Product Title Under Arch */}
+        {/* Marketing Title Under Arch (Clicking title also navigates to target product) */}
         <div className="mt-2 xs:mt-3 sm:mt-3.5 text-center w-full px-1">
           <h3 className="font-vazirmatn text-xs xs:text-sm sm:text-base font-bold text-stone-200 group-hover/arch:text-amber-300 transition-colors duration-300 truncate leading-snug">
-            {product.name}
+            {slide.title}
           </h3>
         </div>
       </Link>
@@ -75,17 +73,17 @@ function ArchProductCard({ product }: { product: ArchProductData }) {
 }
 
 export default function LuxuryProductArchCarouselClient({
-  products,
+  slides,
 }: LuxuryProductArchCarouselClientProps) {
-  if (!products || products.length === 0) {
+  if (!slides || slides.length === 0) {
     return null;
   }
 
   // Duplicate slides if array is small to allow seamless Swiper looping
-  const displayProducts =
-    products.length < 5
-      ? [...products, ...products, ...products].slice(0, 10)
-      : products;
+  const displaySlides =
+    slides.length < 5
+      ? [...slides, ...slides, ...slides].slice(0, 10)
+      : slides;
 
   return (
     <div className="w-full relative overflow-hidden" dir="rtl">
@@ -119,9 +117,9 @@ export default function LuxuryProductArchCarouselClient({
         }}
         className="luxury-arch-swiper !py-4 !px-1"
       >
-        {displayProducts.map((product, idx) => (
-          <SwiperSlide key={`${product.id}-${idx}`}>
-            <ArchProductCard product={product} />
+        {displaySlides.map((slide, idx) => (
+          <SwiperSlide key={`${slide.id}-${idx}`}>
+            <ArchSlideCard slide={slide} />
           </SwiperSlide>
         ))}
       </Swiper>
