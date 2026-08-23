@@ -207,14 +207,38 @@ export async function POST(req: NextRequest) {
 
     return response;
 
-  } catch (error) {
-    // Security: Log errors in development, generic message in production
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Login error:', error);
+  } catch (error: any) {
+    // Security: Classify and log server errors for production debugging without exposing sensitive internals
+    const errorMessage = error?.message || String(error);
+    const errorStack = error?.stack || '';
+    const errorName = error?.name || 'Error';
+
+    if (errorMessage.includes('prisma') || error?.code?.startsWith('P') || errorMessage.includes('connect')) {
+      console.error('[AUTH_DATABASE_ERROR] Database operation failed during login:', {
+        message: errorMessage,
+        code: error?.code,
+        stack: errorStack,
+      });
+    } else if (errorMessage.includes('fetch') || errorMessage.includes('ETIMEDOUT') || errorMessage.includes('ECONNREFUSED') || errorMessage.includes('ENOTFOUND') || errorMessage.includes('EAI_AGAIN')) {
+      console.error('[AUTH_NETWORK_ERROR] Network dependency failure during login:', {
+        message: errorMessage,
+        stack: errorStack,
+      });
+    } else if (errorMessage.includes('session') || errorMessage.includes('token') || errorMessage.includes('JWT')) {
+      console.error('[AUTH_SESSION_ERROR] Session or token creation failure during login:', {
+        message: errorMessage,
+        stack: errorStack,
+      });
+    } else {
+      console.error('[AUTH_UNHANDLED_ERROR] Unexpected error during login process:', {
+        name: errorName,
+        message: errorMessage,
+        stack: errorStack,
+      });
     }
 
     return NextResponse.json(
-      { success: false, message: 'Internal server error' },
+      { success: false, message: 'ورود انجام نشد. لطفاً دوباره تلاش کنید.' },
       { status: 500 },
     );
   }
