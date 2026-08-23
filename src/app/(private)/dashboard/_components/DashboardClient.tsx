@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useRequireRole } from '@/hooks/useRBAC';
-import { Package, Users, FileText, CreditCard, BarChart3, MessageSquare, Sliders, FolderTree } from 'lucide-react';
+import { Package, Users, FileText, CreditCard, BarChart3, MessageSquare, Sliders, FolderTree, Sparkles } from 'lucide-react';
 
 export default function DashboardClient() {
   const hasAccess = useRequireRole(['ADMIN', 'SUPERADMIN']);
@@ -33,6 +33,12 @@ export default function DashboardClient() {
       description: 'مدیریت اسلایدر و بنرهای تبلیغاتی موبایل',
       href: '/dashboard/mobile-carousel',
       icon: Sliders,
+    },
+    {
+      title: 'ویترین تبلیغاتی (Marketing Showcase)',
+      description: 'مدیریت بنرهای هوشمند AI Marketer و اتصال محصولات',
+      href: '/dashboard/marketing-showcase',
+      icon: Sparkles,
     },
     {
       title: 'Products',

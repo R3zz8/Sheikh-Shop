@@ -1,14 +1,18 @@
 import React from 'react';
-import { getArchProducts } from '@/lib/services/getArchProducts';
+import { getMarketingShowcaseSlides } from '@/lib/services/getMarketingShowcase';
 import LuxuryProductArchCarouselClient from './LuxuryProductArchCarouselClient';
 import { Sparkles } from 'lucide-react';
 
 export default async function LuxuryProductArchCarousel() {
-  const products = await getArchProducts(10);
+  const slides = await getMarketingShowcaseSlides();
+
+  if (!slides || slides.length === 0) {
+    return null;
+  }
 
   return (
     <section
-      aria-label="محصولات منتخب شیخ"
+      aria-label="ویترین تبلیغاتی شیخ"
       className="w-full py-6 sm:py-10 lg:py-12 px-3 sm:px-6 lg:px-8 relative overflow-hidden"
       dir="rtl"
     >
@@ -26,7 +30,7 @@ export default async function LuxuryProductArchCarousel() {
         </div>
 
         {/* Arch Carousel Client Component */}
-        <LuxuryProductArchCarouselClient products={products || []} />
+        <LuxuryProductArchCarouselClient slides={slides} />
       </div>
     </section>
   );
