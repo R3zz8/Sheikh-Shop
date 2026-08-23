@@ -34,23 +34,27 @@ function ArchSlideCard({ slide }: { slide: MarketingShowcaseSlideData }) {
         */}
         <div className="relative w-full aspect-[1/2.2] max-h-[380px] xs:max-h-[420px] sm:max-h-[460px] md:max-h-[500px] lg:max-h-[520px] rounded-t-[1000px] rounded-b-2xl p-2 xs:p-2.5 sm:p-3 bg-gradient-to-b from-[#2B1910]/90 via-[#1C0F0A]/95 to-[#130A06]/98 border border-amber-500/35 hover:border-amber-400/60 shadow-[0_12px_32px_rgba(0,0,0,0.6)] hover:shadow-[0_16px_40px_rgba(245,158,11,0.2)] transition-all duration-500 flex flex-col items-center justify-between overflow-hidden backdrop-blur-md">
           {/* Inner Arch Gold Accent Highlight Line */}
-          <div className="absolute inset-1 rounded-t-[1000px] rounded-b-xl border border-amber-500/15 pointer-events-none group-hover/arch:border-amber-400/35 transition-colors duration-500" />
+          <div className="absolute inset-1.5 rounded-t-[1000px] rounded-b-xl border border-amber-500/15 pointer-events-none group-hover/arch:border-amber-400/35 transition-colors duration-500" />
 
           {/* Top Radial Ambient Gold Glow */}
-          <div className="absolute -top-12 inset-x-0 h-32 bg-[radial-gradient(ellipse_at_top,rgba(245,158,11,0.22)_0%,transparent_70%)] pointer-events-none group-hover/arch:opacity-100 transition-opacity duration-500" />
+          <div className="absolute -top-12 inset-x-0 h-36 bg-[radial-gradient(ellipse_at_top,rgba(245,158,11,0.25)_0%,transparent_70%)] pointer-events-none group-hover/arch:opacity-100 transition-opacity duration-500" />
 
-          {/* Marketing Image Stage (AI Marketer holding product) */}
-          <div className="relative w-full h-full flex items-center justify-center p-2 xs:p-3 sm:p-4 z-10">
-            {/* Soft background aura behind marketing image */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(245,158,11,0.12)_0%,transparent_65%)] pointer-events-none" />
+          {/* Premium Stage Frame for Transparent PNG Marketing Assets */}
+          <div className="relative w-full h-full flex items-center justify-center p-2 xs:p-2.5 sm:p-3 z-10">
+            {/* Center Spotlight & Ambient Halo */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(245,158,11,0.2)_0%,rgba(217,119,6,0.06)_50%,transparent_75%)] pointer-events-none" />
 
+            {/* Subtle Pedestal Reflection / Shadow Base */}
+            <div className="absolute bottom-2 inset-x-3 h-5 bg-[radial-gradient(ellipse_at_center,rgba(245,158,11,0.28)_0%,rgba(0,0,0,0.75)_65%,transparent_100%)] pointer-events-none rounded-full blur-[1px]" />
+
+            {/* Floating Character Container */}
             <div className="relative w-full h-full min-h-[140px] xs:min-h-[170px] sm:min-h-[200px] md:min-h-[230px] flex items-center justify-center">
               <Image
                 src={imageUrl}
                 alt={slide.title}
                 fill
-                sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 20vw"
-                className="object-contain p-2 filter drop-shadow-[0_12px_24px_rgba(0,0,0,0.75)] group-hover/arch:scale-108 transition-transform duration-500 ease-out"
+                sizes="(max-width: 640px) 45vw, (max-width: 1024px) 25vw, 18vw"
+                className="object-contain p-2 filter drop-shadow-[0_16px_24px_rgba(0,0,0,0.85)] drop-shadow-[0_4px_12px_rgba(245,158,11,0.2)] group-hover/arch:scale-105 transition-transform duration-500 ease-out"
                 loading="lazy"
                 unoptimized
               />
@@ -79,20 +83,29 @@ export default function LuxuryProductArchCarouselClient({
     return null;
   }
 
-  // Duplicate slides if array is small to allow seamless Swiper looping
-  const displaySlides =
-    slides.length < 5
-      ? [...slides, ...slides, ...slides].slice(0, 10)
-      : slides;
+  // Render exactly 1 logical slide centered if only 1 slide exists
+  if (slides.length === 1) {
+    return (
+      <div className="w-full flex justify-center py-4 px-1" dir="rtl">
+        <div className="w-full max-w-[240px] xs:max-w-[260px] sm:max-w-[290px] md:max-w-[310px] lg:max-w-[320px]">
+          <ArchSlideCard slide={slides[0]!} />
+        </div>
+      </div>
+    );
+  }
+
+  // For N slides (N >= 2), render exactly N slides without artificial array cloning
+  const enableLoop = slides.length >= 5;
 
   return (
     <div className="w-full relative overflow-hidden" dir="rtl">
       <Swiper
         modules={[Autoplay, Keyboard]}
         spaceBetween={12}
-        slidesPerView={2.2}
+        slidesPerView={Math.min(slides.length, 2.2)}
+        centeredSlides={slides.length < 5}
         grabCursor={true}
-        loop={true}
+        loop={enableLoop}
         autoplay={{
           delay: 4000,
           disableOnInteraction: false,
@@ -103,34 +116,38 @@ export default function LuxuryProductArchCarouselClient({
           onlyInViewport: true,
         }}
         breakpoints={{
-          320: { slidesPerView: 2.15, spaceBetween: 10 },
-          360: { slidesPerView: 2.22, spaceBetween: 12 },
-          375: { slidesPerView: 2.25, spaceBetween: 14 },
-          390: { slidesPerView: 2.28, spaceBetween: 14 },
-          414: { slidesPerView: 2.32, spaceBetween: 16 },
-          640: { slidesPerView: 3.1, spaceBetween: 18 },
-          768: { slidesPerView: 3.25, spaceBetween: 20 },
-          1024: { slidesPerView: 5, spaceBetween: 20 },
-          1280: { slidesPerView: 5, spaceBetween: 24 },
-          1440: { slidesPerView: 5, spaceBetween: 28 },
-          1920: { slidesPerView: 5, spaceBetween: 32 },
+          320: { slidesPerView: Math.min(slides.length, 2.15), spaceBetween: 10 },
+          360: { slidesPerView: Math.min(slides.length, 2.22), spaceBetween: 12 },
+          375: { slidesPerView: Math.min(slides.length, 2.25), spaceBetween: 14 },
+          390: { slidesPerView: Math.min(slides.length, 2.28), spaceBetween: 14 },
+          414: { slidesPerView: Math.min(slides.length, 2.32), spaceBetween: 16 },
+          640: { slidesPerView: Math.min(slides.length, 3.1), spaceBetween: 18 },
+          768: { slidesPerView: Math.min(slides.length, 3.25), spaceBetween: 20 },
+          1024: { slidesPerView: Math.min(slides.length, 5), spaceBetween: 20 },
+          1280: { slidesPerView: Math.min(slides.length, 5), spaceBetween: 24 },
+          1440: { slidesPerView: Math.min(slides.length, 5), spaceBetween: 28 },
+          1920: { slidesPerView: Math.min(slides.length, 5), spaceBetween: 32 },
         }}
         className="luxury-arch-swiper !py-4 !px-1"
       >
-        {displaySlides.map((slide, idx) => (
-          <SwiperSlide key={`${slide.id}-${idx}`}>
+        {slides.map((slide) => (
+          <SwiperSlide key={slide.id}>
             <ArchSlideCard slide={slide} />
           </SwiperSlide>
         ))}
       </Swiper>
 
-      <style jsx global>{`
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         .luxury-arch-swiper .swiper-slide {
           height: auto !important;
           display: flex;
           justify-content: center;
         }
-      `}</style>
+      `,
+        }}
+      />
     </div>
   );
 }
