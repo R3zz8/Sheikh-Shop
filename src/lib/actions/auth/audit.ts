@@ -140,25 +140,33 @@ export async function logFailedAttempt(
   ip?: string,
   userAgent?: string
 ) {
-  const metadata: any = {
-    ip,
-    userAgent,
-    failedAttempt: true,
-  };
+  try {
+    const metadata: any = {
+      ip,
+      userAgent,
+      failedAttempt: true,
+    };
 
-  // Security: Track failed attempts count
-  if (userId) {
-    const recentFailures = await prisma.auditLog.count({
-      where: {
-        userId,
-        action: { contains: 'failed' },
-        createdAt: { gte: new Date(Date.now() - 15 * 60 * 1000) }, // Last 15 minutes
-      },
-    });
-    metadata.failedAttempts = recentFailures + 1;
+    // Security: Track failed attempts count
+    if (userId) {
+      try {
+        const recentFailures = await prisma.auditLog.count({
+          where: {
+            userId,
+            action: { contains: 'failed' },
+            createdAt: { gte: new Date(Date.now() - 15 * 60 * 1000) }, // Last 15 minutes
+          },
+        });
+        metadata.failedAttempts = recentFailures + 1;
+      } catch (err) {
+        // Silently handle audit database count failure
+      }
+    }
+
+    await logAudit(userId, action, metadata);
+  } catch (error) {
+    console.warn('[AUTH_AUDIT_WARNING] Failed to log failed attempt:', error);
   }
-
-  await logAudit(userId, action, metadata);
 }
 
 // Security: Log successful authentication
