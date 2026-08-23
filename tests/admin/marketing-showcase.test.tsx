@@ -52,6 +52,57 @@ const mockSlides: MarketingShowcaseSlideData[] = [
       status: 'ACTIVE',
     },
   },
+  {
+    id: 'mss_3',
+    title: 'هدفون گیمینگ شیخ',
+    imageUrl: '/sheikheadphone.webp',
+    imagePublicId: 'pub_3',
+    productId: 'pd_headphone',
+    sortOrder: 2,
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    product: {
+      id: 'pd_headphone',
+      name: 'هدفون شیخ',
+      slug: 'sheikh-headphone',
+      status: 'ACTIVE',
+    },
+  },
+  {
+    id: 'mss_4',
+    title: 'دوربین لوکس شیخ',
+    imageUrl: '/sheikhcamera.webp',
+    imagePublicId: 'pub_4',
+    productId: 'pd_camera',
+    sortOrder: 3,
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    product: {
+      id: 'pd_camera',
+      name: 'دوربین شیخ',
+      slug: 'sheikh-camera',
+      status: 'ACTIVE',
+    },
+  },
+  {
+    id: 'mss_5',
+    title: 'لپ‌تاپ گیمینگ شیخ',
+    imageUrl: '/sheikhlaptop.webp',
+    imagePublicId: 'pub_5',
+    productId: 'pd_laptop',
+    sortOrder: 4,
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    product: {
+      id: 'pd_laptop',
+      name: 'لپ‌تاپ شیخ',
+      slug: 'sheikh-laptop',
+      status: 'ACTIVE',
+    },
+  },
 ];
 
 describe('Marketing Showcase Visual Component (LuxuryProductArchCarouselClient)', () => {
@@ -60,17 +111,40 @@ describe('Marketing Showcase Visual Component (LuxuryProductArchCarouselClient)'
     expect(container.firstChild).toBeNull();
   });
 
-  it('renders single slide properly (1 slide)', () => {
+  it('renders exactly 1 slide properly with no duplicates (1 slide)', () => {
     render(<LuxuryProductArchCarouselClient slides={[mockSlides[0]!]} />);
-    expect(screen.getAllByText('اسپیکر ایستاده لوکس شیخ شاپ')[0]).toBeInTheDocument();
 
-    const link = screen.getAllByRole('link')[0];
-    expect(link).toHaveAttribute('href', '/products/luxury-x9-speaker');
+    // Exact 1 text element
+    const titleElements = screen.getAllByText('اسپیکر ایستاده لوکس شیخ شاپ');
+    expect(titleElements).toHaveLength(1);
+
+    // Exact 1 link targeting product page
+    const links = screen.getAllByRole('link');
+    expect(links).toHaveLength(1);
+    expect(links[0]).toHaveAttribute('href', '/products/luxury-x9-speaker');
   });
 
-  it('renders multiple slides properly (2+ slides)', () => {
+  it('renders exactly 2 slides properly with no duplicate cloning (2 slides)', () => {
+    render(<LuxuryProductArchCarouselClient slides={mockSlides.slice(0, 2)} />);
+
+    expect(screen.getAllByText('اسپیکر ایستاده لوکس شیخ شاپ')).toHaveLength(1);
+    expect(screen.getAllByText('ساعت هوشمند سلطنتی شیخ')).toHaveLength(1);
+
+    const slidesRendered = screen.getAllByTestId('swiper-slide');
+    expect(slidesRendered).toHaveLength(2);
+  });
+
+  it('renders exactly 3 slides properly (3 slides)', () => {
+    render(<LuxuryProductArchCarouselClient slides={mockSlides.slice(0, 3)} />);
+
+    const slidesRendered = screen.getAllByTestId('swiper-slide');
+    expect(slidesRendered).toHaveLength(3);
+  });
+
+  it('renders exactly 5 slides properly (5 slides)', () => {
     render(<LuxuryProductArchCarouselClient slides={mockSlides} />);
-    expect(screen.getAllByText('اسپیکر ایستاده لوکس شیخ شاپ')[0]).toBeInTheDocument();
-    expect(screen.getAllByText('ساعت هوشمند سلطنتی شیخ')[0]).toBeInTheDocument();
+
+    const slidesRendered = screen.getAllByTestId('swiper-slide');
+    expect(slidesRendered).toHaveLength(5);
   });
 });
