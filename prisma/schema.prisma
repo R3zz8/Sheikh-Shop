@@ -102,6 +102,20 @@ model Unit {
   @@index([sortOrder])
 }
 
+model BmwCarouselItem {
+  id            String   @id @default(cuid())
+  title         String?  @db.VarChar(255)
+  imageUrl      String   @db.VarChar(500)
+  imagePublicId String?  @db.VarChar(255)
+  sortOrder     Int      @default(0)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([sortOrder])
+}
+
 model ProductUnit {
   id        String             @id @default(cuid())
   productId String
