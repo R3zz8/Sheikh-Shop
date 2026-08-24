@@ -6,6 +6,7 @@ import { ChevronLeft, Code2 } from 'lucide-react';
 import FAQSchema from '@/components/seo/FAQSchema';
 import type { Metadata } from 'next';
 import { buildLanguageAlternates } from '@/lib/seo/hreflang';
+import { getActiveMainCategories } from '@/lib/services/getCategories';
 import {
   SheikhScene,
   AmazingDeals,
@@ -13,8 +14,8 @@ import {
   OptimizedPalmTree,
   PremiumSpeakerShowcase,
   RoyalShowcase,
+  BMWCarousel,
 } from '@/components/DynamicClientComponents';
-import BMWCarousel from '@/components/BMWCarousel';
 import LuxuryProductArchCarousel from '@/components/home/LuxuryProductArchCarousel';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -61,7 +62,9 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function Home() {
+export default async function Home() {
+  const initialCategories = await getActiveMainCategories();
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-950 via-stone-900 to-amber-950 relative">
       {/* Background effects */}
@@ -69,7 +72,7 @@ export default function Home() {
       <div className="absolute inset-0 bg-gradient-to-b from-amber-500/2 via-transparent to-orange-500/2 pointer-events-none" />
       
       {/* Categories Section */}
-      <Categories />
+      <Categories initialCategories={initialCategories} />
 
       {/* New Products Section - Directly below Categories */}
       <NewProductsSection />
