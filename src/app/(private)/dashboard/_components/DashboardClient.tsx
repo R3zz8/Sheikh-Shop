@@ -35,6 +35,12 @@ export default function DashboardClient() {
       icon: Sliders,
     },
     {
+      title: 'کروسل سه‌بعدی BMW (3D Coverflow)',
+      description: 'مدیریت اسلایدر و تصاویر کروسل ۳بعدی دسکتاپ',
+      href: '/dashboard/bmw-carousel',
+      icon: Sliders,
+    },
+    {
       title: 'ویترین تبلیغاتی (Marketing Showcase)',
       description: 'مدیریت بنرهای هوشمند AI Marketer و اتصال محصولات',
       href: '/dashboard/marketing-showcase',
