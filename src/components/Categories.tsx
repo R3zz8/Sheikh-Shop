@@ -48,7 +48,11 @@ const Categories = React.memo(function Categories({ initialCategories }: Categor
     );
 
     useEffect(() => {
-        // Fetch fresh category data from DB/API dynamically
+        // Only fetch on client if initialCategories was not provided by SSR/Server Component
+        if (initialCategories && initialCategories.length > 0) {
+            return;
+        }
+
         let isMounted = true;
         fetch('/api/categories')
             .then((res) => res.json())
@@ -86,7 +90,7 @@ const Categories = React.memo(function Categories({ initialCategories }: Categor
         return () => {
             isMounted = false;
         };
-    }, []);
+    }, [initialCategories]);
 
     return (
         <section className="container-fluid section-padding relative">
