@@ -89,6 +89,12 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
 
   // Track currently uploaded/managed images for authoritative save syncing
   const [currentImages, setCurrentImages] = useState<any[]>([]);
+  const [imagesLoaded, setImagesLoaded] = useState(false);
+
+  const handleImagesChange = (images: any[]) => {
+    setCurrentImages(images);
+    setImagesLoaded(true);
+  };
 
   // Active Tab State
   const [activeTab, setActiveTab] = useState<string>('general');
@@ -467,8 +473,10 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
       formData.append('discountEndDate', data.discountEndDate || '');
       formData.append('discountActive', data.discountActive ? 'true' : 'false');
 
-      // Authoritative Product Image Sync Strategy - serialize currently uploaded/managed images
-      formData.append('imagesJson', JSON.stringify(currentImages));
+      // Authoritative Product Image Sync Strategy - serialize currently uploaded/managed images ONLY if explicitly loaded/managed by UI
+      if (imagesLoaded) {
+        formData.append('imagesJson', JSON.stringify(currentImages));
+      }
 
       // Trigger server action
       const result = await serverUpsertProduct({ data: product, error: null }, formData);
@@ -1499,7 +1507,7 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
             {activeTab === 'media' && (
               <Card className="bg-[#0D0907]/90 border border-amber-500/15 rounded-[2rem] p-6 sm:p-8 relative overflow-hidden shadow-2xl">
                 <CardContent className="p-0 space-y-6">
-                  <UploadImage productId={activeProductId} onImagesChange={setCurrentImages} />
+                  <UploadImage productId={activeProductId} onImagesChange={handleImagesChange} />
                 </CardContent>
               </Card>
             )}
@@ -1508,7 +1516,7 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
             {activeTab === 'videos' && (
               <Card className="bg-[#0D0907]/90 border border-amber-500/15 rounded-[2rem] p-6 sm:p-8 relative overflow-hidden shadow-2xl">
                 <CardContent className="p-0">
-                  <UploadImage productId={activeProductId} onImagesChange={setCurrentImages} />
+                  <UploadImage productId={activeProductId} onImagesChange={handleImagesChange} />
                 </CardContent>
               </Card>
             )}
