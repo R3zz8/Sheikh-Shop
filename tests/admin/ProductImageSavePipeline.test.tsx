@@ -309,6 +309,46 @@ describe('Product Image Save Pipeline Comprehensive Regression Tests (Phase 10)'
     expect(fetched.images.map((i: any) => i.id)).toEqual(['img-A', 'img-B']);
   });
 
+  // TEST 6B: Modify product metadata when imagesJson is omitted entirely -> images must remain untouched.
+  test('TEST 6B: Update title/description/price when imagesJson is omitted -> images remain untouched', async () => {
+    const product = await prisma.product.create({
+      data: {
+        id: 'p-test-6b',
+        name: 'Original Title',
+        category: 'OTHERS',
+        baseUnitId: 'u3',
+        quantity: 10,
+        basePrice: 10000,
+        status: 'ACTIVE',
+        description: 'Original Description',
+      }
+    });
+
+    const img1 = await prisma.image.create({ data: { id: 'img-1', secureUrl: '/1.png', productId: product.id, sortOrder: 0 } });
+    const img2 = await prisma.image.create({ data: { id: 'img-2', secureUrl: '/2.png', productId: product.id, sortOrder: 1 } });
+
+    // Send update request WITHOUT imagesJson field
+    const formData = new FormData();
+    formData.append('id', product.id);
+    formData.append('name', 'Updated Premium Title');
+    formData.append('category', product.category);
+    formData.append('categoryType', 'SheikhFood');
+    formData.append('baseUnitId', product.baseUnitId);
+    formData.append('quantity', String(product.quantity));
+    formData.append('price', '250000');
+    formData.append('description', 'Updated Premium Description');
+
+    const result = await upsertProduct({ data: null, error: null }, formData);
+    expect(result.error).toBeNull();
+
+    const fetched = await prisma.product.findUnique({ where: { id: product.id } });
+    expect(fetched.name).toBe('Updated Premium Title');
+    expect(fetched.description).toBe('Updated Premium Description');
+    expect(fetched.basePrice).toBe(250000);
+    expect(fetched.images).toHaveLength(2);
+    expect(fetched.images.map((i: any) => i.id)).toEqual(['img-1', 'img-2']);
+  });
+
   // TEST 7: Existing product with variants → save must preserve variants.
   test('TEST 7: Existing product with variants -> save must preserve variants', async () => {
     const product = await prisma.product.create({
