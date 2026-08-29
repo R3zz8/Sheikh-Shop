@@ -102,6 +102,131 @@ model Unit {
   @@index([sortOrder])
 }
 
+model WebService {
+  id                String              @id @default(cuid())
+  title             String              @db.VarChar(255)
+  slug              String              @unique @db.VarChar(255)
+  shortDescription  String              @db.VarChar(500)
+  fullDescription   String?             @db.Text
+  startingPrice     Int                 @default(0)
+  previousPrice     Int?
+  currency          String              @default("تومان") @db.VarChar(20)
+  isStartingFrom    Boolean             @default(true)
+  features          String[]            @default([])
+  estimatedDelivery String?             @db.VarChar(100)
+  imageUrl          String?             @db.VarChar(500)
+  imagePublicId     String?             @db.VarChar(255)
+  icon              String?             @db.VarChar(100)
+  displayOrder      Int                 @default(0)
+  isActive          Boolean             @default(true)
+  isFeatured        Boolean             @default(false)
+  ctaText           String?             @default("مشاهده و سفارش") @db.VarChar(100)
+  ctaUrl            String?             @db.VarChar(500)
+  seoTitle          String?             @db.VarChar(100)
+  seoDescription    String?             @db.VarChar(255)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  packages          WebServicePackage[]
+  leads             WebLead[]
+
+  @@index([slug])
+  @@index([isActive])
+  @@index([displayOrder])
+  @@index([isFeatured])
+}
+
+model WebServicePackage {
+  id           String     @id @default(cuid())
+  serviceId    String
+  name         String     @db.VarChar(100)
+  price        Int        @default(0)
+  oldPrice     Int?
+  description  String?    @db.VarChar(500)
+  features     String[]   @default([])
+  badge        String?    @db.VarChar(50)
+  isPopular    Boolean    @default(false)
+  displayOrder Int        @default(0)
+  isActive     Boolean    @default(true)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  service      WebService @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@index([serviceId])
+  @@index([isActive])
+  @@index([displayOrder])
+}
+
+model WebPortfolio {
+  id            String   @id @default(cuid())
+  title         String   @db.VarChar(255)
+  description   String?  @db.Text
+  imageUrl      String   @db.VarChar(500)
+  imagePublicId String?  @db.VarChar(255)
+  technologies  String[] @default([])
+  projectUrl    String?  @db.VarChar(500)
+  category      String?  @db.VarChar(100)
+  displayOrder  Int      @default(0)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([displayOrder])
+  @@index([category])
+}
+
+model WebFaq {
+  id           String   @id @default(cuid())
+  question     String   @db.VarChar(500)
+  answer       String   @db.Text
+  category     String?  @db.VarChar(100)
+  displayOrder Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([displayOrder])
+}
+
+model WebCalculatorRule {
+  id           String   @id @default(cuid())
+  title        String   @db.VarChar(255)
+  key          String   @unique @db.VarChar(100)
+  category     String   @db.VarChar(50)
+  price        Int      @default(0)
+  icon         String?  @db.VarChar(100)
+  isDefault    Boolean  @default(false)
+  displayOrder Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([key])
+  @@index([category])
+  @@index([isActive])
+  @@index([displayOrder])
+}
+
+model WebLead {
+  id               String      @id @default(cuid())
+  serviceId        String?
+  name             String      @db.VarChar(100)
+  phone            String      @db.VarChar(20)
+  siteType         String      @db.VarChar(100)
+  selectedFeatures String[]    @default([])
+  estimatedPrice   Int         @default(0)
+  notes            String?     @db.Text
+  status           String      @default("PENDING") @db.VarChar(50)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  service          WebService? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+
+  @@index([serviceId])
+  @@index([status])
+  @@index([createdAt])
+}
+
 model WebDesignShowcase {
   id            String   @id @default(cuid())
   title         String   @default("شیخ وب؛ جایی که ایده‌ها تبدیل به وب‌سایت می‌شوند.") @db.VarChar(255)
