@@ -4,7 +4,7 @@ import React, { Suspense, useState, useEffect, useRef } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { AdaptiveDpr, AdaptiveEvents, Preload } from '@react-three/drei';
 import * as THREE from 'three';
-import ErrorBoundary from './PalmTree/ErrorBoundary';
+import ErrorBoundary from './ErrorBoundary';
 
 // Custom interface for component props
 interface AuthBrandSceneProps {

@@ -531,6 +531,22 @@ let mockTransactions: any[] = [];
 let mockReferrals: any[] = [];
 let mockAffiliates: any[] = [];
 
+let mockWebDesignShowcase: any[] = [
+  {
+    id: 'wds_default',
+    title: 'شیخ وب؛ جایی که ایده‌ها تبدیل به وب‌سایت می‌شوند.',
+    description: 'طراحی و توسعه وب‌سایت‌های فروشگاهی، شرکتی، خدماتی و اختصاصی با تکنولوژی‌های مدرن، طراحی حرفه‌ای و تمرکز بر سرعت و تجربه کاربری.',
+    services: ['فروشگاهی', 'شرکتی', 'خدماتی', 'شخصی', 'اختصاصی'],
+    imageUrl: null,
+    imagePublicId: null,
+    ctaText: 'مشاهده خدمات طراحی سایت',
+    ctaUrl: '/services/web-design',
+    isEnabled: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }
+];
+
 let mockMarketingShowcaseSlides: any[] = [
   {
     id: 'mss_1',
@@ -891,6 +907,9 @@ const makeMockModelWithWrites = (name: string, data: any[]) => {
           if (name === 'referral') mockReferrals = localData;
           if (name === 'affiliate') mockAffiliates = localData;
           if (name === 'marketingShowcaseSlide') mockMarketingShowcaseSlides = localData;
+          if (name === 'webDesignShowcase') mockWebDesignShowcase = localData;
+          if (name === 'webDesignShowcase') mockWebDesignShowcase = localData;
+          if (name === 'webDesignShowcase') mockWebDesignShowcase = localData;
 
           if (name === 'product') {
             const temp = [...localData];
@@ -1108,6 +1127,7 @@ const createMockPrisma = () => {
       if (prop === 'unit') return makeMockModel('unit', mockUnits);
       if (prop === 'mobileCarousel') return makeMockModelWithWrites('mobileCarousel', mockCarousel);
       if (prop === 'marketingShowcaseSlide') return makeMockModelWithWrites('marketingShowcaseSlide', mockMarketingShowcaseSlides);
+      if (prop === 'webDesignShowcase') return makeMockModelWithWrites('webDesignShowcase', mockWebDesignShowcase);
       if (prop === 'discount') return makeMockModel('discount', []);
       if (prop === 'user') return makeMockModel('user', mockUser);
       if (prop === 'cartItem') return makeMockModelWithWrites('cartItem', globalCartItems);

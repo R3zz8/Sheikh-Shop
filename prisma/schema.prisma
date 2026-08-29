@@ -102,6 +102,22 @@ model Unit {
   @@index([sortOrder])
 }
 
+model WebDesignShowcase {
+  id            String   @id @default(cuid())
+  title         String   @default("شیخ وب؛ جایی که ایده‌ها تبدیل به وب‌سایت می‌شوند.") @db.VarChar(255)
+  description   String   @default("طراحی و توسعه وب‌سایت‌های فروشگاهی، شرکتی، خدماتی و اختصاصی با تکنولوژی‌های مدرن، طراحی حرفه‌ای و تمرکز بر سرعت و تجربه کاربری.") @db.Text
+  services      String[] @default(["فروشگاهی", "شرکتی", "خدماتی", "شخصی", "اختصاصی"])
+  imageUrl      String?  @db.VarChar(500)
+  imagePublicId String?  @db.VarChar(255)
+  ctaText       String?  @default("مشاهده خدمات طراحی سایت") @db.VarChar(100)
+  ctaUrl        String?  @default("/services/web-design") @db.VarChar(500)
+  isEnabled     Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([isEnabled])
+}
+
 model BmwCarouselItem {
   id            String   @id @default(cuid())
   title         String?  @db.VarChar(255)
