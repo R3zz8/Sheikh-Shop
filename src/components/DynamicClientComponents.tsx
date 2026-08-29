@@ -15,11 +15,6 @@ export const EnhancedAISearch = dynamic(() => import('@/components/ai/EnhancedAI
 });
 
 // Dynamically imported components for the Homepage
-export const OptimizedPalmTree = dynamic(() => import('@/components/3d/OptimizedPalmTree'), {
-  ssr: false,
-  loading: () => <div className="w-full h-full bg-gray-900 rounded-lg animate-pulse" />,
-});
-
 export const SheikhScene = dynamic(() => import('@/components/sheikhui/SheikhScene'), {
   ssr: false,
   loading: () => <div className="w-full h-64 bg-gray-900 animate-pulse" />,

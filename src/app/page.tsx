@@ -11,12 +11,12 @@ import {
   SheikhScene,
   AmazingDeals,
   CarouselMobile,
-  OptimizedPalmTree,
   PremiumSpeakerShowcase,
   RoyalShowcase,
   BMWCarousel,
 } from '@/components/DynamicClientComponents';
 import LuxuryProductArchCarousel from '@/components/home/LuxuryProductArchCarousel';
+import WebDesignServiceCard from '@/components/home/WebDesignServiceCard';
 
 export async function generateMetadata(): Promise<Metadata> {
   const baseUrl = process.env.NODE_ENV === 'production' 
@@ -88,6 +88,9 @@ export default async function Home() {
       {/* Luxury Product Arch Carousel */}
       <LuxuryProductArchCarousel />
 
+      {/* Premium Web Design Service Card (Replaces 3D Palm Tree) */}
+      <WebDesignServiceCard />
+
       {/* Amazing Deals Section */}
       <AmazingDeals />
 
@@ -109,139 +112,6 @@ export default async function Home() {
         {/* Royal 3D Showcase */}
         <RoyalShowcase />
 
-        {/* Desktop-only Hero Section with 3D Palm Tree */}
-        <section className="hidden md:block container-fluid pt-4 pb-8">
-          <div className="max-w-7xl mx-auto px-6 lg:px-8">
-            <div
-              className="grid items-center overflow-hidden"
-              style={{
-                gridTemplateColumns: '1fr 1fr',
-                gap: 'clamp(1rem, 3vw, 2rem)',
-                minHeight: 'clamp(300px, 60vh, 700px)',
-                width: '100%',
-              }}
-            >
-              {/* Text Content - Left Column */}
-              <div className="text-right overflow-hidden flex flex-col justify-center pl-4">
-                <h1
-                  className="font-bold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent mb-8"
-                  style={{
-                    fontSize: 'clamp(38px, 4vw + 14px, 56px)',
-                    lineHeight: '1.2',
-                    wordBreak: 'break-word',
-                  }}
-                >
-                  به فروشگاه شیخ خوش آمدید
-                </h1>
-                <p
-                  className="text-gray-200 mb-10 leading-[1.8] font-normal"
-                  style={{
-                    fontSize: 'clamp(20px, 1.5vw + 12px, 22px)',
-                    maxWidth: '550px',
-                  }}
-                >
-                  با مجموعه‌ای از بهترین خرماهای ممتاز، عسل طبیعی، ارده، شیره خرما و محصولات اصیل، طعم واقعی کیفیت را تجربه کنید. فروشگاه شیخ با الهام از اصالت و مهمان‌نوازی شرقی، محصولاتی تازه، سالم و باکیفیت را برای خانواده شما فراهم کرده است.
-                </p>
-                <div className="flex flex-wrap items-center gap-4">
-                  <Link href="/products">
-                    <Button
-                      className="btn-primary whitespace-nowrap transition-all duration-300 font-bold"
-                      style={{
-                        fontSize: 'clamp(16px, 1vw + 12px, 18px)',
-                        padding: 'clamp(0.75rem, 1.5vw, 1.125rem) clamp(1.25rem, 2.5vw, 2.25rem)',
-                        borderRadius: '0.75rem',
-                      }}
-                    >
-                      مشاهده محصولات
-                    </Button>
-                  </Link>
-                  <Link href="/register">
-                    <Button
-                      className="btn-secondary whitespace-nowrap transition-all duration-300 font-bold"
-                      style={{
-                        fontSize: 'clamp(16px, 1vw + 12px, 18px)',
-                        padding: 'clamp(0.75rem, 1.5vw, 1.125rem) clamp(1.25rem, 2.5vw, 2.25rem)',
-                        borderRadius: '0.75rem',
-                      }}
-                    >
-                      ثبت نام
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-
-              {/* Optimized 3D Palm Tree - Right Column */}
-              <div
-                className="relative w-full flex items-center justify-center overflow-hidden"
-                style={{
-                  height: 'clamp(300px, 40vw, 600px)',
-                  minHeight: '300px',
-                }}
-              >
-                <OptimizedPalmTree
-                  height="100%"
-                  enableControls={true}
-                  autoRotate={true}
-                  intensity={1.2}
-                  className="rounded-2xl"
-                  posterImage="/tree3d.jpeg"
-                />
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Premium Mobile-optimized Hero Section */}
-        <section className="block md:hidden px-5 pt-10 pb-8">
-          <div className="max-w-lg mx-auto flex flex-col gap-6">
-            {/* Centered Hero Row */}
-            <div className="flex items-center justify-between gap-4 w-full">
-              {/* 3D Palm Tree Container - Fixed width/height & Vertically Centered */}
-              <div className="relative overflow-hidden flex-shrink-0 w-[140px] h-[140px] xs:w-[160px] xs:h-[160px] rounded-2xl bg-stone-900/40 border border-amber-500/10 shadow-2xl flex items-center justify-center">
-                <OptimizedPalmTree
-                  height="100%"
-                  minHeight="100%"
-                  enableControls={true}
-                  autoRotate={true}
-                  intensity={1.2}
-                  className="rounded-2xl"
-                  posterImage="/tree3d.jpeg"
-                />
-              </div>
-
-              {/* Text Block - Vertically Centered */}
-              <div className="flex flex-col justify-center text-right flex-1 min-w-0">
-                <h1 className="text-2xl xs:text-[28px] font-black bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent leading-tight mb-2">
-                  به فروشگاه
-                  <br />
-                  شیخ خوش آمدید
-                </h1>
-                <p className="text-gray-300 text-[13px] xs:text-[14px] leading-relaxed font-normal">
-                  با مجموعه‌ای از بهترین خرماهای ممتاز، عسل طبیعی، زعفران اصل و محصولات طبیعی، تجربه‌ای از کیفیت و اصالت را تجربه کنید.
-                </p>
-              </div>
-            </div>
-
-            {/* Premium Buttons */}
-            <div className="flex flex-col gap-[14px] items-center justify-center w-full pb-[30px]">
-              {/* Primary: Shop Products */}
-              <Link href="/products" className="group w-full flex justify-center">
-                <button className="w-full max-w-[340px] h-[48px] relative overflow-hidden bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 px-6 rounded-full text-stone-950 text-sm font-black font-vazirmatn shadow-[0_8px_30px_rgb(245,158,11,0.25)] hover:shadow-[0_12px_40px_rgb(245,158,11,0.4)] transition-all duration-300 hover:scale-[1.03] active:scale-[0.96] flex items-center justify-center gap-2">
-                  <span>مشاهده محصولات</span>
-                  <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-300" />
-                </button>
-              </Link>
-
-              {/* Secondary: Custom Website Development */}
-              <Link href="/contact" className="group w-full flex justify-center">
-                <button className="w-full max-w-[340px] h-[44px] bg-neutral-900/60 border border-amber-500/20 hover:border-amber-400/40 px-6 rounded-full text-amber-200/90 text-xs font-bold font-vazirmatn transition-all duration-300 hover:scale-[1.03] active:scale-[0.96] flex items-center justify-center gap-2 backdrop-blur-md shadow-md">
-                  <span>سفارش طراحی سایت</span>
-                  <Code2 className="w-4 h-4 text-amber-400/90 group-hover:rotate-12 transition-transform duration-300" />
-                </button>
-              </Link>
-            </div>
-          </div>
-        </section>
 
         {/* Features Section */}
         <section className="container-fluid section-padding-sm pt-4 pb-12">

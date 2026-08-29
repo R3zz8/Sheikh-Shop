@@ -29,6 +29,12 @@ export default function DashboardClient() {
       icon: FolderTree,
     },
     {
+      title: 'مدیریت خدمات طراحی سایت (Web Design)',
+      description: 'مدیریت کارت بصری و محتوای خدمات طراحی سایت شیخ وب',
+      href: '/dashboard/web-design-showcase',
+      icon: Sparkles,
+    },
+    {
       title: 'مدیریت کروسل (Carousel)',
       description: 'مدیریت اسلایدر و بنرهای تبلیغاتی موبایل',
       href: '/dashboard/mobile-carousel',
