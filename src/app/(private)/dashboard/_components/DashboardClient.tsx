@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useRequireRole } from '@/hooks/useRBAC';
-import { Package, Users, FileText, CreditCard, BarChart3, MessageSquare, Sliders, FolderTree, Sparkles } from 'lucide-react';
+import { Package, Users, FileText, CreditCard, BarChart3, MessageSquare, Sliders, FolderTree, Sparkles, Code2 } from 'lucide-react';
 
 export default function DashboardClient() {
   const hasAccess = useRequireRole(['ADMIN', 'SUPERADMIN']);
@@ -29,8 +29,14 @@ export default function DashboardClient() {
       icon: FolderTree,
     },
     {
-      title: 'مدیریت خدمات طراحی سایت (Web Design)',
-      description: 'مدیریت کارت بصری و محتوای خدمات طراحی سایت شیخ وب',
+      title: 'شیخ وب (Sheikh Web Platform)',
+      description: 'مدیریت ارشد خدمات، پکیج‌ها، نمونه‌کارها، سوالات متداول و قوانین قیمت‌گذاری',
+      href: '/dashboard/sheikh-web',
+      icon: Code2,
+    },
+    {
+      title: 'مدیریت خدمات طراحی سایت (Web Design Card)',
+      description: 'مدیریت کارت بصری و محتوای تبلیغاتی صفحه اصلی شیخ وب',
       href: '/dashboard/web-design-showcase',
       icon: Sparkles,
     },
