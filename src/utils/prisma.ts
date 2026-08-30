@@ -1500,9 +1500,14 @@ const createMockPrisma = () => {
 };
 
 const createPrismaClient = () => {
-  // Use mock prisma ONLY if MOCK_DB is explicitly set to 'true' (e.g. locally or during builds)
-  if (process.env.MOCK_DB === 'true') {
-    console.log('🔌 Using Mock Prisma Client with Native Toman Prices for local sandbox & screenshot generation...');
+  // Use mock prisma during local dev/tests without DB or when MOCK_DB is explicitly set
+  if (
+    process.env.MOCK_DB === 'true' ||
+    !process.env.DATABASE_URL ||
+    process.env.DATABASE_URL.trim() === '' ||
+    process.env.DATABASE_URL.includes('dummy')
+  ) {
+    console.log('🔌 Using Mock Prisma Client with Native Toman Prices for environment without live PostgreSQL...');
     return createMockPrisma();
   }
 

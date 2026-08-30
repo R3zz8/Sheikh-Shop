@@ -4,8 +4,8 @@ import { formatProductUnitResponse } from '@/lib/pricing';
 import { toNumber } from '@/lib/currency';
 import type { ProductWithUnits } from '@/types';
 
-// Revalidate this route every 60 seconds
-export const revalidate = 60;
+// Route is dynamic because it accesses searchParams via request.url
+export const dynamic = 'force-dynamic';
 
 function serializeProductForProductAPI(product: any) {
   if (!product) return null;
