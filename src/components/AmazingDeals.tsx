@@ -9,6 +9,7 @@ import { formatPrice } from '@/lib/currency';
 import { useAmazingDeals } from '@/hooks/useAmazingDeals';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Autoplay, Keyboard } from 'swiper/modules';
+import { getOptimizedCloudinaryUrl } from '@/lib/cloudinary-url';
 
 // Import Swiper styles
 import 'swiper/css';
@@ -92,7 +93,7 @@ export default function AmazingDeals() {
   // Loading state placeholder with responsive spacing and Persian text
   if (!isClient) {
     return (
-      <section className="container-fluid pt-[16px] pb-6 md:section-padding">
+      <section className="container-fluid pt-[16px] pb-6 md:section-padding min-h-[450px]">
         <div className="max-w-6xl mx-auto">
           <div className="text-center">
             <div className="animate-pulse">
@@ -108,7 +109,7 @@ export default function AmazingDeals() {
   // Show loading state
   if (loading) {
     return (
-      <section className="container-fluid pt-[16px] pb-6 md:section-padding">
+      <section className="container-fluid pt-[16px] pb-6 md:section-padding min-h-[450px]">
         <div className="max-w-6xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 15 }}
@@ -201,7 +202,7 @@ export default function AmazingDeals() {
   }
 
   return (
-    <section className="container-fluid pt-[16px] pb-6 md:section-padding">
+    <section className="container-fluid pt-[16px] pb-6 md:section-padding min-h-[450px]">
       <div className="max-w-6xl mx-auto">
         {/* Section Header */}
         <motion.div
@@ -310,7 +311,8 @@ export default function AmazingDeals() {
             className="amazing-deals-swiper"
           >
             {products.map((product) => {
-              const mainImage = product.images[0]?.image || '/placeholder-product.jpg';
+              const rawMainImage = product.images[0]?.image || '/placeholder-product.jpg';
+              const mainImage = getOptimizedCloudinaryUrl(rawMainImage, { width: 400, quality: 75 });
               const hasDiscount = product.discounts && product.discounts.length > 0;
               const discount = hasDiscount ? product.discounts[0] : null;
               const discountPercentage = discount ? discount.value : 0;
@@ -358,7 +360,7 @@ export default function AmazingDeals() {
                             fill
                             className="object-cover transition-transform duration-300 group-hover:scale-110"
                             sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                            quality={85}
+                            quality={75}
                             placeholder="blur"
                             blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
                           />

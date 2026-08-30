@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import { getOptimizedCloudinaryUrl } from '@/lib/cloudinary-url';
 
 // Import Swiper styles
 import 'swiper/css';
@@ -72,9 +73,10 @@ export default function MobileCarousel({
     setFailedImages(prev => new Set(prev).add(imageUrl));
   }, []);
 
-  // Function to get image source with fallback
+  // Function to get image source with fallback & Cloudinary optimization
   const getImageSource = useCallback((imageUrl: string) => {
-    return (!imageUrl || failedImages.has(imageUrl)) ? FALLBACK_IMAGE : imageUrl;
+    const src = (!imageUrl || failedImages.has(imageUrl)) ? FALLBACK_IMAGE : imageUrl;
+    return getOptimizedCloudinaryUrl(src, { width: 600, quality: 75 });
   }, [failedImages]);
 
   // Handle CTA button click
@@ -86,7 +88,7 @@ export default function MobileCarousel({
 
   if (isLoading) {
     return (
-      <div className="w-full block md:hidden" aria-hidden={false}>
+      <div className="w-full block md:hidden min-h-[220px]" aria-hidden={false}>
         <div className="relative overflow-hidden rounded-2xl shadow-2xl bg-neutral-950 mx-auto max-w-sm sm:max-w-md h-[220px] sm:h-[280px] flex items-center justify-center border border-amber-500/10">
           <p className="text-amber-200/60 font-vazirmatn text-sm animate-pulse">در حال بارگذاری پیشنهادها...</p>
         </div>
@@ -96,7 +98,7 @@ export default function MobileCarousel({
 
   if (isError || images.length === 0) {
     return (
-      <div className="w-full block md:hidden" aria-hidden={false}>
+      <div className="w-full block md:hidden min-h-[220px]" aria-hidden={false}>
         <div className="relative overflow-hidden rounded-2xl shadow-2xl bg-neutral-950 mx-auto max-w-sm sm:max-w-md h-[220px] sm:h-[280px] flex items-center justify-center border border-amber-500/10">
           <p className="text-amber-200/60 font-vazirmatn text-sm">خطا در بارگذاری تصاویر</p>
         </div>
@@ -106,7 +108,7 @@ export default function MobileCarousel({
 
   return (
     // Strictly mobile-only visibility
-    <div className="w-full block md:hidden" aria-hidden={false}>
+    <div className="w-full block md:hidden min-h-[220px]" aria-hidden={false}>
       {/* Carousel Container - Mobile-only with premium dark-glass luxury design */}
       <div className="relative overflow-hidden rounded-2xl shadow-2xl bg-stone-950 mx-auto max-w-sm sm:max-w-md border border-amber-500/10">
         <Swiper
@@ -202,6 +204,8 @@ export default function MobileCarousel({
                           className="object-contain p-4"
                           sizes="(max-width: 768px) 50vw, 50vw"
                           priority={index === 0}
+                          loading={index === 0 ? 'eager' : 'lazy'}
+                          quality={75}
                           onError={() => handleImageError(img.url)}
                         />
                       </div>

@@ -9,6 +9,7 @@ import CompactProductUnitSelector from '@/components/ui/CompactProductUnitSelect
 import { getOrGenerateExcerpt, stripHtmlTags } from '@/lib/seo/sanitize';
 import { useLuxuryUnboxing } from '@/components/3d/LuxuryUnboxingProvider';
 import { Gift, Sparkles, ArrowLeft } from 'lucide-react';
+import { getOptimizedCloudinaryUrl } from '@/lib/cloudinary-url';
 
 interface ProductCardProps {
   product: ProductsWithImages;
@@ -25,10 +26,12 @@ export default function ProductCard({
 }: ProductCardProps) {
   const { triggerUnboxing, config: unboxingConfig } = useLuxuryUnboxing();
 
-  const imageUrl =
+  const rawImageUrl =
     product.images && product.images.length > 0
       ? product.images[0]?.secureUrl || product.images[0]?.image || '/noImage.jpg'
       : '/noImage.jpg';
+
+  const imageUrl = getOptimizedCloudinaryUrl(rawImageUrl, { width: 500, quality: 75 });
 
   const availableProductUnits = useMemo(() => {
     const units = (product.units || []).filter((unit) => unit.isActive);
@@ -88,6 +91,7 @@ export default function ProductCard({
             sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
             className="object-contain p-2 transition-transform duration-500 group-hover/card:scale-105"
             loading="lazy"
+            quality={75}
           />
 
           {/* New Badge */}

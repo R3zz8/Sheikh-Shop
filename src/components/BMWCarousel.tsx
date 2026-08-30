@@ -5,6 +5,7 @@ import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination, EffectCoverflow } from 'swiper/modules';
 import { useQuery } from '@tanstack/react-query';
+import { getOptimizedCloudinaryUrl } from '@/lib/cloudinary-url';
 import 'swiper/css';
 import 'swiper/css/effect-coverflow';
 import 'swiper/css/pagination';
@@ -70,7 +71,7 @@ export default function BMWCarousel({ initialSlides }: BMWCarouselProps) {
 
   return (
     <div
-      className="hidden lg:flex min-h-screen items-center justify-center p-4"
+      className="hidden lg:flex min-h-[500px] items-center justify-center p-4"
       style={{ backgroundColor: '#3E1F0F' }}
     >
       <div className="w-full max-w-6xl">
@@ -97,22 +98,24 @@ export default function BMWCarousel({ initialSlides }: BMWCarouselProps) {
         >
           {effectiveSlides.map((slide, index) => {
             const isFailed = failedImages.has(slide.id);
-            const imageSrc = isFailed ? DEFAULT_IMAGES[index % DEFAULT_IMAGES.length] : slide.image;
+            const rawImageSrc = isFailed ? DEFAULT_IMAGES[index % DEFAULT_IMAGES.length] : slide.image;
+            const imageSrc = getOptimizedCloudinaryUrl(rawImageSrc, { width: 800, quality: 75 });
 
             return (
               <SwiperSlide key={slide.id}>
                 {({ isActive }) => (
                   <div
-                    className="relative h-96 rounded-2xl overflow-hidden filter grayscale-[0.6] bg-cover bg-center flex flex-col justify-end items-center pb-20"
+                    className="relative h-96 rounded-2xl overflow-hidden filter grayscale-[0.6] bg-cover bg-center flex flex-col justify-end items-center pb-20 shadow-2xl"
                     style={{
                       backgroundImage: `url('${imageSrc}')`,
                     }}
                   >
                     {/* Fallback img tag for error detection */}
                     <img
-                      src={slide.image}
+                      src={imageSrc}
                       alt={slide.title}
                       className="hidden"
+                      loading="lazy"
                       onError={() => {
                         setFailedImages((prev) => new Set(prev).add(slide.id));
                       }}

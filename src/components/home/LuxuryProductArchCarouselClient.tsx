@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Keyboard } from 'swiper/modules';
 import type { MarketingShowcaseSlideData } from '@/lib/services/getMarketingShowcase';
+import { getOptimizedCloudinaryUrl } from '@/lib/cloudinary-url';
 
 // Import Swiper core styles
 import 'swiper/css';
@@ -15,7 +16,8 @@ interface LuxuryProductArchCarouselClientProps {
 }
 
 function ArchSlideCard({ slide }: { slide: MarketingShowcaseSlideData }) {
-  const imageUrl = slide.imageUrl || '/noImage.jpg';
+  const rawImageUrl = slide.imageUrl || '/noImage.jpg';
+  const imageUrl = getOptimizedCloudinaryUrl(rawImageUrl, { width: 600, quality: 75 });
   const targetProductUrl = `/products/${slide.product?.slug || slide.product?.id || slide.productId}`;
 
   return (
@@ -56,7 +58,7 @@ function ArchSlideCard({ slide }: { slide: MarketingShowcaseSlideData }) {
                 sizes="(max-width: 640px) 45vw, (max-width: 1024px) 25vw, 18vw"
                 className="object-contain p-2 filter drop-shadow-[0_16px_24px_rgba(0,0,0,0.85)] drop-shadow-[0_4px_12px_rgba(245,158,11,0.2)] group-hover/arch:scale-105 transition-transform duration-500 ease-out"
                 loading="lazy"
-                unoptimized
+                quality={75}
               />
             </div>
           </div>
