@@ -1141,3 +1141,11 @@
     transform: none !important;
   }
 }
+
+/* Persian font fallback stability overrides */
+.font-vazirmatn {
+  font-family: var(--font-vazirmatn), system-ui, sans-serif !important;
+  font-display: swap;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}

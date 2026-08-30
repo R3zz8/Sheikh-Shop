@@ -11,33 +11,33 @@ export const ShoppingChatbot = dynamic(() => import('@/components/ai/ShoppingCha
 
 export const EnhancedAISearch = dynamic(() => import('@/components/ai/EnhancedAISearch'), {
   ssr: false,
-  loading: () => <div className="h-10 w-full bg-gray-800 rounded-md animate-pulse" />,
+  loading: () => <div className="h-[98px] w-full bg-stone-900/60 rounded-xl animate-pulse border border-amber-500/10" />,
 });
 
 // Dynamically imported components for the Homepage
 export const SheikhScene = dynamic(() => import('@/components/sheikhui/SheikhScene'), {
   ssr: false,
-  loading: () => <div className="w-full h-64 bg-gray-900 animate-pulse" />,
+  loading: () => <div className="w-full h-[336px] md:h-[520px] bg-stone-900/60 rounded-3xl animate-pulse" />,
 });
 
 export const AmazingDeals = dynamic(() => import('@/components/AmazingDeals'), {
   ssr: false,
-  loading: () => <div className="w-full h-96 bg-gray-900 animate-pulse" />,
+  loading: () => <div className="w-full h-[450px] bg-stone-900/60 rounded-3xl animate-pulse" />,
 });
 
 export const RoyalShowcase = dynamic(() => import('@/components/royal-showcase/RoyalShowcase'), {
   ssr: false,
-  loading: () => <div className="w-full h-96 bg-stone-900/60 rounded-[2.5rem] animate-pulse" />,
+  loading: () => <div className="w-full h-[360px] md:h-[560px] bg-stone-900/60 rounded-[2.5rem] animate-pulse" />,
 });
 
 export const CarouselMobile = dynamic(() => import('@/components/CarouselMobile'), {
   ssr: false,
-  loading: () => <div className="w-full h-64 bg-gray-900 animate-pulse md:hidden" />,
+  loading: () => <div className="w-full h-[220px] sm:h-[280px] bg-stone-900/60 rounded-2xl animate-pulse md:hidden" />,
 });
 
 export const PremiumSpeakerShowcase = dynamic(() => import('@/components/home/PremiumSpeakerShowcase'), {
   ssr: false,
-  loading: () => <div className="w-full h-96 bg-gray-900 animate-pulse" />,
+  loading: () => <div className="w-full h-[320px] md:h-[500px] bg-stone-900/60 rounded-[2.5rem] animate-pulse" />,
 });
 
 export const BMWCarousel = dynamic(() => import('@/components/BMWCarousel'), {

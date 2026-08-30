@@ -45,7 +45,6 @@ function NewProductCard({ product }: { product: ProductsWithImages | any }) {
               sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 20vw"
               className="object-contain p-1 transition-transform duration-500 group-hover/card:scale-105"
               loading="lazy"
-              unoptimized
             />
           </div>
 
