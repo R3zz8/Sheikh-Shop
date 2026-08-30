@@ -60,7 +60,8 @@ export default function MobileCarousel({
 }: MobileCarouselProps) {
   const { data: images = [], isLoading, isError } = useQuery({
     queryKey: ['mobileCarousel'],
-    queryFn: fetchCarouselData
+    queryFn: fetchCarouselData,
+    staleTime: 5 * 60 * 1000,
   });
 
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
