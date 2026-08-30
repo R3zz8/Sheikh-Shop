@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { prisma } from '@/utils/prisma';
 import WebPageView from '@/modules/web/views/WebPageView';
 
-export const revalidate = 60; // Revalidate page every 60 seconds
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'طراحی سایت حرفه‌ای و اختصاصی | شیخ وب',
@@ -27,30 +27,39 @@ export const metadata: Metadata = {
 };
 
 export default async function WebPage() {
-  const [services, rules, portfolio, faqs] = await Promise.all([
-    prisma.webService.findMany({
-      where: { isActive: true },
-      include: {
-        packages: {
-          where: { isActive: true },
-          orderBy: { displayOrder: 'asc' },
+  let services = [];
+  let rules = [];
+  let portfolio = [];
+  let faqs = [];
+
+  try {
+    [services, rules, portfolio, faqs] = await Promise.all([
+      prisma.webService.findMany({
+        where: { isActive: true },
+        include: {
+          packages: {
+            where: { isActive: true },
+            orderBy: { displayOrder: 'asc' },
+          },
         },
-      },
-      orderBy: { displayOrder: 'asc' },
-    }),
-    prisma.webCalculatorRule.findMany({
-      where: { isActive: true },
-      orderBy: { displayOrder: 'asc' },
-    }),
-    prisma.webPortfolio.findMany({
-      where: { isActive: true },
-      orderBy: { displayOrder: 'asc' },
-    }),
-    prisma.webFaq.findMany({
-      where: { isActive: true },
-      orderBy: { displayOrder: 'asc' },
-    }),
-  ]);
+        orderBy: { displayOrder: 'asc' },
+      }),
+      prisma.webCalculatorRule.findMany({
+        where: { isActive: true },
+        orderBy: { displayOrder: 'asc' },
+      }),
+      prisma.webPortfolio.findMany({
+        where: { isActive: true },
+        orderBy: { displayOrder: 'asc' },
+      }),
+      prisma.webFaq.findMany({
+        where: { isActive: true },
+        orderBy: { displayOrder: 'asc' },
+      }),
+    ]);
+  } catch (error) {
+    console.error('[WEB_PAGE_DB_ERROR] Failed to fetch Sheikh Web page data:', error);
+  }
 
   const jsonLd = {
     '@context': 'https://schema.org',
