@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { getOptimizedCloudinaryUrl } from '@/lib/cloudinary-url';
 
 interface Category {
     name: string;
@@ -75,7 +76,7 @@ const Categories = React.memo(function Categories({ initialCategories }: Categor
 
                         return {
                             name: cat.name,
-                            image: img,
+                            image: getOptimizedCloudinaryUrl(img, { width: 384, quality: 70 }),
                             slug: cat.slug,
                             url,
                         };
@@ -136,16 +137,16 @@ const Categories = React.memo(function Categories({ initialCategories }: Categor
                                 {/* 3. Circular Image Container (Strictly exact same sizing, layout-preserving) */}
                                 <div className="relative w-full h-full rounded-full overflow-hidden shadow-2xl border border-amber-500/15 group-hover:border-amber-400/40 transition-all duration-500 z-10">
                                     <Image
-                                        src={category.image}
+                                        src={getOptimizedCloudinaryUrl(category.image, { width: 384, quality: 70 })}
                                         alt={category.name}
                                         fill
                                         className="object-cover transition-transform duration-700 group-hover:scale-105"
                                         sizes="(max-width: 640px) 128px, (max-width: 1024px) 160px, 192px"
                                         priority={index < 2}
                                         loading={index < 2 ? 'eager' : 'lazy'}
-                                        quality={80}
+                                        quality={70}
                                         placeholder="blur"
-                                        blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwPLOAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
+                                        blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
                                     />
                                     {/* Overlay for optimal text readability and contrast */}
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-black/10 to-transparent opacity-40 group-hover:opacity-60 transition-opacity duration-500" />

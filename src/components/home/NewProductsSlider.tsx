@@ -9,6 +9,8 @@ import { ChevronLeft, ChevronRight, Sparkles, ArrowLeft } from 'lucide-react';
 import type { ProductsWithImages } from '@/types';
 import { resolveProductPrice } from '@/lib/product-pricing';
 import { formatToToman } from '@/lib/currency';
+import { getOptimizedCloudinaryUrl } from '@/lib/cloudinary-url';
+
 // Import Swiper styles
 import 'swiper/css';
 import 'swiper/css/navigation';
@@ -18,10 +20,12 @@ interface NewProductsSliderProps {
 }
 
 function NewProductCard({ product }: { product: ProductsWithImages | any }) {
-  const imageUrl =
+  const rawImageUrl =
     product.images && product.images.length > 0
       ? product.images[0]?.secureUrl || product.images[0]?.image || '/noImage.jpg'
       : '/noImage.jpg';
+
+  const imageUrl = getOptimizedCloudinaryUrl(rawImageUrl, { width: 400, quality: 75 });
 
   const pricing = useMemo(() => resolveProductPrice(product, null), [product]);
 
@@ -45,6 +49,7 @@ function NewProductCard({ product }: { product: ProductsWithImages | any }) {
               sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 20vw"
               className="object-contain p-1 transition-transform duration-500 group-hover/card:scale-105"
               loading="lazy"
+              quality={75}
             />
           </div>
 

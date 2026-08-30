@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeft, Sparkles, CheckCircle2 } from 'lucide-react';
 import { getWebDesignShowcase, type WebDesignShowcaseItem } from '@/lib/services/getWebDesignShowcase';
+import { getOptimizedCloudinaryUrl } from '@/lib/cloudinary-url';
 
 interface WebDesignServiceCardProps {
   initialData?: WebDesignShowcaseItem | null;
@@ -26,7 +27,8 @@ export default async function WebDesignServiceCard({ initialData }: WebDesignSer
       : ['فروشگاهی', 'شرکتی', 'خدماتی', 'شخصی', 'اختصاصی'];
   const ctaText = showcase?.ctaText || 'مشاهده خدمات طراحی سایت';
   const targetUrl = showcase?.ctaUrl && showcase.ctaUrl !== '/services/web-design' ? showcase.ctaUrl : '/web';
-  const imageUrl = showcase?.imageUrl || null;
+  const rawImageUrl = showcase?.imageUrl || null;
+  const imageUrl = rawImageUrl ? getOptimizedCloudinaryUrl(rawImageUrl, { width: 600, quality: 75 }) : null;
 
   return (
     <section className="container-fluid py-8 md:py-14 relative z-10 font-vazirmatn">
@@ -65,6 +67,7 @@ export default async function WebDesignServiceCard({ initialData }: WebDesignSer
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 40vw, 30vw"
                         className="object-contain object-bottom drop-shadow-[0_15px_25px_rgba(0,0,0,0.6)] transition-transform duration-700 group-hover:scale-[1.03]"
                         priority
+                        quality={75}
                       />
                     ) : (
                       /* Elegant Fallback Visual when no custom image is set by admin */
