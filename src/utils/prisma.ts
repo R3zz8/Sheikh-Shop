@@ -993,8 +993,21 @@ const normalizeMockRecord = (modelName: string, item: any): any => {
   if (modelName === 'order') {
     const items = mockOrderItems.filter(i => i.orderId === item.id);
     const referral = mockReferrals.find(r => r.orderId === item.id);
+    const user = mockUser.find(u => u.id === item.userId) || {
+      id: item.userId,
+      email: 'customer@sheikhshop.com',
+      firstName: 'خریدار',
+      lastName: 'شیخ',
+      role: 'USER',
+    };
     return {
+      subtotal: item.subtotal || item.total || 0,
+      discount: item.discount || 0,
+      paymentStatus: item.paymentStatus || (item.status === 'COMPLETED' ? 'PAID' : 'PENDING'),
+      shippingAddress: item.shippingAddress || null,
+      trackingCode: item.trackingCode || null,
       ...item,
+      user,
       items,
       referral: referral ? normalizeMockRecord('referral', referral) : null,
     };
@@ -1460,7 +1473,7 @@ const createMockPrisma = () => {
       if (prop === 'marketingShowcaseSlide') return makeMockModelWithWrites('marketingShowcaseSlide', mockMarketingShowcaseSlides);
       if (prop === 'webDesignShowcase') return makeMockModelWithWrites('webDesignShowcase', mockWebDesignShowcase);
       if (prop === 'discount') return makeMockModel('discount', []);
-      if (prop === 'user') return makeMockModel('user', mockUser);
+      if (prop === 'user') return makeMockModelWithWrites('user', mockUser);
       if (prop === 'cartItem') return makeMockModelWithWrites('cartItem', globalCartItems);
       if (prop === 'order') return makeMockModelWithWrites('order', mockOrders);
       if (prop === 'orderItem') return makeMockModelWithWrites('orderItem', mockOrderItems);
