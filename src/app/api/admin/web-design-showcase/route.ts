@@ -227,8 +227,15 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(savedItem, { status: 200 });
   } catch (error) {
-    console.error('[WEB_DESIGN_SHOWCASE_ADMIN_POST]', error);
-    return NextResponse.json({ message: 'خطا در به روزرسانی خدمات طراحی سایت' }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('[WEB_DESIGN_SHOWCASE_ADMIN_POST]', errorMessage, error);
+    return NextResponse.json(
+      {
+        message: 'خطا در به روزرسانی خدمات طراحی سایت',
+        ...(process.env.NODE_ENV === 'development' ? { error: errorMessage } : {}),
+      },
+      { status: 500 }
+    );
   }
 }
 
