@@ -83,6 +83,12 @@ export default function DashboardClient() {
       icon: FileText,
     },
     {
+      title: 'مدیریت سفارشات (Order Management)',
+      description: 'مشاهده سابقه خرید خریداران، کد مرسوله، وضعیت پردازش و ارسال',
+      href: '/dashboard/orders',
+      icon: Package,
+    },
+    {
       title: 'Transactions',
       description: 'View payment transactions',
       href: '/dashboard/transactions',

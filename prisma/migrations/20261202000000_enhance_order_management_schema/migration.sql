@@ -1,0 +1,24 @@
+-- CreateEnum
+CREATE TYPE "PaymentStatus" AS ENUM ('PENDING', 'PAID', 'FAILED', 'REFUNDED');
+
+-- AlterEnum
+ALTER TYPE "OrderStatus" ADD VALUE IF NOT EXISTS 'PROCESSING';
+ALTER TYPE "OrderStatus" ADD VALUE IF NOT EXISTS 'SHIPPED';
+ALTER TYPE "OrderStatus" ADD VALUE IF NOT EXISTS 'DELIVERED';
+
+-- AlterTable Order
+ALTER TABLE "Order" ADD COLUMN IF NOT EXISTS "subtotal" DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+ADD COLUMN IF NOT EXISTS "discount" DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+ADD COLUMN IF NOT EXISTS "paymentStatus" "PaymentStatus" NOT NULL DEFAULT 'PENDING',
+ADD COLUMN IF NOT EXISTS "shippingAddress" JSONB,
+ADD COLUMN IF NOT EXISTS "trackingCode" VARCHAR(100);
+
+-- AlterTable OrderItem
+ALTER TABLE "OrderItem" ADD COLUMN IF NOT EXISTS "productName" VARCHAR(255),
+ADD COLUMN IF NOT EXISTS "productImage" VARCHAR(500),
+ADD COLUMN IF NOT EXISTS "unitName" VARCHAR(100);
+
+-- CreateIndex
+CREATE INDEX IF NOT EXISTS "Order_userId_status_idx" ON "Order"("userId", "status");
+CREATE INDEX IF NOT EXISTS "Order_paymentStatus_idx" ON "Order"("paymentStatus");
+CREATE INDEX IF NOT EXISTS "Order_createdAt_idx" ON "Order"("createdAt");

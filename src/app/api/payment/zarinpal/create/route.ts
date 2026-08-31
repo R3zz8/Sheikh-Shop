@@ -38,11 +38,14 @@ export async function POST(req: NextRequest) {
       unitPrice?: number | Prisma.Decimal;
       product: {
         id: string;
+        name: string;
         basePrice: number | Prisma.Decimal;
         shippingCost?: number | Prisma.Decimal | null;
         allowFreeShipping?: boolean | null;
-        units?: Array<{ id: string; price: number | Prisma.Decimal }>;
+        images?: Array<{ image?: string | null; secureUrl?: string | null }>;
+        units?: Array<{ id: string; price: number | Prisma.Decimal; name: string }>;
       };
+      unit?: { name?: string | null; symbol?: string | null };
     }> = [];
 
     if (userId) {
@@ -52,8 +55,10 @@ export async function POST(req: NextRequest) {
           product: {
             include: {
               units: true,
+              images: true,
             },
           },
+          unit: true,
         },
       });
     }
@@ -67,16 +72,16 @@ export async function POST(req: NextRequest) {
       if (productIds.length > 0) {
         const dbProducts = await prisma.product.findMany({
           where: { id: { in: productIds } },
-          include: { units: true },
+          include: { units: true, images: true },
         });
 
-        type DbProductWithUnits = Prisma.ProductGetPayload<{ include: { units: true } }>;
+        type DbProductWithUnits = Prisma.ProductGetPayload<{ include: { units: true; images: true } }>;
         const productMap = new Map<string, DbProductWithUnits>(
           dbProducts.map((p: DbProductWithUnits) => [p.id, p])
         );
 
         cartItems = bodyItems
-          .map((item: { productId?: string; id?: string; quantity?: number | string }) => {
+          .map((item: { productId?: string; id?: string; quantity?: number | string; unitName?: string }) => {
             const pId = item.productId || item.id;
             if (!pId) return null;
             const dbP = productMap.get(pId);
@@ -86,13 +91,16 @@ export async function POST(req: NextRequest) {
               quantity: Math.max(1, parseInt(String(item.quantity || 1), 10)),
               product: {
                 id: String(dbP.id),
+                name: String(dbP.name),
                 basePrice: Number(dbP.basePrice),
                 shippingCost: dbP.shippingCost ? Number(dbP.shippingCost) : null,
                 allowFreeShipping: dbP.allowFreeShipping ?? false,
+                images: dbP.images || [],
                 units: Array.isArray(dbP.units)
-                  ? dbP.units.map((u: Prisma.ProductUnitGetPayload<{}>) => ({ id: String(u.id), price: Number(u.price) }))
+                  ? dbP.units.map((u: Prisma.ProductUnitGetPayload<{}>) => ({ id: String(u.id), price: Number(u.price), name: u.name }))
                   : [],
               },
+              unit: item.unitName ? { name: item.unitName } : undefined,
             };
           })
           .filter((item): item is NonNullable<typeof item> => item !== null);
@@ -110,6 +118,9 @@ export async function POST(req: NextRequest) {
     let subtotalToman = 0;
     const orderItemData: Array<{
       productId: string;
+      productName: string;
+      productImage?: string;
+      unitName?: string;
       quantity: number;
       price: number;
       shippingCost?: number;
@@ -126,8 +137,14 @@ export async function POST(req: NextRequest) {
           ? Number(item.product.shippingCost)
           : 200000;
 
+      const productImage = item.product.images?.[0]?.image || item.product.images?.[0]?.secureUrl || null;
+      const unitName = item.unit?.name || item.unit?.symbol || null;
+
       orderItemData.push({
         productId: item.productId,
+        productName: item.product.name,
+        productImage: productImage || undefined,
+        unitName: unitName || undefined,
         quantity: item.quantity,
         price: unitPrice,
         shippingCost: itemShippingCost,
@@ -182,17 +199,36 @@ export async function POST(req: NextRequest) {
       orderNotes ? `توضیحات: ${orderNotes}` : '',
     ].filter(Boolean).join(' | ');
 
-    // Create pending Order in database
+    // Create pending Order in database with historical snapshot
     const order = await prisma.order.create({
       data: {
         userId,
+        subtotal: subtotalToman,
         total: subtotalToman,
         shippingCost: shippingCostToman,
+        discount: 0,
         totalPrice: totalPriceToman,
         status: "PENDING",
+        paymentStatus: "PENDING",
+        shippingAddress: {
+          firstName: contactInfo.firstName,
+          lastName: contactInfo.lastName,
+          recipientName: shippingAddress.recipientName || `${contactInfo.firstName} ${contactInfo.lastName}`.trim(),
+          recipientPhone: shippingAddress.recipientPhone || contactInfo.phone,
+          phone: contactInfo.phone,
+          email: contactInfo.email,
+          province: shippingAddress.province,
+          city: shippingAddress.city,
+          address: shippingAddress.address,
+          postalCode: shippingAddress.postalCode,
+          orderNotes,
+        },
         items: {
           create: orderItemData.map((i) => ({
             productId: i.productId,
+            productName: i.productName,
+            productImage: i.productImage,
+            unitName: i.unitName,
             quantity: i.quantity,
             price: i.price,
             shippingCost: i.shippingCost,

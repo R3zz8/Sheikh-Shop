@@ -14,6 +14,7 @@ type PaymentState = 'loading' | 'success' | 'failed';
 
 interface VerificationResponse {
   success: boolean;
+  orderId?: string;
   authority?: string;
   reference?: string;
   amount?: number;
@@ -29,6 +30,7 @@ export default function PaymentCallbackPage() {
   useEffect(() => {
     const authority = searchParams.get('Authority') || searchParams.get('authority');
     const status = searchParams.get('Status') || searchParams.get('status');
+    const orderIdParam = searchParams.get('orderId') || searchParams.get('order_id');
     const refId = searchParams.get('ref_id') || searchParams.get('refId');
     const amountStr = searchParams.get('amount');
     const reason = searchParams.get('reason');
@@ -38,6 +40,7 @@ export default function PaymentCallbackPage() {
       const parsedAmount = amountStr ? parseFloat(amountStr) : undefined;
       setVerificationData({
         success: true,
+        orderId: orderIdParam || undefined,
         authority: authority || '',
         reference: refId || '',
         amount: parsedAmount,
@@ -46,12 +49,7 @@ export default function PaymentCallbackPage() {
         description: refId ? `کد پیگیری: ${refId}` : 'سفارش شما با موفقیت ثبت شد.',
         duration: 5000,
       });
-
-      const redirectDelay = 4000;
-      const timer = setTimeout(() => {
-        router.push('/');
-      }, redirectDelay);
-      return () => clearTimeout(timer);
+      return;
     } else if (status === 'failed') {
       setState('failed');
       let msg = 'پرداخت ناموفق بود یا توسط شما لغو شد.';
@@ -192,9 +190,18 @@ export default function PaymentCallbackPage() {
                   animate={{ opacity: 1, y: 0 }}
                   className="space-y-4"
                 >
+                  {verificationData.orderId && (
+                    <div className="rounded-2xl bg-stone-950/60 p-3 border border-amber-500/20 flex items-center justify-between">
+                      <span className="text-xs text-stone-400">شماره سفارش:</span>
+                      <span className="text-xs font-bold text-amber-300 font-mono">
+                        {verificationData.orderId}
+                      </span>
+                    </div>
+                  )}
+
                   {verificationData.reference && (
                     <div className="rounded-2xl bg-stone-950/60 p-4 border border-green-500/20 flex items-center justify-between">
-                      <span className="text-xs text-stone-400">شماره پیگیری (Ref ID):</span>
+                      <span className="text-xs text-stone-400">کد پیگیری بانکی (Ref ID):</span>
                       <span className="text-base font-extrabold text-green-400 font-mono">
                         {verificationData.reference}
                       </span>
@@ -218,10 +225,24 @@ export default function PaymentCallbackPage() {
                   )}
 
                   <div className="pt-2 space-y-3">
+                    {verificationData.orderId ? (
+                      <Link href={`/account/orders/${verificationData.orderId}`} className="w-full block">
+                        <Button className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-black font-bold py-3 rounded-xl gap-2">
+                          مشاهده جزئیات سفارش
+                        </Button>
+                      </Link>
+                    ) : (
+                      <Link href="/account/orders" className="w-full block">
+                        <Button className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-black font-bold py-3 rounded-xl gap-2">
+                          مشاهده سفارش‌های من
+                        </Button>
+                      </Link>
+                    )}
+
                     <Link href="/" className="w-full block">
-                      <Button className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-black font-bold py-3 rounded-xl gap-2">
+                      <Button variant="outline" className="w-full border-stone-800 text-stone-300 hover:bg-stone-800 rounded-xl gap-2">
                         <Home className="h-4 w-4" />
-                        بازگشت به صفحه اصلی فروشگاه
+                        بازگشت به صفحه اصلی
                       </Button>
                     </Link>
                   </div>

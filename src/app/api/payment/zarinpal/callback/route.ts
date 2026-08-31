@@ -73,10 +73,13 @@ export async function GET(req: Request) {
 
     const order = transaction.order;
 
-    // Fast-path for already completed orders (idempotent response on page refresh)
-    if (order.status === "COMPLETED" && transaction.status === "COMPLETED") {
+    // Fast-path for already completed/paid orders (idempotent response on page refresh)
+    if (
+      (order.status === "COMPLETED" || order.status === "PROCESSING" || order.paymentStatus === "PAID") &&
+      transaction.status === "COMPLETED"
+    ) {
       return NextResponse.redirect(
-        `${baseUrl}/payment/callback?status=success&ref_id=${encodeURIComponent(
+        `${baseUrl}/payment/callback?status=success&orderId=${order.id}&ref_id=${encodeURIComponent(
           transaction.reference || ""
         )}&amount=${transaction.amount}&authority=${encodeURIComponent(authority)}`
       );
@@ -117,10 +120,13 @@ export async function GET(req: Request) {
           },
         });
 
-        // 2. Update Order
+        // 2. Update Order with PaymentStatus = PAID & OrderStatus = PROCESSING
         await tx.order.update({
           where: { id: order.id },
-          data: { status: "COMPLETED" },
+          data: {
+            paymentStatus: "PAID",
+            status: "PROCESSING",
+          },
         });
 
         // 3. Decrement Inventory safely
@@ -166,7 +172,7 @@ export async function GET(req: Request) {
       });
 
       return NextResponse.redirect(
-        `${baseUrl}/payment/callback?status=success&ref_id=${encodeURIComponent(
+        `${baseUrl}/payment/callback?status=success&orderId=${order.id}&ref_id=${encodeURIComponent(
           refId
         )}&amount=${trustedAmountToman}&authority=${encodeURIComponent(authority)}`
       );
@@ -181,7 +187,10 @@ export async function GET(req: Request) {
 
       await prisma.order.update({
         where: { id: order.id },
-        data: { status: "CANCELLED" },
+        data: {
+          paymentStatus: "FAILED",
+          status: "CANCELLED",
+        },
       });
 
       return NextResponse.redirect(
