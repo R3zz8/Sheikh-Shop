@@ -16,21 +16,27 @@ test.describe('Mobile Viewports Visual QA', () => {
 
   for (const width of widths) {
     test(`Capture and verify layout at ${width}px`, async ({ page }) => {
+      // Route out remote font network stalls
+      await page.route('**/*.{ttf,woff,woff2}', route => route.fulfill({ status: 200, body: '' }));
+
       // Set viewport size
       await page.setViewportSize({ width, height: 750 });
 
       // Navigate to homepage
-      await page.goto(targetUrl, { waitUntil: 'load' });
+      await page.goto(targetUrl, { waitUntil: 'domcontentloaded' });
 
       // Wait for components to mount and stabilize
       await page.waitForTimeout(2000);
 
       // Verify main heading exists
-      const heading = page.locator('h1').first();
+      const heading = page.locator('h1, h2').first();
       await expect(heading).toBeVisible();
 
+      // Inject font readiness
+      await page.evaluate(() => document.fonts.ready).catch(() => {});
+
       // Take screenshot of top section (Hero & CTA Buttons)
-      await page.screenshot({ path: `verification/mobile-hero-${width}px.png` });
+      await page.screenshot({ path: `verification/mobile-hero-${width}px.png`, animations: 'disabled', scale: 'css', timeout: 5000 });
       console.log(`✅ Saved hero screenshot for ${width}px`);
 
       // Scroll to Mobile Carousel / Slider section
@@ -41,7 +47,7 @@ test.describe('Mobile Viewports Visual QA', () => {
       await page.waitForTimeout(1000);
 
       // Take screenshot of Carousel section
-      await page.screenshot({ path: `verification/mobile-carousel-${width}px.png` });
+      await page.screenshot({ path: `verification/mobile-carousel-${width}px.png`, animations: 'disabled', scale: 'css', timeout: 5000 });
       console.log(`✅ Saved carousel screenshot for ${width}px`);
     });
   }

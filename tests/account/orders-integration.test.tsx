@@ -41,10 +41,10 @@ jest.mock('framer-motion', () => {
   const React = require('react');
   return {
     motion: {
-      button: React.forwardRef<HTMLButtonElement, any>(({ children, whileHover, whileTap, onClick, ...props }, ref) => (
+      button: React.forwardRef(({ children, whileHover, whileTap, onClick, ...props }: any, ref: any) => (
         <button ref={ref} onClick={onClick} {...props}>{children}</button>
       )),
-      div: React.forwardRef<HTMLDivElement, any>(({ children, whileHover, whileTap, initial, animate, exit, transition, drag, dragConstraints, dragElastic, onDragEnd, ...props }, ref) => (
+      div: React.forwardRef(({ children, whileHover, whileTap, initial, animate, exit, transition, drag, dragConstraints, dragElastic, onDragEnd, ...props }: any, ref: any) => (
         <div ref={ref} {...props}>{children}</div>
       )),
     },

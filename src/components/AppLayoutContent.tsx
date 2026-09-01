@@ -39,7 +39,7 @@ export default function AppLayoutContent({ children }: AppLayoutContentProps) {
           </div>
         </div>
       </div>
-      <main id="main-content" className="flex-1 pt-20 pb-20 md:pb-0">
+      <main id="main-content" className="flex-1 min-h-[100vh] pt-20 pb-20 md:pb-0">
         {children}
       </main>
       <Footer />
