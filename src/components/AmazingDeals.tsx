@@ -95,10 +95,11 @@ export default function AmazingDeals() {
     return (
       <section className="container-fluid pt-[16px] pb-6 md:section-padding min-h-[450px]">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center">
-            <div className="animate-pulse">
-              <div className="h-7 bg-amber-950/40 border border-amber-500/10 rounded w-48 mx-auto mb-3"></div>
-              <div className="h-4 bg-amber-950/40 border border-amber-500/10 rounded w-72 mx-auto mb-6"></div>
+          <div className="text-center flex flex-col items-center">
+            <div className="animate-pulse flex flex-col items-center w-full">
+              <div className="h-7 bg-amber-950/40 border border-amber-500/10 rounded w-48 mx-auto mb-2"></div>
+              <div className="h-4 bg-amber-950/40 border border-amber-500/10 rounded w-72 mx-auto mb-3"></div>
+              <div className="h-16 bg-amber-950/40 border border-amber-500/10 rounded-lg w-56 mx-auto mb-6"></div>
             </div>
           </div>
         </div>
@@ -109,20 +110,21 @@ export default function AmazingDeals() {
   // Show loading state
   if (loading) {
     return (
-      <section className="container-fluid pt-[16px] pb-6 md:section-padding min-h-[450px]">
+      <section className="container-fluid pt-[16px] pb-6 md:section-padding min-h-[691px] xs:min-h-[580px] sm:min-h-[690px] lg:min-h-[936px]">
         <div className="max-w-6xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="text-center"
+            className="text-center flex flex-col items-center"
           >
-            <h2 className="text-[24px] xs:text-[28px] md:text-4xl font-extrabold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent mb-3">
+            <h2 className="text-[24px] xs:text-[28px] md:text-4xl font-extrabold bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent mb-1.5 leading-tight">
               🔥 پیشنهادهای ویژه شیخ
             </h2>
-            <p className="text-gray-300 text-[14px] xs:text-[15px] leading-[1.6] max-w-2xl mx-auto mb-6">
+            <p className="text-gray-300 text-[14px] xs:text-[15px] leading-[1.6] max-w-2xl mx-auto mb-3 font-normal">
               در حال بارگذاری پیشنهادهای ویژه...
             </p>
+            <div className="flex flex-col items-center gap-2 mt-2 h-16 w-56 mx-auto animate-pulse bg-amber-950/20 border border-amber-500/10 rounded-lg mb-6"></div>
             <div className="flex justify-center">
               <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-amber-400"></div>
             </div>

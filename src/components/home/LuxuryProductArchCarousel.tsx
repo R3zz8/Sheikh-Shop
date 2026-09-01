@@ -13,7 +13,7 @@ export default async function LuxuryProductArchCarousel() {
   return (
     <section
       aria-label="ویترین تبلیغاتی شیخ"
-      className="w-full py-6 sm:py-10 lg:py-12 px-3 sm:px-6 lg:px-8 relative overflow-hidden"
+      className="w-full py-6 sm:py-10 lg:py-12 px-3 sm:px-6 lg:px-8 relative overflow-hidden min-h-[484px] sm:min-h-[520px] lg:min-h-[775px]"
       dir="rtl"
     >
       <div className="max-w-7xl mx-auto relative z-10">
