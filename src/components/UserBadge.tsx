@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { UserCircle2, User2, Smile, Crown, Shield, Settings, LogOut, Sparkles, Trophy } from 'lucide-react';
+import React, { useState } from 'react';
+import { UserCircle2, User2, Smile, Crown, Shield, Settings, LogOut, Sparkles, Trophy, Package } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -50,6 +50,7 @@ export default function UserBadge({
   const [isOpen, setIsOpen] = useState(false);
   const [xp, setXp] = useState<number | null>(null);
   const [level, setLevel] = useState<number | null>(null);
+  const [orderCount, setOrderCount] = useState<number | null>(null);
 
   // Get display name (username, full name, or email fallback)
   const getDisplayName = () => {
@@ -107,16 +108,15 @@ export default function UserBadge({
   const GenderIcon = getGenderIcon();
   const displayName = getDisplayName();
 
-  // Load gamification summary lazily when dropdown opens
+  // Load gamification summary & order count lazily when dropdown opens
   useEffect(() => {
     let mounted = true;
+    if (!isOpen) return;
+
     const fetchProfile = async () => {
-      if (!isOpen) return;
       try {
         const response = await fetch(`/api/user/profile/${user.id}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch profile');
-        }
+        if (!response.ok) throw new Error('Failed to fetch profile');
         const profile = await response.json();
 
         if (mounted && profile) {
@@ -130,7 +130,22 @@ export default function UserBadge({
         }
       }
     };
+
+    const fetchOrderCount = async () => {
+      try {
+        const countRes = await fetch('/api/user/orders/count');
+        if (countRes.ok) {
+          const countData = await countRes.json();
+          if (mounted) setOrderCount(countData.count ?? 0);
+        }
+      } catch {
+        if (mounted) setOrderCount(null);
+      }
+    };
+
     fetchProfile();
+    fetchOrderCount();
+
     return () => { mounted = false; };
   }, [isOpen, user.id]);
 
@@ -302,6 +317,23 @@ export default function UserBadge({
         </div>
 
         <DropdownMenuSeparator className="bg-amber-200/20" />
+
+        <DropdownMenuItem asChild className="p-0">
+          <Link
+            href="/account/orders"
+            className="flex items-center justify-between w-full p-3 text-amber-200 hover:text-white hover:bg-white/8 transition-colors cursor-pointer"
+          >
+            <div className="flex items-center gap-3">
+              <Package className="w-4 h-4 text-amber-400" />
+              <span className="font-medium">سفارش‌های من</span>
+            </div>
+            {orderCount !== null && orderCount > 0 && (
+              <span className="bg-amber-500/20 text-amber-300 font-bold text-xs px-2 py-0.5 rounded-full border border-amber-500/30">
+                {orderCount}
+              </span>
+            )}
+          </Link>
+        </DropdownMenuItem>
 
         <DropdownMenuItem className="flex items-center gap-3 p-3 text-gray-300 hover:text-white hover:bg-white/8 transition-colors">
           <Settings className="w-4 h-4" />
