@@ -76,7 +76,7 @@ export default function MobileCarousel({
   // Function to get image source with fallback & Cloudinary optimization
   const getImageSource = useCallback((imageUrl: string) => {
     const src = (!imageUrl || failedImages.has(imageUrl)) ? FALLBACK_IMAGE : imageUrl;
-    return getOptimizedCloudinaryUrl(src, { width: 600, quality: 75 });
+    return getOptimizedCloudinaryUrl(src, { width: 480, quality: 70 });
   }, [failedImages]);
 
   // Handle CTA button click
@@ -244,15 +244,13 @@ export default function MobileCarousel({
           <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 z-20">
             <div className="swiper-pagination-custom flex items-center justify-center gap-3 px-5 py-2 bg-neutral-900/90 border border-amber-500/20 backdrop-blur-md rounded-full shadow-2xl">
               {images.map((_, index) => (
-                <motion.button
+                <button
                   key={index}
-                  className={`swiper-pagination-bullet-custom transition-all duration-500 focus:outline-none ${
+                  className={`swiper-pagination-bullet-custom transition-all duration-300 focus:outline-none ${
                     index === activeIndex 
-                      ? 'w-2.5 h-2.5 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full shadow-lg shadow-orange-500/30'
+                      ? 'w-2.5 h-2.5 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full shadow-lg shadow-orange-500/30 scale-110'
                       : 'w-2 h-2 bg-stone-600/60 rounded-full hover:bg-stone-500/80'
                   }`}
-                  whileHover={{ scale: 1.15 }}
-                  whileTap={{ scale: 0.85 }}
                   aria-label={`Go to slide ${index + 1}`}
                   aria-current={index === activeIndex ? 'true' : 'false'}
                 />

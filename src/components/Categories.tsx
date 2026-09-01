@@ -143,6 +143,7 @@ const Categories = React.memo(function Categories({ initialCategories }: Categor
                                         className="object-cover transition-transform duration-700 group-hover:scale-105"
                                         sizes="(max-width: 640px) 128px, (max-width: 1024px) 160px, 192px"
                                         priority={index < 2}
+                                        fetchPriority={index < 2 ? 'high' : 'low'}
                                         loading={index < 2 ? 'eager' : 'lazy'}
                                         quality={70}
                                         placeholder="blur"
