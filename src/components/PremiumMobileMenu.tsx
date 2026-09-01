@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, type ComponentType } from 'react';
+import React, { useState, useEffect, useRef, type ComponentType } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -11,7 +11,8 @@ import {
   ChevronDown,
   Beef,
   Cpu,
-  User
+  User,
+  Package
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -45,7 +46,26 @@ export default function PremiumMobileMenu({
   const { isMobileMenuOpen, setMobileMenuOpen } = useUIContext();
   const [isVisible, setIsVisible] = useState(false);
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
+  const [orderCount, setOrderCount] = useState<number | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    const fetchOrderCount = async () => {
+      if (!isMobileMenuOpen || !user) return;
+      try {
+        const res = await fetch('/api/user/orders/count');
+        if (res.ok) {
+          const data = await res.json();
+          if (mounted) setOrderCount(data.count ?? 0);
+        }
+      } catch {
+        if (mounted) setOrderCount(null);
+      }
+    };
+    fetchOrderCount();
+    return () => { mounted = false; };
+  }, [isMobileMenuOpen, user]);
 
   useEffect(() => {
     if (isMobileMenuOpen) {
@@ -175,6 +195,7 @@ export default function PremiumMobileMenu({
         { name: 'شیخ نوا', href: '/tech-products', icon: Cpu },
       ]
     },
+    { name: 'سفارش‌های من', href: '/account/orders', icon: Package },
     { name: 'درباره ما',    href: '/about-us',  icon: Users },
     { name: 'مقالات',    href: '/article',   icon: FileText },
     { name: 'سوالات متداول',         href: '/faq',       icon: HelpCircle },
@@ -367,6 +388,11 @@ export default function PremiumMobileMenu({
                           </div>
 
                           <div className="flex items-center gap-2">
+                            {item.href === '/account/orders' && orderCount !== null && orderCount > 0 && (
+                              <span className="bg-amber-500/20 text-amber-300 font-bold text-xs px-2.5 py-0.5 rounded-full border border-amber-500/30">
+                                {orderCount}
+                              </span>
+                            )}
                             {active && (
                               <>
                                 <Crown className="w-3.5 h-3.5 text-amber-400" />
@@ -484,18 +510,39 @@ export default function PremiumMobileMenu({
                       </span>
                     </div>
 
-                    <motion.button
-                      onClick={onLogout}
-                      className={cn(
-                        "w-full py-3 px-4 rounded-xl text-sm font-semibold flex items-center justify-center gap-2",
-                        "bg-red-950/20 border border-red-900/30 text-red-300 hover:bg-red-900/20 transition-all duration-300"
-                      )}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <LogOut className="w-4 h-4" />
-                      خروج از حساب کاربری
-                    </motion.button>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Link href="/account/orders" onClick={() => setMobileMenuOpen(false)} className="w-full">
+                        <motion.button
+                          className={cn(
+                            "w-full py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5",
+                            "bg-amber-500/15 border border-amber-500/30 text-amber-200 hover:bg-amber-500/25 transition-all duration-300"
+                          )}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          <Package className="w-3.5 h-3.5 text-amber-400" />
+                          <span>سفارش‌های من</span>
+                          {orderCount !== null && orderCount > 0 && (
+                            <span className="bg-amber-400 text-black font-extrabold text-[10px] px-1.5 py-0.2 rounded-full">
+                              {orderCount}
+                            </span>
+                          )}
+                        </motion.button>
+                      </Link>
+
+                      <motion.button
+                        onClick={onLogout}
+                        className={cn(
+                          "w-full py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5",
+                          "bg-red-950/20 border border-red-900/30 text-red-300 hover:bg-red-900/20 transition-all duration-300"
+                        )}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <LogOut className="w-3.5 h-3.5" />
+                        <span>خروج</span>
+                      </motion.button>
+                    </div>
                   </div>
                 )}
 
