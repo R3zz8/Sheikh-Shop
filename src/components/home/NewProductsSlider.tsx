@@ -19,13 +19,13 @@ interface NewProductsSliderProps {
   products: ProductsWithImages[] | any[];
 }
 
-function NewProductCard({ product }: { product: ProductsWithImages | any }) {
+function NewProductCard({ product, isFirst }: { product: ProductsWithImages | any; isFirst?: boolean }) {
   const rawImageUrl =
     product.images && product.images.length > 0
       ? product.images[0]?.secureUrl || product.images[0]?.image || '/noImage.jpg'
       : '/noImage.jpg';
 
-  const imageUrl = getOptimizedCloudinaryUrl(rawImageUrl, { width: 400, quality: 75 });
+  const imageUrl = getOptimizedCloudinaryUrl(rawImageUrl, { width: 320, quality: 70 });
 
   const pricing = useMemo(() => resolveProductPrice(product, null), [product]);
 
@@ -46,10 +46,12 @@ function NewProductCard({ product }: { product: ProductsWithImages | any }) {
               src={imageUrl}
               alt={product.name}
               fill
-              sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 20vw"
+              sizes="(max-width: 640px) 160px, (max-width: 1024px) 240px, 320px"
               className="object-contain p-1 transition-transform duration-500 group-hover/card:scale-105"
-              loading="lazy"
-              quality={75}
+              priority={isFirst}
+              fetchPriority={isFirst ? 'high' : 'low'}
+              loading={isFirst ? 'eager' : 'lazy'}
+              quality={70}
             />
           </div>
 
@@ -195,9 +197,9 @@ export default function NewProductsSlider({ products }: NewProductsSliderProps) 
               }}
               className="new-products-swiper !py-0.5"
             >
-              {products.map((product) => (
+              {products.map((product, index) => (
                 <SwiperSlide key={product.id}>
-                  <NewProductCard product={product} />
+                  <NewProductCard product={product} isFirst={index === 0} />
                 </SwiperSlide>
               ))}
             </Swiper>

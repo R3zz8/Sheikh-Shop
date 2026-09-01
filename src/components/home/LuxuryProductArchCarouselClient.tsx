@@ -17,7 +17,7 @@ interface LuxuryProductArchCarouselClientProps {
 
 function ArchSlideCard({ slide }: { slide: MarketingShowcaseSlideData }) {
   const rawImageUrl = slide.imageUrl || '/noImage.jpg';
-  const imageUrl = getOptimizedCloudinaryUrl(rawImageUrl, { width: 600, quality: 75 });
+  const imageUrl = getOptimizedCloudinaryUrl(rawImageUrl, { width: 384, quality: 70 });
   const targetProductUrl = `/products/${slide.product?.slug || slide.product?.id || slide.productId}`;
 
   return (
