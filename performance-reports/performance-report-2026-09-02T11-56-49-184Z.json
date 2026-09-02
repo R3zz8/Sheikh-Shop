@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-09-02T11:56:49.180Z",
+  "webVitals": {
+    "FCP": {
+      "value": 1200,
+      "rating": "good",
+      "target": 1800
+    },
+    "LCP": {
+      "value": 2800,
+      "rating": "needs-improvement",
+      "target": 2500
+    },
+    "CLS": {
+      "value": 0.08,
+      "rating": "good",
+      "target": 0.1
+    },
+    "FID": {
+      "value": 85,
+      "rating": "good",
+      "target": 100
+    },
+    "TTFB": {
+      "value": 650,
+      "rating": "good",
+      "target": 800
+    }
+  },
+  "cache": {
+    "hitRate": 78.5,
+    "totalRequests": 1250,
+    "cacheHits": 982,
+    "cacheMisses": 268,
+    "memoryUsage": "45.2MB",
+    "connectedClients": 3,
+    "uptime": 86400
+  },
+  "database": {
+    "avgQueryTime": 125,
+    "slowQueries": 2,
+    "totalQueries": 450,
+    "dbSize": "2.3MB",
+    "entityCounts": {
+      "products": 156,
+      "categories": 12,
+      "users": 89
+    }
+  },
+  "system": {
+    "platform": "linux",
+    "nodeVersion": "v22.22.1",
+    "memoryUsage": {
+      "rss": "47.48MB",
+      "heapUsed": "4.24MB",
+      "heapTotal": "5.35MB",
+      "external": "1.53MB"
+    },
+    "uptime": 0.033546346,
+    "pid": 7038
+  },
+  "recommendations": [
+    {
+      "category": "Web Vitals",
+      "priority": "high",
+      "issue": "LCP is above target (2.8s > 2.5s)",
+      "action": "Optimize image loading and reduce render-blocking resources",
+      "impact": "Improve user perceived performance"
+    },
+    {
+      "category": "Cache",
+      "priority": "medium",
+      "issue": "Cache hit rate is below 80%",
+      "action": "Review cache invalidation strategy and TTL settings",
+      "impact": "Reduce database load and improve response times"
+    },
+    {
+      "category": "Database",
+      "priority": "medium",
+      "issue": "Average query time is above 100ms",
+      "action": "Review database indexes and query optimization",
+      "impact": "Improve API response times"
+    }
+  ]
+}
