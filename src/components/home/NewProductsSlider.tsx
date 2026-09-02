@@ -48,9 +48,9 @@ function NewProductCard({ product, isFirst }: { product: ProductsWithImages | an
               fill
               sizes="(max-width: 640px) 160px, (max-width: 1024px) 240px, 320px"
               className="object-contain p-1 transition-transform duration-500 group-hover/card:scale-105"
-              priority={isFirst}
-              fetchPriority={isFirst ? 'high' : 'low'}
-              loading={isFirst ? 'eager' : 'lazy'}
+              priority={false}
+              fetchPriority="low"
+              loading="lazy"
               quality={70}
             />
           </div>

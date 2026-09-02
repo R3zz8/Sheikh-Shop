@@ -100,7 +100,11 @@ let nextConfig: NextConfig = {
       '@radix-ui/react-tooltip',
       '@tanstack/react-query',
       '@tanstack/react-table',
-      'framer-motion'
+      'framer-motion',
+      'three',
+      '@react-three/fiber',
+      '@react-three/drei',
+      'swiper'
     ],
   },
 
