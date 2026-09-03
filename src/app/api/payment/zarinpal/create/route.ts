@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import { createZarinPalPaymentRequest, getZarinPalStartPayUrl } from "@/lib/payment/zarinpal";
 import { getServerUser } from "@/lib/auth/server-auth";
 import { calculateCartShipping, calculateSubtotal } from "@/lib/shipping";
+import { validateProductPurchasable } from "@/lib/inventory";
 
 export async function POST(req: NextRequest) {
   try {
@@ -112,6 +113,29 @@ export async function POST(req: NextRequest) {
         { success: false, error: "سبد خرید شما خالی است" },
         { status: 400 }
       );
+    }
+
+    // Server-side inventory validation prior to order/payment creation
+    for (const item of cartItems) {
+      const dbProduct = await prisma.product.findUnique({
+        where: { id: item.productId },
+        select: { quantity: true, status: true, inventoryStatus: true, lowStockThreshold: true, name: true }
+      });
+
+      if (!dbProduct) {
+        return NextResponse.json(
+          { success: false, error: `محصول ${item.product.name} یافت نشد.` },
+          { status: 400 }
+        );
+      }
+
+      const validation = validateProductPurchasable(dbProduct, item.quantity);
+      if (!validation.purchasable) {
+        return NextResponse.json(
+          { success: false, error: `محصول ${dbProduct.name}: ${validation.reason || 'امکان خرید این محصول وجود ندارد.'}` },
+          { status: 400 }
+        );
+      }
     }
 
     // Calculate authoritative subtotal and dynamic shipping cost

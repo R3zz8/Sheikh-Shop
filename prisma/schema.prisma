@@ -53,6 +53,10 @@ model Product {
   shippingDescription String?
   allowFreeShipping   Boolean?        @default(false)
   shippingPriority    String?
+  inventoryStatus               InventoryStatus               @default(AVAILABLE)
+  lowStockThreshold             Int                           @default(3)
+  allowBackInStockNotification  Boolean                       @default(true)
+  backInStockSubscriptions      BackInStockSubscription[]
   cartItems      CartItem[]
   discounts      Discount[]
   images         Image[]
@@ -773,6 +777,41 @@ enum UserRole {
   SUPERADMIN
   SYSTEM
   AUTHOR
+}
+
+enum InventoryStatus {
+  AVAILABLE
+  LOW_STOCK
+  OUT_OF_STOCK
+  COMING_SOON
+  DISCONTINUED
+}
+
+enum BackInStockSubscriptionStatus {
+  ACTIVE
+  NOTIFIED
+  CANCELLED
+}
+
+model BackInStockSubscription {
+  id          String                        @id @default(cuid())
+  productId   String
+  userId      String?
+  email       String?                       @db.VarChar(255)
+  phone       String?                       @db.VarChar(20)
+  status      BackInStockSubscriptionStatus @default(ACTIVE)
+  notifiedAt  DateTime?
+  createdAt   DateTime                      @default(now())
+  updatedAt   DateTime                      @updatedAt
+  product     Product                       @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@index([userId])
+  @@index([email])
+  @@index([phone])
+  @@index([status])
+  @@index([createdAt])
+  @@index([productId, status])
 }
 
 enum ProductCategory {

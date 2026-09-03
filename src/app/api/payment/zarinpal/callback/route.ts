@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { verifyZarinPalPayment } from "@/lib/payment/zarinpal";
+import { atomicDecrementProductStock } from "@/lib/inventory";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -129,21 +130,11 @@ export async function GET(req: Request) {
           },
         });
 
-        // 3. Decrement Inventory safely
+        // 3. Atomic stock decrement and verification
         for (const item of order.items) {
-          try {
-            const product = await tx.product.findUnique({
-              where: { id: item.productId },
-            });
-            if (product) {
-              const newQty = Math.max(0, product.quantity - item.quantity);
-              await tx.product.update({
-                where: { id: item.productId },
-                data: { quantity: newQty },
-              });
-            }
-          } catch (invErr) {
-            console.error(`[Inventory Decrement Error] Product ${item.productId}:`, invErr);
+          const res = await atomicDecrementProductStock(item.productId, item.quantity);
+          if (!res.success) {
+            throw new Error(`موجودی کافی برای کالا ${item.productName || item.productId} جهت کسر وجود ندارد.`);
           }
         }
 

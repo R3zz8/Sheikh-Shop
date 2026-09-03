@@ -145,6 +145,9 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
       basePrice: product?.basePrice || 0,
       baseUnitId: product?.baseUnitId || '',
       quantity: product?.quantity || 0,
+      inventoryStatus: (product as any)?.inventoryStatus || 'AVAILABLE',
+      lowStockThreshold: (product as any)?.lowStockThreshold || 3,
+      allowBackInStockNotification: (product as any)?.allowBackInStockNotification ?? true,
       status: product?.status || ProductStatus.ACTIVE,
       isNew: product?.isNew ?? false,
       isBestSeller: product?.isBestSeller ?? false,
@@ -386,6 +389,9 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
       formData.append('price', data.basePrice.toString());
       formData.append('baseUnitId', data.baseUnitId || '');
       formData.append('quantity', data.quantity.toString());
+      formData.append('inventoryStatus', data.inventoryStatus || 'AVAILABLE');
+      formData.append('lowStockThreshold', (data.lowStockThreshold || 3).toString());
+      formData.append('allowBackInStockNotification', data.allowBackInStockNotification ? 'true' : 'false');
       formData.append('status', data.status);
 
       // Badges
@@ -1131,23 +1137,57 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
                   </div>
                 </CardHeader>
                 <CardContent className="p-0 space-y-6">
-                  {/* Legacy Compatibility fields */}
-                  <div className="grid grid-cols-2 gap-4 bg-stone-950/40 p-4 rounded-2xl border border-stone-900">
-                    <div className="space-y-2">
-                      <Label className="text-xs font-bold text-stone-300">موجودی کلی پایه کالا (Legacy)</Label>
-                      <Input
-                        {...register('quantity', { valueAsNumber: true })}
-                        type="number"
-                        placeholder="0"
-                        className="bg-stone-950 border-stone-850 h-11 rounded-xl text-left"
-                      />
+                  {/* Inventory Controls */}
+                  <div className="space-y-4 bg-stone-950/40 p-5 rounded-2xl border border-stone-900">
+                    <h4 className="text-xs font-black text-amber-400">مدیریت موجودی هوشمند و وضعیت انبار</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label className="text-xs font-bold text-stone-300">موجودی انبار (تعداد)</Label>
+                        <Input
+                          {...register('quantity', { valueAsNumber: true })}
+                          type="number"
+                          placeholder="0"
+                          className="bg-stone-950 border-stone-850 h-11 rounded-xl text-left font-bold"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs font-bold text-stone-300">آستانه هشدار کمبود موجودی</Label>
+                        <Input
+                          {...register('lowStockThreshold', { valueAsNumber: true })}
+                          type="number"
+                          placeholder="3"
+                          className="bg-stone-950 border-stone-850 h-11 rounded-xl text-left"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs font-bold text-stone-300">وضعیت موجودی کالا</Label>
+                        <Select
+                          onValueChange={(val) => setValue('inventoryStatus', val)}
+                          value={watch('inventoryStatus') || 'AVAILABLE'}
+                        >
+                          <SelectTrigger className="bg-stone-950 border-stone-850 h-11 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="bg-stone-950 border-stone-850 text-stone-200 text-xs">
+                            <SelectItem value="AVAILABLE">🟢 موجود (AVAILABLE)</SelectItem>
+                            <SelectItem value="LOW_STOCK">🟡 رو به اتمام (LOW_STOCK)</SelectItem>
+                            <SelectItem value="OUT_OF_STOCK">🔴 ناموجود (OUT_OF_STOCK)</SelectItem>
+                            <SelectItem value="COMING_SOON">🔵 به زودی (COMING_SOON)</SelectItem>
+                            <SelectItem value="DISCONTINUED">⚪ متوقف شده (DISCONTINUED)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs font-bold text-stone-300">کد محصول (SKU / Barcode)</Label>
-                      <Input
-                        {...register('sku')}
-                        placeholder="SKU-SHEIKH-12"
-                        className="bg-stone-950 border-stone-850 h-11 rounded-xl text-left"
+
+                    <div className="flex items-center justify-between p-3.5 bg-stone-950 border border-stone-900 rounded-xl mt-3">
+                      <div className="space-y-0.5">
+                        <Label className="text-xs font-bold text-stone-300">امکان ثبت «موجود شد خبرم کن»</Label>
+                        <p className="text-[10px] text-stone-500">مشتریان در صورت اتمام موجودی بتوانند درخواست اطلاع‌رسانی ثبت کنند</p>
+                      </div>
+                      <input
+                        type="checkbox"
+                        {...register('allowBackInStockNotification')}
+                        className="rounded bg-stone-950 border-stone-800 text-amber-500 focus:ring-0 w-4.5 h-4.5"
                       />
                     </div>
                   </div>
