@@ -24,6 +24,7 @@ import ReviewSubmissionCard from './ReviewSubmissionCard';
 import DynamicReviewSection from './DynamicReviewSection';
 import ImageGallery from './ImageGallery';
 import LuxuryFeatureChip from './LuxuryFeatureChip';
+import OrderConfirmationModal from '@/components/product/OrderConfirmationModal';
 
 // Imports from LuxuryEffects
 import {
@@ -68,6 +69,10 @@ export default function ProductDetailPage({
 
   // Back-in-stock modal state
   const [isBackInStockOpen, setIsBackInStockOpen] = useState(false);
+
+  // Pre-payment order confirmation concierge state
+  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
+  const [pendingPurchaseIntent, setPendingPurchaseIntent] = useState<'add-to-cart' | 'instant-purchase' | null>(null);
 
   // Sticky Buy Bar State for Mobile
   const [showStickyBar, setShowStickyBar] = useState(false);
@@ -176,12 +181,8 @@ export default function ProductDetailPage({
 
   const anySpecsAvailable = hasSpecs || hasDimensions || hasMaterials || hasWarranty || hasWeight || hasOrigin || hasColor || hasScent || hasFlavor;
 
-  // Handle addition to cart
-  const handleAddToCart = async () => {
-    if (currentStock === 0) {
-      toast.error('این کالا در حال حاضر موجود نیست.');
-      return;
-    }
+  // Execute add to cart
+  const executeAddToCart = async () => {
     try {
       await addToCartMutation.mutateAsync({
         productId: product.id,
@@ -194,12 +195,8 @@ export default function ProductDetailPage({
     }
   };
 
-  // Immediate purchase bypass
-  const handleInstantPurchase = async () => {
-    if (currentStock === 0) {
-      toast.error('این کالا در حال حاضر موجود نیست.');
-      return;
-    }
+  // Execute instant purchase
+  const executeInstantPurchase = async () => {
     try {
       await addToCartMutation.mutateAsync({
         productId: product.id,
@@ -210,6 +207,34 @@ export default function ProductDetailPage({
     } catch (err) {
       console.error(err);
     }
+  };
+
+  // Handle addition to cart with confirmation check
+  const handleAddToCart = async () => {
+    if (currentStock === 0) {
+      toast.error('این کالا در حال حاضر موجود نیست.');
+      return;
+    }
+    if ((product as any).requiresOrderConfirmation) {
+      setPendingPurchaseIntent('add-to-cart');
+      setIsConfirmationModalOpen(true);
+      return;
+    }
+    await executeAddToCart();
+  };
+
+  // Immediate purchase with confirmation check
+  const handleInstantPurchase = async () => {
+    if (currentStock === 0) {
+      toast.error('این کالا در حال حاضر موجود نیست.');
+      return;
+    }
+    if ((product as any).requiresOrderConfirmation) {
+      setPendingPurchaseIntent('instant-purchase');
+      setIsConfirmationModalOpen(true);
+      return;
+    }
+    await executeInstantPurchase();
   };
 
   // Format breadcrumbs category title
@@ -1480,6 +1505,27 @@ export default function ProductDetailPage({
         onClose={() => setIsBackInStockOpen(false)}
         productId={product.id}
         productName={product.name}
+      />
+
+      {/* Pre-Payment Order Confirmation Modal */}
+      <OrderConfirmationModal
+        isOpen={isConfirmationModalOpen}
+        onClose={() => {
+          setIsConfirmationModalOpen(false);
+          setPendingPurchaseIntent(null);
+        }}
+        onConfirmAndProceed={() => {
+          setIsConfirmationModalOpen(false);
+          if (pendingPurchaseIntent === 'add-to-cart') {
+            executeAddToCart();
+          } else if (pendingPurchaseIntent === 'instant-purchase') {
+            executeInstantPurchase();
+          }
+          setPendingPurchaseIntent(null);
+        }}
+        product={product}
+        selectedQuantity={selectedQuantity}
+        currentPrice={pricing.price}
       />
     </div>
   );
