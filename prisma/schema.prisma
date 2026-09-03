@@ -56,6 +56,7 @@ model Product {
   inventoryStatus               InventoryStatus               @default(AVAILABLE)
   lowStockThreshold             Int                           @default(3)
   allowBackInStockNotification  Boolean                       @default(true)
+  requiresOrderConfirmation     Boolean                       @default(false)
   backInStockSubscriptions      BackInStockSubscription[]
   cartItems      CartItem[]
   discounts      Discount[]

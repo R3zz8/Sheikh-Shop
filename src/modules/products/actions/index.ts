@@ -110,6 +110,7 @@ const productSchema = z.object({
   shippingDescription: z.string().optional().nullable(),
   allowFreeShipping: z.boolean().optional().default(false),
   shippingPriority: z.string().optional().nullable(),
+  requiresOrderConfirmation: z.boolean().optional().default(false),
 });
 
 // Bulk operations schema
@@ -345,6 +346,7 @@ export const upsertProduct = async (
       shippingDescription,
       allowFreeShipping,
       shippingPriority,
+      requiresOrderConfirmation: formData.get('requiresOrderConfirmation') === 'true' || formData.get('requiresOrderConfirmation') === 'on',
     };
 
     // Map and normalize incoming category names/enums

@@ -10,6 +10,7 @@ import { useUserBehavior } from '@/hooks/useUserBehavior';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatPrice } from '@/lib/currency';
 import UpsellSuggestions from './UpsellSuggestions';
+import OrderConfirmationModal from './OrderConfirmationModal';
 
 interface AddToCartButtonProps {
     product: ProductsWithImages;
@@ -27,8 +28,9 @@ export default function AddToCartButton({
     const { addToCartMutation } = useCart();
     const { trackAddToCart } = useUserBehavior();
     const [showSuccess, setShowSuccess] = useState(false);
+    const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
 
-    const handleAddToCart = async () => {
+    const executeAddToCart = async () => {
         try {
             await addToCartMutation.mutateAsync({
                 productId: product.id,
@@ -48,14 +50,16 @@ export default function AddToCartButton({
             setShowSuccess(true);
             setTimeout(() => setShowSuccess(false), 2000);
         } catch (error) {
-            // Error handling is done in the mutation
             console.error('Failed to add to cart:', error);
-            
-            // Additional 401 handling - prompt user to log in
-            if (error instanceof Error && (error.message.includes('401') || error.message.includes('Unauthorized'))) {
-                // Mutation will handle redirect, but we can add additional UI feedback here if needed
-            }
         }
+    };
+
+    const handleAddToCart = () => {
+        if ((product as any).requiresOrderConfirmation) {
+            setIsConfirmationOpen(true);
+            return;
+        }
+        executeAddToCart();
     };
 
     // Determine if button should be disabled
@@ -193,6 +197,19 @@ export default function AddToCartButton({
                     </p>
                 </div>
             )}
+
+            {/* Pre-Payment Order Confirmation Modal */}
+            <OrderConfirmationModal
+                isOpen={isConfirmationOpen}
+                onClose={() => setIsConfirmationOpen(false)}
+                onConfirmAndProceed={() => {
+                    setIsConfirmationOpen(false);
+                    executeAddToCart();
+                }}
+                product={product}
+                selectedQuantity={selectedQuantity}
+                currentPrice={pricing.price}
+            />
         </div>
     );
 } 

@@ -148,6 +148,7 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
       inventoryStatus: (product as any)?.inventoryStatus || 'AVAILABLE',
       lowStockThreshold: (product as any)?.lowStockThreshold || 3,
       allowBackInStockNotification: (product as any)?.allowBackInStockNotification ?? true,
+      requiresOrderConfirmation: (product as any)?.requiresOrderConfirmation ?? false,
       status: product?.status || ProductStatus.ACTIVE,
       isNew: product?.isNew ?? false,
       isBestSeller: product?.isBestSeller ?? false,
@@ -392,6 +393,7 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
       formData.append('inventoryStatus', data.inventoryStatus || 'AVAILABLE');
       formData.append('lowStockThreshold', (data.lowStockThreshold || 3).toString());
       formData.append('allowBackInStockNotification', data.allowBackInStockNotification ? 'true' : 'false');
+      formData.append('requiresOrderConfirmation', data.requiresOrderConfirmation ? 'true' : 'false');
       formData.append('status', data.status);
 
       // Badges
@@ -1188,6 +1190,18 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
                         type="checkbox"
                         {...register('allowBackInStockNotification')}
                         className="rounded bg-stone-950 border-stone-800 text-amber-500 focus:ring-0 w-4.5 h-4.5"
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between p-3.5 bg-amber-500/10 border border-amber-500/25 rounded-xl mt-3">
+                      <div className="space-y-0.5">
+                        <Label className="text-xs font-black text-amber-300">نیاز به هماهنگی قبل از سفارش</Label>
+                        <p className="text-[10px] text-stone-400">پیش از پرداخت مشتری، مودال اختصاصی هماهنگی قیمت و موجودی (Concierge) نمایش داده شود</p>
+                      </div>
+                      <input
+                        type="checkbox"
+                        {...register('requiresOrderConfirmation')}
+                        className="rounded bg-stone-950 border-amber-500 text-amber-500 focus:ring-0 w-4.5 h-4.5 cursor-pointer"
                       />
                     </div>
                   </div>
