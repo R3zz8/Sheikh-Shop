@@ -530,6 +530,7 @@ let mockOrderItems: any[] = [];
 let mockTransactions: any[] = [];
 let mockReferrals: any[] = [];
 let mockAffiliates: any[] = [];
+let mockBackInStockSubscriptions: any[] = [];
 
 let mockWebDesignShowcase: any[] = [
   {
@@ -1485,6 +1486,7 @@ const createMockPrisma = () => {
       if (prop === 'luxuryUnboxingConfig') return makeMockModelWithWrites('luxuryUnboxingConfig', mockLuxuryUnboxingConfig);
       if (prop === 'luxuryUnboxingAssets') return makeMockModelWithWrites('luxuryUnboxingAssets', mockLuxuryUnboxingAssets);
       if (prop === 'luxuryUnboxingSettings') return makeMockModelWithWrites('luxuryUnboxingSettings', mockLuxuryUnboxingSettings);
+      if (prop === 'backInStockSubscription') return makeMockModelWithWrites('backInStockSubscription', mockBackInStockSubscriptions);
       if (prop === 'webService') return makeMockModelWithWrites('webService', mockWebServices);
       if (prop === 'webServicePackage') return makeMockModelWithWrites('webServicePackage', mockWebServicePackages);
       if (prop === 'webPortfolio') return makeMockModelWithWrites('webPortfolio', mockWebPortfolios);

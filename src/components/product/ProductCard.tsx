@@ -4,6 +4,7 @@ import Link from 'next/link';
 import type { ProductsWithImages, ProductUnit } from '@/types';
 import { resolveProductPrice } from '@/lib/product-pricing';
 import { formatPrice } from '@/lib/currency';
+import { getEffectiveInventoryStatus } from '@/lib/inventory';
 import DiscountBadge from '@/components/ui/DiscountBadge';
 import CompactProductUnitSelector from '@/components/ui/CompactProductUnitSelector';
 import { getOrGenerateExcerpt, stripHtmlTags } from '@/lib/seo/sanitize';
@@ -55,6 +56,15 @@ export default function ProductCard({
   const useProductUnits = availableProductUnits.length > 0;
   const pricing = resolveProductPrice(product, selectedProductUnit);
 
+  const currentStock = selectedProductUnit ? selectedProductUnit.stock : product.quantity;
+  const effectiveStatus = getEffectiveInventoryStatus({
+    quantity: currentStock,
+    inventoryStatus: product.inventoryStatus,
+    lowStockThreshold: product.lowStockThreshold,
+  });
+  const isOutOfStock = effectiveStatus === 'OUT_OF_STOCK' || currentStock <= 0;
+  const isLowStock = effectiveStatus === 'LOW_STOCK';
+
   const cleanExcerpt = useMemo(() => {
     const rawExcerpt = getOrGenerateExcerpt(
       product.description || null,
@@ -94,13 +104,17 @@ export default function ProductCard({
             quality={75}
           />
 
-          {/* New Badge */}
-          {product.isNew && (
+          {/* Out of Stock / Status Badge */}
+          {isOutOfStock ? (
+            <div className="absolute top-3 right-3 z-10 flex items-center gap-1 bg-stone-900/90 text-red-400 font-bold text-[11px] px-2.5 py-1 rounded-full shadow-lg border border-red-500/30 font-vazirmatn">
+              <span>ناموجود</span>
+            </div>
+          ) : product.isNew ? (
             <div className="absolute top-3 right-3 z-10 flex items-center gap-1 bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 text-stone-950 font-black text-[11px] px-2.5 py-1 rounded-full shadow-lg border border-amber-200/30 font-vazirmatn">
               <Sparkles className="w-3 h-3" />
               <span>جدید</span>
             </div>
-          )}
+          ) : null}
 
           {/* Discount Badge */}
           {pricing.hasDiscount && (
@@ -193,17 +207,15 @@ export default function ProductCard({
               )}
             </div>
 
-            {useProductUnits && selectedProductUnit && (
-              <div className="text-xs text-stone-400 font-vazirmatn">
-                {selectedProductUnit.stock === 0 ? (
-                  <span className="text-rose-500">ناموجود</span>
-                ) : selectedProductUnit.stock <= 5 ? (
-                  <span className="text-amber-400">موجودی محدود ({selectedProductUnit.stock} عدد)</span>
-                ) : (
-                  <span>{selectedProductUnit.stock} عدد موجود در انبار</span>
-                )}
-              </div>
-            )}
+            <div className="text-xs font-vazirmatn">
+              {isOutOfStock ? (
+                <span className="text-red-400 font-semibold">ناموجود ✦ موجود شد خبرم کن</span>
+              ) : isLowStock ? (
+                <span className="text-amber-400 font-medium">تنها {currentStock} عدد باقی مانده</span>
+              ) : (
+                <span className="text-emerald-400/90">آماده ارسال</span>
+              )}
+            </div>
           </div>
         </div>
       </Link>

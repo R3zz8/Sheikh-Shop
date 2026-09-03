@@ -6,8 +6,9 @@ import {
   Star, ShoppingBag, Truck, ShieldCheck, CreditCard, Headphones,
   Sparkles, Gift, ChevronDown, ChevronRight, ChevronLeft,
   Minus, Plus, Heart, BarChart3, HelpCircle, MessageSquare,
-  Share2, Eye, ShieldAlert, BadgePercent, CheckCircle2, ShoppingCart
+  Share2, Eye, ShieldAlert, BadgePercent, CheckCircle2, ShoppingCart, Bell
 } from 'lucide-react';
+import { BackInStockModal } from '@/components/product/BackInStockModal';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { ProductsWithImages, ProductUnit } from '@/types';
@@ -64,6 +65,9 @@ export default function ProductDetailPage({
   // Favorite & Compare & Share interaction states
   const [isFavorited, setIsFavorited] = useState(false);
   const [isCompared, setIsCompared] = useState(false);
+
+  // Back-in-stock modal state
+  const [isBackInStockOpen, setIsBackInStockOpen] = useState(false);
 
   // Sticky Buy Bar State for Mobile
   const [showStickyBar, setShowStickyBar] = useState(false);
@@ -152,6 +156,10 @@ export default function ProductDetailPage({
   // Pricing calculation
   const pricing = resolveProductPrice(product, selectedProductUnit, selectedQuantity);
   const currentStock = selectedProductUnit ? selectedProductUnit.stock : product.quantity;
+
+  const lowStockThreshold = (product as any).lowStockThreshold || 3;
+  const isOutOfStock = currentStock <= 0 || (product as any).inventoryStatus === 'OUT_OF_STOCK' || (product as any).inventoryStatus === 'DISCONTINUED';
+  const isLowStock = !isOutOfStock && currentStock <= lowStockThreshold;
 
   // Dynamic values existence flags
   const hasFeatures = product.features && product.features.length > 0;
@@ -444,9 +452,9 @@ export default function ProductDetailPage({
                       )}
 
                       <span className="flex items-center gap-2 text-xs">
-                        <span className={`w-2.5 h-2.5 rounded-full ${currentStock > 0 ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
-                        <span className={currentStock > 0 ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold'}>
-                          {currentStock > 0 ? `آماده ارسال (موجود در انبار شیخ)` : 'ناموجود'}
+                        <span className={`w-2.5 h-2.5 rounded-full ${!isOutOfStock ? (isLowStock ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500 animate-pulse') : 'bg-rose-500'}`} />
+                        <span className={!isOutOfStock ? (isLowStock ? 'text-amber-400 font-bold' : 'text-emerald-400 font-bold') : 'text-rose-400 font-bold'}>
+                          {isOutOfStock ? 'در حال حاضر ناموجود است' : isLowStock ? `تنها ${currentStock} عدد باقی مانده` : 'آماده ارسال (موجود در انبار شیخ)'}
                         </span>
                       </span>
                     </div>
@@ -591,51 +599,70 @@ export default function ProductDetailPage({
                   </div>
 
                   {/* CTAs upgraded to Luxury design */}
-                  <div className="flex flex-col sm:flex-row items-stretch gap-4 relative z-10">
-
-                    {/* Quantity adjuster */}
-                    <div className="flex items-center justify-between sm:justify-start gap-4 bg-[#1C120C] border border-[#5D4037]/30 rounded-2xl p-2 shrink-0">
-                      <button
-                        onClick={() => setSelectedQuantity((prev) => Math.max(1, prev - 1))}
-                        disabled={selectedQuantity <= 1}
-                        className="w-11 h-11 rounded-xl bg-[#2A1A12] hover:bg-[#3E2723] border border-amber-500/15 flex items-center justify-center text-stone-300 transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
-                        aria-label="کاهش تعداد"
-                      >
-                        <Minus className="w-4 h-4" />
-                      </button>
-                      <span className="text-base font-black text-center w-10 text-stone-100">{selectedQuantity}</span>
-                      <button
-                        onClick={() => setSelectedQuantity((prev) => Math.min(currentStock, prev + 1))}
-                        disabled={selectedQuantity >= currentStock}
-                        className="w-11 h-11 rounded-xl bg-[#2A1A12] hover:bg-[#3E2723] border border-amber-500/15 flex items-center justify-center text-stone-300 transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
-                        aria-label="افزایش تعداد"
-                      >
-                        <Plus className="w-4 h-4" />
-                      </button>
+                  {isOutOfStock ? (
+                    <div className="space-y-3 relative z-10">
+                      <p className="text-xs text-stone-300 text-center leading-relaxed">
+                        این محصول در حال حاضر ناموجود است. به محض موجود شدن این محصول، به شما اطلاع می‌دهیم.
+                      </p>
+                      {(product as any).allowBackInStockNotification !== false && (
+                        <LuxuryButton
+                          onClick={() => setIsBackInStockOpen(true)}
+                          variant="gold"
+                          className="w-full py-4 text-sm"
+                        >
+                          <Bell className="w-5 h-5 text-stone-950" />
+                          <span>🔔 موجود شد خبرم کن</span>
+                        </LuxuryButton>
+                      )}
                     </div>
+                  ) : (
+                    <>
+                      <div className="flex flex-col sm:flex-row items-stretch gap-4 relative z-10">
+                        {/* Quantity adjuster */}
+                        <div className="flex items-center justify-between sm:justify-start gap-4 bg-[#1C120C] border border-[#5D4037]/30 rounded-2xl p-2 shrink-0">
+                          <button
+                            onClick={() => setSelectedQuantity((prev) => Math.max(1, prev - 1))}
+                            disabled={selectedQuantity <= 1}
+                            className="w-11 h-11 rounded-xl bg-[#2A1A12] hover:bg-[#3E2723] border border-amber-500/15 flex items-center justify-center text-stone-300 transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
+                            aria-label="کاهش تعداد"
+                          >
+                            <Minus className="w-4 h-4" />
+                          </button>
+                          <span className="text-base font-black text-center w-10 text-stone-100">{selectedQuantity}</span>
+                          <button
+                            onClick={() => setSelectedQuantity((prev) => Math.min(currentStock, prev + 1))}
+                            disabled={selectedQuantity >= currentStock}
+                            className="w-11 h-11 rounded-xl bg-[#2A1A12] hover:bg-[#3E2723] border border-amber-500/15 flex items-center justify-center text-stone-300 transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
+                            aria-label="افزایش تعداد"
+                          >
+                            <Plus className="w-4 h-4" />
+                          </button>
+                        </div>
 
-                    {/* Primary Add To Cart with luxurious gradient animation */}
-                    <LuxuryButton
-                      onClick={handleAddToCart}
-                      disabled={currentStock === 0 || addToCartMutation.isPending}
-                      isLoading={addToCartMutation.isPending}
-                      variant="gold"
-                      className="flex-1 py-4 text-sm"
-                    >
-                      <ShoppingBag className="w-5 h-5 text-stone-950" />
-                      <span>افزودن به سبد خرید</span>
-                    </LuxuryButton>
-                  </div>
+                        {/* Primary Add To Cart with luxurious gradient animation */}
+                        <LuxuryButton
+                          onClick={handleAddToCart}
+                          disabled={addToCartMutation.isPending}
+                          isLoading={addToCartMutation.isPending}
+                          variant="gold"
+                          className="flex-1 py-4 text-sm"
+                        >
+                          <ShoppingBag className="w-5 h-5 text-stone-950" />
+                          <span>افزودن به سبد خرید</span>
+                        </LuxuryButton>
+                      </div>
 
-                  {/* Instant Purchase upgraded to Luxury button */}
-                  <LuxuryButton
-                    onClick={handleInstantPurchase}
-                    disabled={currentStock === 0 || addToCartMutation.isPending}
-                    variant="dark"
-                    className="w-full py-3.5 text-xs relative z-10"
-                  >
-                    <span>⚡ خرید فوری و تسویه سریع حساب</span>
-                  </LuxuryButton>
+                      {/* Instant Purchase upgraded to Luxury button */}
+                      <LuxuryButton
+                        onClick={handleInstantPurchase}
+                        disabled={addToCartMutation.isPending}
+                        variant="dark"
+                        className="w-full py-3.5 text-xs relative z-10"
+                      >
+                        <span>⚡ خرید فوری و تسویه سریع حساب</span>
+                      </LuxuryButton>
+                    </>
+                  )}
 
                   {/* Heart, Compare, Share actions */}
                   <div className="flex items-center justify-center gap-8 text-xs text-stone-300 border-t border-amber-500/15 pt-4 relative z-10">
@@ -1104,52 +1131,71 @@ export default function ProductDetailPage({
               </div>
             )}
 
-            {/* 6. QUANTITY ADJUSTER */}
-            <div className="w-full px-3 flex flex-col items-center space-y-2">
-              <span className="text-[10px] font-bold text-[#5D4037]">تعداد درخواستی</span>
-              <div className="flex items-center justify-between w-36 bg-[#FAF6EE] border border-[#5D4037]/25 rounded-2xl p-1 shrink-0 shadow-sm">
-                <button
-                  onClick={() => setSelectedQuantity((prev) => Math.max(1, prev - 1))}
-                  disabled={selectedQuantity <= 1}
-                  className="w-9 h-9 rounded-xl bg-[#FAF6EE] hover:bg-[#FAF6EE]/80 flex items-center justify-center text-stone-700 transition-colors border border-amber-500/10 disabled:opacity-20 disabled:cursor-not-allowed"
-                  aria-label="کاهش تعداد"
-                >
-                  <Minus className="w-3.5 h-3.5" />
-                </button>
-                <span className="text-sm font-black text-[#2C1A11]">{selectedQuantity}</span>
-                <button
-                  onClick={() => setSelectedQuantity((prev) => Math.min(currentStock, prev + 1))}
-                  disabled={selectedQuantity >= currentStock}
-                  className="w-9 h-9 rounded-xl bg-[#FAF6EE] hover:bg-[#FAF6EE]/80 flex items-center justify-center text-stone-700 transition-colors border border-amber-500/10 disabled:opacity-20 disabled:cursor-not-allowed"
-                  aria-label="افزایش تعداد"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                </button>
+            {/* 6 & 7. MOBILE ACTION CTA */}
+            {isOutOfStock ? (
+              <div className="w-full px-3 space-y-3">
+                <p className="text-xs text-[#5D4037] text-center leading-relaxed">
+                  این محصول در حال حاضر ناموجود است.
+                </p>
+                {(product as any).allowBackInStockNotification !== false && (
+                  <LuxuryButton
+                    onClick={() => setIsBackInStockOpen(true)}
+                    variant="gold"
+                    className="w-full h-[56px] text-sm"
+                  >
+                    <Bell className="w-5 h-5 text-stone-950" />
+                    <span>🔔 موجود شد خبرم کن</span>
+                  </LuxuryButton>
+                )}
               </div>
-            </div>
+            ) : (
+              <>
+                <div className="w-full px-3 flex flex-col items-center space-y-2">
+                  <span className="text-[10px] font-bold text-[#5D4037]">تعداد درخواستی</span>
+                  <div className="flex items-center justify-between w-36 bg-[#FAF6EE] border border-[#5D4037]/25 rounded-2xl p-1 shrink-0 shadow-sm">
+                    <button
+                      onClick={() => setSelectedQuantity((prev) => Math.max(1, prev - 1))}
+                      disabled={selectedQuantity <= 1}
+                      className="w-9 h-9 rounded-xl bg-[#FAF6EE] hover:bg-[#FAF6EE]/80 flex items-center justify-center text-stone-700 transition-colors border border-amber-500/10 disabled:opacity-20 disabled:cursor-not-allowed"
+                      aria-label="کاهش تعداد"
+                    >
+                      <Minus className="w-3.5 h-3.5" />
+                    </button>
+                    <span className="text-sm font-black text-[#2C1A11]">{selectedQuantity}</span>
+                    <button
+                      onClick={() => setSelectedQuantity((prev) => Math.min(currentStock, prev + 1))}
+                      disabled={selectedQuantity >= currentStock}
+                      className="w-9 h-9 rounded-xl bg-[#FAF6EE] hover:bg-[#FAF6EE]/80 flex items-center justify-center text-stone-700 transition-colors border border-amber-500/10 disabled:opacity-20 disabled:cursor-not-allowed"
+                      aria-label="افزایش تعداد"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
 
-            {/* 7. ADD TO CART CTA (FULL WIDTH 56PX) */}
-            <div className="w-full px-3 space-y-3.5">
-              <LuxuryButton
-                onClick={handleAddToCart}
-                disabled={currentStock === 0 || addToCartMutation.isPending}
-                isLoading={addToCartMutation.isPending}
-                variant="gold"
-                className="w-full h-[56px] text-sm"
-              >
-                <ShoppingBag className="w-5 h-5 text-stone-950" />
-                <span>افزودن به سبد خرید ویژه</span>
-              </LuxuryButton>
+                <div className="w-full px-3 space-y-3.5">
+                  <LuxuryButton
+                    onClick={handleAddToCart}
+                    disabled={addToCartMutation.isPending}
+                    isLoading={addToCartMutation.isPending}
+                    variant="gold"
+                    className="w-full h-[56px] text-sm"
+                  >
+                    <ShoppingBag className="w-5 h-5 text-stone-950" />
+                    <span>افزودن به سبد خرید ویژه</span>
+                  </LuxuryButton>
 
-              <LuxuryButton
-                onClick={handleInstantPurchase}
-                disabled={currentStock === 0 || addToCartMutation.isPending}
-                variant="dark"
-                className="w-full h-11 text-[11px]"
-              >
-                <span>⚡ خرید فوری و تسویه سریع حساب</span>
-              </LuxuryButton>
-            </div>
+                  <LuxuryButton
+                    onClick={handleInstantPurchase}
+                    disabled={addToCartMutation.isPending}
+                    variant="dark"
+                    className="w-full h-11 text-[11px]"
+                  >
+                    <span>⚡ خرید فوری و تسویه سریع حساب</span>
+                  </LuxuryButton>
+                </div>
+              </>
+            )}
 
             {/* 8. QUICK FEATURES */}
             {hasFeatures && (
@@ -1401,21 +1447,40 @@ export default function ProductDetailPage({
                   <span className="text-[11px] font-black text-amber-400">{formatToToman(pricing.price)}</span>
                 </div>
               </div>
-              <LuxuryButton
-                onClick={handleAddToCart}
-                disabled={currentStock === 0 || addToCartMutation.isPending}
-                isLoading={addToCartMutation.isPending}
-                variant="gold"
-                className="py-2.5 px-4 rounded-xl text-[10px] shrink-0"
-              >
-                <ShoppingBag className="w-3.5 h-3.5 text-stone-950" />
-                <span>خرید فوری</span>
-              </LuxuryButton>
+              {isOutOfStock ? (
+                <LuxuryButton
+                  onClick={() => setIsBackInStockOpen(true)}
+                  variant="gold"
+                  className="py-2.5 px-4 rounded-xl text-[10px] shrink-0"
+                >
+                  <Bell className="w-3.5 h-3.5 text-stone-950" />
+                  <span>خبرم کن</span>
+                </LuxuryButton>
+              ) : (
+                <LuxuryButton
+                  onClick={handleAddToCart}
+                  disabled={addToCartMutation.isPending}
+                  isLoading={addToCartMutation.isPending}
+                  variant="gold"
+                  className="py-2.5 px-4 rounded-xl text-[10px] shrink-0"
+                >
+                  <ShoppingBag className="w-3.5 h-3.5 text-stone-950" />
+                  <span>خرید فوری</span>
+                </LuxuryButton>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
 
       </div>
+
+      {/* Back In Stock Modal */}
+      <BackInStockModal
+        isOpen={isBackInStockOpen}
+        onClose={() => setIsBackInStockOpen(false)}
+        productId={product.id}
+        productName={product.name}
+      />
     </div>
   );
 }

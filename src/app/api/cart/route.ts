@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyJwtToken } from '@/lib/auth/jwt';
 import { hasSufficientStock, calculateProductUnitPrice } from '@/lib/pricing';
+import { validateProductPurchasable } from '@/lib/inventory';
 
 // Cache cart data for 1 minute (cart data changes frequently)
 export const revalidate = 60;
@@ -150,9 +151,11 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        if (product.status !== 'ACTIVE') {
+        // Validate product purchasability using central domain rules
+        const validation = validateProductPurchasable(product, quantity);
+        if (!validation.purchasable) {
             return NextResponse.json(
-                { error: 'Product is not available' },
+                { error: validation.reason || 'امکان خرید این محصول وجود ندارد.' },
                 { status: 400 }
             );
         }
@@ -173,29 +176,12 @@ export async function POST(request: NextRequest) {
                 }
                 unitPrice = Number(productUnit.price);
 
-                // Check ProductUnit stock
                 if (!hasSufficientStock(productUnit.stock, quantity)) {
                     return NextResponse.json(
-                        { error: 'Insufficient stock' },
+                        { error: 'موجودی این واحد کافی نیست' },
                         { status: 400 }
                     );
                 }
-            } else {
-                // Fallback: This is a standard unit, check product base stock
-                if (product.quantity < quantity) {
-                    return NextResponse.json(
-                        { error: 'Insufficient stock' },
-                        { status: 400 }
-                    );
-                }
-            }
-        } else {
-            // Use legacy stock check for backward compatibility
-            if (product.quantity < quantity) {
-                return NextResponse.json(
-                    { error: 'Insufficient stock' },
-                    { status: 400 }
-                );
             }
         }
 
