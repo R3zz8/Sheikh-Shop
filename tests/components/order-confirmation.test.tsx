@@ -180,7 +180,9 @@ describe('Pre-Payment Order Confirmation / Concierge System', () => {
 
       // Click "افزودن به سبد خرید"
       const addToCartButton = screen.getAllByText('افزودن به سبد خرید')[0];
-      fireEvent.click(addToCartButton);
+      if (addToCartButton) {
+        fireEvent.click(addToCartButton);
+      }
 
       // Modal should appear
       await waitFor(() => {
@@ -196,7 +198,9 @@ describe('Pre-Payment Order Confirmation / Concierge System', () => {
       );
 
       const addToCartButton = screen.getAllByText('افزودن به سبد خرید')[0];
-      fireEvent.click(addToCartButton);
+      if (addToCartButton) {
+        fireEvent.click(addToCartButton);
+      }
 
       await waitFor(() => {
         expect(mockMutateAsync).toHaveBeenCalledWith({
