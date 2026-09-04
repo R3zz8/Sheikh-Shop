@@ -221,7 +221,7 @@ export default function MiniCart({ isOpen, onClose }: MiniCartProps) {
                 <div className="flex justify-between text-sm">
                   <span>هزینه ارسال</span>
                   <span className="font-medium">
-                    {formatPrice(getShippingCost(cartTotals.subtotal))}
+                    {formatPrice(cartTotals.shippingTotal)}
                   </span>
                 </div>
 
@@ -229,7 +229,7 @@ export default function MiniCart({ isOpen, onClose }: MiniCartProps) {
 
                 <div className="flex justify-between text-lg font-semibold">
                   <span>جمع کل</span>
-                  <span>{formatPrice(calculateOrderTotal(cartTotals.subtotal))}</span>
+                  <span>{formatPrice(cartTotals.subtotal + cartTotals.shippingTotal)}</span>
                 </div>
                 
                 <div className="space-y-2">
