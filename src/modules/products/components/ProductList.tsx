@@ -51,6 +51,26 @@ const GalaxyProjectorDecoration = dynamic(
   { ssr: false }
 );
 
+const PodDeviceDecoration = dynamic(
+  () => import('@/components/sheikhNicotine/PodDeviceDecoration'),
+  { ssr: false }
+);
+
+const ELiquidDecoration = dynamic(
+  () => import('@/components/sheikhNicotine/ELiquidDecoration'),
+  { ssr: false }
+);
+
+const HairClipperDecoration = dynamic(
+  () => import('@/components/sheikhGrooming/HairClipperDecoration'),
+  { ssr: false }
+);
+
+const BeardTrimmerDecoration = dynamic(
+  () => import('@/components/sheikhGrooming/BeardTrimmerDecoration'),
+  { ssr: false }
+);
+
 interface ProductListProps {
   products: ProductsWithImages[];
   units?: Unit[];
@@ -58,7 +78,7 @@ interface ProductListProps {
   title?: string;
   subtitle?: string;
   mobileLayout?: 'grid' | 'carousel' | 'auto';
-  variant?: 'default' | 'digital' | 'home' | 'food' | 'nava';
+  variant?: 'default' | 'digital' | 'home' | 'food' | 'nava' | 'nicotine' | 'grooming';
 }
 
 export default function ProductList({
@@ -208,7 +228,7 @@ export default function ProductList({
 
           {/* Search and Filter Bar */}
           <div className="flex flex-row items-center justify-between w-full gap-2 sm:gap-4 mb-8">
-            {/* Speaker, Washing Machine, Dates, or Smart Speaker (Rightmost under RTL) - Hidden on extra small screens */}
+            {/* Speaker, Washing Machine, Dates, Smart Speaker, Pod Device, or Hair Clipper (Rightmost under RTL) */}
             {variant === 'digital' && (
               <div className="hidden sm:flex shrink-0 w-[80px] h-[80px] md:w-[100px] md:h-[100px] items-center justify-center">
                 <SpeakerDecoration />
@@ -229,17 +249,26 @@ export default function ProductList({
                 <SmartSpeakerDecoration />
               </div>
             )}
+            {variant === 'nicotine' && (
+              <div className="hidden sm:flex shrink-0 w-[80px] h-[80px] md:w-[100px] md:h-[100px] items-center justify-center">
+                <PodDeviceDecoration />
+              </div>
+            )}
+            {variant === 'grooming' && (
+              <div className="hidden sm:flex shrink-0 w-[80px] h-[80px] md:w-[100px] md:h-[100px] items-center justify-center">
+                <HairClipperDecoration />
+              </div>
+            )}
 
             {/* Central Search Bar Box inside premium glass card with subtle animated gold glow */}
             <div className={`flex-1 w-full ${
-              variant === 'digital' || variant === 'home' || variant === 'food' || variant === 'nava'
+              variant === 'digital' || variant === 'home' || variant === 'food' || variant === 'nava' || variant === 'nicotine' || variant === 'grooming'
                 ? 'p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#1c110a]/80 via-[#23150c]/85 to-[#1c110a]/80 border border-amber-500/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] relative overflow-hidden group transition-colors duration-300 hover:border-amber-500/40 isolate'
                 : 'mb-0'
             }`}>
               {/* Gold glow animation behind */}
-              {(variant === 'digital' || variant === 'home' || variant === 'food' || variant === 'nava') && (
+              {(variant === 'digital' || variant === 'home' || variant === 'food' || variant === 'nava' || variant === 'nicotine' || variant === 'grooming') && (
                 <>
-                  {/* Fixed: Wrapped infinite translation in a static, non-transitioning absolute wrapper to prevent mobile GPU overflow containment leak */}
                   <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none isolate">
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-500/5 to-transparent -translate-x-full animate-[shimmer_3s_infinite]" />
                   </div>
@@ -268,7 +297,7 @@ export default function ProductList({
                   />
                 </div>
                 <div className="flex gap-2 items-center flex-nowrap">
-                  {/* Headphones, Washing Machine, Dates, or Smart Speaker (Right on RTL) - Only visible on Mobile */}
+                  {/* Right 3D icon on Mobile */}
                   {variant === 'digital' && (
                     <div className="md:hidden shrink-0 flex items-center justify-center w-9 h-9 min-[375px]:w-10 min-[375px]:h-10 min-[412px]:w-11 min-[412px]:h-11">
                       <HeadphoneDecoration className="w-full h-full animate-[fade-in_0.5s_ease-out_forwards]" />
@@ -287,6 +316,16 @@ export default function ProductList({
                   {variant === 'nava' && (
                     <div className="md:hidden shrink-0 flex items-center justify-center w-9 h-9 min-[375px]:w-10 min-[375px]:h-10 min-[412px]:w-11 min-[412px]:h-11">
                       <SmartSpeakerDecoration className="w-full h-full animate-[fade-in_0.5s_ease-out_forwards]" />
+                    </div>
+                  )}
+                  {variant === 'nicotine' && (
+                    <div className="md:hidden shrink-0 flex items-center justify-center w-9 h-9 min-[375px]:w-10 min-[375px]:h-10 min-[412px]:w-11 min-[412px]:h-11">
+                      <PodDeviceDecoration className="w-full h-full animate-[fade-in_0.5s_ease-out_forwards]" />
+                    </div>
+                  )}
+                  {variant === 'grooming' && (
+                    <div className="md:hidden shrink-0 flex items-center justify-center w-9 h-9 min-[375px]:w-10 min-[375px]:h-10 min-[412px]:w-11 min-[412px]:h-11">
+                      <HairClipperDecoration className="w-full h-full animate-[fade-in_0.5s_ease-out_forwards]" />
                     </div>
                   )}
 
@@ -319,7 +358,7 @@ export default function ProductList({
                     فیلتر
                   </button>
 
-                  {/* Speaker, Refrigerator, Honey Jar, or Galaxy Projector (Left on RTL) - Only visible on Mobile */}
+                  {/* Left 3D icon on Mobile */}
                   {variant === 'digital' && (
                     <div className="md:hidden shrink-0 flex items-center justify-center w-9 h-9 min-[375px]:w-10 min-[375px]:h-10 min-[412px]:w-11 min-[412px]:h-11">
                       <SpeakerDecoration className="w-full h-full animate-[fade-in_0.5s_ease-out_forwards]" />
@@ -340,11 +379,21 @@ export default function ProductList({
                       <GalaxyProjectorDecoration className="w-full h-full animate-[fade-in_0.5s_ease-out_forwards]" />
                     </div>
                   )}
+                  {variant === 'nicotine' && (
+                    <div className="md:hidden shrink-0 flex items-center justify-center w-9 h-9 min-[375px]:w-10 min-[375px]:h-10 min-[412px]:w-11 min-[412px]:h-11">
+                      <ELiquidDecoration className="w-full h-full animate-[fade-in_0.5s_ease-out_forwards]" />
+                    </div>
+                  )}
+                  {variant === 'grooming' && (
+                    <div className="md:hidden shrink-0 flex items-center justify-center w-9 h-9 min-[375px]:w-10 min-[375px]:h-10 min-[412px]:w-11 min-[412px]:h-11">
+                      <BeardTrimmerDecoration className="w-full h-full animate-[fade-in_0.5s_ease-out_forwards]" />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
 
-            {/* Headphone, Refrigerator, Honey Jar, or Galaxy Projector (Leftmost under RTL) */}
+            {/* Headphone, Refrigerator, Honey Jar, Galaxy Projector, E-Liquid, or Beard Trimmer (Leftmost under RTL) */}
             {variant === 'digital' && (
               <div className="hidden sm:flex shrink-0 w-[80px] h-[80px] md:w-[100px] md:h-[100px] items-center justify-center">
                 <HeadphoneDecoration />
@@ -363,6 +412,16 @@ export default function ProductList({
             {variant === 'nava' && (
               <div className="hidden sm:flex shrink-0 w-[80px] h-[80px] md:w-[100px] md:h-[100px] items-center justify-center">
                 <GalaxyProjectorDecoration />
+              </div>
+            )}
+            {variant === 'nicotine' && (
+              <div className="hidden sm:flex shrink-0 w-[80px] h-[80px] md:w-[100px] md:h-[100px] items-center justify-center">
+                <ELiquidDecoration />
+              </div>
+            )}
+            {variant === 'grooming' && (
+              <div className="hidden sm:flex shrink-0 w-[80px] h-[80px] md:w-[100px] md:h-[100px] items-center justify-center">
+                <BeardTrimmerDecoration />
               </div>
             )}
           </div>

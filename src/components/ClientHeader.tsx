@@ -98,10 +98,12 @@ export default function ClientHeader() {
       href: '/products',
       icon: ShoppingBag,
       subItems: [
-        { name: 'محصولات غذایی شیخ', href: '/products' },
+        { name: 'شیخ نوا', href: '/tech-products' },
         { name: 'شیخ دیجیتال', href: '/sheikh-digital' },
         { name: 'لوازم خانگی شیخ', href: '/sheikh-home' },
-        { name: 'شیخ نوا', href: '/tech-products' },
+        { name: 'محصولات غذایی شیخ', href: '/products' },
+        { name: 'شیخ نیکوتین', href: '/sheikh-nicotine' },
+        { name: 'شیخ گرومینگ', href: '/sheikh-grooming' },
       ],
     },
     {
@@ -125,6 +127,8 @@ export default function ClientHeader() {
         pathname.startsWith('/sheikh-home') ||
         pathname.startsWith('/sheikh-food') ||
         pathname.startsWith('/tech-products') ||
+        pathname.startsWith('/sheikh-nicotine') ||
+        pathname.startsWith('/sheikh-grooming') ||
         pathname.startsWith('/product/')
       );
     }

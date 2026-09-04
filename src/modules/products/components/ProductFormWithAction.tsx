@@ -2206,6 +2206,8 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
                     <SelectItem value="SheikhTech">🔊 شیخ نوا (Sheikh Tech)</SelectItem>
                     <SelectItem value="SheikhDigital">💻 شیخ دیجیتال (Sheikh Digital)</SelectItem>
                     <SelectItem value="SheikhHome">🏠 شیخ هوم (Sheikh Home)</SelectItem>
+                    <SelectItem value="SheikhNicotine">💨 شیخ نیکوتین (Sheikh Nicotine)</SelectItem>
+                    <SelectItem value="SheikhGrooming">✂️ شیخ گرومینگ (Sheikh Grooming)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

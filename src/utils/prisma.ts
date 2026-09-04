@@ -11,6 +11,8 @@ const mockCategories = [
   { id: 'cat_digital', name: 'لوازم دیجیتال شیخ', slug: 'sheikh-digital', description: 'جدیدترین و پیشرفته‌ترین لوازم دیجیتال شیخ', image: '/sheikhdigital.webp', imagePublicId: null, isActive: true, sortOrder: 2, createdAt: new Date(), updatedAt: new Date() },
   { id: 'cat_tech', name: 'شیخ نوا', slug: 'tech-products', description: 'گجت‌های هوشمند و تجهیزات مدرن شیخ نوا', image: '/sheikhgajet.webp', imagePublicId: null, isActive: true, sortOrder: 3, createdAt: new Date(), updatedAt: new Date() },
   { id: 'cat_food', name: 'مواد غذایی شیخ', slug: 'products', description: 'بهترین مواد غذایی ارگانیک، عسل و زعفران ممتازم شیخ', image: '/food.webp', imagePublicId: null, isActive: true, sortOrder: 4, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'cat_nicotine', name: 'شیخ نیکوتین', slug: 'sheikh-nicotine', description: 'مجموعه تخصصی ویپ، پد سیستم و محصولات نیکوتین لوکس شیخ', image: '/nicotine.webp', imagePublicId: null, isActive: true, sortOrder: 5, createdAt: new Date(), updatedAt: new Date() },
+  { id: 'cat_grooming', name: 'شیخ گرومینگ', slug: 'sheikh-grooming', description: 'تجهیزات مدرن و حرفه‌ای اصلاح و پیرایش شخصی شیخ گرومینگ', image: '/grooming.webp', imagePublicId: null, isActive: true, sortOrder: 6, createdAt: new Date(), updatedAt: new Date() },
 ];
 
 const mockUnits = [
