@@ -189,10 +189,12 @@ export default function PremiumMobileMenu({
       href: '/products',
       icon: ShoppingBag,
       subItems: [
-        { name: 'محصولات غذایی شیخ', href: '/products', icon: Beef },
+        { name: 'شیخ نوا', href: '/tech-products', icon: Cpu },
         { name: 'شیخ دیجیتال', href: '/sheikh-digital', icon: Sparkles },
         { name: 'لوازم خانگی شیخ', href: '/sheikh-home', icon: Sparkles },
-        { name: 'شیخ نوا', href: '/tech-products', icon: Cpu },
+        { name: 'محصولات غذایی شیخ', href: '/products', icon: Beef },
+        { name: 'شیخ نیکوتین', href: '/sheikh-nicotine', icon: Sparkles },
+        { name: 'شیخ گرومینگ', href: '/sheikh-grooming', icon: Sparkles },
       ]
     },
     { name: 'سفارش‌های من', href: '/account/orders', icon: Package },

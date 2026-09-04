@@ -245,6 +245,8 @@ export default function ProductDetailPage({
       case 'SheikhFood': return 'محصولات غذایی شیخ';
       case 'SheikhSmartLiving': return 'خانه هوشمند شیخ';
       case 'SheikhTech': return 'شیخ نوا';
+      case 'SheikhNicotine': return 'شیخ نیکوتین';
+      case 'SheikhGrooming': return 'شیخ گرومینگ';
       default: return 'فروشگاه شیخ';
     }
   }, [product.categoryType]);
@@ -256,6 +258,8 @@ export default function ProductDetailPage({
       case 'SheikhFood': return '/sheikh-food';
       case 'SheikhSmartLiving': return '/sheikh-digital';
       case 'SheikhTech': return '/tech-products';
+      case 'SheikhNicotine': return '/sheikh-nicotine';
+      case 'SheikhGrooming': return '/sheikh-grooming';
       default: return '/products';
     }
   }, [product.categoryType]);

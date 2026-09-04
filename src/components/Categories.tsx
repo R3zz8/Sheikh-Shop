@@ -14,10 +14,10 @@ interface Category {
 
 const defaultCategories: Category[] = [
     {
-        name: 'لوازم خانگی شیخ',
-        image: '/sheikhhome.webp',
-        slug: 'sheikh-home',
-        url: '/sheikh-home'
+        name: 'شیخ نوا',
+        image: '/sheikhgajet.webp',
+        slug: 'tech-products',
+        url: '/tech-products'
     },
     {
         name: 'لوازم دیجیتال شیخ',
@@ -26,16 +26,28 @@ const defaultCategories: Category[] = [
         url: '/sheikh-digital'
     },
     {
-        name: 'شیخ نوا',
-        image: '/sheikhgajet.webp',
-        slug: 'tech-products',
-        url: '/tech-products'
+        name: 'لوازم خانگی شیخ',
+        image: '/sheikhhome.webp',
+        slug: 'sheikh-home',
+        url: '/sheikh-home'
     },
     {
         name: 'مواد غذایی شیخ',
         image: '/food.webp',
         slug: 'products',
         url: '/products'
+    },
+    {
+        name: 'شیخ نیکوتین',
+        image: '/nicotine.webp',
+        slug: 'sheikh-nicotine',
+        url: '/sheikh-nicotine'
+    },
+    {
+        name: 'شیخ گرومینگ',
+        image: '/grooming.webp',
+        slug: 'sheikh-grooming',
+        url: '/sheikh-grooming'
     }
 ];
 
@@ -59,18 +71,22 @@ const Categories = React.memo(function Categories({ initialCategories }: Categor
             .then((res) => res.json())
             .then((data) => {
                 if (isMounted && data.success && Array.isArray(data.data) && data.data.length > 0) {
-                    const mapped: Category[] = data.data.slice(0, 4).map((cat: any) => {
+                    const mapped: Category[] = data.data.slice(0, 6).map((cat: any) => {
                         let url = `/categories/${cat.slug}`;
                         if (cat.slug === 'sheikh-home') url = '/sheikh-home';
                         else if (cat.slug === 'sheikh-digital') url = '/sheikh-digital';
                         else if (cat.slug === 'tech-products') url = '/tech-products';
                         else if (cat.slug === 'products') url = '/products';
+                        else if (cat.slug === 'sheikh-nicotine') url = '/sheikh-nicotine';
+                        else if (cat.slug === 'sheikh-grooming') url = '/sheikh-grooming';
 
                         let img = cat.image;
                         if (!img) {
                             if (cat.slug === 'sheikh-home') img = '/sheikhhome.webp';
                             else if (cat.slug === 'sheikh-digital') img = '/sheikhdigital.webp';
                             else if (cat.slug === 'tech-products') img = '/sheikhgajet.webp';
+                            else if (cat.slug === 'sheikh-nicotine') img = '/nicotine.webp';
+                            else if (cat.slug === 'sheikh-grooming') img = '/grooming.webp';
                             else img = '/food.webp';
                         }
 
@@ -113,15 +129,15 @@ const Categories = React.memo(function Categories({ initialCategories }: Categor
                 </div>
 
                 {/* Categories Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+                <div className="grid grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-6 md:gap-8">
                     {categories.map((category, index) => (
                         <Link
                             key={category.slug}
                             href={category.url || `/categories/${category.slug}`}
-                            className="group flex flex-col items-center space-y-4 cursor-pointer transition-all duration-500 hover:scale-[1.03]"
+                            className="group flex flex-col items-center space-y-3 sm:space-y-4 cursor-pointer transition-all duration-500 hover:scale-[1.03]"
                         >
-                            {/* Outer Relative Wrapper preserving the exact layout sizes */}
-                            <div className="relative w-32 h-32 md:w-40 md:h-40 lg:w-48 lg:h-48 flex items-center justify-center">
+                            {/* Outer Relative Wrapper preserving responsive sizing */}
+                            <div className="relative w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36 lg:w-40 lg:h-40 flex items-center justify-center">
                                 {/* 1. Soft Bloom Effect (Deep Ambient Glow behind) */}
                                 <div
                                     className="absolute -inset-4 rounded-full bg-radial from-amber-500/15 via-orange-500/2 to-transparent blur-2xl opacity-75 group-hover:opacity-95 group-hover:scale-105 transition-all duration-500 animate-luxury-bloom pointer-events-none z-0"

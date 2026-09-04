@@ -49,10 +49,10 @@ export const SHEIKH_RADIAL_CATEGORIES: RadialCategory[] = [
     color: '#f59e0b',
   },
   {
-    id: 'perfume',
-    name: 'شیخ پرفیوم',
-    shortName: 'پرفیوم',
-    href: '/categories/sheikh-perfume',
+    id: 'nicotine',
+    name: 'شیخ نیکوتین',
+    shortName: 'نیکوتین',
+    href: '/sheikh-nicotine',
     icon: Sparkles,
     angleDeg: 135, // 4:30
     color: '#fb7316',
@@ -67,10 +67,10 @@ export const SHEIKH_RADIAL_CATEGORIES: RadialCategory[] = [
     color: '#eab308',
   },
   {
-    id: 'security',
-    name: 'شیخ امنیت',
-    shortName: 'امنیت',
-    href: '/categories/sheikh-security',
+    id: 'grooming',
+    name: 'شیخ گرومینگ',
+    shortName: 'گرومینگ',
+    href: '/sheikh-grooming',
     icon: Shield,
     angleDeg: 225, // 7:30
     color: '#f59e0b',

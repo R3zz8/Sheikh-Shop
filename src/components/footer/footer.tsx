@@ -92,11 +92,13 @@ export default function Footer() {
                 </div>
                 <ul className="space-y-2">
                   {[
-                    { name: 'محصولات غذایی شیخ', href: '/sheikh-food', aria: 'صفحه محصولات غذایی شیخ' },
+                    { name: 'شیخ نوا', href: '/tech-products', aria: 'صفحه شیخ نوا' },
                     { name: 'شیخ دیجیتال', href: '/sheikh-digital', aria: 'صفحه شیخ دیجیتال' },
                     { name: 'لوازم خانگی شیخ', href: '/sheikh-home', aria: 'صفحه لوازم خانگی شیخ' },
-                    { name: 'شیخ نوا', href: '/tech-products', aria: 'صفحه شیخ نوا' },
-                    { name: 'طراحی سایت', href: '/about', aria: 'صفحه درباره ما و سفارش طراحی سایت' },
+                    { name: 'محصولات غذایی شیخ', href: '/sheikh-food', aria: 'صفحه محصولات غذایی شیخ' },
+                    { name: 'شیخ نیکوتین', href: '/sheikh-nicotine', aria: 'صفحه شیخ نیکوتین' },
+                    { name: 'شیخ گرومینگ', href: '/sheikh-grooming', aria: 'صفحه شیخ گرومینگ' },
+                    { name: 'طراحی سایت', href: '/web', aria: 'صفحه درباره ما و سفارش طراحی سایت' },
                   ].map((item) => {
                     const isActive = pathname === item.href;
                     return (
@@ -256,11 +258,13 @@ export default function Footer() {
               </div>
               <ul className="space-y-3">
                 {[
-                  { name: 'محصولات غذایی شیخ', href: '/sheikh-food', aria: 'صفحه محصولات غذایی شیخ' },
+                  { name: 'شیخ نوا', href: '/tech-products', aria: 'صفحه شیخ نوا' },
                   { name: 'شیخ دیجیتال', href: '/sheikh-digital', aria: 'صفحه شیخ دیجیتال' },
                   { name: 'لوازم خانگی شیخ', href: '/sheikh-home', aria: 'صفحه لوازم خانگی شیخ' },
-                  { name: 'شیخ نوا', href: '/tech-products', aria: 'صفحه شیخ نوا' },
-                  { name: 'طراحی سایت', href: '/about', aria: 'صفحه درباره ما و سفارش طراحی سایت' },
+                  { name: 'محصولات غذایی شیخ', href: '/sheikh-food', aria: 'صفحه محصولات غذایی شیخ' },
+                  { name: 'شیخ نیکوتین', href: '/sheikh-nicotine', aria: 'صفحه شیخ نیکوتین' },
+                  { name: 'شیخ گرومینگ', href: '/sheikh-grooming', aria: 'صفحه شیخ گرومینگ' },
+                  { name: 'طراحی سایت', href: '/web', aria: 'صفحه درباره ما و سفارش طراحی سایت' },
                 ].map((item) => {
                   const isActive = pathname === item.href;
                   return (
