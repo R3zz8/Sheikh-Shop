@@ -190,14 +190,14 @@ export default function MiniCartDrawer({ isOpen, onClose }: MiniCartDrawerProps)
                   </div>
                   <div className="flex justify-between items-center text-sm text-gray-500">
                     <span>هزینه ارسال:</span>
-                    <span>{formatPrice(getShippingCost(cartTotals.subtotal))}</span>
+                    <span>{formatPrice(cartTotals.shippingTotal)}</span>
                   </div>
 
                   <EstimatedDelivery variant="light" className="my-1.5" />
 
                   <div className="flex justify-between items-center text-lg font-bold text-gray-900 pt-2">
                     <span>مبلغ قابل پرداخت:</span>
-                    <span className="text-amber-600">{formatPrice(calculateOrderTotal(cartTotals.subtotal))}</span>
+                    <span className="text-amber-600">{formatPrice(cartTotals.subtotal + cartTotals.shippingTotal)}</span>
                   </div>
                 </div>
 

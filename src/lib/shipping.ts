@@ -165,6 +165,10 @@ export function getShippingCost(
     return 0;
   }
 
+  const quantityMultiplier = typeof options?.itemsCount === 'number' && options.itemsCount > 0
+    ? options.itemsCount
+    : 1;
+
   // 4. Future Shipping Method Rate Matching
   if (options?.method && SHIPPING_RATES[options.method] !== undefined) {
     let cost = SHIPPING_RATES[options.method];
@@ -174,11 +178,11 @@ export function getShippingCost(
       cost = applyProvinceModifiers(cost, options.province);
     }
 
-    return cost;
+    return cost * quantityMultiplier;
   }
 
   // 5. Default Fallback
-  return DEFAULT_SHIPPING_COST;
+  return DEFAULT_SHIPPING_COST * quantityMultiplier;
 }
 
 /**

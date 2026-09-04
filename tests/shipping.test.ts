@@ -60,3 +60,73 @@ describe('Per-Product Shipping Engine Resolver', () => {
     expect(getShippingCost(subtotal, options)).toBe(300000);
   });
 });
+
+describe('Linear Quantity-Based Shipping Cost Calculations', () => {
+  // TEST 1: Product A x 1 -> shipping = DEFAULT_SHIPPING_COST
+  test('TEST 1: Product A x 1 should yield 1x base shipping', () => {
+    const cartItems = [{ product: null, quantity: 1 }];
+    expect(calculateCartShipping(cartItems)).toBe(DEFAULT_SHIPPING_COST * 1);
+  });
+
+  // TEST 2: Product A x 2 -> shipping = DEFAULT_SHIPPING_COST x 2
+  test('TEST 2: Product A x 2 should yield 2x base shipping', () => {
+    const cartItems = [{ product: null, quantity: 2 }];
+    expect(calculateCartShipping(cartItems)).toBe(DEFAULT_SHIPPING_COST * 2);
+  });
+
+  // TEST 3: Product A x 3 -> shipping = DEFAULT_SHIPPING_COST x 3
+  test('TEST 3: Product A x 3 should yield 3x base shipping', () => {
+    const cartItems = [{ product: null, quantity: 3 }];
+    expect(calculateCartShipping(cartItems)).toBe(DEFAULT_SHIPPING_COST * 3);
+  });
+
+  // TEST 4: Product A x 10 -> shipping = DEFAULT_SHIPPING_COST x 10
+  test('TEST 4: Product A x 10 should yield 10x base shipping', () => {
+    const cartItems = [{ product: null, quantity: 10 }];
+    expect(calculateCartShipping(cartItems)).toBe(DEFAULT_SHIPPING_COST * 10);
+  });
+
+  // TEST 5: Product A x 2, Product B x 3 -> totalQuantity = 5, shipping = DEFAULT_SHIPPING_COST x 5
+  test('TEST 5: Product A x 2 and Product B x 3 should yield 5x base shipping', () => {
+    const cartItems = [
+      { product: null, quantity: 2 },
+      { product: null, quantity: 3 },
+    ];
+    expect(calculateCartShipping(cartItems)).toBe(DEFAULT_SHIPPING_COST * 5);
+  });
+
+  // TEST 6: Product A x 1, Product B x 1 -> totalQuantity = 2, shipping = DEFAULT_SHIPPING_COST x 2
+  test('TEST 6: Product A x 1 and Product B x 1 should yield 2x base shipping', () => {
+    const cartItems = [
+      { product: null, quantity: 1 },
+      { product: null, quantity: 1 },
+    ];
+    expect(calculateCartShipping(cartItems)).toBe(DEFAULT_SHIPPING_COST * 2);
+  });
+
+  // TEST 7: Empty cart -> 0 shipping
+  test('TEST 7: Empty cart should yield 0 shipping', () => {
+    expect(calculateCartShipping([])).toBe(0);
+    expect(getShippingCost(0)).toBe(0);
+  });
+
+  // TEST 8: Existing discount / subtotal rules remain uncorrupted
+  test('TEST 8: Shipping calculation should not corrupt subtotal calculations', () => {
+    const subtotal = 500000;
+    const cartItems = [{ product: null, quantity: 2 }];
+    const shipping = calculateCartShipping(cartItems);
+    expect(subtotal).toBe(500000);
+    expect(shipping).toBe(DEFAULT_SHIPPING_COST * 2);
+    expect(subtotal + shipping).toBe(500000 + DEFAULT_SHIPPING_COST * 2);
+  });
+
+  test('Custom product shipping cost scaling', () => {
+    const cartItems = [{ product: { shippingCost: 150000 }, quantity: 2 }];
+    expect(calculateCartShipping(cartItems)).toBe(300000);
+  });
+
+  test('Free shipping products scale to 0 regardless of quantity', () => {
+    const cartItems = [{ product: { allowFreeShipping: true }, quantity: 10 }];
+    expect(calculateCartShipping(cartItems)).toBe(0);
+  });
+});
