@@ -81,6 +81,11 @@ export class CacheService {
                 CACHE_KEYS.NEW_PRODUCTS(12),
                 CACHE_KEYS.NEW_PRODUCTS(16),
                 CACHE_KEYS.NEW_PRODUCTS(20),
+                'arch_products_limit_5',
+                'arch_products_limit_8',
+                'arch_products_limit_10',
+                'arch_products_limit_12',
+                'products:all:active_50_minimal',
             ];
 
             if (productId) {

@@ -28,6 +28,9 @@ export interface ArchProductData {
   slug: string | null;
   category: string;
   basePrice: number;
+  quantity?: number;
+  inventoryStatus?: string;
+  lowStockThreshold?: number | null;
   status: string;
   createdAt: string | null;
   updatedAt: string | null;
@@ -51,6 +54,9 @@ export function serializeArchProduct(product: any): ArchProductData | null {
     slug: product.slug,
     category: product.category,
     basePrice: toNumber(product.basePrice),
+    quantity: product.quantity ?? 0,
+    inventoryStatus: product.inventoryStatus || 'AVAILABLE',
+    lowStockThreshold: product.lowStockThreshold ?? 3,
     status: product.status,
     createdAt: toISOString(product.createdAt),
     updatedAt: toISOString(product.updatedAt),
@@ -92,6 +98,9 @@ export const getArchProducts = cache(async (limit: number = 10): Promise<ArchPro
         slug: true,
         category: true,
         basePrice: true,
+        quantity: true,
+        inventoryStatus: true,
+        lowStockThreshold: true,
         status: true,
         createdAt: true,
         updatedAt: true,
