@@ -114,23 +114,6 @@ export default function ProductList({
     }
   }, [urlPage]);
 
-  // Responsive Items Per Page handler
-  useEffect(() => {
-    const updateItemsPerPage = () => {
-      const width = window.innerWidth;
-      if (width >= 1280) {
-        setItemsPerPage(12);
-      } else if (width >= 768) {
-        setItemsPerPage(9);
-      } else {
-        setItemsPerPage(10);
-      }
-    };
-
-    updateItemsPerPage();
-    window.addEventListener('resize', updateItemsPerPage);
-    return () => window.removeEventListener('resize', updateItemsPerPage);
-  }, []);
 
   console.log('ProductList render:', { products, units, filteredProducts, isLoading, itemsPerPage, currentPage });
 

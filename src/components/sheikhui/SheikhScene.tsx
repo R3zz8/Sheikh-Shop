@@ -277,7 +277,7 @@ export default function SheikhScene() {
 
   if (!mounted) {
     return (
-      <div className="w-full min-h-[300px] md:min-h-[600px] bg-amber-950/20 flex items-center justify-center animate-pulse rounded-3xl">
+      <div className="w-full min-h-[336px] md:min-h-[520px] bg-amber-950/20 flex items-center justify-center animate-pulse rounded-3xl">
         <div className="w-12 h-12 md:w-16 md:h-16 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
