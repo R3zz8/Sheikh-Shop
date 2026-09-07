@@ -32,15 +32,17 @@ export default function AppLayoutContent({ children }: AppLayoutContentProps) {
       <AMPHead />
       <AccessibilityEnhancements />
       <ClientHeader />
-      <div className="sticky top-20 z-40 w-full bg-amber-950/90 backdrop-blur supports-[backdrop-filter]:bg-amber-950/70 border-b border-amber-200/10">
-        <div className="max-w-7xl mx-auto px-6 md:px-8 py-3 flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
+      <div className="sticky top-20 z-40 w-full bg-amber-950/90 backdrop-blur supports-[backdrop-filter]:bg-amber-950/70 border-b border-amber-200/10 min-h-[123px] flex items-center">
+        <div className="max-w-7xl mx-auto px-6 md:px-8 py-3 flex flex-col md:flex-row gap-3 md:items-center md:justify-between w-full">
           <div className="w-full md:max-w-xl min-h-[98px]">
             <EnhancedAISearch showAdvancedOptions={false} showVRStoreButton={true} />
           </div>
         </div>
       </div>
-      <main id="main-content" className="flex-1 pt-20 pb-20 md:pb-0">
-        {children}
+      <main id="main-content" style={{ minHeight: '100vh' }} className="flex-1 w-full min-h-screen pt-20 pb-20 md:pb-0">
+        <div style={{ minHeight: '100vh' }} className="w-full min-h-screen">
+          {children}
+        </div>
       </main>
       <Footer />
       <MobileFooter />

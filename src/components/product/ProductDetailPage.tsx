@@ -301,10 +301,10 @@ export default function ProductDetailPage({
     <div className="min-h-screen bg-gradient-to-b from-[#FAF7F2] via-[#F3EAD8] via-[#EADBC8] to-[#2A1A12] text-[#2C1A11] font-vazirmatn selection:bg-amber-500/30 selection:text-amber-950 relative overflow-hidden pb-24" dir="rtl">
 
       {/* 🌌 ATMOSPHERIC LUXURY LIGHT GLOWS */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="absolute top-[-25%] right-[-15%] w-[80vw] h-[80vw] bg-[radial-gradient(circle_at_center,rgba(217,119,6,0.05)_0%,transparent_70%)] rounded-full blur-[130px] opacity-80" />
-        <div className="absolute top-[40%] left-[-20%] w-[70vw] h-[70vw] bg-[radial-gradient(circle_at_center,rgba(245,158,11,0.03)_0%,transparent_75%)] rounded-full blur-[120px] opacity-60" />
-        <div className="absolute bottom-[-10%] right-[10%] w-[60vw] h-[60vw] bg-[radial-gradient(circle_at_center,rgba(217,119,6,0.02)_0%,transparent_80%)] rounded-full blur-[140px] opacity-50" />
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 contain-strict">
+        <div className="absolute top-[-25%] right-[-15%] w-[80vw] h-[80vw] bg-[radial-gradient(circle_at_center,rgba(217,119,6,0.05)_0%,transparent_70%)] rounded-full blur-[130px] opacity-80 contain-strict" />
+        <div className="absolute top-[40%] left-[-20%] w-[70vw] h-[70vw] bg-[radial-gradient(circle_at_center,rgba(245,158,11,0.03)_0%,transparent_75%)] rounded-full blur-[120px] opacity-60 contain-strict" />
+        <div className="absolute bottom-[-10%] right-[10%] w-[60vw] h-[60vw] bg-[radial-gradient(circle_at_center,rgba(217,119,6,0.02)_0%,transparent_80%)] rounded-full blur-[140px] opacity-50 contain-strict" />
       </div>
 
       <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10 max-w-7xl">

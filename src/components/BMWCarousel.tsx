@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination, EffectCoverflow } from 'swiper/modules';
 import { useQuery } from '@tanstack/react-query';
@@ -52,8 +51,6 @@ interface BMWCarouselProps {
 }
 
 export default function BMWCarousel({ initialSlides }: BMWCarouselProps) {
-  const isDesktop = useMediaQuery('(min-width: 1024px)');
-
   const { data: slides = initialSlides && initialSlides.length > 0 ? initialSlides : DEFAULT_SLIDES } = useQuery({
     queryKey: ['bmwCarouselData'],
     queryFn: fetchBmwCarousel,
@@ -62,10 +59,6 @@ export default function BMWCarousel({ initialSlides }: BMWCarouselProps) {
   });
 
   const [failedImages, setFailedImages] = useState<Set<string | number>>(new Set());
-
-  if (!isDesktop) {
-    return null;
-  }
 
   const effectiveSlides = slides && slides.length > 0 ? slides : DEFAULT_SLIDES;
 
