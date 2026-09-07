@@ -20,7 +20,7 @@ export function getEffectiveInventoryStatus(product: {
 }): InventoryStatus {
   const adminStatus = product.inventoryStatus || 'AVAILABLE';
 
-  if (adminStatus === 'DISCONTINUED' || adminStatus === 'COMING_SOON') {
+  if (adminStatus === 'DISCONTINUED' || adminStatus === 'COMING_SOON' || adminStatus === 'OUT_OF_STOCK') {
     return adminStatus;
   }
 
@@ -33,7 +33,7 @@ export function getEffectiveInventoryStatus(product: {
     return 'LOW_STOCK';
   }
 
-  return 'AVAILABLE';
+  return adminStatus === 'LOW_STOCK' ? 'LOW_STOCK' : 'AVAILABLE';
 }
 
 /**

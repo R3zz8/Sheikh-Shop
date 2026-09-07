@@ -42,6 +42,9 @@ const productSchema = z.object({
     .int('Quantity must be a whole number')
     .min(0, 'Quantity cannot be negative')
     .max(999999, 'Quantity must be less than 1,000,000'),
+  inventoryStatus: z.enum(['AVAILABLE', 'LOW_STOCK', 'OUT_OF_STOCK', 'COMING_SOON', 'DISCONTINUED']).optional().default('AVAILABLE'),
+  lowStockThreshold: z.number().int().min(0).optional().default(3),
+  allowBackInStockNotification: z.boolean().optional().default(true),
   category: z.enum(Object.values(ProductCategory) as [string, ...string[]]),
   status: z.enum(Object.values(ProductStatus) as [string, ...string[]]).optional(),
   categoryType: z.enum(['SheikhFood', 'SheikhTech', 'SheikhDigital', 'SheikhHome', 'SheikhNicotine', 'SheikhGrooming']).optional(),
@@ -260,6 +263,9 @@ export const upsertProduct = async (
       basePrice: parseFloat(formData.get('price') as string),
       baseUnitId,
       quantity: parseInt(formData.get('quantity') as string),
+      inventoryStatus: (formData.get('inventoryStatus') as string) || 'AVAILABLE',
+      lowStockThreshold: formData.get('lowStockThreshold') ? parseInt(formData.get('lowStockThreshold') as string) : 3,
+      allowBackInStockNotification: formData.get('allowBackInStockNotification') === 'true' || formData.get('allowBackInStockNotification') === 'on',
       status: (formData.get('status') as string) || 'ACTIVE',
       categoryType: formData.get('categoryType') as 'SheikhFood' | 'SheikhTech' | 'SheikhDigital' | 'SheikhHome' | 'SheikhNicotine' | 'SheikhGrooming',
       isNew: formData.get('isNew') === 'true' || formData.get('isNew') === 'on',

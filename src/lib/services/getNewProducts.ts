@@ -101,6 +101,8 @@ export const getNewProducts = cache(async (limit: number = 12) => {
         basePrice: true,
         baseUnitId: true,
         quantity: true,
+        inventoryStatus: true,
+        lowStockThreshold: true,
         status: true,
         isNew: true,
         isBestSeller: true,
