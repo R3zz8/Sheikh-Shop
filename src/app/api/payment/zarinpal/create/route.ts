@@ -3,8 +3,9 @@ import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { createZarinPalPaymentRequest, getZarinPalStartPayUrl } from "@/lib/payment/zarinpal";
 import { getServerUser } from "@/lib/auth/server-auth";
-import { calculateCartShipping, calculateSubtotal } from "@/lib/shipping";
+import { calculateSubtotal } from "@/lib/shipping";
 import { validateProductPurchasable } from "@/lib/inventory";
+import { getTipaxShippingQuote } from "@/lib/tipax/client";
 
 export async function POST(req: NextRequest) {
   try {
@@ -41,6 +42,8 @@ export async function POST(req: NextRequest) {
         id: string;
         name: string;
         basePrice: number | Prisma.Decimal;
+        weight?: number | Prisma.Decimal | null;
+        dimensions?: any;
         shippingCost?: number | Prisma.Decimal | null;
         allowFreeShipping?: boolean | null;
         images?: Array<{ image?: string | null; secureUrl?: string | null }>;
@@ -94,6 +97,8 @@ export async function POST(req: NextRequest) {
                 id: String(dbP.id),
                 name: String(dbP.name),
                 basePrice: Number(dbP.basePrice),
+                weight: dbP.weight ? Number(dbP.weight) : null,
+                dimensions: dbP.dimensions,
                 shippingCost: dbP.shippingCost ? Number(dbP.shippingCost) : null,
                 allowFreeShipping: dbP.allowFreeShipping ?? false,
                 images: dbP.images || [],
@@ -138,7 +143,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Calculate authoritative subtotal and dynamic shipping cost
+    // Calculate authoritative subtotal
     let subtotalToman = 0;
     const orderItemData: Array<{
       productId: string;
@@ -148,6 +153,16 @@ export async function POST(req: NextRequest) {
       quantity: number;
       price: number;
       shippingCost?: number;
+    }> = [];
+
+    const tipaxQuoteItems: Array<{
+      quantity: number;
+      product: {
+        weight?: number | null;
+        dimensions?: any;
+        shippingCost?: number | null;
+        allowFreeShipping?: boolean | null;
+      };
     }> = [];
 
     for (const item of cartItems) {
@@ -173,17 +188,27 @@ export async function POST(req: NextRequest) {
         price: unitPrice,
         shippingCost: itemShippingCost,
       });
+
+      tipaxQuoteItems.push({
+        quantity: item.quantity,
+        product: {
+          weight: item.product.weight ? Number(item.product.weight) : null,
+          dimensions: item.product.dimensions,
+          shippingCost: item.product.shippingCost ? Number(item.product.shippingCost) : null,
+          allowFreeShipping: item.product.allowFreeShipping ?? false,
+        },
+      });
     }
 
-    // Calculate dynamic shipping cost for entire order using shipping resolver
-    const shippingItems = cartItems.map((item) => ({
-      quantity: item.quantity,
-      product: {
-        shippingCost: item.product.shippingCost ? Number(item.product.shippingCost) : null,
-        allowFreeShipping: item.product.allowFreeShipping ?? false,
-      },
-    }));
-    const shippingCostToman = calculateCartShipping(shippingItems);
+    // Server-authoritative dynamic Tipax shipping calculation
+    const tipaxQuote = await getTipaxShippingQuote({
+      destinationCityName: shippingAddress.city?.trim() || 'تهران',
+      destinationProvinceName: shippingAddress.province?.trim() || undefined,
+      totalValueToman: subtotalToman,
+      items: tipaxQuoteItems,
+    });
+
+    const shippingCostToman = tipaxQuote.shippingCostToman;
     const totalPriceToman = subtotalToman + shippingCostToman;
 
     // Handle guest user provisioning
@@ -220,6 +245,7 @@ export async function POST(req: NextRequest) {
       `تماس: ${shippingAddress.recipientPhone || contactInfo.phone}`,
       `آدرس: استان ${shippingAddress.province}، شهر ${shippingAddress.city}، ${shippingAddress.address}`,
       `کدپستی: ${shippingAddress.postalCode}`,
+      `ارسال: ${tipaxQuote.provider} (${tipaxQuote.message})`,
       orderNotes ? `توضیحات: ${orderNotes}` : '',
     ].filter(Boolean).join(' | ');
 
@@ -245,6 +271,8 @@ export async function POST(req: NextRequest) {
           city: shippingAddress.city,
           address: shippingAddress.address,
           postalCode: shippingAddress.postalCode,
+          shippingProvider: tipaxQuote.provider,
+          shippingQuoteMessage: tipaxQuote.message,
           orderNotes,
         },
         items: {
