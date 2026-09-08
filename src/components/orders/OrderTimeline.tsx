@@ -1,5 +1,7 @@
-import React from 'react';
-import { CheckCircle2, Clock, PackageCheck, Truck, CheckCheck, XCircle } from 'lucide-react';
+'use client';
+
+import React, { useState } from 'react';
+import { CheckCircle2, Clock, PackageCheck, Truck, CheckCheck, XCircle, Copy, Check, ExternalLink } from 'lucide-react';
 
 interface OrderTimelineProps {
   orderStatus: string;
@@ -8,7 +10,15 @@ interface OrderTimelineProps {
 }
 
 export default function OrderTimeline({ orderStatus, paymentStatus, trackingCode }: OrderTimelineProps) {
+  const [copied, setCopied] = useState(false);
   const isCancelled = orderStatus === 'CANCELLED';
+
+  const handleCopyTrackingCode = () => {
+    if (!trackingCode) return;
+    navigator.clipboard.writeText(trackingCode);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const steps = [
     {
@@ -34,7 +44,7 @@ export default function OrderTimeline({ orderStatus, paymentStatus, trackingCode
     },
     {
       id: 'shipped',
-      label: 'تحویل به پست',
+      label: 'تحویل به تیپاکس',
       icon: Truck,
       isCompleted: orderStatus === 'DELIVERED' || orderStatus === 'COMPLETED',
       isActive: orderStatus === 'SHIPPED' && !isCancelled,
@@ -66,7 +76,7 @@ export default function OrderTimeline({ orderStatus, paymentStatus, trackingCode
         {/* Connecting line */}
         <div className="absolute top-1/2 left-4 right-4 -translate-y-1/2 h-1 bg-stone-800 -z-0 rounded-full" />
 
-        {steps.map((step, index) => {
+        {steps.map((step) => {
           const StepIcon = step.icon;
           const isDone = step.isCompleted;
           const isCurrent = step.isActive;
@@ -97,10 +107,33 @@ export default function OrderTimeline({ orderStatus, paymentStatus, trackingCode
       </div>
 
       {trackingCode && (
-        <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-3 text-center flex items-center justify-center gap-2">
-          <Truck className="w-4 h-4 text-amber-400" />
-          <span className="text-xs text-stone-300">کد مرسوله پستی:</span>
-          <span className="font-mono text-sm font-extrabold text-amber-300">{trackingCode}</span>
+        <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-amber-200">
+          <div className="flex items-center gap-2">
+            <Truck className="w-5 h-5 text-amber-400 flex-shrink-0" />
+            <div>
+              <span className="text-xs text-stone-400 block sm:inline">کد رهگیری تیپاکس: </span>
+              <span className="font-mono text-base font-extrabold text-amber-300 tracking-wider">{trackingCode}</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleCopyTrackingCode}
+              type="button"
+              className="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/30 text-xs text-amber-300 transition-colors flex items-center gap-1.5"
+            >
+              {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+              <span>{copied ? 'کپی شد' : 'کپی کد رهگیری'}</span>
+            </button>
+            <a
+              href={`https://tipax.ir/tracking?code=${encodeURIComponent(trackingCode)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs transition-colors flex items-center gap-1"
+            >
+              <span>پیگیری مستقیم</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+          </div>
         </div>
       )}
     </div>

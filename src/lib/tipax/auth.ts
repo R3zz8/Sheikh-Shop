@@ -1,6 +1,6 @@
 /**
  * Tipax Server-Only Authentication Module
- * Serves as access token manager with caching, automatic refresh, and safe retry logic.
+ * Serves as access token manager with caching, single-flight concurrency mutex, automatic refresh, and safe retry logic.
  */
 
 import type { TipaxAuthToken, TipaxTokenResponse } from './types';
@@ -9,6 +9,9 @@ const TIPAX_BASE_URL = process.env.TIPAX_BASE_URL || 'https://omtestapi.tipax.ir
 
 // In-memory token cache
 let cachedToken: TipaxAuthToken | null = null;
+
+// Single-flight promise mutex to prevent concurrent token fetch stampedes
+let pendingTokenPromise: Promise<TipaxAuthToken | null> | null = null;
 
 /**
  * Retrieves valid authentication credentials from server environment variables
@@ -23,9 +26,9 @@ export function getTipaxCredentials() {
 }
 
 /**
- * Requests a new access token from Tipax API (`POST /api/OM/v3/Account/token`)
+ * Internal single execution token fetch
  */
-export async function fetchTipaxToken(): Promise<TipaxAuthToken | null> {
+async function executeTokenFetch(): Promise<TipaxAuthToken | null> {
   const { username, password, apiKey, baseUrl } = getTipaxCredentials();
 
   if (!username || !password) {
@@ -91,6 +94,22 @@ export async function fetchTipaxToken(): Promise<TipaxAuthToken | null> {
     console.error('[Tipax Auth Error]', error?.message || error);
     return null;
   }
+}
+
+/**
+ * Requests a new access token from Tipax API (`POST /api/OM/v3/Account/token`).
+ * Uses single-flight promise mutex to handle concurrent token requests safely.
+ */
+export async function fetchTipaxToken(): Promise<TipaxAuthToken | null> {
+  if (pendingTokenPromise) {
+    return pendingTokenPromise;
+  }
+
+  pendingTokenPromise = executeTokenFetch().finally(() => {
+    pendingTokenPromise = null;
+  });
+
+  return pendingTokenPromise;
 }
 
 /**
@@ -176,4 +195,5 @@ export async function getValidTipaxToken(forceRefresh = false): Promise<string |
  */
 export function clearTipaxTokenCache() {
   cachedToken = null;
+  pendingTokenPromise = null;
 }
