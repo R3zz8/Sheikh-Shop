@@ -56,13 +56,21 @@ export async function generateMetadata({
       if (!product.seoDescription) console.log(`  - Description: Fallback to excerpt or description.`);
   }
 
+  const primaryImage = product.ogImage ||
+    (product.images && product.images.length > 0
+      ? product.images.find((img: any) => img.isFeatured)?.image ||
+        product.images.find((img: any) => img.isFeatured)?.secureUrl ||
+        product.images[0]?.image ||
+        product.images[0]?.secureUrl
+      : undefined);
+
   const baseSEO = generatePageSEO({
       title,
       description,
       keywords,
       ogTitle: product.ogTitle,
       ogDescription: product.ogDescription,
-      ogImage: product.ogImage,
+      ogImage: primaryImage,
       canonical: canonicalPath,
   });
   

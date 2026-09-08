@@ -112,7 +112,7 @@ describe('Torob Integration Tests', () => {
   });
 
   describe('Torob Meta Tags in generateMetadata', () => {
-    it('returns Torob required meta tags inside metadata.other', async () => {
+    it('returns Torob required meta tags inside metadata.other and uses primary image for OpenGraph image', async () => {
       const mockProduct: any = {
         id: 'prod-201',
         name: 'ساعت هوشمند شیخ',
@@ -126,6 +126,7 @@ describe('Torob Integration Tests', () => {
         seoDescription: 'ساعت هوشمند با کیفیت بالا',
         metaKeywords: ['ساعت', 'شیخ'],
         baseUnit: { id: 'u1', name: 'عدد', symbol: 'عدد' },
+        images: [{ image: '/images/smartwatch.jpg', isFeatured: true }],
       };
 
       (getProductByIdOrSlug as jest.Mock).mockResolvedValue(mockProduct);
@@ -139,6 +140,11 @@ describe('Torob Integration Tests', () => {
       expect(metadata.other?.product_name).toBe('ساعت هوشمند شیخ');
       expect(metadata.other?.product_id).toBe('prod-201');
       expect(metadata.other?.guarantee).toBe('۱۸ ماه گارانتی شرکتی');
+
+      const ogImages = metadata.openGraph?.images as any[];
+      expect(ogImages).toBeDefined();
+      expect(ogImages[0].url).toContain('/images/smartwatch.jpg');
+      expect(ogImages[0].url).toMatch(/^https?:\/\//);
     });
   });
 
