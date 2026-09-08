@@ -21,7 +21,8 @@ import {
   Package,
   BadgeCheck,
   Receipt,
-  FileText
+  FileText,
+  Loader2
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -31,7 +32,6 @@ import { Separator } from '@/components/ui/separator';
 import { useCart } from '@/hooks/useCart';
 import { useUser } from '@/hooks/useUser';
 import { formatPrice } from '@/lib/currency';
-import { getShippingCost, calculateOrderTotal } from '@/lib/shipping';
 import EstimatedDelivery from '@/components/shipping/EstimatedDelivery';
 import { normalizePersianDigits, isValidIranianMobile, isValidIranianPostalCode } from '@/lib/validation';
 
@@ -57,6 +57,12 @@ export default function CheckoutPage() {
   const [isLoadingApi, setIsLoadingApi] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Dynamic Tipax Shipping Quote State
+  const [dynamicShippingCost, setDynamicShippingCost] = useState<number | null>(null);
+  const [isQuotingShipping, setIsQuotingShipping] = useState(false);
+  const [shippingQuoteMessage, setShippingQuoteMessage] = useState<string | null>(null);
+  const [shippingProvider, setShippingProvider] = useState<'TIPAX' | 'DEFAULT_FALLBACK'>('DEFAULT_FALLBACK');
+
   // Pre-fill form with user data if available
   useEffect(() => {
     if (user) {
@@ -78,9 +84,56 @@ export default function CheckoutPage() {
     }
   }, [cart, isCartLoading, isUserLoading, router]);
 
-  // Calculate totals using centralized shipping logic
+  // Fetch dynamic Tipax shipping quote when province or city changes
+  useEffect(() => {
+    const cityStr = formData.city.trim();
+    const provinceStr = formData.province.trim();
+
+    if (!cityStr || !cart || cart.length === 0) {
+      setDynamicShippingCost(null);
+      setShippingQuoteMessage(null);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setIsQuotingShipping(true);
+      try {
+        const response = await fetch('/api/shipping/quote', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            province: provinceStr,
+            city: cityStr,
+            items: cart.map((item: any) => ({
+              productId: item.productId,
+              quantity: item.quantity,
+              unitPrice: item.unitPrice
+            }))
+          })
+        });
+
+        const data = await response.json();
+        if (response.ok && data.success && data.quote) {
+          setDynamicShippingCost(data.quote.shippingCost);
+          setShippingProvider(data.quote.provider || 'TIPAX');
+          setShippingQuoteMessage(data.quote.message || null);
+        } else {
+          setDynamicShippingCost(null);
+          setShippingQuoteMessage(null);
+        }
+      } catch (err) {
+        console.error('Failed to fetch shipping quote:', err);
+      } finally {
+        setIsQuotingShipping(false);
+      }
+    }, 600);
+
+    return () => clearTimeout(timer);
+  }, [formData.city, formData.province, cart]);
+
+  // Calculate totals using dynamic quote or centralized cart totals
   const subtotal = cartTotals.subtotal || 0;
-  const shipping = cartTotals.shippingTotal || 0;
+  const shipping = dynamicShippingCost !== null ? dynamicShippingCost : (cartTotals.shippingTotal || 0);
   const total = subtotal + shipping;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -532,19 +585,34 @@ export default function CheckoutPage() {
                   <div className="flex justify-between items-center text-stone-300 text-sm">
                     <span className="flex items-center gap-2">
                       <Truck className="w-4 h-4 text-amber-500/70" />
-                      هزینه ارسال
+                      هزینه ارسال {shippingProvider === 'TIPAX' && <span className="text-[10px] bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded font-mono">Tipax</span>}
                     </span>
-                    <span className="font-semibold text-amber-300">
-                      {shipping === 0 ? 'رایگان' : formatPrice(shipping)}
+                    <span className="font-semibold text-amber-300 flex items-center gap-1.5">
+                      {isQuotingShipping ? (
+                        <span className="flex items-center gap-1 text-xs text-amber-400">
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          محاسبه تیپاکس...
+                        </span>
+                      ) : shipping === 0 ? (
+                        'رایگان'
+                      ) : (
+                        formatPrice(shipping)
+                      )}
                     </span>
                   </div>
+
+                  {shippingQuoteMessage && (
+                    <p className="text-[11px] text-amber-300/80 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/15 text-center">
+                      ✦ {shippingQuoteMessage}
+                    </p>
+                  )}
 
                   {/* Delivery Estimate Box */}
                   <div className="bg-amber-500/10 p-3 rounded-2xl border border-amber-500/15 space-y-2">
                     <EstimatedDelivery variant="glass" showDivider={false} className="py-0 px-0 border-none bg-transparent" />
                     <div className="flex items-center gap-1.5 text-[11px] text-stone-400">
                       <BadgeCheck className="w-3.5 h-3.5 text-green-400 flex-shrink-0" />
-                      <span>ارسال سریع با بسته‌بندی ایمن</span>
+                      <span>ارسال سریع با بسته‌بندی ایمن و پیگیری تیپاکس</span>
                     </div>
                   </div>
 
