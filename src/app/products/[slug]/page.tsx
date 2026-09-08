@@ -14,6 +14,8 @@ import { formatPrice } from '@/lib/currency';
 import { buildLanguageAlternates, getBaseUrl } from '@/lib/seo/hreflang';
 import { generatePageSEO } from '@/lib/seo/core';
 import { sanitizeDescription } from '@/lib/seo/helpers';
+import { resolveProductPrice } from '@/lib/product-pricing';
+import { getEffectiveInventoryStatus } from '@/lib/inventory';
 
 // Cache product pages for 5 minutes (same as /product/[id])
 export const revalidate = 300;
@@ -72,7 +74,31 @@ export async function generateMetadata({
       type: 'video/mp4',
   } : undefined;
 
-  // Enhance with product-specific metadata
+  // Torob Metadata Mapping
+  const priceInfo = resolveProductPrice(product as any);
+  const effectiveInventoryStatus = getEffectiveInventoryStatus(product as any);
+  const isAvailable =
+    product.status === 'ACTIVE' &&
+    product.quantity > 0 &&
+    effectiveInventoryStatus !== 'OUT_OF_STOCK' &&
+    effectiveInventoryStatus !== 'DISCONTINUED' &&
+    effectiveInventoryStatus !== 'COMING_SOON';
+
+  const torobAvailability = isAvailable ? 'instock' : 'outofstock';
+  const torobGuarantee = product.warranty && product.warranty.trim().length > 0 ? product.warranty.trim() : null;
+
+  const torobMetaTags: Record<string, string> = {
+    product_price: String(Math.round(priceInfo.price)),
+    availability: torobAvailability,
+    product_name: product.name,
+    product_id: product.id,
+  };
+
+  if (torobGuarantee) {
+    torobMetaTags.guarantee = torobGuarantee;
+  }
+
+  // Enhance with product-specific metadata and Torob meta tags
   return {
     ...baseSEO,
     openGraph: {
@@ -88,6 +114,10 @@ export async function generateMetadata({
     alternates: {
         ...baseSEO.alternates,
         languages: buildLanguageAlternates(canonicalPath),
+    },
+    other: {
+        ...(baseSEO.other || {}),
+        ...torobMetaTags,
     },
   };
 }
