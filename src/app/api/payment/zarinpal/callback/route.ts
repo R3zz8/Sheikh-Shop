@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { verifyZarinPalPayment } from "@/lib/payment/zarinpal";
 import { atomicDecrementProductStock } from "@/lib/inventory";
+import { TipaxClient } from "@/lib/tipax/client";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -161,6 +162,56 @@ export async function GET(req: Request) {
           });
         }
       });
+
+      // 6. Post-Payment Tipax Order Registration with Idempotency Guard
+      const shippingAddr = (order.shippingAddress as Record<string, any>) || {};
+      const existingTipaxOrderId = shippingAddr.tipaxOrderId;
+
+      if (!order.trackingCode && !existingTipaxOrderId) {
+        try {
+          const tipaxResult = await TipaxClient.createOrder({
+            orderId: order.id,
+            recipientName:
+              shippingAddr.recipientName ||
+              `${shippingAddr.firstName || ''} ${shippingAddr.lastName || ''}`.trim() ||
+              'مشتری',
+            recipientPhone: shippingAddr.recipientPhone || shippingAddr.phone || '09000000000',
+            recipientMobile: shippingAddr.phone || shippingAddr.recipientPhone,
+            recipientEmail: shippingAddr.email,
+            province: shippingAddr.province || 'تهران',
+            city: shippingAddr.city || 'تهران',
+            address: shippingAddr.address || 'تهران',
+            postalCode: shippingAddr.postalCode || '1111111111',
+            totalValueToman: Number(order.subtotal) || Number(order.total) || 1000000,
+            items: order.items.map((i: { productName?: string | null; quantity: number; price: number | Prisma.Decimal }) => ({
+              productName: i.productName || undefined,
+              quantity: i.quantity,
+              priceToman: Number(i.price) || 0,
+            })),
+            orderNotes: shippingAddr.orderNotes,
+          });
+
+          if (tipaxResult.success && (tipaxResult.trackingCode || tipaxResult.tipaxOrderId)) {
+            const trackingCode = tipaxResult.trackingCode || tipaxResult.tipaxOrderId;
+            const updatedAddress = {
+              ...shippingAddr,
+              tipaxOrderId: tipaxResult.tipaxOrderId || trackingCode,
+              tipaxStatus: 'REGISTERED',
+              tipaxRegisteredAt: new Date().toISOString(),
+            };
+
+            await prisma.order.update({
+              where: { id: order.id },
+              data: {
+                trackingCode,
+                shippingAddress: updatedAddress,
+              },
+            });
+          }
+        } catch (tipaxErr) {
+          console.error('[Tipax Order Creation Post-Payment Exception]', tipaxErr);
+        }
+      }
 
       return NextResponse.redirect(
         `${baseUrl}/payment/callback?status=success&orderId=${order.id}&ref_id=${encodeURIComponent(
