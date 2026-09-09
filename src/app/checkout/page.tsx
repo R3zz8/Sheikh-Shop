@@ -33,7 +33,7 @@ import { useCart } from '@/hooks/useCart';
 import { useUser } from '@/hooks/useUser';
 import { formatPrice } from '@/lib/currency';
 import EstimatedDelivery from '@/components/shipping/EstimatedDelivery';
-import { normalizePersianDigits, isValidIranianMobile, isValidIranianPostalCode } from '@/lib/validation';
+import { normalizePersianDigits, normalizeIranianMobile, isValidIranianMobile, isValidIranianPostalCode } from '@/lib/validation';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -138,6 +138,7 @@ export default function CheckoutPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+    setError(null);
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -158,7 +159,7 @@ export default function CheckoutPage() {
       return;
     }
 
-    const normalizedPhone = normalizePersianDigits(formData.phone).trim();
+    const normalizedPhone = normalizeIranianMobile(formData.phone);
     if (!normalizedPhone || !isValidIranianMobile(normalizedPhone)) {
       setError('لطفاً شماره موبایل معتبر ۱۱ رقمی (مانند ۰۹۱۲۳۴۵۶۷۸۹) وارد کنید.');
       return;
@@ -199,6 +200,10 @@ export default function CheckoutPage() {
     setIsLoadingApi(true);
 
     // Construct unified payload for ZarinPal checkout API
+    const recipientPhoneNormalized = formData.recipientPhone.trim()
+      ? normalizeIranianMobile(formData.recipientPhone)
+      : normalizedPhone;
+
     const payload = {
       items: cart,
       shippingAddress: {
@@ -207,7 +212,7 @@ export default function CheckoutPage() {
         address: formData.address.trim(),
         postalCode: normalizedZip,
         recipientName: formData.recipientName.trim() || `${formData.firstName.trim()} ${formData.lastName.trim()}`,
-        recipientPhone: formData.recipientPhone.trim() ? normalizePersianDigits(formData.recipientPhone).trim() : normalizedPhone,
+        recipientPhone: recipientPhoneNormalized,
       },
       contactInfo: {
         firstName: formData.firstName.trim(),
@@ -591,7 +596,7 @@ export default function CheckoutPage() {
                       {isQuotingShipping ? (
                         <span className="flex items-center gap-1 text-xs text-amber-400">
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          محاسبه تیپاکس...
+                          محاسبه هزینه ارسال...
                         </span>
                       ) : shipping === 0 ? (
                         'رایگان'
@@ -601,7 +606,7 @@ export default function CheckoutPage() {
                     </span>
                   </div>
 
-                  {shippingQuoteMessage && (
+                  {shippingQuoteMessage && !shippingQuoteMessage.includes('auth unavailable') && (
                     <p className="text-[11px] text-amber-300/80 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/15 text-center">
                       ✦ {shippingQuoteMessage}
                     </p>
