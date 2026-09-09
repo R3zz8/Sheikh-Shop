@@ -207,9 +207,36 @@ export async function GET(req: Request) {
                 shippingAddress: updatedAddress,
               },
             });
+          } else {
+            const updatedAddress = {
+              ...shippingAddr,
+              tipaxStatus: 'FAILED',
+              tipaxError: tipaxResult.error || tipaxResult.message || 'خطا در ثبت سفارش در تیپاکس',
+              tipaxFailedAt: new Date().toISOString(),
+            };
+
+            await prisma.order.update({
+              where: { id: order.id },
+              data: {
+                shippingAddress: updatedAddress,
+              },
+            });
           }
-        } catch (tipaxErr) {
+        } catch (tipaxErr: any) {
           console.error('[Tipax Order Creation Post-Payment Exception]', tipaxErr);
+          const updatedAddress = {
+            ...shippingAddr,
+            tipaxStatus: 'FAILED',
+            tipaxError: tipaxErr?.message || 'خطا در ارتباط با سامانه تیپاکس',
+            tipaxFailedAt: new Date().toISOString(),
+          };
+
+          await prisma.order.update({
+            where: { id: order.id },
+            data: {
+              shippingAddress: updatedAddress,
+            },
+          });
         }
       }
 

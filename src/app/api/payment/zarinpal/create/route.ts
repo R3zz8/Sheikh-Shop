@@ -273,6 +273,7 @@ export async function POST(req: NextRequest) {
           postalCode: shippingAddress.postalCode,
           shippingProvider: tipaxQuote.provider,
           shippingQuoteMessage: tipaxQuote.message,
+          tipaxStatus: 'PENDING',
           orderNotes,
         },
         items: {
