@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 
 export interface ValidationError {
   field: string;
@@ -185,13 +185,17 @@ export class Validator {
 
 /**
  * Normalizes Persian and Arabic digits in a string to English standard digits.
+ * Also strips invisible unicode characters (ZWNJs, zero-width spaces, LTR/RTL marks).
  */
 export function normalizePersianDigits(input: string): string {
   if (!input) return '';
   const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
   const arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
 
-  let normalized = input;
+  let normalized = String(input)
+    .replace(/[\u200B-\u200D\uFEFF\u200E\u200F]/g, '')
+    .trim();
+
   for (let i = 0; i < 10; i++) {
     const pDigit = persianDigits[i];
     const aDigit = arabicDigits[i];
@@ -206,12 +210,39 @@ export function normalizePersianDigits(input: string): string {
 }
 
 /**
+ * Normalizes an Iranian mobile phone number format to canonical '09XXXXXXXXX' string.
+ * Supports:
+ * - 09123456789
+ * - 9123456789
+ * - +989123456789
+ * - 00989123456789
+ * - 989123456789
+ * - Persian/Arabic numerals
+ */
+export function normalizeIranianMobile(mobile: string): string {
+  if (!mobile) return '';
+  let clean = normalizePersianDigits(mobile).replace(/\s+/g, '');
+
+  if (clean.startsWith('+98')) {
+    clean = '0' + clean.slice(3);
+  } else if (clean.startsWith('0098')) {
+    clean = '0' + clean.slice(4);
+  } else if (clean.startsWith('98') && clean.length === 12) {
+    clean = '0' + clean.slice(2);
+  } else if (clean.startsWith('9') && clean.length === 10) {
+    clean = '0' + clean;
+  }
+
+  return clean;
+}
+
+/**
  * Validates an Iranian mobile phone number format (e.g. 09123456789).
  */
 export function isValidIranianMobile(mobile: string): boolean {
   if (!mobile) return false;
-  const clean = normalizePersianDigits(mobile).trim();
-  return /^09\d{9}$/.test(clean);
+  const canonical = normalizeIranianMobile(mobile);
+  return /^09\d{9}$/.test(canonical);
 }
 
 /**
@@ -219,7 +250,7 @@ export function isValidIranianMobile(mobile: string): boolean {
  */
 export function isValidIranianPostalCode(postalCode: string): boolean {
   if (!postalCode) return false;
-  const clean = normalizePersianDigits(postalCode).trim();
+  const clean = normalizePersianDigits(postalCode).replace(/\s+/g, '');
   return /^\d{10}$/.test(clean);
 }
 

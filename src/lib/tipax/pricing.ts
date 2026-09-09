@@ -178,6 +178,6 @@ function returnFallbackQuote(
     currency: 'TOMAN',
     isFallback: true,
     provider: 'DEFAULT_FALLBACK',
-    message: reason ? `تعرفه عمومی ارسال (${reason})` : 'تعرفه عمومی ارسال',
+    message: 'تعرفه عمومی ارسال',
   };
 }

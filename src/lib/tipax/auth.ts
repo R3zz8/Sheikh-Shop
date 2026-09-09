@@ -5,7 +5,7 @@
 
 import type { TipaxAuthToken, TipaxTokenResponse } from './types';
 
-const TIPAX_BASE_URL = process.env.TIPAX_BASE_URL || 'https://omtestapi.tipax.ir';
+const TIPAX_BASE_URL = process.env.TIPAX_BASE_URL || 'https://omapi.tipax.ir';
 
 // In-memory token cache
 let cachedToken: TipaxAuthToken | null = null;
