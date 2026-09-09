@@ -107,8 +107,8 @@ describe('Tipax Shipping Integration Unit Tests', () => {
     it('returns payment types with correct Persian titles and descriptions', async () => {
       const paymentTypes = await TipaxClient.getPaymentTypes();
       expect(paymentTypes.length).toBeGreaterThanOrEqual(3);
-      expect(paymentTypes[0].id).toBe(1);
-      expect(paymentTypes[0].title).toContain('نقدی');
+      expect(paymentTypes[0]!.id).toBe(1);
+      expect(paymentTypes[0]!.title).toContain('نقدی');
     });
 
     it('returns default packing price profiles when API is offline', async () => {
