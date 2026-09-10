@@ -1,3 +1,6 @@
+/**
+ * @jest-environment node
+ */
 import { normalizePersianDigits, normalizeIranianMobile, isValidIranianMobile, isValidIranianPostalCode } from '@/lib/validation';
 import { getTipaxShippingQuoteServer } from '@/lib/tipax/pricing';
 
