@@ -176,7 +176,7 @@ describe('Torob Integration Tests', () => {
 
       const result = mapProductToTorobV3(mockProduct);
       expect(result.availability).toBe(false);
-      expect(result.current_price).toBe(45000000);
+      expect(result.current_price).toBe(0); // Torob spec: "Use 0 for unavailable products"
     });
   });
 

@@ -86,7 +86,7 @@ export function mapProductToTorob(product: ProductsWithImages & Record<string, a
   return {
     product_id: product.id,
     page_url,
-    price: Math.round(priceInfo.price), // Price in Toman (IRT)
+    price: isAvailable ? Math.round(priceInfo.price) : 0, // Price in Toman (IRT), 0 when unavailable
     availability,
     title: product.name,
     category_name: product.Category?.name || String(product.category || ''),
@@ -168,7 +168,7 @@ export function mapProductToTorobV3(product: Record<string, any>): TorobV3Produc
     product_group_id: product.id,
     title: product.name,
     subtitle: product.excerpt ? product.excerpt.slice(0, 500) : null,
-    current_price: Math.round(priceInfo.price),
+    current_price: isAvailable ? Math.round(priceInfo.price) : 0,
     old_price: priceInfo.oldPrice ? Math.round(priceInfo.oldPrice) : null,
     availability: isAvailable,
     category_name,
@@ -264,7 +264,11 @@ export async function verifyTorobToken(
       'www.sheikhshops.com',
     ])).filter((aud): aud is string => Boolean(aud));
 
-    if (payload.aud && !validAudiences.includes(payload.aud)) {
+    if (!payload.aud) {
+      return { isValid: false, error: 'Missing required "aud" (audience) claim' };
+    }
+
+    if (!validAudiences.includes(payload.aud)) {
       return { isValid: false, error: `Invalid audience claim: "${payload.aud}"` };
     }
 
