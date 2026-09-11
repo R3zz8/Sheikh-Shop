@@ -2,11 +2,13 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import Categories from '@/components/Categories';
 import NewProductsSection from '@/components/home/NewProductsSection';
+import BestSellersCircularShowcase from '@/components/home/BestSellersCircularShowcase';
 import { ChevronLeft, Code2 } from 'lucide-react';
 import FAQSchema from '@/components/seo/FAQSchema';
 import type { Metadata } from 'next';
 import { buildLanguageAlternates } from '@/lib/seo/hreflang';
 import { getActiveMainCategories } from '@/lib/services/getCategories';
+import { getBestSellers } from '@/lib/services/getBestSellers';
 import {
   SheikhScene,
   AmazingDeals,
@@ -63,7 +65,10 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function Home() {
-  const initialCategories = await getActiveMainCategories();
+  const [initialCategories, initialBestSellers] = await Promise.all([
+    getActiveMainCategories(),
+    getBestSellers(10),
+  ]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-950 via-stone-900 to-amber-950 relative">
@@ -80,6 +85,9 @@ export default async function Home() {
       {/* Flagship Brand Hero Experience (RTL Left Content & interactive 3D Sheikh right side) */}
       <SheikhScene />
       
+      {/* Golden Ring Best Sellers Circular Showcase */}
+      <BestSellersCircularShowcase initialProducts={initialBestSellers} />
+
       {/* Mobile Carousel - Below Categories & New Products */}
       <div className="relative z-20 px-4 py-6">
         <CarouselMobile />

@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useRequireRole } from '@/hooks/useRBAC';
-import { Package, Users, FileText, CreditCard, BarChart3, MessageSquare, Sliders, FolderTree, Sparkles, Code2 } from 'lucide-react';
+import { Package, Users, FileText, CreditCard, BarChart3, MessageSquare, Sliders, FolderTree, Sparkles, Code2, Star } from 'lucide-react';
 
 export default function DashboardClient() {
   const hasAccess = useRequireRole(['ADMIN', 'SUPERADMIN']);
@@ -22,6 +22,12 @@ export default function DashboardClient() {
   }
 
   const dashboardCards = [
+    {
+      title: 'محبوب‌ترین انتخاب‌های شیخ (Best Sellers)',
+      description: 'مدیریت محصولات پرفروش در حلقه طلایی صفحه اصلی',
+      href: '/dashboard/best-sellers',
+      icon: Star,
+    },
     {
       title: 'دسته‌بندی‌ها (Categories)',
       description: 'مدیریت دسته‌بندی‌های اصلی و تصاویر آنلاین',
