@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import Categories from '@/components/Categories';
 import NewProductsSection from '@/components/home/NewProductsSection';
+import BestSellersCircularShowcase from '@/components/home/BestSellersCircularShowcase';
 import { ChevronLeft, Code2 } from 'lucide-react';
 import FAQSchema from '@/components/seo/FAQSchema';
 import type { Metadata } from 'next';
@@ -87,6 +88,9 @@ export default async function Home() {
       {/* New Products Section - Directly below Categories */}
       <NewProductsSection />
 
+      {/* Golden Ring Circular Best Sellers Showcase */}
+      <BestSellersCircularShowcase />
+
       {/* Flagship Brand Hero Experience (RTL Left Content & interactive 3D Sheikh right side) */}
       <SheikhScene />
       
@@ -126,12 +130,6 @@ export default async function Home() {
         {/* Features Section */}
         <section className="container-fluid section-padding-sm pt-4 pb-12">
           <div className="max-w-6xl mx-auto px-4">
-            {/*
-              Optimized Mobile & Desktop Grid Layout:
-              - Mobile & Tablet: Always 1 perfectly balanced horizontal row (grid-cols-3)
-              - Desktop: Still 3 columns (grid-cols-3) with standard desktop dimensions.
-              - Uniform, balanced padding, gaps, and heights.
-            */}
             <div className="grid grid-cols-3 gap-3 sm:gap-4 md:gap-6">
               {/* Feature 1 */}
               <div className="card p-4 text-center flex flex-col justify-start items-stretch h-full bg-stone-900/40 border border-amber-500/10 rounded-2xl backdrop-blur-md">
