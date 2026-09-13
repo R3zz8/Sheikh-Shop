@@ -166,6 +166,8 @@ export default function Footer() {
                   <a
                     key={social.label}
                     href={social.href}
+                    target={social.href !== '#' ? '_blank' : undefined}
+                    rel={social.href !== '#' ? 'noopener noreferrer' : undefined}
                     aria-label={social.label}
                     className={cn(
                       'w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20',
@@ -190,6 +192,7 @@ export default function Footer() {
                 <a
                   referrerPolicy="origin"
                   target="_blank"
+                  rel="noopener noreferrer"
                   href="https://trustseal.enamad.ir/?id=764844&Code=llkuvWwCWtMYak50jjDsj3yYjWoxjTdF"
                   className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 rounded-lg p-1 block"
                   aria-label="نماد اعتماد الکترونیکی فروشگاه شیخ"
@@ -381,6 +384,7 @@ export default function Footer() {
                   <a
                     referrerPolicy="origin"
                     target="_blank"
+                    rel="noopener noreferrer"
                     href="https://trustseal.enamad.ir/?id=764844&Code=llkuvWwCWtMYak50jjDsj3yYjWoxjTdF"
                     className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 rounded-lg p-1 block"
                     aria-label="نماد اعتماد الکترونیکی فروشگاه شیخ"
@@ -414,14 +418,16 @@ export default function Footer() {
                 <span className="text-gray-300 text-[16px] font-medium">همراه ما باشید:</span>
                 <div className="flex items-center gap-4">
                   {[
-                    { icon: Instagram, href: '#', label: 'Instagram', hoverColor: 'hover:text-pink-400' },
+                    { icon: Instagram, href: 'https://www.instagram.com/sheikh._.shops?igsh=MW41bXhqcmlxNG82Mw==', label: 'Instagram', hoverColor: 'hover:text-pink-400' },
                     { icon: Twitter, href: '#', label: 'Twitter', hoverColor: 'hover:text-blue-400' },
-                    { icon: Youtube, href: '#', label: 'YouTube', hoverColor: 'hover:text-red-400' },
+                    { icon: Youtube, href: 'https://www.youtube.com/@Fuzzel_Fun', label: 'YouTube', hoverColor: 'hover:text-red-400' },
                     { icon: MessageCircle, href: '#', label: 'WhatsApp', hoverColor: 'hover:text-green-400' },
                   ].map((social) => (
                     <a
                       key={social.label}
                       href={social.href}
+                      target={social.href !== '#' ? '_blank' : undefined}
+                      rel={social.href !== '#' ? 'noopener noreferrer' : undefined}
                       aria-label={social.label}
                       className={cn(
                         'w-10 h-10 rounded-full bg-white/8 backdrop-blur-sm border border-white/20',

@@ -71,6 +71,16 @@ export default async function Home() {
       <div className="absolute inset-0 bg-gradient-radial from-amber-500/3 via-orange-500/2 to-yellow-500/3 pointer-events-none animate-pulse" />
       <div className="absolute inset-0 bg-gradient-to-b from-amber-500/2 via-transparent to-orange-500/2 pointer-events-none" />
       
+      {/* Primary Brand Heading Header (SSR Canonical H1) */}
+      <header className="pt-6 sm:pt-8 pb-2 text-center max-w-4xl mx-auto px-4 select-none relative z-10">
+        <h1 className="text-[20px] xs:text-[24px] sm:text-[32px] md:text-[38px] font-black bg-gradient-to-r from-amber-100 via-yellow-200 to-orange-100 bg-clip-text text-transparent font-vazirmatn leading-tight drop-shadow-md">
+          فروشگاه شیخ؛ اکوسیستم محصولات لوکس و خدمات تخصصی
+        </h1>
+        <p className="text-stone-300 text-[12px] sm:text-[14px] md:text-[16px] font-vazirmatn mt-2 opacity-90 max-w-2xl mx-auto leading-relaxed">
+          مرجع انحصاری <strong>کالاهای دیجیتال</strong>، <strong>لوازم خودرو</strong>، <strong>تجهیزات هوشمند</strong> و <strong>خدمات تخصصی طراحی وب</strong>
+        </p>
+      </header>
+
       {/* Categories Section */}
       <Categories initialCategories={initialCategories} />
 
@@ -130,9 +140,9 @@ export default async function Home() {
                 </div>
                 {/* Thin separator */}
                 <div className="mx-auto mb-2 h-px w-10 sm:w-16 bg-gradient-to-r from-amber-300 via-yellow-300 to-orange-300/70 shrink-0" />
-                <h2 className="text-[13px] sm:text-[16px] md:text-[18px] lg:text-[22px] font-bold text-white mb-1 leading-tight tracking-tight select-none font-vazirmatn">کیفیت ممتاز</h2>
+                <h3 className="text-[13px] sm:text-[16px] md:text-[18px] lg:text-[22px] font-bold text-white mb-1 leading-tight tracking-tight select-none font-vazirmatn">کیفیت ممتاز</h3>
                 <p className="text-gray-300 text-[11px] sm:text-[13px] md:text-[15px] lg:text-[16px] leading-[1.4] sm:leading-relaxed font-vazirmatn">
-                  مجموعه‌ای منتخب از محصولات با هنر ساخت بی‌نظیر
+                  مجموعه‌ای منتخب از محصولات با <strong>هنر ساخت بی‌نظیر</strong>
                 </p>
               </div>
 
@@ -142,9 +152,9 @@ export default async function Home() {
                   <span className="text-lg sm:text-xl md:text-2xl">🚚</span>
                 </div>
                 <div className="mx-auto mb-2 h-px w-10 sm:w-16 bg-gradient-to-r from-amber-300 via-yellow-300 to-orange-300/70 shrink-0" />
-                <h2 className="text-[13px] sm:text-[16px] md:text-[18px] lg:text-[22px] font-bold text-white mb-1 leading-tight tracking-tight select-none font-vazirmatn">ارسال سریع</h2>
+                <h3 className="text-[13px] sm:text-[16px] md:text-[18px] lg:text-[22px] font-bold text-white mb-1 leading-tight tracking-tight select-none font-vazirmatn">ارسال سریع</h3>
                 <p className="text-gray-300 text-[11px] sm:text-[13px] md:text-[15px] lg:text-[16px] leading-[1.4] sm:leading-relaxed font-vazirmatn">
-                  ارسال سریع و مطمئن درب منزل با بسته‌بندی لوکس
+                  ارسال سریع و مطمئن درب منزل با <strong>بسته‌بندی لوکس</strong>
                 </p>
               </div>
 
@@ -154,9 +164,9 @@ export default async function Home() {
                   <span className="text-lg sm:text-xl md:text-2xl">💎</span>
                 </div>
                 <div className="mx-auto mb-2 h-px w-10 sm:w-16 bg-gradient-to-r from-amber-300 via-yellow-300 to-orange-300/70 shrink-0" />
-                <h2 className="text-[13px] sm:text-[16px] md:text-[18px] lg:text-[22px] font-bold text-white mb-1 leading-tight tracking-tight select-none font-vazirmatn">مجموعه انحصاری</h2>
+                <h3 className="text-[13px] sm:text-[16px] md:text-[18px] lg:text-[22px] font-bold text-white mb-1 leading-tight tracking-tight select-none font-vazirmatn">مجموعه انحصاری</h3>
                 <p className="text-gray-300 text-[11px] sm:text-[13px] md:text-[15px] lg:text-[16px] leading-[1.4] sm:leading-relaxed font-vazirmatn">
-                  تخفیف‌های انحصاری و نسخه‌های خاص برای شما
+                  تخفیف‌های انحصاری و <strong>نسخه‌های خاص</strong> برای شما
                 </p>
               </div>
             </div>

@@ -173,7 +173,7 @@ const Categories = React.memo(function Categories({ initialCategories }: Categor
                         style={{ opacity: 1, animation: 'none' }}
                         className="text-gray-300 text-[14px] sm:text-[16px] md:text-[18px] max-w-2xl mx-auto font-vazirmatn leading-relaxed select-none px-2"
                     >
-                        مجموعه‌ای از برترین محصولات منتخب را در دسته‌بندی‌های اختصاصی شیخ کشف کنید.
+                        مجموعه‌ای از برترین محصولات منتخب را در <strong>دسته‌بندی‌های اختصاصی شیخ</strong> کشف کنید.
                     </p>
                 </div>
 

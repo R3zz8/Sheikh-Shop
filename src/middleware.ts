@@ -180,6 +180,16 @@ async function getAuthenticatedUser(request: NextRequest): Promise<{ id: string;
 }
 
 export async function middleware(request: NextRequest) {
+  // Canonical host enforcement: Redirect www to non-www
+  const host = request.headers.get('host') || '';
+  if (host.toLowerCase().startsWith('www.')) {
+    const canonicalHost = host.replace(/^www\./i, '');
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.host = canonicalHost;
+    redirectUrl.protocol = 'https:';
+    return NextResponse.redirect(redirectUrl, { status: 301 });
+  }
+
   const pathname = request.nextUrl.pathname;
 
   // Bypass all static assets, chunks, and static public files immediately
