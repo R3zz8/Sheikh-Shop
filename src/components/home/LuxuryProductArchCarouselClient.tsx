@@ -69,9 +69,9 @@ function ArchSlideCard({ slide }: { slide: MarketingShowcaseSlideData }) {
 
         {/* Marketing Title Under Arch (Clicking title also navigates to target product) */}
         <div className="mt-2 xs:mt-3 sm:mt-3.5 text-center w-full px-1">
-          <h3 className="font-vazirmatn text-xs xs:text-sm sm:text-base font-bold text-stone-200 group-hover/arch:text-amber-300 transition-colors duration-300 truncate leading-snug">
+          <p className="font-vazirmatn text-xs xs:text-sm sm:text-base font-bold text-stone-200 group-hover/arch:text-amber-300 transition-colors duration-300 truncate leading-snug">
             {slide.title}
-          </h3>
+          </p>
         </div>
       </Link>
     </div>

@@ -64,9 +64,9 @@ function NewProductCard({ product, isFirst }: { product: ProductsWithImages | an
 
         {/* Compact Body - Name, Price, CTA only (NO DESCRIPTION) */}
         <div className="pt-1 xs:pt-1.5 sm:pt-2 flex flex-col flex-grow justify-between text-right min-h-0">
-          <h3 className="font-bold text-[10px] xs:text-[11px] sm:text-xs md:text-sm text-stone-100 line-clamp-1 group-hover/card:text-amber-300 transition-colors font-vazirmatn leading-tight shrink-0">
+          <p className="font-bold text-[10px] xs:text-[11px] sm:text-xs md:text-sm text-stone-100 line-clamp-1 group-hover/card:text-amber-300 transition-colors font-vazirmatn leading-tight shrink-0">
             {product.name}
-          </h3>
+          </p>
 
           {/* Bottom Price & Action Row */}
           <div className="pt-1 border-t border-amber-500/15 flex items-center justify-between gap-1 mt-auto shrink-0">

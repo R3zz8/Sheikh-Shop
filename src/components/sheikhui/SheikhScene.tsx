@@ -327,7 +327,7 @@ export default function SheikhScene() {
             </motion.div>
 
             {/* Headline */}
-            <motion.h1
+            <motion.h2
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.1 }}
@@ -338,7 +338,7 @@ export default function SheikhScene() {
               <span className="bg-gradient-to-r from-amber-400 via-orange-400 to-yellow-300 bg-clip-text text-transparent">
                 خوش آمدید
               </span>
-            </motion.h1>
+            </motion.h2>
 
             {/* Subheadline */}
             <motion.p

@@ -660,9 +660,9 @@ export default function RoyalShowcase() {
 
                     {/* Text Description Block */}
                     <div className="text-right flex flex-col justify-center px-1">
-                      <h3 className="text-[12px] sm:text-[16px] md:text-[18px] lg:text-[20px] font-black text-amber-5 leading-tight tracking-tight mb-1 truncate font-vazirmatn">
+                      <p className="text-[12px] sm:text-[16px] md:text-[18px] lg:text-[20px] font-black text-amber-5 leading-tight tracking-tight mb-1 truncate font-vazirmatn">
                         {activeProduct.name}
-                      </h3>
+                      </p>
 
                       {/* Responsive rating stars */}
                       <div className="flex items-center gap-0.5 mb-1.5 justify-start">
