@@ -135,7 +135,7 @@ export const getBestSellers = cache(async (limit: number = 15): Promise<BestSell
 
     // 2. Fallback if fewer than limit best sellers exist
     if (rawProducts.length < limit) {
-      const existingIds = rawProducts.map((p) => p.id);
+      const existingIds = rawProducts.map((p: { id: string }) => p.id);
       const supplementaryProducts = await prisma.product.findMany({
         where: {
           status: 'ACTIVE',

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, ChevronLeft, Crown } from 'lucide-react';
-import { BestSellerProductData } from '@/lib/services/getBestSellers';
+import type { BestSellerProductData } from '@/lib/services/getBestSellers';
 import { getOptimizedCloudinaryUrl } from '@/lib/cloudinary-url';
 
 interface BestSellersCircularShowcaseClientProps {
@@ -78,11 +78,13 @@ export default function BestSellersCircularShowcaseClient({
 
   // Touch Swipe Handlers for Mobile
   const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
+    if (e.touches && e.touches[0]) {
+      touchStartX.current = e.touches[0].clientX;
+    }
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStartX.current === null) return;
+    if (touchStartX.current === null || !e.changedTouches || !e.changedTouches[0]) return;
     const touchEndX = e.changedTouches[0].clientX;
     const diffX = touchStartX.current - touchEndX;
 
