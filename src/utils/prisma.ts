@@ -1079,6 +1079,10 @@ let mockWebCalculatorRules: any[] = [
 ];
 
 let mockWebLeads: any[] = [];
+let mockMarketAssets: any[] = [];
+let mockMarketQuotes: any[] = [];
+let mockMarketPriceHistories: any[] = [];
+let mockMarketProviderStatuses: any[] = [];
 
 const matchFilter = (item: any, where: any): boolean => {
   if (!where) return true;
@@ -1397,6 +1401,19 @@ const makeMockModelWithWrites = (name: string, data: any[]) => {
           if (name === 'affiliate') mockAffiliates = localData;
           if (name === 'marketingShowcaseSlide') mockMarketingShowcaseSlides = localData;
           if (name === 'webDesignShowcase') mockWebDesignShowcase = localData;
+          if (name === 'marketAsset') mockMarketAssets = localData;
+          if (name === 'marketQuote') mockMarketQuotes = localData;
+          if (name === 'marketPriceHistory') mockMarketPriceHistories = localData;
+          if (name === 'marketProviderStatus') mockMarketProviderStatuses = localData;
+          if (name === 'marketAsset') mockMarketAssets = localData;
+          if (name === 'marketQuote') mockMarketQuotes = localData;
+          if (name === 'marketPriceHistory') mockMarketPriceHistories = localData;
+          if (name === 'marketProviderStatus') mockMarketProviderStatuses = localData;
+          if (name === 'marketAsset') mockMarketAssets = localData;
+          if (name === 'marketQuote') mockMarketQuotes = localData;
+          if (name === 'marketPriceHistory') mockMarketPriceHistories = localData;
+          if (name === 'marketProviderStatus') mockMarketProviderStatuses = localData;
+          if (name === 'webDesignShowcase') mockWebDesignShowcase = localData;
           if (name === 'webDesignShowcase') mockWebDesignShowcase = localData;
           if (name === 'webDesignShowcase') mockWebDesignShowcase = localData;
 
@@ -1637,6 +1654,10 @@ const createMockPrisma = () => {
       if (prop === 'webFaq') return makeMockModelWithWrites('webFaq', mockWebFaqs);
       if (prop === 'webCalculatorRule') return makeMockModelWithWrites('webCalculatorRule', mockWebCalculatorRules);
       if (prop === 'webLead') return makeMockModelWithWrites('webLead', mockWebLeads);
+      if (prop === 'marketAsset') return makeMockModelWithWrites('marketAsset', mockMarketAssets);
+      if (prop === 'marketQuote') return makeMockModelWithWrites('marketQuote', mockMarketQuotes);
+      if (prop === 'marketPriceHistory') return makeMockModelWithWrites('marketPriceHistory', mockMarketPriceHistories);
+      if (prop === 'marketProviderStatus') return makeMockModelWithWrites('marketProviderStatus', mockMarketProviderStatuses);
       if (prop === '$connect') return async () => {};
       if (prop === '$disconnect') return async () => {};
       if (prop === '$transaction') {

@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { prisma } from '@/lib/prisma';
 import { getBaseUrl } from '@/lib/seo/sitemapUtils';
+import { CORE_MARKET_ASSETS } from '@/lib/market-data/symbols';
 
 export const revalidate = 3600; // Revalidate sitemap every hour
 
@@ -19,6 +20,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: `${baseUrl}/products`,
       lastModified: new Date(),
       changeFrequency: 'daily',
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/market`,
+      lastModified: new Date(),
+      changeFrequency: 'always',
       priority: 0.9,
     },
     {
@@ -91,5 +98,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error('Error generating category sitemap entries:', error);
   }
 
-  return [...staticRoutes, ...productEntries, ...categoryEntries];
+  const marketEntries: MetadataRoute.Sitemap = CORE_MARKET_ASSETS.map((asset) => ({
+    url: `${baseUrl}/market/${asset.slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'hourly',
+    priority: asset.isFeatured ? 0.9 : 0.8,
+  }));
+
+  return [...staticRoutes, ...productEntries, ...categoryEntries, ...marketEntries];
 }
