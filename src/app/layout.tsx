@@ -10,24 +10,57 @@ import { LuxuryUnboxingProvider } from '@/components/3d/LuxuryUnboxingProvider';
 import { OrganizationJsonLd, WebsiteJsonLd } from '@/components/seo/JsonLd';
 import { generatePageSEO } from '@/lib/seo/core';
 import AppLayoutContent from '@/components/AppLayoutContent';
-import { Inter, Vazirmatn } from 'next/font/google';
 import PWAResponsiveSplash from '@/components/PWAResponsiveSplash';
+import localFont from 'next/font/local';
 import Script from 'next/script';
 
-const inter = Inter({
-  subsets: ['latin'],
-  display: 'swap',
+const inter = localFont({
+  src: [
+    {
+      path: '../../public/fonts/Inter-Latin.woff2',
+      weight: '400',
+      style: 'normal',
+    },
+    {
+      path: '../../public/fonts/Inter-Latin.woff2',
+      weight: '600',
+      style: 'normal',
+    },
+    {
+      path: '../../public/fonts/Inter-Latin.woff2',
+      weight: '700',
+      style: 'normal',
+    },
+  ],
   variable: '--font-inter',
-  weight: ['400', '600', '700'],
-  adjustFontFallback: true,
+  display: 'swap',
 });
 
-const vazirmatn = Vazirmatn({
-  subsets: ['arabic'],
-  display: 'swap',
+const vazirmatn = localFont({
+  src: [
+    {
+      path: '../../public/fonts/Vazirmatn-Regular.woff2',
+      weight: '400',
+      style: 'normal',
+    },
+    {
+      path: '../../public/fonts/Vazirmatn-Medium.woff2',
+      weight: '500',
+      style: 'normal',
+    },
+    {
+      path: '../../public/fonts/Vazirmatn-Bold.woff2',
+      weight: '700',
+      style: 'normal',
+    },
+    {
+      path: '../../public/fonts/Vazirmatn-ExtraBold.woff2',
+      weight: '800',
+      style: 'normal',
+    },
+  ],
   variable: '--font-vazirmatn',
-  weight: ['400', '500', '700', '800'],
-  adjustFontFallback: true,
+  display: 'swap',
 });
 
 export async function generateMetadata(): Promise<Metadata> {
