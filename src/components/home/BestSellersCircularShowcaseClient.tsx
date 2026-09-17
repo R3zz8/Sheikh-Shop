@@ -19,7 +19,7 @@ export default function BestSellersCircularShowcaseClient({
   const [direction, setDirection] = useState<1 | -1>(1);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
-  // Consistent initial state between SSR and initial client mount to prevent hydration mismatch
+  // Consistent initial state between SSR and initial client mount (CSS display rules handle mobile/desktop item counts)
   const [itemsPerPage, setItemsPerPage] = useState<number>(5);
 
   const [isPaused, setIsPaused] = useState(false);
@@ -214,7 +214,9 @@ export default function BestSellersCircularShowcaseClient({
                     initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: idx * 0.06 }}
-                    className="flex flex-col items-center group cursor-pointer"
+                    className={`flex-col items-center group cursor-pointer ${
+                      idx === 2 ? 'hidden md:flex' : idx >= 3 ? 'hidden lg:flex' : 'flex'
+                    }`}
                   >
                     <Link
                       href={productUrl}

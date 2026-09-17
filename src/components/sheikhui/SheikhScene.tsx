@@ -283,11 +283,6 @@ export default function SheikhScene() {
     );
   }
 
-  // Mobile-only performance isolation: Render lightweight radial network on mobile (<768px)
-  if (isMobile) {
-    return <MobileSheikhRadialNetwork />;
-  }
-
   // Fallback 2D Render Container (to be passed to ErrorBoundary or directly loaded if WebGL is missing on desktop)
   const renderFallback = (
     <div className="w-full h-[400px] sm:h-[480px] lg:h-[520px] relative z-10 flex items-center justify-center pointer-events-auto">
@@ -300,7 +295,14 @@ export default function SheikhScene() {
   );
 
   return (
-    <section ref={sectionRef} className="relative w-full max-w-7xl mx-auto px-4 py-8 sm:py-12 md:py-16">
+    <>
+      {/* Mobile-only performance isolation: Render lightweight radial network on mobile (<768px) via CSS */}
+      <div className="block md:hidden">
+        <MobileSheikhRadialNetwork />
+      </div>
+
+      {/* Desktop Flagship Hero Experience (>= 768px) */}
+      <section ref={sectionRef} className="hidden md:block relative w-full max-w-7xl mx-auto px-4 py-8 sm:py-12 md:py-16">
       {/* Background Soft Ray / Radial Aura */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-3xl z-0">
         <div className="absolute -top-1/4 -right-1/4 w-[600px] h-[600px] bg-radial-gradient from-amber-500/10 to-transparent blur-[120px] animate-pulse duration-5000" />
@@ -508,5 +510,6 @@ export default function SheikhScene() {
         </div>
       </div>
     </section>
+    </>
   );
 }
