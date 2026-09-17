@@ -18,9 +18,7 @@ export default async function WebDesignServiceCard({ initialData }: WebDesignSer
   }
 
   const title = showcase?.title || 'شیخ وب؛ جایی که ایده‌ها تبدیل به وب‌سایت می‌شوند.';
-  const description =
-    showcase?.description ||
-    'طراحی و توسعه وب‌سایت‌های فروشگاهی، شرکتی، خدماتی و اختصاصی با تکنولوژی‌های مدرن، طراحی حرفه‌ای و تمرکز بر سرعت و تجربه کاربری.';
+  const description = showcase?.description;
   const services =
     showcase?.services && showcase.services.length > 0
       ? showcase.services
@@ -110,7 +108,13 @@ export default async function WebDesignServiceCard({ initialData }: WebDesignSer
 
               {/* Supporting Text */}
               <p className="text-stone-300 text-sm sm:text-base md:text-lg leading-relaxed mb-6 font-normal max-w-2xl">
-                {description}
+                {description ? (
+                  description
+                ) : (
+                  <>
+                    <strong>طراحی و توسعه وب‌سایت‌های</strong> فروشگاهی، شرکتی، خدماتی و اختصاصی با تکنولوژی‌های مدرن، طراحی حرفه‌ای و تمرکز بر سرعت و تجربه کاربری.
+                  </>
+                )}
               </p>
 
               {/* Service Chips / Bullet points */}

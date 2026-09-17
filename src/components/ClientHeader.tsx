@@ -158,8 +158,10 @@ export default function ClientHeader() {
                 <Crown className="w-8 h-8 text-amber-300" />
                 <div className="absolute inset-0 blur-xl bg-amber-400 opacity-60" />
               </div>
-              <Link href="/" className="font-bold text-[26px] md:text-[30px] bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent select-none">
-                فروشگاه شیخ
+              <Link href="/" className="select-none">
+                <h1 className="font-bold text-[26px] md:text-[30px] bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 bg-clip-text text-transparent">
+                  فروشگاه شیخ
+                </h1>
               </Link>
             </div>
 

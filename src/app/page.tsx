@@ -72,16 +72,6 @@ export default async function Home() {
       <div className="absolute inset-0 bg-gradient-radial from-amber-500/3 via-orange-500/2 to-yellow-500/3 pointer-events-none animate-pulse" />
       <div className="absolute inset-0 bg-gradient-to-b from-amber-500/2 via-transparent to-orange-500/2 pointer-events-none" />
       
-      {/* Primary Brand Heading Header (SSR Canonical H1) */}
-      <header className="pt-6 sm:pt-8 pb-2 text-center max-w-4xl mx-auto px-4 select-none relative z-10">
-        <h1 className="text-[20px] xs:text-[24px] sm:text-[32px] md:text-[38px] font-black bg-gradient-to-r from-amber-100 via-yellow-200 to-orange-100 bg-clip-text text-transparent font-vazirmatn leading-tight drop-shadow-md">
-          فروشگاه شیخ؛ اکوسیستم محصولات لوکس و خدمات تخصصی
-        </h1>
-        <p className="text-stone-300 text-[12px] sm:text-[14px] md:text-[16px] font-vazirmatn mt-2 opacity-90 max-w-2xl mx-auto leading-relaxed">
-          مرجع انحصاری <strong>کالاهای دیجیتال</strong>، <strong>لوازم خودرو</strong>، <strong>تجهیزات هوشمند</strong> و <strong>خدمات تخصصی طراحی وب</strong>
-        </p>
-      </header>
-
       {/* Categories Section */}
       <Categories initialCategories={initialCategories} />
 
