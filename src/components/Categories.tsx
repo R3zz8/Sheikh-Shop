@@ -1,9 +1,8 @@
-'use client';
-
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { getOptimizedCloudinaryUrl } from '@/lib/cloudinary-url';
+import { getActiveMainCategories, type PublicCategoryItem } from '@/lib/services/getCategories';
 
 interface Category {
     name: string;
@@ -104,59 +103,46 @@ function renderCategoryTitle(name: string) {
     return formattedJsx;
 }
 
-const Categories = React.memo(function Categories({ initialCategories }: CategoriesProps) {
-    const [categories, setCategories] = useState<Category[]>(
-        initialCategories && initialCategories.length > 0 ? initialCategories : defaultCategories
-    );
+const FULL_BLUR_DATA_URL = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAw00000000';
 
-    useEffect(() => {
-        // Only fetch on client if initialCategories was not provided by SSR/Server Component
-        if (initialCategories && initialCategories.length > 0) {
-            return;
-        }
+export default async function Categories({ initialCategories }: CategoriesProps = {}) {
+    let categories: Category[];
 
-        let isMounted = true;
-        fetch('/api/categories')
-            .then((res) => res.json())
-            .then((data) => {
-                if (isMounted && data.success && Array.isArray(data.data) && data.data.length > 0) {
-                    const mapped: Category[] = data.data.slice(0, 6).map((cat: any) => {
-                        let url = `/categories/${cat.slug}`;
-                        if (cat.slug === 'sheikh-home') url = '/sheikh-home';
-                        else if (cat.slug === 'sheikh-digital') url = '/sheikh-digital';
-                        else if (cat.slug === 'tech-products') url = '/tech-products';
-                        else if (cat.slug === 'products') url = '/products';
-                        else if (cat.slug === 'sheikh-nicotine') url = '/sheikh-nicotine';
-                        else if (cat.slug === 'sheikh-grooming') url = '/sheikh-grooming';
+    if (initialCategories && initialCategories.length > 0) {
+        categories = initialCategories;
+    } else {
+        try {
+            const fetched = await getActiveMainCategories();
+            categories = fetched.map((cat: PublicCategoryItem) => {
+                let url = cat.url || `/categories/${cat.slug}`;
+                if (cat.slug === 'sheikh-home') url = '/sheikh-home';
+                else if (cat.slug === 'sheikh-digital') url = '/sheikh-digital';
+                else if (cat.slug === 'tech-products') url = '/tech-products';
+                else if (cat.slug === 'products') url = '/products';
+                else if (cat.slug === 'sheikh-nicotine') url = '/sheikh-nicotine';
+                else if (cat.slug === 'sheikh-grooming') url = '/sheikh-grooming';
 
-                        let img = cat.image;
-                        if (!img) {
-                            if (cat.slug === 'sheikh-home') img = '/sheikhhome.webp';
-                            else if (cat.slug === 'sheikh-digital') img = '/sheikhdigital.webp';
-                            else if (cat.slug === 'tech-products') img = '/sheikhgajet.webp';
-                            else if (cat.slug === 'sheikh-nicotine') img = '/nicotine.webp';
-                            else if (cat.slug === 'sheikh-grooming') img = '/grooming.webp';
-                            else img = '/food.webp';
-                        }
-
-                        return {
-                            name: cat.name,
-                            image: getOptimizedCloudinaryUrl(img, { width: 384, quality: 70 }),
-                            slug: cat.slug,
-                            url,
-                        };
-                    });
-                    setCategories(mapped);
+                let img = cat.image;
+                if (!img) {
+                    if (cat.slug === 'sheikh-home') img = '/sheikhhome.webp';
+                    else if (cat.slug === 'sheikh-digital') img = '/sheikhdigital.webp';
+                    else if (cat.slug === 'tech-products') img = '/sheikhgajet.webp';
+                    else if (cat.slug === 'sheikh-nicotine') img = '/nicotine.webp';
+                    else if (cat.slug === 'sheikh-grooming') img = '/grooming.webp';
+                    else img = '/food.webp';
                 }
-            })
-            .catch((err) => {
-                console.error('[Categories Component] Error fetching categories:', err);
-            });
 
-        return () => {
-            isMounted = false;
-        };
-    }, [initialCategories]);
+                return {
+                    name: cat.name,
+                    image: getOptimizedCloudinaryUrl(img, { width: 384, quality: 70 }),
+                    slug: cat.slug,
+                    url,
+                };
+            });
+        } catch {
+            categories = defaultCategories;
+        }
+    }
 
     return (
         <section className="container-fluid section-padding relative">
@@ -212,7 +198,7 @@ const Categories = React.memo(function Categories({ initialCategories }: Categor
                                         loading={index === 0 ? 'eager' : 'lazy'}
                                         quality={70}
                                         placeholder="blur"
-                                        blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
+                                        blurDataURL={FULL_BLUR_DATA_URL}
                                     />
                                     {/* Overlay for optimal text readability and contrast */}
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-black/10 to-transparent opacity-40 group-hover:opacity-60 transition-opacity duration-500" />
@@ -254,6 +240,4 @@ const Categories = React.memo(function Categories({ initialCategories }: Categor
             </div>
         </section>
     );
-});
-
-export default Categories;
+}
