@@ -107,6 +107,86 @@ model Unit {
   @@index([sortOrder])
 }
 
+model MarketAsset {
+  id             String               @id @default(cuid())
+  symbol         String               @unique @db.VarChar(50)
+  slug           String               @unique @db.VarChar(100)
+  nameFa         String               @db.VarChar(150)
+  nameEn         String               @db.VarChar(150)
+  category       String               @db.VarChar(50)
+  market         String               @default("GLOBAL") @db.VarChar(50)
+  unit           String               @db.VarChar(50)
+  icon           String?              @db.VarChar(100)
+  isActive       Boolean              @default(true)
+  isFeatured     Boolean              @default(false)
+  sortOrder      Int                  @default(0)
+  seoTitle       String?              @db.VarChar(150)
+  seoDescription String?              @db.VarChar(300)
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  quotes         MarketQuote[]
+  history        MarketPriceHistory[]
+
+  @@index([category])
+  @@index([isActive])
+  @@index([isFeatured])
+  @@index([sortOrder])
+  @@index([slug])
+}
+
+model MarketQuote {
+  id               String      @id @default(cuid())
+  assetId          String
+  currentPrice     Float
+  buyPrice         Float?
+  sellPrice        Float?
+  priceChange      Float       @default(0.0)
+  percentChange    Float       @default(0.0)
+  direction        String      @default("NEUTRAL") @db.VarChar(20)
+  provider         String      @default("NAVASAN") @db.VarChar(50)
+  unit             String      @db.VarChar(50)
+  isStale          Boolean     @default(false)
+  providerTimestamp DateTime    @default(now())
+  fetchedAt        DateTime    @default(now())
+  asset            MarketAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@index([assetId])
+  @@index([fetchedAt])
+  @@index([providerTimestamp])
+}
+
+model MarketPriceHistory {
+  id        String      @id @default(cuid())
+  assetId   String
+  price     Float
+  open      Float?
+  high      Float?
+  low       Float?
+  close     Float?
+  volume    Float?
+  provider  String      @default("SYSTEM") @db.VarChar(50)
+  timestamp DateTime    @default(now())
+  asset     MarketAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@index([assetId])
+  @@index([timestamp])
+  @@index([assetId, timestamp])
+}
+
+model MarketProviderStatus {
+  id              String   @id @default(cuid())
+  providerName    String   @unique @db.VarChar(50)
+  status          String   @default("HEALTHY") @db.VarChar(20)
+  lastSuccessFetch DateTime?
+  lastFailedFetch  DateTime?
+  latencyMs       Int?
+  errorCode       String?  @db.VarChar(50)
+  errorMessage    String?  @db.Text
+  updatedAt       DateTime @updatedAt
+
+  @@index([status])
+}
+
 model WebService {
   id                String              @id @default(cuid())
   title             String              @db.VarChar(255)
