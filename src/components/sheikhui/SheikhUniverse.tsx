@@ -251,9 +251,9 @@ function GoldenEmblem({ scale, disabled }: EmblemProps) {
           className="select-none pointer-events-none"
         >
           <div className="flex flex-col items-center justify-center font-vazirmatn text-center">
-            <h1 className="text-xl md:text-2xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-yellow-300 to-amber-100 drop-shadow-[0_2px_10px_rgba(245,158,11,0.5)] whitespace-nowrap">
+            <span className="text-xl md:text-2xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-yellow-300 to-amber-100 drop-shadow-[0_2px_10px_rgba(245,158,11,0.5)] whitespace-nowrap block">
               فروشگاه شیخ
-            </h1>
+            </span>
             <div className="w-12 h-[2px] bg-gradient-to-r from-transparent via-amber-400 to-transparent mt-1" />
             <span className="text-[8px] md:text-[10px] tracking-widest text-amber-200/80 uppercase mt-0.5">
               EST. 2024

@@ -307,9 +307,9 @@ export default function PremiumMobileMenu({
                 <Crown className="w-10 h-10 text-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.5)]" />
                 <div className="absolute inset-0 blur-lg bg-amber-400/40 animate-pulse" />
               </div>
-              <h1 className="text-xl md:text-2xl font-black bg-gradient-to-r from-amber-200 via-amber-100 to-yellow-200 bg-clip-text text-transparent select-none tracking-wide">
+              <span className="text-xl md:text-2xl font-black bg-gradient-to-r from-amber-200 via-amber-100 to-yellow-200 bg-clip-text text-transparent select-none tracking-wide block">
                 فروشگاه شیخ
-              </h1>
+              </span>
               <p className="text-[11px] text-amber-400/60 mt-1 font-medium tracking-normal text-center">
                 فروشگاهی برای محصولات خاص و تجربه‌ای متفاوت
               </p>
