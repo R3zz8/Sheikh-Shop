@@ -1,11 +1,21 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, ShoppingCart, Heart, ExternalLink, X, Play, FileText, CheckCircle2 } from 'lucide-react';
-import LuxuryGiftBox from './LuxuryGiftBox';
+import { ShoppingCart, Heart, X, Play, FileText, CheckCircle2 } from 'lucide-react';
 import { luxuryAudio } from '@/lib/luxury-audio';
 import { toast } from 'sonner';
+
+// Dynamically import 3D LuxuryGiftBox so Three.js & Canvas are loaded ONLY when unboxing is opened
+const LuxuryGiftBox = dynamic(() => import('./LuxuryGiftBox'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full min-h-[380px] md:min-h-[450px] flex items-center justify-center bg-black/20 rounded-2xl">
+      <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
+    </div>
+  ),
+});
 
 interface LuxuryUnboxingContextType {
   triggerUnboxing: (product: any) => void;

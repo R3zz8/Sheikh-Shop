@@ -43,8 +43,9 @@ describe('Sheikh-Shop Category Expansion (6 Categories)', () => {
     expect(names).toContain('شیخ گرومینگ');
   });
 
-  it('Categories component should render 6 circular category cards in the UI', () => {
-    render(<Categories />);
+  it('Categories component should render 6 circular category cards in the UI', async () => {
+    const categoriesElement = await Categories();
+    render(categoriesElement);
     expect(screen.getByText('شیخ نوا')).toBeInTheDocument();
     expect(screen.getByText('لوازم دیجیتال شیخ')).toBeInTheDocument();
     expect(screen.getByText('لوازم خانگی شیخ')).toBeInTheDocument();

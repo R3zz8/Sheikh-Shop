@@ -18,12 +18,15 @@ export default function BestSellersCircularShowcaseClient({
   const [currentPage, setCurrentPage] = useState(0);
   const [direction, setDirection] = useState<1 | -1>(1);
   const [isTransitioning, setIsTransitioning] = useState(false);
+
+  // Consistent initial state between SSR and initial client mount to prevent hydration mismatch
   const [itemsPerPage, setItemsPerPage] = useState<number>(5);
+
   const [isPaused, setIsPaused] = useState(false);
   const touchStartX = useRef<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Dynamic responsive itemsPerPage calculation
+  // Dynamic responsive itemsPerPage calculation after mount
   useEffect(() => {
     const handleResize = () => {
       const width = window.innerWidth;

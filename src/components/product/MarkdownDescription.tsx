@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { renderMarkdownDescription } from '@/lib/markdown';
 import { cn } from '@/lib/utils';
-import DOMPurify from 'dompurify';
 
 interface MarkdownDescriptionProps {
   content: string | null | undefined;
@@ -12,25 +11,29 @@ interface MarkdownDescriptionProps {
 
 /**
  * Renders product description with Markdown/HTML support
- * Sanitizes HTML using DOMPurify and allows only safe formatting tags
+ * Sanitizes HTML using DOMPurify dynamically and allows only safe formatting tags
  */
 export default function MarkdownDescription({ content, className }: MarkdownDescriptionProps) {
   const [sanitizedHtml, setSanitizedHtml] = useState<string>('');
 
+  const initialHtml = renderMarkdownDescription(content);
+
   useEffect(() => {
-    if (content) {
-      const rawHtml = renderMarkdownDescription(content);
-      if (typeof window !== 'undefined') {
-        const cleanHtml = DOMPurify.sanitize(rawHtml, {
+    if (content && typeof window !== 'undefined') {
+      import('dompurify').then((module) => {
+        const DOMPurify = module.default;
+        const cleanHtml = DOMPurify.sanitize(initialHtml, {
           ALLOWED_TAGS: [
             'p', 'strong', 'em', 'u', 'br', 'ul', 'ol', 'li', 'h2', 'h3', 'h4', 'blockquote', 'a', 'code', 'pre'
           ],
           ALLOWED_ATTR: ['href', 'title', 'target', 'rel', 'class']
         });
         setSanitizedHtml(cleanHtml);
-      }
+      }).catch(() => {
+        setSanitizedHtml(initialHtml);
+      });
     }
-  }, [content]);
+  }, [content, initialHtml]);
 
   if (!content) {
     return (
@@ -39,9 +42,6 @@ export default function MarkdownDescription({ content, className }: MarkdownDesc
       </p>
     );
   }
-
-  // Fallback to basic sanitized HTML during SSR to avoid empty screen before hydration
-  const initialHtml = renderMarkdownDescription(content);
 
   return (
     <div
