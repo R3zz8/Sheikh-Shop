@@ -26,21 +26,54 @@ export function FeaturedMarketCards({ quotes }: FeaturedMarketCardsProps) {
     }
   };
 
+  const renderSparkline = (sparkline?: number[], isUp?: boolean, isDown?: boolean) => {
+    if (!sparkline || sparkline.length < 2) return null;
+    const min = Math.min(...sparkline);
+    const max = Math.max(...sparkline);
+    const range = max - min || 1;
+    const width = 100;
+    const height = 28;
+
+    const points = sparkline
+      .map((val, idx) => {
+        const x = (idx / (sparkline.length - 1)) * width;
+        const y = height - ((val - min) / range) * (height - 6) - 3;
+        return `${x.toFixed(1)},${y.toFixed(1)}`;
+      })
+      .join(' ');
+
+    const strokeColor = isUp ? '#34d399' : isDown ? '#f87171' : '#a8a29e';
+
+    return (
+      <svg className="w-24 h-7 overflow-visible" viewBox={`0 0 ${width} ${height}`}>
+        <polyline
+          fill="none"
+          stroke={strokeColor}
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          points={points}
+        />
+      </svg>
+    );
+  };
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {quotes.map((quote) => {
         const isUp = quote.direction === 'UP';
         const isDown = quote.direction === 'DOWN';
+        const statusText = isUp ? 'صعودی' : isDown ? 'نزولی' : 'بدون تغییر';
 
         return (
           <Link
             key={quote.symbol}
             href={`/market/${quote.slug}`}
-            className="group relative overflow-hidden rounded-xl bg-stone-900/80 hover:bg-stone-800/90 border border-amber-900/30 hover:border-amber-500/50 p-4 transition-all duration-300 shadow-lg hover:shadow-amber-900/20"
+            className="group relative overflow-hidden rounded-2xl bg-gradient-to-b from-stone-900/90 to-stone-950/90 hover:from-stone-800/90 hover:to-stone-900/90 border border-amber-900/30 hover:border-amber-500/50 p-4 transition-all duration-300 shadow-xl hover:shadow-amber-900/20"
           >
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-lg bg-amber-950/60 border border-amber-800/40 group-hover:scale-105 transition-transform">
+                <div className="p-2 rounded-xl bg-amber-950/60 border border-amber-800/40 group-hover:scale-105 transition-transform">
                   {getIcon(quote.symbol)}
                 </div>
                 <div>
@@ -52,7 +85,7 @@ export function FeaturedMarketCards({ quotes }: FeaturedMarketCardsProps) {
               </div>
 
               <div
-                className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded text-xs font-semibold ${
+                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${
                   isUp
                     ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-800/50'
                     : isDown
@@ -67,21 +100,28 @@ export function FeaturedMarketCards({ quotes }: FeaturedMarketCardsProps) {
                 ) : (
                   <Minus className="w-3.5 h-3.5" />
                 )}
-                <span dir="ltr">{toPersianDigits(Math.abs(quote.percentChange))}%</span>
+                <span>{statusText}</span>
+                <span dir="ltr">({toPersianDigits(Math.abs(quote.percentChange))}%)</span>
               </div>
             </div>
 
-            <div className="space-y-1">
-              <div className="text-xl font-black text-amber-200">
-                {formatMarketValue(quote.currentPrice, quote.unit)}
+            <div className="flex items-end justify-between gap-2 pt-1">
+              <div className="space-y-1">
+                <div className="text-xl font-black text-amber-200">
+                  {formatMarketValue(quote.currentPrice, quote.unit)}
+                </div>
+
+                {quote.buyPrice && quote.sellPrice && (
+                  <div className="flex items-center gap-3 text-[11px] text-stone-400">
+                    <span>خرید: {toPersianDigits(new Intl.NumberFormat('en-US').format(quote.buyPrice))}</span>
+                    <span>فروش: {toPersianDigits(new Intl.NumberFormat('en-US').format(quote.sellPrice))}</span>
+                  </div>
+                )}
               </div>
 
-              {quote.buyPrice && quote.sellPrice && (
-                <div className="flex items-center justify-between text-xs text-stone-400 pt-1 border-t border-stone-800/60">
-                  <span>خرید: {toPersianDigits(new Intl.NumberFormat('en-US').format(quote.buyPrice))}</span>
-                  <span>فروش: {toPersianDigits(new Intl.NumberFormat('en-US').format(quote.sellPrice))}</span>
-                </div>
-              )}
+              <div className="pb-1 opacity-80 group-hover:opacity-100 transition-opacity">
+                {renderSparkline(quote.sparkline, isUp, isDown)}
+              </div>
             </div>
           </Link>
         );

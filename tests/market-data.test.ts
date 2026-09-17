@@ -1,6 +1,7 @@
 import { normalizeQuote, sanitizeNumber, calculateDirection, toPersianDigits, formatMarketValue } from '@/lib/market-data/normalize';
 import { CORE_MARKET_ASSETS } from '@/lib/market-data/symbols';
 import { convertMarketAsset } from '@/lib/market-data/service';
+import { fetchTindexMarketData } from '@/lib/market-data/providers/tindex';
 
 describe('Market Subsystem Unit Tests', () => {
   test('sanitizeNumber cleans corrupted or missing values', () => {
@@ -29,14 +30,14 @@ describe('Market Subsystem Unit Tests', () => {
       priceChange: 500,
       percentChange: 0.53,
       unit: 'تومان',
-      provider: 'TEST_PROVIDER',
+      provider: 'TINDEX_API',
     });
 
     expect(normalized.symbol).toBe('USD');
     expect(normalized.slug).toBe('usd');
     expect(normalized.currentPrice).toBe(95000);
     expect(normalized.direction).toBe('UP');
-    expect(normalized.provider).toBe('TEST_PROVIDER');
+    expect(normalized.provider).toBe('TINDEX_API');
     expect(normalized.sparkline).toHaveLength(7);
   });
 
@@ -52,5 +53,12 @@ describe('Market Subsystem Unit Tests', () => {
       expect(conversion.amount).toBe(100);
       expect(conversion.convertedAmount).toBe(100);
     }
+  });
+
+  test('fetchTindexMarketData returns graceful error when TINDEX_API_TOKEN is unconfigured', async () => {
+    const result = await fetchTindexMarketData();
+    expect(result.provider).toBe('TINDEX_API');
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('TINDEX_API_TOKEN');
   });
 });

@@ -1,13 +1,23 @@
 import type { ProviderFetchResult, RawMarketQuote } from '../types';
 import { CORE_MARKET_ASSETS } from '../symbols';
+import { fetchTindexMarketData } from './tindex';
 
 const DEFAULT_TIMEOUT_MS = 6000;
 
 /**
- * Fetches free-market global rates and synthesizes normalized raw market quotes.
- * Uses public fallback endpoints with strict timeout and fallback safety.
+ * Fetches primary market data, prioritizing Tindex API when configured,
+ * and seamlessly falling back to open exchange API or zero-network defaults.
  */
 export async function fetchPrimaryMarketData(): Promise<ProviderFetchResult> {
+  // 1. Try Tindex API first if configured
+  if (process.env.TINDEX_API_TOKEN) {
+    const tindexResult = await fetchTindexMarketData();
+    if (tindexResult.success && Object.keys(tindexResult.quotes).length >= 5) {
+      return tindexResult;
+    }
+  }
+
+  // 2. Secondary/Fallback: Open Exchange API for global USD rates
   const startTime = Date.now();
   const quotes: Record<string, RawMarketQuote> = {};
 
@@ -15,7 +25,6 @@ export async function fetchPrimaryMarketData(): Promise<ProviderFetchResult> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
 
-    // Free Exchange Rate API for global currencies against USD
     const response = await fetch('https://open.er-api.com/v6/latest/USD', {
       signal: controller.signal,
       next: { revalidate: 300 }, // 5 minutes cache

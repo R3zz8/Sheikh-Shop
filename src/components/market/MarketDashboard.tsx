@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import type { MarketOverview } from '@/lib/market-data/types';
 import { MarketHero } from './MarketHero';
+import { MarketOverview as MarketSentimentOverview } from './MarketOverview';
 import { FeaturedMarketCards } from './FeaturedMarketCards';
 import { MarketTabs } from './MarketTabs';
 import { MarketSearch } from './MarketSearch';
@@ -103,26 +104,30 @@ export function MarketDashboard({ initialData }: MarketDashboardProps) {
 
   return (
     <div className="space-y-8 pb-12">
-      {/* Hero Section */}
+      {/* Hero Terminal Command Header */}
       <MarketHero
         lastUpdated={data.lastUpdated}
         isStale={data.quotes.some((q) => q.isStale)}
         onRefresh={handleRefresh}
         isRefreshing={isRefreshing}
+        providerName={data.providerStatus[0]?.providerName}
       />
 
-      {/* Featured Cards */}
+      {/* Market Sentiment Overview */}
+      <MarketSentimentOverview quotes={data.quotes} />
+
+      {/* Featured Market Cards */}
       {data.featured && data.featured.length > 0 && (
         <section className="space-y-3">
-          <h2 className="text-lg font-bold text-stone-100 flex items-center gap-2">
+          <h2 className="text-sm font-bold text-amber-300 uppercase tracking-wider flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-            <span>شاخص‌های برتر بازار</span>
+            <span>شاخص‌های کلیدی نبض بازار</span>
           </h2>
           <FeaturedMarketCards quotes={data.featured} />
         </section>
       )}
 
-      {/* Main Table & Controls */}
+      {/* Terminal Main Table & Filter Controls */}
       <section className="space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <MarketTabs
@@ -140,7 +145,7 @@ export function MarketDashboard({ initialData }: MarketDashboardProps) {
         />
       </section>
 
-      {/* Market Converter */}
+      {/* Currency & Asset Converter */}
       <section>
         <MarketConverter quotes={data.quotes} />
       </section>
