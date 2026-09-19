@@ -115,26 +115,35 @@ export function mapProductToTorobV3(product: Record<string, any>): TorobV3Produc
     effectiveInventoryStatus !== 'DISCONTINUED' &&
     effectiveInventoryStatus !== 'COMING_SOON';
 
-  // Construct absolute image links
+  // Construct absolute image links safely
   const image_links: string[] = [];
+  const addImageLink = (rawUrl?: string | null) => {
+    if (!rawUrl || typeof rawUrl !== 'string') return;
+    const trimmed = rawUrl.trim();
+    if (!trimmed) return;
+
+    let fullImg: string;
+    if (trimmed.startsWith('//')) {
+      fullImg = `https:${trimmed}`;
+    } else if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+      fullImg = trimmed;
+    } else {
+      const cleanPath = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+      fullImg = `${baseUrl}${cleanPath}`;
+    }
+
+    if (!image_links.includes(fullImg)) {
+      image_links.push(fullImg);
+    }
+  };
+
   if (product.ogImage) {
-    const fullOg = product.ogImage.startsWith('http')
-      ? product.ogImage
-      : `${baseUrl}${product.ogImage.startsWith('/') ? '' : '/'}${product.ogImage}`;
-    image_links.push(fullOg);
+    addImageLink(product.ogImage);
   }
 
   if (Array.isArray(product.images) && product.images.length > 0) {
     for (const img of product.images) {
-      const raw = img.secureUrl || img.image;
-      if (raw) {
-        const fullImg = raw.startsWith('http')
-          ? raw
-          : `${baseUrl}${raw.startsWith('/') ? '' : '/'}${raw}`;
-        if (!image_links.includes(fullImg)) {
-          image_links.push(fullImg);
-        }
-      }
+      addImageLink(img.secureUrl || img.image);
     }
   }
 
@@ -190,16 +199,28 @@ export async function verifyTorobToken(
   reqHost?: string | null,
   customPublicKey?: crypto.KeyObject
 ): Promise<{ isValid: boolean; error?: string; payload?: any }> {
-  if (!tokenVersion || tokenVersion.trim() !== '1') {
-    return { isValid: false, error: 'X-Torob-Token-Version header must be "1"' };
-  }
+  const staticApiToken = process.env.TOROB_API_TOKEN || process.env.TOROB_API_KEY || null;
 
   if (!token || typeof token !== 'string' || token.trim().length === 0) {
     return { isValid: false, error: 'X-Torob-Token header is missing or empty' };
   }
 
+  const cleanToken = token.trim();
+
+  // Allow static token authentication fallback if configured
+  if (staticApiToken && cleanToken === staticApiToken.trim()) {
+    return {
+      isValid: true,
+      payload: { sub: 'static_token', aud: reqHost || 'sheikhshops.com' },
+    };
+  }
+
+  if (!tokenVersion || tokenVersion.trim() !== '1') {
+    return { isValid: false, error: 'X-Torob-Token-Version header must be "1"' };
+  }
+
   try {
-    const parts = token.trim().split('.');
+    const parts = cleanToken.split('.');
     if (parts.length !== 3) {
       return { isValid: false, error: 'Malformed JWT structure' };
     }
@@ -258,17 +279,37 @@ export async function verifyTorobToken(
       }
     }
 
-    const validAudiences = Array.from(new Set([
-      allowedHostname,
-      'sheikhshops.com',
-      'www.sheikhshops.com',
-    ])).filter((aud): aud is string => Boolean(aud));
-
     if (!payload.aud) {
       return { isValid: false, error: 'Missing required "aud" (audience) claim' };
     }
 
-    if (!validAudiences.includes(payload.aud)) {
+    const rawAud = String(payload.aud || '').trim();
+    let normalizedAudHost = rawAud;
+    if (rawAud.startsWith('http://') || rawAud.startsWith('https://')) {
+      try {
+        normalizedAudHost = new URL(rawAud).hostname;
+      } catch {
+        const noProto = rawAud.replace(/^https?:\/\//i, '');
+        const hostPart = noProto.split('/')[0] ?? '';
+        normalizedAudHost = hostPart.split(':')[0] ?? '';
+      }
+    } else {
+      const hostPart = rawAud.split('/')[0] ?? '';
+      normalizedAudHost = hostPart.split(':')[0] ?? '';
+    }
+
+    const validHosts = Array.from(new Set([
+      allowedHostname,
+      'sheikhshops.com',
+      'www.sheikhshops.com',
+      reqHost ? (reqHost.split(':')[0] ?? null) : null,
+    ])).filter((h): h is string => Boolean(h));
+
+    const isAudValid = validHosts.some(
+      (host) => host.toLowerCase() === normalizedAudHost.toLowerCase() || rawAud.toLowerCase() === host.toLowerCase()
+    );
+
+    if (!isAudValid) {
       return { isValid: false, error: `Invalid audience claim: "${payload.aud}"` };
     }
 
@@ -288,7 +329,7 @@ export async function verifyTorobToken(
  * Validates whether the server has configured Torob credentials.
  */
 export function getTorobConfig() {
-  const apiToken = process.env.TOROB_API_TOKEN || null;
+  const apiToken = process.env.TOROB_API_TOKEN || process.env.TOROB_API_KEY || null;
   const isConfigured = Boolean(apiToken);
 
   return {
