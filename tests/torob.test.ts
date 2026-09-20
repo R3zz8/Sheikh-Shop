@@ -220,10 +220,10 @@ describe('Torob Integration Tests', () => {
       expect(res.error).toContain('X-Torob-Token-Version header must be "1"');
     });
 
-    it('rejects verification if token header is missing or empty', async () => {
+    it('allows public verification if token header is missing or empty', async () => {
       const res = await verifyTorobToken('', '1', 'sheikhshops.com');
-      expect(res.isValid).toBe(false);
-      expect(res.error).toContain('missing or empty');
+      expect(res.isValid).toBe(true);
+      expect(res.payload.sub).toBe('public_access');
     });
 
     it('verifies valid Ed25519 JWT token successfully with custom key', async () => {
@@ -346,7 +346,7 @@ describe('Torob Integration Tests', () => {
     });
   });
 
-  describe('POST /torob_api/v3/products Route Handler Integration', () => {
+  describe('POST and GET /torob_api/v3/products Route Handler Integration', () => {
     it('handles OPTIONS preflight request with 204 status and CORS headers', async () => {
       const res = await TorobV3OptionsHandler();
       expect(res.status).toBe(204);
@@ -354,41 +354,79 @@ describe('Torob Integration Tests', () => {
       expect(res.headers.get('access-control-allow-methods')).toContain('POST');
     });
 
-    it('handles GET operational health check request with 200 status', async () => {
-      const req = new NextRequest('https://sheikhshops.com/torob_api/v3/products', {
+    it('handles GET product list request without token and returns 200 with Torob API v3 payload', async () => {
+      const mockProducts = [
+        {
+          id: 'prod-get-01',
+          name: 'محصول عمومی ۱',
+          slug: 'public-prod-1',
+          basePrice: 150000,
+          quantity: 10,
+          status: 'ACTIVE',
+          createdAt: new Date('2026-01-01T00:00:00Z'),
+          updatedAt: new Date('2026-01-01T00:00:00Z'),
+          images: [],
+        },
+      ];
+
+      (prisma.product.findMany as jest.Mock).mockResolvedValue(mockProducts);
+      (prisma.product.count as jest.Mock).mockResolvedValue(1);
+
+      const req = new NextRequest('https://sheikhshops.com/torob_api/v3/products?page=1', {
         method: 'GET',
       });
       const res = await TorobV3GetHandler(req);
       expect(res.status).toBe(200);
 
       const data = await res.json();
-      expect(data.status).toBe('ok');
-      expect(data.endpoint).toBe('/torob_api/v3/products');
+      expect(data.api_version).toBe('torob_api_v3');
+      expect(data.current_page).toBe(1);
+      expect(data.total).toBe(1);
+      expect(data.products).toHaveLength(1);
+      expect(data.products[0].page_unique).toBe('prod-get-01');
     });
 
-    it('returns HTTP 401 when X-Torob-Token header is missing', async () => {
+    it('allows public POST request without X-Torob-Token header', async () => {
+      const mockProducts = [
+        {
+          id: 'prod-post-01',
+          name: 'محصول عمومی پست',
+          slug: 'public-post-prod',
+          basePrice: 200000,
+          quantity: 4,
+          status: 'ACTIVE',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          images: [],
+        },
+      ];
+
+      (prisma.product.findMany as jest.Mock).mockResolvedValue(mockProducts);
+      (prisma.product.count as jest.Mock).mockResolvedValue(1);
+
       const req = new NextRequest('https://sheikhshops.com/torob_api/v3/products', {
         method: 'POST',
         headers: {
           'content-type': 'application/json',
-          'x-torob-token-version': '1',
         },
         body: JSON.stringify({ page: 1, sort: 'date_added_desc' }),
       });
 
       const res = await TorobV3RouteHandler(req);
-      expect(res.status).toBe(401);
+      expect(res.status).toBe(200);
 
       const data = await res.json();
-      expect(data.error).toBeDefined();
+      expect(data.api_version).toBe('torob_api_v3');
+      expect(data.products).toHaveLength(1);
     });
 
-    it('returns HTTP 401 when X-Torob-Token-Version is missing or invalid', async () => {
+    it('returns HTTP 401 when invalid X-Torob-Token-Version is provided', async () => {
       const req = new NextRequest('https://sheikhshops.com/torob_api/v3/products', {
         method: 'POST',
         headers: {
           'content-type': 'application/json',
           'x-torob-token': 'fake-token',
+          'x-torob-token-version': '99',
         },
         body: JSON.stringify({ page: 1, sort: 'date_added_desc' }),
       });
