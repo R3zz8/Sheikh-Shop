@@ -201,8 +201,9 @@ export async function verifyTorobToken(
 ): Promise<{ isValid: boolean; error?: string; payload?: any }> {
   const staticApiToken = process.env.TOROB_API_TOKEN || process.env.TOROB_API_KEY || null;
 
+  // Token is optional for public product feed access
   if (!token || typeof token !== 'string' || token.trim().length === 0) {
-    return { isValid: false, error: 'X-Torob-Token header is missing or empty' };
+    return { isValid: true, payload: { sub: 'public_access' } };
   }
 
   const cleanToken = token.trim();
