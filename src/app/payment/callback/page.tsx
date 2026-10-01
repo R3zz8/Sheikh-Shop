@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { formatPrice } from '@/lib/currency';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, XCircle, Loader2, Home, Headphones, RefreshCw } from 'lucide-react';
+import { CheckCircle, XCircle, Loader2, Home, Headphones, RefreshCw, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
@@ -20,7 +20,7 @@ interface VerificationResponse {
   amount?: number;
 }
 
-export default function PaymentCallbackPage() {
+function PaymentCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [state, setState] = useState<PaymentState>('loading');
@@ -61,6 +61,8 @@ export default function PaymentCallbackPage() {
         msg = 'شناسه ارجاع پرداخت یافت نشد.';
       } else if (reason === 'order_not_found') {
         msg = 'سفارش مربوط به این پرداخت یافت نشد.';
+      } else if (reason === 'server_error') {
+        msg = 'خطای سرور در پردازش نهایی پرداخت رخ داد.';
       }
       setErrorMessage(msg);
       toast.error('پرداخت ناموفق', { description: msg, duration: 6000 });
@@ -72,7 +74,6 @@ export default function PaymentCallbackPage() {
     } else {
       verifyPayment(authority, status);
     }
-    return undefined;
   }, [searchParams, router]);
 
   const verifyPayment = async (authority: string, statusParam: string | null) => {
@@ -90,15 +91,16 @@ export default function PaymentCallbackPage() {
       if (verifyData.success) {
         setVerificationData({
           success: true,
+          orderId: verifyData.orderId,
           authority: verifyData.authority || authority,
-          reference: verifyData.reference || verifyData.details?.Reference || '',
-          amount: verifyData.details?.Amount ? parseFloat(verifyData.details.Amount) : undefined,
+          reference: verifyData.reference || '',
+          amount: verifyData.amount ? parseFloat(String(verifyData.amount)) : undefined,
         });
         setState('success');
         toast.success('پرداخت با موفقیت تایید شد!');
       } else {
         setState('failed');
-        const errorMsg = verifyData.error || verifyData.details?.Description || 'تایید پرداخت انجام نشد.';
+        const errorMsg = verifyData.error || 'تایید پرداخت انجام نشد.';
         setErrorMessage(errorMsg);
         toast.error('خطا در تایید پرداخت', { description: errorMsg });
       }
@@ -228,12 +230,14 @@ export default function PaymentCallbackPage() {
                     {verificationData.orderId ? (
                       <Link href={`/account/orders/${verificationData.orderId}`} className="w-full block">
                         <Button className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-black font-bold py-3 rounded-xl gap-2">
+                          <ShoppingBag className="h-4 w-4" />
                           مشاهده جزئیات سفارش
                         </Button>
                       </Link>
                     ) : (
                       <Link href="/account/orders" className="w-full block">
                         <Button className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-black font-bold py-3 rounded-xl gap-2">
+                          <ShoppingBag className="h-4 w-4" />
                           مشاهده سفارش‌های من
                         </Button>
                       </Link>
@@ -281,5 +285,22 @@ export default function PaymentCallbackPage() {
         </Card>
       </motion.div>
     </div>
+  );
+}
+
+export default function PaymentCallbackPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-950 via-stone-900 to-black p-4 font-vazirmatn text-right" dir="rtl">
+          <div className="flex flex-col items-center gap-3 text-white">
+            <Loader2 className="h-8 w-8 text-amber-400 animate-spin" />
+            <span className="text-sm text-stone-300">در حال بارگذاری اطلاعات پرداخت...</span>
+          </div>
+        </div>
+      }
+    >
+      <PaymentCallbackContent />
+    </Suspense>
   );
 }

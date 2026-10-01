@@ -330,7 +330,7 @@ export async function middleware(request: NextRequest) {
   // Capture IP early for later rate limiting
   const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
 
-  // Skip auth for specific API routes (handled by their own logic)
+  // Skip auth for specific API routes (handled by their own logic or public gateways)
   if (
     isApiRoute && (
       pathname.startsWith('/api/health') ||
@@ -341,7 +341,9 @@ export async function middleware(request: NextRequest) {
       pathname.startsWith('/api/amazing-deals') ||
       pathname.startsWith('/api/units') ||
       pathname.startsWith('/api/og') ||
-      pathname.startsWith('/api/mobile-carousel')
+      pathname.startsWith('/api/mobile-carousel') ||
+      pathname.startsWith('/api/payment') ||
+      pathname.startsWith('/api/shipping')
     )
   ) {
     const response = NextResponse.next();
@@ -362,6 +364,7 @@ export async function middleware(request: NextRequest) {
     '/privacy',
     '/article',
     '/checkout', // Allow checkout for guest users
+    '/payment/callback', // Payment result page
   ].some(route => pathname.startsWith(route) || pathname.startsWith(`/ar${route === '/' ? '' : route}`));
 
   // Allow public access to store pages
@@ -379,7 +382,13 @@ export async function middleware(request: NextRequest) {
   const isProtectedRoute = pathname.startsWith('/dashboard') || 
                           pathname.startsWith('/admin') || 
                           pathname.startsWith('/user') ||
-                          (isApiRoute && !pathname.startsWith('/api/auth') && !pathname.startsWith('/api/login') && !pathname.startsWith('/api/register') && !pathname.startsWith('/api/csrf'));
+                          (isApiRoute &&
+                           !pathname.startsWith('/api/auth') &&
+                           !pathname.startsWith('/api/login') &&
+                           !pathname.startsWith('/api/register') &&
+                           !pathname.startsWith('/api/csrf') &&
+                           !pathname.startsWith('/api/payment') &&
+                           !pathname.startsWith('/api/shipping'));
 
   if (isProtectedRoute && !accessToken && !refreshToken) {
     const response = isApiRoute
