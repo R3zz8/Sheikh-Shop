@@ -1,203 +1,259 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
+import { verifyZarinPalPayment } from '@/lib/payment/zarinpal';
+import { atomicDecrementProductStock } from '@/lib/inventory';
+import { TipaxClient } from '@/lib/tipax/client';
 
-// Request payload validation schema
 const paymentVerifySchema = z.object({
   authority: z.string().min(1, 'Authority is required'),
   status: z.union([z.string(), z.number()]).optional(),
 });
 
-// YekPay verification response interface
-interface YekPayVerifyResponse {
-  Code?: number;
-  code?: number;
-  Description?: string;
-  description?: string;
-  Authority?: string;
-  authority?: string;
-  Reference?: string;
-  reference?: string;
-  Amount?: string;
-  amount?: string;
-  [key: string]: unknown; // Allow additional fields
-}
-
-// Utility function to format YekPay parameters as form-urlencoded
-function formatYekPayParams(params: Record<string, string>): string {
-  const urlParams = new URLSearchParams();
-  Object.entries(params).forEach(([key, value]) => {
-    urlParams.append(key, value);
-  });
-  return urlParams.toString();
-}
-
-// Helper function to add a small delay for UX realism
-function delay(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-// POST /api/payment/verify - Verify payment with YekPay
 export async function POST(request: NextRequest) {
   try {
-    // Parse and validate request body
-    const body = await request.json();
+    const body = await request.json().catch(() => ({}));
     const validationResult = paymentVerifySchema.safeParse(body);
 
     if (!validationResult.success) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Validation failed',
-          details: validationResult.error.errors,
+          error: 'شناسه ارجاع پرداخت نامعتبر است.',
         },
         { status: 400 }
       );
     }
 
-    const payload = validationResult.data;
+    const { authority, status } = validationResult.data;
+    const statusStr = status ? String(status) : null;
 
-    // Validate environment variables
-    const merchantId = process.env.YEKPAY_MERCHANT_ID;
-    if (!merchantId) {
-      console.error('[YekPay] YEKPAY_MERCHANT_ID environment variable is not set');
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Payment gateway configuration error',
+    // Look up transaction and associated order
+    const transaction = await prisma.transaction.findUnique({
+      where: { authority },
+      include: {
+        order: {
+          include: {
+            items: true,
+            referral: true,
+          },
         },
-        { status: 500 }
-      );
-    }
-
-    // Prepare YekPay verification parameters
-    const yekpayParams = formatYekPayParams({
-      merchantId: merchantId,
-      authority: payload.authority,
-    });
-
-    // Call YekPay sandbox verification API
-    const yekpayUrl = 'https://api.ypsapi.com/api/sandbox/verify';
-
-    console.log('[YekPay] Sending verification request:', {
-      authority: payload.authority,
-      status: payload.status,
-    });
-
-    const yekpayResponse = await fetch(yekpayUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: yekpayParams,
     });
 
-    // Check if request was successful
-    if (!yekpayResponse.ok) {
-      const errorText = await yekpayResponse.text();
-      console.error('[YekPay] Verification API request failed:', {
-        status: yekpayResponse.status,
-        statusText: yekpayResponse.statusText,
-        error: errorText,
-        authority: payload.authority,
-      });
+    if (!transaction || !transaction.order) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'سفارش یا تراکنش مربوط به این پرداخت یافت نشد.',
+        },
+        { status: 404 }
+      );
+    }
+
+    const order = transaction.order;
+
+    // If payment status from gateway callback param is not OK
+    if (statusStr && statusStr !== 'OK' && statusStr !== '100' && statusStr !== 'success') {
+      await prisma.transaction.update({
+        where: { authority },
+        data: { status: 'CANCELLED' },
+      }).catch(() => null);
+
+      await prisma.order.update({
+        where: { id: order.id },
+        data: { status: 'CANCELLED' },
+      }).catch(() => null);
 
       return NextResponse.json(
         {
           success: false,
-          error: 'Payment gateway request failed',
-          details: `HTTP ${yekpayResponse.status}: ${yekpayResponse.statusText}`,
+          error: 'پرداخت توسط کاربر لغو شد.',
         },
-        { status: 502 }
+        { status: 400 }
       );
     }
 
-    // Parse YekPay response
-    let yekpayData: YekPayVerifyResponse;
-    try {
-      yekpayData = await yekpayResponse.json();
-    } catch (parseError) {
-      const responseText = await yekpayResponse.text();
-      console.error('[YekPay] Failed to parse verification response:', {
-        error: parseError,
-        response: responseText,
-        authority: payload.authority,
-      });
+    const trustedAmountToman = Number(order.totalPrice) || Number(order.total) || transaction.amount;
 
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Invalid response from payment gateway',
-        },
-        { status: 502 }
-      );
+    // Fast-path: Order is already paid (idempotent response)
+    if (
+      (order.status === 'COMPLETED' || order.status === 'PROCESSING' || order.paymentStatus === 'PAID') &&
+      transaction.status === 'COMPLETED'
+    ) {
+      return NextResponse.json({
+        success: true,
+        message: 'پرداخت قبلاً با موفقیت انجام و ثبت شده است.',
+        authority,
+        reference: transaction.reference || '0',
+        orderId: order.id,
+        amount: trustedAmountToman,
+      });
     }
 
-    // Normalize response code (YekPay may use 'Code' or 'code')
-    const responseCode = yekpayData.Code ?? yekpayData.code;
-    const responseDescription = yekpayData.Description ?? yekpayData.description;
-    const responseAuthority = yekpayData.Authority ?? yekpayData.authority;
-    const responseReference = yekpayData.Reference ?? yekpayData.reference;
-    const responseAmount = yekpayData.Amount ?? yekpayData.amount;
+    // Call ZarinPal server-to-server payment verification
+    const verifyResult = await verifyZarinPalPayment({
+      amountToman: trustedAmountToman,
+      authority,
+    });
 
-    // Check YekPay response code (100 = success)
-    if (responseCode === 100) {
-      // Payment verified successfully
-      console.log('[YekPay] Payment verification successful:', {
-        authority: responseAuthority,
-        reference: responseReference,
-        amount: responseAmount,
+    const verifyData = verifyResult.data;
+    const isSuccessCode = verifyData && (verifyData.code === 100 || verifyData.code === 101);
+
+    if (isSuccessCode) {
+      const refId = String(verifyData.ref_id || transaction.reference || '0');
+
+      // Atomic DB state updates
+      await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+        const currentOrder = await tx.order.findUnique({
+          where: { id: order.id },
+        });
+
+        if (currentOrder?.status === 'COMPLETED' || currentOrder?.paymentStatus === 'PAID') {
+          return;
+        }
+
+        // 1. Update Transaction
+        await tx.transaction.update({
+          where: { authority },
+          data: {
+            status: 'COMPLETED',
+            reference: refId,
+          },
+        });
+
+        // 2. Update Order
+        await tx.order.update({
+          where: { id: order.id },
+          data: {
+            paymentStatus: 'PAID',
+            status: 'PROCESSING',
+          },
+        });
+
+        // 3. Decrement stock
+        for (const item of order.items) {
+          try {
+            await atomicDecrementProductStock(item.productId, item.quantity);
+          } catch (stockErr) {
+            console.warn(`[Payment Verify Stock Warning] Stock decrement failed for product ${item.productId}:`, stockErr);
+          }
+        }
+
+        // 4. Empty User Cart
+        if (order.userId) {
+          await tx.cartItem.deleteMany({
+            where: { userId: order.userId },
+          });
+        }
+
+        // 5. Convert Affiliate Referral
+        if (order.referral && !order.referral.isConverted) {
+          await tx.referral.update({
+            where: { id: order.referral.id },
+            data: { isConverted: true },
+          });
+
+          await tx.affiliate.update({
+            where: { id: order.referral.affiliateId },
+            data: {
+              totalSales: { increment: 1 },
+              commissionEarned: { increment: Number(order.total) * 0.05 },
+            },
+          });
+        }
       });
 
-      // Add small delay for UX realism (300ms as suggested)
-      await delay(300);
+      // Post-Payment Tipax Order Registration
+      const shippingAddr = (order.shippingAddress as Record<string, any>) || {};
+      const existingTipaxOrderId = shippingAddr.tipaxOrderId;
+
+      if (!order.trackingCode && !existingTipaxOrderId) {
+        try {
+          const tipaxResult = await TipaxClient.createOrder({
+            orderId: order.id,
+            recipientName:
+              shippingAddr.recipientName ||
+              `${shippingAddr.firstName || ''} ${shippingAddr.lastName || ''}`.trim() ||
+              'مشتری',
+            recipientPhone: shippingAddr.recipientPhone || shippingAddr.phone || '09000000000',
+            recipientMobile: shippingAddr.phone || shippingAddr.recipientPhone,
+            recipientEmail: shippingAddr.email,
+            province: shippingAddr.province || 'تهران',
+            city: shippingAddr.city || 'تهران',
+            address: shippingAddr.address || 'تهران',
+            postalCode: shippingAddr.postalCode || '1111111111',
+            totalValueToman: Number(order.subtotal) || Number(order.total) || 1000000,
+            items: order.items.map((i: any) => ({
+              productName: i.productName || undefined,
+              quantity: i.quantity,
+              priceToman: Number(i.price) || 0,
+            })),
+            orderNotes: shippingAddr.orderNotes,
+          });
+
+          if (tipaxResult.success && (tipaxResult.trackingCode || tipaxResult.tipaxOrderId)) {
+            const trackingCode = tipaxResult.trackingCode || tipaxResult.tipaxOrderId;
+            await prisma.order.update({
+              where: { id: order.id },
+              data: {
+                trackingCode,
+                shippingAddress: {
+                  ...shippingAddr,
+                  tipaxOrderId: tipaxResult.tipaxOrderId || trackingCode,
+                  tipaxStatus: 'REGISTERED',
+                  tipaxRegisteredAt: new Date().toISOString(),
+                },
+              },
+            });
+          }
+        } catch (tipaxErr) {
+          console.error('[Tipax Order Registration Error in Verify Route]', tipaxErr);
+        }
+      }
 
       return NextResponse.json({
         success: true,
-        message: 'Payment verified successfully.',
-        authority: responseAuthority || payload.authority,
-        reference: responseReference || undefined,
-        details: {
-          Code: responseCode,
-          Description: responseDescription || 'Success',
-          Authority: responseAuthority || payload.authority,
-          Reference: responseReference,
-          Amount: responseAmount,
-        },
+        message: 'پرداخت با موفقیت تایید شد.',
+        authority,
+        reference: refId,
+        orderId: order.id,
+        amount: trustedAmountToman,
       });
     } else {
-      // Payment verification failed
-      const errorDescription = responseDescription || 'Unknown error from payment gateway';
-      console.error('[YekPay] Payment verification failed:', {
-        code: responseCode,
-        description: errorDescription,
-        authority: payload.authority,
-      });
+      const errorCode = verifyData?.code || (verifyResult.errors?.[0]?.code ?? -1);
+
+      await prisma.transaction.update({
+        where: { authority },
+        data: { status: 'FAILED' },
+      }).catch(() => null);
+
+      await prisma.order.update({
+        where: { id: order.id },
+        data: {
+          paymentStatus: 'FAILED',
+          status: 'CANCELLED',
+        },
+      }).catch(() => null);
 
       return NextResponse.json(
         {
           success: false,
-          error: errorDescription,
-          code: responseCode,
+          error: `تایید پرداخت از سوی درگاه زرین‌پال انجام نشد (کد خطا: ${errorCode}).`,
+          code: errorCode,
         },
         { status: 400 }
       );
     }
-  } catch (error) {
-    // Handle unexpected errors
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error('[YekPay] Unexpected error in payment verification:', {
-      error: errorMessage,
-      stack: error instanceof Error ? error.stack : undefined,
-    });
-
+  } catch (error: any) {
+    console.error('[ZarinPal Verification Route Exception]', error);
     return NextResponse.json(
       {
         success: false,
-        error: 'Internal server error',
-        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined,
+        error: error.message || 'خطای سرور در تایید پرداخت',
       },
       { status: 500 }
     );
   }
 }
-

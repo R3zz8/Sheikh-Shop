@@ -34,13 +34,13 @@ export async function GET(req: Request) {
         await prisma.transaction.update({
           where: { authority },
           data: { status: "CANCELLED" },
-        });
+        }).catch(() => null);
 
         if (transaction.orderId) {
           await prisma.order.update({
             where: { id: transaction.orderId },
             data: { status: "CANCELLED" },
-          });
+          }).catch(() => null);
         }
       }
     } catch (err) {
@@ -109,7 +109,7 @@ export async function GET(req: Request) {
           where: { id: order.id },
         });
 
-        if (currentOrder?.status === "COMPLETED") {
+        if (currentOrder?.status === "COMPLETED" || currentOrder?.paymentStatus === "PAID") {
           return; // Already processed concurrently
         }
 
@@ -131,11 +131,12 @@ export async function GET(req: Request) {
           },
         });
 
-        // 3. Atomic stock decrement and verification
+        // 3. Stock decrement (handled safely without aborting verified payment)
         for (const item of order.items) {
-          const res = await atomicDecrementProductStock(item.productId, item.quantity);
-          if (!res.success) {
-            throw new Error(`موجودی کافی برای کالا ${item.productName || item.productId} جهت کسر وجود ندارد.`);
+          try {
+            await atomicDecrementProductStock(item.productId, item.quantity);
+          } catch (stockErr) {
+            console.warn(`[ZarinPal Callback Stock Warning] Decrement failed for item ${item.productId}:`, stockErr);
           }
         }
 
@@ -252,7 +253,7 @@ export async function GET(req: Request) {
       await prisma.transaction.update({
         where: { authority },
         data: { status: "FAILED" },
-      });
+      }).catch(() => null);
 
       await prisma.order.update({
         where: { id: order.id },
@@ -260,7 +261,7 @@ export async function GET(req: Request) {
           paymentStatus: "FAILED",
           status: "CANCELLED",
         },
-      });
+      }).catch(() => null);
 
       return NextResponse.redirect(
         `${baseUrl}/payment/callback?status=failed&reason=verification_failed&code=${errorCode}`
