@@ -25,11 +25,6 @@ export const AmazingDeals = dynamic(() => import('@/components/AmazingDeals'), {
   loading: () => <div className="w-full h-[450px] bg-stone-900/60 rounded-3xl animate-pulse" />,
 });
 
-export const RoyalShowcase = dynamic(() => import('@/components/royal-showcase/RoyalShowcase'), {
-  ssr: false,
-  loading: () => <div className="w-full h-[360px] md:h-[560px] bg-stone-900/60 rounded-[2.5rem] animate-pulse" />,
-});
-
 export const CarouselMobile = dynamic(() => import('@/components/CarouselMobile'), {
   ssr: false,
   loading: () => <div className="w-full h-[220px] sm:h-[280px] bg-stone-900/60 rounded-2xl animate-pulse md:hidden" />,

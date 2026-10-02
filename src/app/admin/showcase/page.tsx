@@ -18,7 +18,6 @@ import {
   Sparkles,
   Info
 } from 'lucide-react';
-import RoyalShowcase from '@/components/royal-showcase/RoyalShowcase';
 
 interface CatalogProduct {
   id: string;
@@ -442,11 +441,28 @@ export default function ShowcaseAdminPage() {
             <div className="relative border border-amber-500/10 rounded-2xl overflow-hidden bg-stone-950 bg-gradient-radial from-amber-500/5 to-transparent h-[380px] md:h-[480px]">
               <div className="absolute top-3 right-3 z-30 flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 px-2.5 py-1 rounded-lg text-[10px] font-black">
                 <Sparkles className="w-3 h-3 text-amber-400 shrink-0" />
-                <span>شبیه‌ساز ویترین سه بعدی</span>
+                <span>پیش‌نمایش محصولات ویترین</span>
               </div>
 
-              <div className="absolute inset-0 scale-[0.82] origin-center flex items-center justify-center">
-                <RoyalShowcase key={previewKey} />
+              <div className="absolute inset-0 p-6 flex flex-col items-center justify-center text-center">
+                <div className="max-w-md w-full bg-stone-900/80 border border-amber-500/20 rounded-2xl p-6 backdrop-blur-md">
+                  <h3 className="text-amber-400 font-black text-base mb-3">محصولات منتخب ویترین ({featuredProducts.length})</h3>
+                  {featuredProducts.length === 0 ? (
+                    <p className="text-xs text-stone-400">محصولی در تنظیمات اضافه نشده است.</p>
+                  ) : (
+                    <div className="flex flex-col gap-2 max-h-[260px] overflow-y-auto pr-1">
+                      {featuredProducts.map((fp, idx) => {
+                        const prod = allProducts.find(p => p.id === fp.productId);
+                        return (
+                          <div key={fp.productId + idx} className="flex items-center justify-between bg-stone-950/60 p-2.5 rounded-xl border border-stone-800 text-xs">
+                            <span className="text-amber-200 font-bold truncate max-w-[200px]">{prod?.name || fp.productId}</span>
+                            <span className="text-[10px] text-amber-400/80 bg-amber-500/10 px-2 py-0.5 rounded-md">{fp.badgeType}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
