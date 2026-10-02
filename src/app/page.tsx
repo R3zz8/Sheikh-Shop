@@ -13,7 +13,6 @@ import {
   AmazingDeals,
   CarouselMobile,
   PremiumSpeakerShowcase,
-  RoyalShowcase,
   BMWCarousel,
 } from '@/components/DynamicClientComponents';
 import LuxuryProductArchCarousel from '@/components/home/LuxuryProductArchCarousel';
@@ -113,10 +112,6 @@ export default async function Home() {
       />
 
       <div className="relative z-10">
-        {/* Royal 3D Showcase */}
-        <RoyalShowcase />
-
-
         {/* Features Section */}
         <section className="container-fluid section-padding-sm pt-4 pb-12">
           <div className="max-w-6xl mx-auto px-4">
