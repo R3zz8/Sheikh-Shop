@@ -35,7 +35,7 @@ model Product {
   ogDescription  String?             @db.VarChar(160)
   schemaMarkup   Json?
   brand          String?             @db.VarChar(100)
-  sku            String?             @db.VarChar(100)
+  sku            String?             @unique @db.VarChar(100)
   features       String[]            @default([])
   technicalSpecs Json?
   tags           String[]            @default([])

@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useRequireRole } from '@/hooks/useRBAC';
-import { Package, Users, FileText, CreditCard, BarChart3, MessageSquare, Sliders, FolderTree, Sparkles, Code2 } from 'lucide-react';
+import { Package, Users, FileText, CreditCard, BarChart3, MessageSquare, Sliders, FolderTree, Sparkles, Code2, Tag } from 'lucide-react';
 
 export default function DashboardClient() {
   const hasAccess = useRequireRole(['ADMIN', 'SUPERADMIN']);
@@ -57,6 +57,12 @@ export default function DashboardClient() {
       description: 'مدیریت بنرهای هوشمند AI Marketer و اتصال محصولات',
       href: '/dashboard/marketing-showcase',
       icon: Sparkles,
+    },
+    {
+      title: 'قیمت‌گذاری و موجودی (Pricing & Stock)',
+      description: 'جستجوی سریع بر اساس کد محصول (SKU) و به‌روزرسانی آنی قیمت و وضعیت موجودی',
+      href: '/dashboard/pricing',
+      icon: Tag,
     },
     {
       title: 'Products',
