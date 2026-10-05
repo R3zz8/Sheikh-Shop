@@ -986,7 +986,15 @@ export default function ProductFormWithAction({ product }: ProductFormProps) {
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-xs font-bold text-stone-300">کد اختصاصی محصول (SKU / کد کالا)</Label>
+                      <Input
+                        {...register('sku')}
+                        placeholder="مثال: 6761 یا SH-SPK-X9"
+                        className="bg-stone-950/80 border-stone-800 text-stone-200 focus:border-amber-500/40 focus:ring-amber-500/40 h-11 rounded-xl text-left font-mono"
+                      />
+                    </div>
                     <div className="space-y-2">
                       <Label className="text-xs font-bold text-stone-300">برند یا شرکت سازنده کالا</Label>
                       <Input

@@ -674,6 +674,7 @@ let mockTransactions: any[] = [];
 let mockReferrals: any[] = [];
 let mockAffiliates: any[] = [];
 let mockBackInStockSubscriptions: any[] = [];
+let mockAuditLogs: any[] = [];
 
 let mockWebDesignShowcase: any[] = [
   {
@@ -1087,6 +1088,11 @@ let mockMarketProviderStatuses: any[] = [];
 const matchFilter = (item: any, where: any): boolean => {
   if (!where) return true;
   for (const key in where) {
+    if (key === 'OR' && Array.isArray(where.OR)) {
+      const orMatched = where.OR.some((orCondition: any) => matchFilter(item, orCondition));
+      if (!orMatched) return false;
+      continue;
+    }
     const condition = where[key];
     if (condition === undefined) continue;
 
@@ -1094,7 +1100,11 @@ const matchFilter = (item: any, where: any): boolean => {
 
     if (condition && typeof condition === 'object' && !Array.isArray(condition)) {
       if ('equals' in condition) {
-        if (itemValue !== condition.equals) return false;
+        if (condition.mode === 'insensitive') {
+          if (String(itemValue || '').toLowerCase() !== String(condition.equals || '').toLowerCase()) return false;
+        } else {
+          if (itemValue !== condition.equals) return false;
+        }
       } else if ('in' in condition) {
         if (!Array.isArray(condition.in) || !condition.in.includes(itemValue)) return false;
       } else if ('not' in condition) {
@@ -1401,6 +1411,7 @@ const makeMockModelWithWrites = (name: string, data: any[]) => {
           if (name === 'affiliate') mockAffiliates = localData;
           if (name === 'marketingShowcaseSlide') mockMarketingShowcaseSlides = localData;
           if (name === 'webDesignShowcase') mockWebDesignShowcase = localData;
+          if (name === 'auditLog') mockAuditLogs = localData;
           if (name === 'marketAsset') mockMarketAssets = localData;
           if (name === 'marketQuote') mockMarketQuotes = localData;
           if (name === 'marketPriceHistory') mockMarketPriceHistories = localData;
@@ -1648,6 +1659,7 @@ const createMockPrisma = () => {
       if (prop === 'luxuryUnboxingAssets') return makeMockModelWithWrites('luxuryUnboxingAssets', mockLuxuryUnboxingAssets);
       if (prop === 'luxuryUnboxingSettings') return makeMockModelWithWrites('luxuryUnboxingSettings', mockLuxuryUnboxingSettings);
       if (prop === 'backInStockSubscription') return makeMockModelWithWrites('backInStockSubscription', mockBackInStockSubscriptions);
+      if (prop === 'auditLog') return makeMockModelWithWrites('auditLog', mockAuditLogs);
       if (prop === 'webService') return makeMockModelWithWrites('webService', mockWebServices);
       if (prop === 'webServicePackage') return makeMockModelWithWrites('webServicePackage', mockWebServicePackages);
       if (prop === 'webPortfolio') return makeMockModelWithWrites('webPortfolio', mockWebPortfolios);
