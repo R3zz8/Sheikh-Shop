@@ -107,6 +107,19 @@ model Unit {
   @@index([sortOrder])
 }
 
+model PrePurchaseNotice {
+  id          String   @id @default(cuid())
+  isEnabled   Boolean  @default(true)
+  title       String   @default("اطلاعیه مهم پیش از ثبت سفارش") @db.VarChar(255)
+  message     String   @default("با توجه به نوسانات قیمت ارز و محدودیت موجودی برخی کالاها، لطفاً پیش از ثبت نهایی سفارش و پرداخت، جهت اطمینان از قیمت روز و موجودی کالا با واحد فروش فروشگاه شیخ هماهنگ فرمایید.") @db.Text
+  phoneNumber String   @default("09178769556") @db.VarChar(20)
+  updatedBy   String?  @db.VarChar(255)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isEnabled])
+}
+
 model MarketAsset {
   id             String               @id @default(cuid())
   symbol         String               @unique @db.VarChar(50)
