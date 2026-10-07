@@ -7,6 +7,7 @@ import Footer from '@/components/footer/footer';
 import MobileFooter from '@/components/MobileFooter';
 import AccessibilityEnhancements from '@/components/accessibility/AccessibilityEnhancements';
 import { ShoppingChatbot, EnhancedAISearch } from '@/components/DynamicClientComponents';
+import PrePurchaseNoticeModal from '@/components/notice/PrePurchaseNoticeModal';
 import AMPHead from '@/components/seo/AMPHead';
 import LayoutDebugger from '@/components/LayoutDebugger';
 
@@ -47,6 +48,7 @@ export default function AppLayoutContent({ children }: AppLayoutContentProps) {
       <Footer />
       <MobileFooter />
       <ShoppingChatbot />
+      <PrePurchaseNoticeModal />
     </div>
   );
 }

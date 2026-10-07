@@ -531,6 +531,19 @@ const mockProducts = [
   }
 ];
 
+let mockPrePurchaseNotice: any[] = [
+  {
+    id: 'ppn_default',
+    isEnabled: true,
+    title: 'اطلاعیه مهم پیش از ثبت سفارش',
+    message: 'با توجه به نوسانات قیمت ارز و محدودیت موجودی برخی کالاها، لطفاً پیش از ثبت نهایی سفارش و پرداخت، جهت اطمینان از قیمت روز و موجودی کالا با واحد فروش فروشگاه شیخ هماهنگ فرمایید.',
+    phoneNumber: '09178769556',
+    updatedBy: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }
+];
+
 const mockCarousel = [
   {
     id: 'c1',
@@ -1411,6 +1424,7 @@ const makeMockModelWithWrites = (name: string, data: any[]) => {
           if (name === 'affiliate') mockAffiliates = localData;
           if (name === 'marketingShowcaseSlide') mockMarketingShowcaseSlides = localData;
           if (name === 'webDesignShowcase') mockWebDesignShowcase = localData;
+          if (name === 'prePurchaseNotice') mockPrePurchaseNotice = localData;
           if (name === 'auditLog') mockAuditLogs = localData;
           if (name === 'marketAsset') mockMarketAssets = localData;
           if (name === 'marketQuote') mockMarketQuotes = localData;
@@ -1645,6 +1659,7 @@ const createMockPrisma = () => {
       if (prop === 'mobileCarousel') return makeMockModelWithWrites('mobileCarousel', mockCarousel);
       if (prop === 'marketingShowcaseSlide') return makeMockModelWithWrites('marketingShowcaseSlide', mockMarketingShowcaseSlides);
       if (prop === 'webDesignShowcase') return makeMockModelWithWrites('webDesignShowcase', mockWebDesignShowcase);
+      if (prop === 'prePurchaseNotice') return makeMockModelWithWrites('prePurchaseNotice', mockPrePurchaseNotice);
       if (prop === 'discount') return makeMockModel('discount', []);
       if (prop === 'user') return makeMockModelWithWrites('user', mockUser);
       if (prop === 'cartItem') return makeMockModelWithWrites('cartItem', globalCartItems);

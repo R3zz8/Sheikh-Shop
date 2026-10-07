@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useRequireRole } from '@/hooks/useRBAC';
-import { Package, Users, FileText, CreditCard, BarChart3, MessageSquare, Sliders, FolderTree, Sparkles, Code2, Tag } from 'lucide-react';
+import { Package, Users, FileText, CreditCard, BarChart3, MessageSquare, Sliders, FolderTree, Sparkles, Code2, Tag, Megaphone } from 'lucide-react';
 
 export default function DashboardClient() {
   const hasAccess = useRequireRole(['ADMIN', 'SUPERADMIN']);
@@ -22,6 +22,12 @@ export default function DashboardClient() {
   }
 
   const dashboardCards = [
+    {
+      title: 'اطلاعیه پیش از خرید (Pre-Purchase Notice)',
+      description: 'مدیریت اطلاعیه عمومی نوسانات قیمت، موجودی کالا و شماره هماهنگی واحد فروش',
+      href: '/dashboard/pre-purchase-notice',
+      icon: Megaphone,
+    },
     {
       title: 'دسته‌بندی‌ها (Categories)',
       description: 'مدیریت دسته‌بندی‌های اصلی و تصاویر آنلاین',
